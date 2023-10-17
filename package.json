@@ -1,0 +1,37 @@
+{
+  "name": "kine-helper",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "tauri": "tauri"
+  },
+  "dependencies": {
+    "@supabase/auth-helpers-sveltekit": "^0.10.3",
+    "@supabase/auth-ui-shared": "^0.1.8",
+    "@supabase/auth-ui-svelte": "^0.2.7",
+    "@supabase/supabase-js": "^2.38.1",
+    "@tauri-apps/api": "^2.0.0-alpha.8",
+    "@tauri-apps/plugin-shell": "^2.0.0-alpha.1",
+    "@tauri-apps/plugin-window": "^2.0.0-alpha.1"
+  },
+  "devDependencies": {
+    "@event-calendar/core": "^2.3.3",
+    "@sveltejs/adapter-static": "^2.0.3",
+    "@sveltejs/kit": "^1.25.2",
+    "@sveltejs/vite-plugin-svelte": "^2.4.2",
+    "@tauri-apps/cli": "^2.0.0-alpha.9",
+    "autoprefixer": "^10.4.16",
+    "eslint": "^8.51.0",
+    "internal-ip": "^7.0.0",
+    "postcss": "^8.4.31",
+    "prettier": "^3.0.3",
+    "prettier-plugin-svelte": "^3.0.3",
+    "svelte": "^4.0.5",
+    "tailwindcss": "^3.3.3",
+    "vite": "^4.4.4"
+  }
+}
