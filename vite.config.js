@@ -1,13 +1,14 @@
 import { defineConfig } from "vite";
 import { internalIpV4 } from "internal-ip";
 import { sveltekit } from "@sveltejs/kit/vite";
+import { purgeCss } from 'vite-plugin-tailwind-purgecss';
 
 // @ts-expect-error process is a nodejs global
 const mobile = !!/android|ios/.exec(process.env.TAURI_PLATFORM);
 
 // https://vitejs.dev/config/
 export default defineConfig(async () => ({
-  plugins: [sveltekit()],
+  plugins: [sveltekit(), purgeCss()],
 
   // Vite options tailored for Tauri development and only applied in `tauri dev` or `tauri build`
   //

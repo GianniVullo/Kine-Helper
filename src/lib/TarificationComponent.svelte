@@ -1,0 +1,1 @@
+<div>Tarification component</div>

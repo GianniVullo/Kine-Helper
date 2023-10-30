@@ -1,6 +1,6 @@
-# Svelte + Vite
+# Kiné Helper
 
-This template should help get you started developing with Tauri and Svelte in Vite.
+Le projet Kiné Helper est un projet personnel que je tennais secret depuis presque 2 ans. J'ai commencé à le construire avec Flutter mais je me suis lassé de Dart et ai eu envie de découvrir pourquoi tant de développeurs ne juraient que par JavaScript. 
 
 ## Recommended IDE Setup
 

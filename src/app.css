@@ -1,3 +1,8 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root [data-theme='kine-helper'] {
+	--theme-rounded-base: 8px;
+	--theme-rounded-container: 40px;
+}

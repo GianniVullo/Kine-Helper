@@ -1,25 +1,20 @@
 <script>
 	import '../app.css';
-	import { invalidate } from '$app/navigation';
-	import { onMount } from 'svelte';
+	import { LightSwitch, Toast } from '@skeletonlabs/skeleton';
+	import { initializeStores } from '@skeletonlabs/skeleton';
 
-	export let data;
+	initializeStores();
+	import { computePosition, autoUpdate, offset, shift, flip, arrow } from '@floating-ui/dom';
+	import { storePopup } from '@skeletonlabs/skeleton';
 
-	let { supabase, session } = data;
-	$: ({ supabase, session } = data);
-
-	onMount(() => {
-		const { data } = supabase.auth.onAuthStateChange((event, _session) => {
-			if (_session?.expires_at !== session?.expires_at) {
-				invalidate('supabase:auth');
-			}
-		});
-
-		return () => data.subscription.unsubscribe();
-	});
+	storePopup.set({ computePosition, autoUpdate, offset, shift, flip, arrow });
 </script>
 
-<svelte:head>
-	<title>User Management</title>
-</svelte:head>
+<Toast position="tr" rounded="rounded-lg" shadow="shadow-xl" />
+<!--! DEBUG STUFF -->
+<div class="fixed bottom-0 left-28 flex w-full items-start justify-start">
+	<a class="bg-slate-400 p-2" href="/dashboard">Dashboard</a>
+	<a class="bg-slate-400 p-2" href="/">Back to login</a>
+	<LightSwitch></LightSwitch>
+</div>
 <slot />
