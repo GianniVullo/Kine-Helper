@@ -8,7 +8,7 @@
 	import SubmitButton from '../SubmitButton.svelte';
 	import FormWrapper from '../FormWrapper.svelte';
 
-	let message = '';
+	export let message = '';
 
 	async function signIn({ formData, submitter }) {
 		const { data, error } = await supabase.auth.signInWithPassword({
@@ -19,22 +19,29 @@
 			message = error.message;
 			submitter.disabled = false;
 			spinner.classList.remove('!block');
+			throw new Error(error);
 		} else {
 			message = `Bienvenue ${data.user.email}!`;
 			console.log(data);
 			submitter.innerHTML = 'Récupération du profil kiné';
 			let kineData = await supabase.from('kinesitherapeute').select().eq('id', data.user.id)
-			console.log(kineData.data);
 			user.set({
 				user: data.user,
 				session: data.session,
 				profil: kineData.data[0]
 			})
-			submitter.innerHTML = 'Récupération des patients';
-			await patients.fetchPatient(data.user);
-			submitter.disabled = false;
-			console.log(user);
-			goto('/dashboard');
+			console.log(kineData.data);
+			if (kineData.data.length == 0) {
+				submitter.innerHTML = 'Se connecter';
+				submitter.disabled = false;
+				goto('/post-signup-form')
+			} else {
+				submitter.innerHTML = 'Récupération des patients';
+				await patients.fetchPatient(data.user);
+				submitter.disabled = false;
+				console.log(user);
+				goto('/dashboard');
+			}
 		}
 	}
 </script>
@@ -43,7 +50,7 @@
 	formSchema={{
 		isValid: signIn
 	}}>
-	<EmailField />
+	<EmailField value={$user.user.email} />
 	<PasswordField />
 	<div class="font-semibold">{message}</div>
 	<SubmitButton>Se connecter</SubmitButton>

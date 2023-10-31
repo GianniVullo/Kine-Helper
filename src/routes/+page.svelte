@@ -1,8 +1,9 @@
 <script>
-	import { LoginForm, PasswordResetForm, SignUpForm } from '../lib/index';
+	import { SignUpForm, LoginForm, PasswordResetForm } from '../lib/index';
 	console.log('Rendering Login Page');
 
-	let selectedForm = LoginForm;
+	let selectedForm = 'login';
+	let message = ''
 </script>
 
 <div
@@ -24,11 +25,20 @@
 				Open-source & gratuit pour tous les kinés
 			</p>
 		</div>
-		<svelte:component this={selectedForm} />
+		{#if selectedForm == 'login'}
+			<LoginForm {message} />
+		{:else if selectedForm == 'signup'}
+			<SignUpForm on:onSignupSuccess={(msg) => {
+				selectedForm = 'login'
+				message = msg;
+			}} />
+		{:else}
+			<PasswordResetForm />
+		{/if}
 		<div class="card-footer mt-4 flex flex-col items-center justify-center space-y-2">
-			{#if selectedForm == LoginForm}
+			{#if selectedForm == 'login'}
 				<button
-					on:click={() => (selectedForm = SignUpForm)}
+					on:click={() => (selectedForm = 'signup')}
 					class="group text-gray-600 dark:text-gray-300"
 					>Pas de compte ? <span
 						class="border-purple-500 text-base duration-200 group-hover:border-b"
@@ -36,18 +46,18 @@
 					></button>
 			{:else}
 				<button
-					on:click={() => (selectedForm = LoginForm)}
+					on:click={() => (selectedForm = 'login')}
 					class="group text-gray-600 dark:text-gray-300"
-					>{selectedForm == PasswordResetForm ? 'Ça vous est revenu ? ' : 'Déjà un compte ? '}<span
+					>{selectedForm == 'passwordReset' ? 'Ça vous est revenu ? ' : 'Déjà un compte ? '}<span
 						class="border-purple-500 text-base duration-200 group-hover:border-b"
 						>Connectez-vous</span
 					></button>
 				<!-- else content here -->
 			{/if}
-			{#if selectedForm !== PasswordResetForm}
+			{#if selectedForm !== 'passwordReset'}
 				<button
 					on:click={() => {
-						selectedForm = PasswordResetForm;
+						selectedForm = 'passwordReset';
 					}}
 					class="text-gray-600 dark:text-gray-300">Mot de passe oublié ?</button>
 			{/if}

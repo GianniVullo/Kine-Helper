@@ -17,6 +17,7 @@
 		if (error) {
 			message = error.message;
 			submitter.disabled = false;
+			throw new Error(error);
 		} else {
 			message = `Un email va être envoyé à ${formData.email.toLowerCase()} pour réinitialiser votre mot de passe`;
 			console.log(data);

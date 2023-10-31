@@ -1,5 +1,7 @@
 <script>
 	import DefaultFieldWrapper from '../DefaultFieldWrapper.svelte';
+
+	export let value = undefined;
 </script>
 
 <DefaultFieldWrapper>
@@ -24,6 +26,7 @@
 			type="email"
 			required
 			name="email"
+			bind:value={value}
 			class="input group-[.has-error]/field:border-error-500"
 			data-pristine-email-message="Veuillez entrer un email valide"
 			data-pristine-required-message="Ce champ est requis" />

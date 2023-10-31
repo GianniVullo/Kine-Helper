@@ -10,7 +10,7 @@
 	import { goto } from '$app/navigation';
 	import { patients } from '../../stores/PatientStore';
 	import { getToastStore } from '@skeletonlabs/skeleton';
-	import { errorToast } from '../../ui/toasts';
+	import { errorToast } from '$lib/ui/toasts';
 	import { user } from '../../stores/UserStore';
 
 	const toastStore = getToastStore();

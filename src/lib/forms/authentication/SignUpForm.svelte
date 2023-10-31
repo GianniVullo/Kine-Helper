@@ -1,13 +1,15 @@
 <script>
 	import { supabase } from '../../stores/supabaseClient';
-	import { goto } from '$app/navigation';
 	import { user } from '$lib/stores/UserStore';
 	import EmailField from './EmailField.svelte';
 	import PasswordField from './PasswordField.svelte';
 	import SubmitButton from '../SubmitButton.svelte';
 	import FormWrapper from '../FormWrapper.svelte';
+	import { createEventDispatcher } from 'svelte';
 
 	let message = '';
+
+	const dispatch = createEventDispatcher();
 
 	let formSchema = {
 		isValid: signUp,
@@ -31,14 +33,20 @@
 		if (error) {
 			message = error.message;
 			submitter.disabled = false;
+			throw new Error(error);
 		} else {
-			message = `Bienvenue ${data.user.email}!`;
+			message = `Un email de confirmation vous a été envoyé sur ${data.user.email}.`;
 			console.log(data);
-			user.set(data.user);
+			user.set({
+				user: data.user,
+				session: data.session
+			});
+			dispatch('onSignupSuccess', {
+				message: 'vous pourrez vous connecter ici une fois votre email confirmé'
+			});
 			submitter.disabled = false;
 			console.log(user);
 			console.log($user);
-			goto('/post-signup-form');
 		}
 	}
 </script>

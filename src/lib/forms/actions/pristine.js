@@ -31,16 +31,15 @@ export function pristine(form_element, { isValid, isValidSync, validators }) {
 		}
 	}
 
-	form_element.addEventListener('submit', function (e) {
+	function validationFlow(e) {
 		e.preventDefault();
 		e.target.classList.add('isLoading');
 		let submitter = e.submitter;
 		submitter.disabled = true;
 		const form_data = new FormData(e.target);
-		console.log(form_data)
-		console.log('now validating');
+		console.log('now validating in Pristine Action');
 		// check if the form is valid
-		let valid = pristine.validate()
+		let valid = pristine.validate();
 		console.log('is it valid ?', valid);
 		if (valid) {
 			if (isValid) {
@@ -65,18 +64,15 @@ export function pristine(form_element, { isValid, isValidSync, validators }) {
 				return form_element.classList.remove('isLoading');
 			}
 		}
-		submitter.disabled = false
+		submitter.disabled = false;
 		e.target.classList.remove('isLoading');
-	});
+	}
+
+	form_element.addEventListener('submit', validationFlow);
 
 	return {
 		destroy() {
-			form_element.removeEventListener('submit', function (e) {
-				e.preventDefault();
-
-				// check if the form is valid
-				var valid = pristine.validate();
-			});
+			form_element.removeEventListener('submit', validationFlow);
 			pristine.destroy();
 		}
 	};

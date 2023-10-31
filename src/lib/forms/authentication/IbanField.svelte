@@ -2,7 +2,7 @@
 	import TextField from '../TextField.svelte';
 
 	let previousLength = 0;
-
+	export let value = null;
 	function ibanHandler(event) {
 		let value = event.target.value;
 
@@ -40,7 +40,8 @@
 	placeholder="IBAN : BEXX XXXX XXXX XXXX"
 	label="N° de compte bancaire"
     autocomplete="off"
-	name="numero_compte"
+	name="iban"
+	{value}
 	required
 	pattern={/\b[A-Z]{2}[0-9]{2}(?:[ ]?[0-9]{4}){4}(?:[ ]?[0-9]{0,2})?$\b|\bBE[0-9]{2}(?:[ ]?[0-9]{4}){3}\b/}
 	patternMessage="Veuillez insérer 'BE' suivis de 14 chiffres"
