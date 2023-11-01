@@ -50,8 +50,8 @@
 		class="relative mt-0 flex h-full w-full">
 		<ul
 			data-minimized={isMinimized}
-			class="relative data-[minimized=true]:flex data-[minimized=true]:w-full data-[minimized=true]:items-center data-[minimized=true]:justify-center data-[minimized=true]:md:block">
-				<li class="flex absolute md:static justify-center items-center left-0 py-2 px-2 md:py-0 md:px-0 md:mt-2 mt-0"><img src={logo} class="w-[60%] md:w-auto md:px-2 md:py-2 group-data-[minimized=false]:hidden" alt=""></li>
+			class="relative data-[minimized=true]:flex data-[minimized=true]:w-full data-[minimized=true]:items-center data-[minimized=true]:sm:justify-center data-[minimized=true]:justify-start data-[minimized=true]:md:block">
+				<li class="flex absolute md:static justify-center items-center left-0 py-2 px-2 md:py-0 md:px-0 md:mt-2 mt-0"><img src={logo} class="w-[60%] md:w-auto md:px-2 md:py-2 group-data-[minimized=false]:hidden hidden sm:block" alt=""></li>
 			{#each menuItems as item}
 				<li class:justify-center={isMinimized} class="flex items-center justify-center">
 					<!-- side Icon -->

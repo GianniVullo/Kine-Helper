@@ -15,7 +15,8 @@
 
 	const toastStore = getToastStore();
 	let message = '';
-	let patient;
+	export let patient;
+	console.log(patient);
 
 	let formSchema = {
 		isValid,
@@ -25,10 +26,10 @@
 					console.log('in the mutaliteValide with value', value);
 
 					return [
-						100, 120, 134, 200, 203, 216, 228, 235, 300, 304, 306, 309, 311, 319, 322, 323, 400,
-						403, 407, 409, 411, 417, 500, 509, 515, 526, 600, 600, 675, 602, 603, 604, 605, 606,
-						607, 608, 609, 610, 612, 615, 620, 622, 675, 900, 910, 920, 921, 922, 930, 931, 940,
-						941, 942
+						100, 120, 128, 134, 200, 203, 216, 228, 235, 300, 304, 306, 309, 311, 319, 322, 323,
+						400, 403, 407, 409, 411, 417, 500, 509, 515, 526, 600, 600, 675, 602, 603, 604, 605,
+						606, 607, 608, 609, 610, 612, 615, 620, 622, 675, 900, 910, 920, 921, 922, 930, 931,
+						940, 941, 942
 					].includes(parseInt(value));
 				},
 				errorMessage: 'Veuillez entrer un numéro de mutualité valide'
@@ -53,10 +54,12 @@
 		} else {
 			let updatedPatient = await supabase
 				.from('patients')
-				.update(patient)
-				.eq('patient_id', formData.patient_id);
-			data = updatedPatient.data;
+				.update(formData)
+				.eq('patient_id', formData.patient_id)
+				.select();
+			data = updatedPatient.data[0];
 			error = updatedPatient.error;
+			console.log('In update PatientForm with supabase response = ', data, error);
 		}
 		if (error) {
 			toastStore.trigger(
@@ -67,14 +70,23 @@
 			throw new Error(error);
 		}
 		if (patient) {
-			$patients.find((patient) => patient.patient_id == formData.patient_id);
+			patients.update((patients) => {
+				patients.splice(
+					patients.findIndex((patient) => patient.patient_id == data.patient_id),
+					1
+				);
+				patients.push(data);
+				return patients
+			});
+			patients.sortPatient()
+			goto(`/dashboard/medical-files/patients/${data.patient_id}`);
 		} else {
 			console.log($patients[0], data);
-			patients.set([... $patients, data]);
+			patients.set([...$patients, data]);
+			goto(`/dashboard/medical-files/patients/${data.patient_id}`);
 		}
 		// I think it might be counter productive as the button will anyway be destroyed
 		// submitter.disabled = false;
-		goto(`dashboard/medical-files/patients/${data.patient_id}`);
 	}
 
 	function nissToDate(event) {
@@ -105,22 +117,25 @@
 </script>
 
 <FormWrapper {formSchema}>
-	<span slot="title">
-		Formulaire patient
-	</span>
 	{#if patient}
-		 <input name="patient_id" type="hidden" />
+		<input name="patient_id" type="hidden" value={patient.patient_id} />
 	{/if}
-	<input name="kinesitherapeute_id" type="hidden" value={$user.id} />
+	<input name="kinesitherapeute_id" type="hidden" value={$user.user.id} />
 
 	<div class="flex flex-col md:flex-row">
 		<!--* Identification -->
 		<div class="w-full p-2 md:w-1/3 md:p-4 lg:p-8">
 			<SectionCard label="Identification">
-				<TextField name="nom" required placeholder="Nom" label="Nom" />
-				<TextField name="prenom" required placeholder="Prénom" label="Prénom" />
+				<TextField name="nom" value={patient?.nom} required placeholder="Nom" label="Nom" />
+				<TextField
+					name="prenom"
+					value={patient?.prenom}
+					required
+					placeholder="Prénom"
+					label="Prénom" />
 				<TextField
 					name="niss"
+					value={patient?.niss}
 					required
 					placeholder="Niss"
 					label="Niss"
@@ -129,74 +144,100 @@
 					onChangeHandler={nissToDate} />
 				<TextField
 					name="date_naissance"
+					value={patient?.date_naissance}
 					required
 					type="date"
 					placeholder="Date de naissance"
 					label="Date de naissance" />
 				<RadioField
 					name="sexe"
+					value={patient?.sexe}
 					label="Sexe"
 					options={[
-						{ value: 'M', label: 'Masculin' },
-						{ value: 'F', label: 'Féminin' }
+						{ value: 'M', label: 'Masculin', checked: patient?.sexe === 'M' },
+						{ value: 'F', label: 'Féminin', checked: patient?.sexe === 'F' }
 					]} />
 				<TextField
 					name="adresse"
+					value={patient?.adresse}
 					required
 					placeholder="Rue et numéro"
 					label="Rue et numéro" />
 				<TextField
 					name="cp"
+					value={patient?.cp}
 					type="number"
 					pattern={/^[0-9]{4}$/}
 					patternMessage="Le code postal est invalide"
 					required
 					placeholder="Code postal"
 					label="Code postal" />
-				<TextField name="localite" required placeholder="Localité" label="Localité" />
+				<TextField
+					name="localite"
+					value={patient?.localite}
+					required
+					placeholder="Localité"
+					label="Localité" />
 			</SectionCard>
 		</div>
 		<!--* Assurabilité -->
 		<div class="w-full p-2 md:w-1/3 md:p-4 lg:p-8">
 			<SectionCard label="Assurabilité">
-				<MutualiteField />
+				<MutualiteField query={patient?.mutualite} />
 				<TextField
 					name="num_affilie"
+					value={patient?.num_affilie}
 					placeholder="N° d'affilié (Optionnel)"
 					label="N° d'affilié (Optionnel)" />
 				<CheckboxField
 					name="tiers_payant"
-					value={false}
+					value={patient?.tiers_payant ?? false}
+					checked={patient?.tiers_payant}
 					placeholder="est tiers payant"
 					label="est tiers payant" />
 				<CheckboxField
 					name="ticket_moderateur"
-					value={true}
-					checked
+					value={patient?.ticket_moderateur ?? true}
+					checked={patient?.ticket_moderateur}
 					placeholder="est tiers payant"
 					label="paye le ticket modérateur" />
-				<CheckboxField name="bim" value={false} placeholder="est BIM" label="est BIM" />
+				<CheckboxField
+					name="bim"
+					value={patient?.bim ?? false}
+					checked={patient?.bim}
+					placeholder="est BIM"
+					label="est BIM" />
 				<TextField
 					name="numero_etablissment"
+					value={patient?.numero_etablissment}
 					placeholder="N° d'établissement"
 					label="N° d'établissement" />
-				<TextField name="service" placeholder="Service" label="Service" />
+				<TextField name="service" value={patient?.service} placeholder="Service" label="Service" />
 			</SectionCard>
 		</div>
 		<!--* Contact -->
 		<div class="w-full p-2 md:w-1/3 md:p-4 lg:p-8">
 			<SectionCard label="Contact">
-				<TextField name="tel" placeholder="N° de téléphone" label="N° de téléphone" />
-				<TextField name="gsm" placeholder="N° de gsm" label="N° de gsm" />
-				<TextField name="email" placeholder="E-mail" type="email" label="E-mail" />
+				<TextField
+					name="tel"
+					value={patient?.tel}
+					placeholder="N° de téléphone"
+					label="N° de téléphone" />
+				<TextField name="gsm" value={patient?.gsm} placeholder="N° de gsm" label="N° de gsm" />
+				<TextField
+					name="email"
+					value={patient?.email}
+					placeholder="E-mail"
+					type="email"
+					label="E-mail" />
 			</SectionCard>
+			<SubmitButton class="mt-4">
+				{patient ? 'Mettre à jour' : 'Enregistrer'}
+			</SubmitButton>
 		</div>
 	</div>
 	<!--? Actif doit être présent uniquement dans UpdateForm => If (patient) {} -->
 	<!--! Actif, doit être renomé "archivé" -->
 	<!--* doit devenir juste un bouton et ne pas figurer sur le formulaire -->
-	<SubmitButton>
-		{patient ? 'Mettre à jour' : 'Enregistrer'}
-	</SubmitButton>
 	{message}
 </FormWrapper>

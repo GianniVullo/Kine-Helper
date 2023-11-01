@@ -50,7 +50,7 @@
 	formSchema={{
 		isValid: signIn
 	}}>
-	<EmailField value={$user.user.email} />
+	<EmailField value={$user.user?.email} />
 	<PasswordField />
 	<div class="font-semibold">{message}</div>
 	<SubmitButton>Se connecter</SubmitButton>

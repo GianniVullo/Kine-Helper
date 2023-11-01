@@ -27,6 +27,18 @@ function createPatientStore() {
 		set(data);
 	}
 
+	function sortPatient() {
+		update((patients) => {
+			patients.sort((a, b) => {
+				if (a.nom > b.nom) {
+					return 1;
+				} else {
+					return -1;
+				}
+			});
+			return patients;
+		});
+	}
 	async function insertPatient(data) {
 		console.log('in insertPatient() with', data);
 		loading.set(true);
@@ -44,6 +56,7 @@ function createPatientStore() {
 		update,
 		set,
 		loading,
+		sortPatient,
 		fetchPatient
 	};
 }

@@ -20,6 +20,8 @@ dist-ssr
 .idea
 .DS_Store
 .svelte-kit
+.svelte-kit/*
+.vscode/*
 .vscode
 *.suo
 *.ntvs*
