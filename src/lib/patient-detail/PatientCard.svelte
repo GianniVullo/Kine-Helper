@@ -5,7 +5,7 @@
 </script>
 
 <div class="group rounded-lg bg-white/90 card-hover flex flex-col cursor-default items-start justify-between p-6">
-	<a class="group/consultation" href={`/dashboard/medical-files/patients/${patient.patient_id}`}>
+	<a class="group/consultation" href={`/dashboard/patients/${patient.patient_id}`}>
 		<div class="bg-gradient-to-r from-primary-400 to-secondary-500 h-1 opacity-50 mb-4"></div>
 		<h2 class="text-xl font-medium text-surface-900">{patient.nom} {patient.prenom}</h2>
 		<div class="flex items-start mt-1">

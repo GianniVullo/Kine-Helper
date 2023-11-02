@@ -79,11 +79,11 @@
 				return patients
 			});
 			patients.sortPatient()
-			goto(`/dashboard/medical-files/patients/${data.patient_id}`);
+			goto(`/dashboard/patients/${data.patient_id}`);
 		} else {
 			console.log($patients[0], data);
 			patients.set([...$patients, data]);
-			goto(`/dashboard/medical-files/patients/${data.patient_id}`);
+			goto(`/dashboard/patients/${data.patient_id}`);
 		}
 		// I think it might be counter productive as the button will anyway be destroyed
 		// submitter.disabled = false;

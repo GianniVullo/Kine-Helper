@@ -39,6 +39,19 @@ function createPatientStore() {
 			return patients;
 		});
 	}
+
+	function remove(patient_id) {
+		console.log('in patients.remove(id) with', patient_id);
+		update((ps) => {
+			console.log('in patients.remove(id)>update with ps length BEFORE', ps.length);
+			ps.splice(
+				ps.findIndex((p) => p.patient_id == patient_id),
+				1
+				);
+				console.log('in patients.remove(id)>update with ps length AFTER', ps.length);
+			return ps;
+		});
+	}
 	async function insertPatient(data) {
 		console.log('in insertPatient() with', data);
 		loading.set(true);
@@ -57,7 +70,8 @@ function createPatientStore() {
 		set,
 		loading,
 		sortPatient,
-		fetchPatient
+		fetchPatient,
+		remove
 	};
 }
 

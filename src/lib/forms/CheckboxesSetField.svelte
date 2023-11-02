@@ -2,17 +2,12 @@
 	import DefaultFieldWrapper from './DefaultFieldWrapper.svelte';
 
 	export let required = undefined;
-	export let name;
-	export let checked = undefined;
-	export let type = 'checkbox';
-	export let id = undefined;
-	export let label = '';
-	export let parentClass = 'flex items-center space-y-0';
+	export let parentClass = '';
 	export let labelClass = 'text-surface-500 dark:text-surface-300 ml-2 select-none';
 	let clazz = '';
 	export { clazz as class };
-	export let placeholder = '';
 	export let value = false;
+	export let options;
 
 	function changeHandlerSetup(node, fn) {
 		node.addEventListener('click', function checkboxing(event) {
@@ -36,17 +31,19 @@
 	}
 </script>
 
-<DefaultFieldWrapper class={parentClass}>
-	<input
-		id={id ?? name}
-		{type}
+<DefaultFieldWrapper class="flex items-center space-y-0 {parentClass}">
+	{#each options as option}
+	<label class={option.labelClass ?? labelClass} for={option.id ?? option.name}>{option.label}
+		<input
+		id={option.id ?? option.name}
+		type="checkbox"
 		{required}
-		{name}
-		{placeholder}
-		value={value ? value : null}
-		{checked}
+		name={option.name}
+		value={option.checked ?? false}
+		checked={option.checked}
 		class="checkbox group-[.has-error]/field:border-error-500 {clazz}"
 		data-pristine-required-message={required ? 'Ce champ est requis' : undefined}
 		use:changeHandlerSetup />
-	<label class={labelClass} for={id ?? name}>{label}</label>
+	</label>
+	{/each}
 </DefaultFieldWrapper>

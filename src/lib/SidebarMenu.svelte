@@ -1,5 +1,7 @@
 <script>
-	import logo from '$lib/assets/logo.png'
+	import logo from '$lib/assets/logo.png';
+	import ChevronLeftIcon from './ui/svgs/ChevronLeftIcon.svelte';
+	import ChevronRightIcon from './ui/svgs/ChevronRightIcon.svelte';
 	// No need for the activeSection logic since SvelteKit will handle active routes.
 	let menuItems = [
 		{
@@ -14,7 +16,7 @@
 		},
 		{
 			name: 'Patients',
-			path: '/dashboard/medical-files',
+			path: '/dashboard/patients',
 			svg: `<path stroke-linecap="round" stroke-linejoin="round" d="M17.982 18.725A7.488 7.488 0 0012 15.75a7.488 7.488 0 00-5.982 2.975m11.963 0a9 9 0 10-11.963 0m11.963 0A8.966 8.966 0 0112 21a8.966 8.966 0 01-5.982-2.275M15 9.75a3 3 0 11-6 0 3 3 0 016 0z" />`
 		},
 		{
@@ -34,13 +36,13 @@
 <!-- Sidebar Navigation -->
 <aside
 	data-minimized={isMinimized}
-	class="isMinimized group fixed left-0 top-0 z-10 h-96 w-screen overflow-clip bg-gradient-to-br from-surface-200 dark:from-surface-700 to-surface-100 dark:to-surface-800 p-6 text-white duration-200 ease-in-out data-[minimized=true]:h-16 md:border-r border-b dark:border-surface-800 data-[minimized=true]:from-surface-300 data-[minimized=true]:to-surface-200 data-[minimized=true]:p-0 shadow-lg border-surface-400 dark:data-[minimized=true]:from-surface-700 dark:data-[minimized=true]:to-surface-800 md:h-screen md:w-64 data-[minimized=true]:md:h-screen data-[minimized=true]:md:w-12">
+	class="isMinimized group fixed left-0 top-0 z-10 h-96 w-screen overflow-clip border-b border-surface-400 bg-gradient-to-br from-surface-200 to-surface-100 p-6 text-white shadow-lg duration-200 ease-in-out data-[minimized=true]:h-16 data-[minimized=true]:from-surface-300 data-[minimized=true]:to-surface-200 data-[minimized=true]:p-0 dark:border-surface-800 dark:from-surface-700 dark:to-surface-800 dark:data-[minimized=true]:from-surface-700 dark:data-[minimized=true]:to-surface-800 md:h-screen md:w-64 md:border-r data-[minimized=true]:md:h-screen data-[minimized=true]:md:w-12">
 	<h2 class:mb-6={!isMinimized} class="text-xl font-medium text-primary-600 dark:text-primary-400">
 		{isMinimized ? '' : 'Kiné Helper'}
 	</h2>
 
 	<div
-		class="absolute group-data-[minimized=true]:hidden -right-8 -top-6 h-14 w-14 rounded-full bg-sky-600 opacity-25 duration-200 ease-in-out group-data-[minimized=false]:-right-32 group-data-[minimized=false]:-top-20 group-data-[minimized=false]:h-48 group-data-[minimized=false]:w-48 dark:opacity-60">
+		class="absolute -right-8 -top-6 h-14 w-14 rounded-full bg-sky-600 opacity-25 duration-200 ease-in-out group-data-[minimized=false]:-right-32 group-data-[minimized=false]:-top-20 group-data-[minimized=true]:hidden group-data-[minimized=false]:h-48 group-data-[minimized=false]:w-48 dark:opacity-60">
 	</div>
 
 	<nav
@@ -50,8 +52,14 @@
 		class="relative mt-0 flex h-full w-full">
 		<ul
 			data-minimized={isMinimized}
-			class="relative data-[minimized=true]:flex data-[minimized=true]:w-full data-[minimized=true]:items-center data-[minimized=true]:sm:justify-center data-[minimized=true]:justify-start data-[minimized=true]:md:block">
-				<li class="flex absolute md:static justify-center items-center left-0 py-2 px-2 md:py-0 md:px-0 md:mt-2 mt-0"><img src={logo} class="w-[60%] md:w-auto md:px-2 md:py-2 group-data-[minimized=false]:hidden hidden sm:block" alt=""></li>
+			class="relative data-[minimized=true]:flex data-[minimized=true]:w-full data-[minimized=true]:items-center data-[minimized=true]:justify-start data-[minimized=true]:sm:justify-center data-[minimized=true]:md:block">
+			<li
+				class="absolute left-0 mt-0 flex items-center justify-center px-2 py-2 md:static md:mt-2 md:px-0 md:py-0">
+				<img
+					src={logo}
+					class="hidden w-[60%] group-data-[minimized=false]:hidden sm:block md:w-auto md:px-2 md:py-2"
+					alt="" />
+			</li>
 			{#each menuItems as item}
 				<li class:justify-center={isMinimized} class="flex items-center justify-center">
 					<!-- side Icon -->
@@ -74,7 +82,7 @@
 				</li>
 			{/each}
 			<div
-				class="absolute group-data-[minimized=true]:hidden -bottom-8 -left-10 h-14 w-14 rounded-full bg-primary-600 opacity-25 duration-200 group-data-[minimized=false]:-left-44 group-data-[minimized=false]:h-48 group-data-[minimized=false]:w-48 dark:opacity-60 md:relative group-data-[minimized=false]:md:bottom-6">
+				class="absolute -bottom-8 -left-10 h-14 w-14 rounded-full bg-primary-600 opacity-25 duration-200 group-data-[minimized=false]:-left-44 group-data-[minimized=true]:hidden group-data-[minimized=false]:h-48 group-data-[minimized=false]:w-48 dark:opacity-60 md:relative group-data-[minimized=false]:md:bottom-6">
 			</div>
 		</ul>
 	</nav>
@@ -85,15 +93,7 @@
 			isMinimized = !isMinimized;
 		}}>
 		{#if !isMinimized}
-			<svg
-				xmlns="http://www.w3.org/2000/svg"
-				fill="none"
-				viewBox="0 0 24 24"
-				stroke-width="1.5"
-				stroke="currentColor"
-				class="hidden h-6 w-6 stroke-black dark:stroke-surface-100 md:block">
-				<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
-			</svg>
+			<ChevronLeftIcon class="hidden h-6 w-6 stroke-black dark:stroke-surface-100 md:block" />
 			<svg
 				xmlns="http://www.w3.org/2000/svg"
 				fill="none"
@@ -104,15 +104,7 @@
 				<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
 			</svg>
 		{:else}
-			<svg
-				xmlns="http://www.w3.org/2000/svg"
-				fill="none"
-				viewBox="0 0 24 24"
-				stroke-width="1.5"
-				stroke="currentColor"
-				class="hidden h-6 w-6 stroke-black dark:stroke-surface-100 md:block">
-				<path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-			</svg>
+			<ChevronRightIcon class="hidden h-6 w-6 stroke-black dark:stroke-surface-100 md:block" />
 			<svg
 				xmlns="http://www.w3.org/2000/svg"
 				fill="none"
