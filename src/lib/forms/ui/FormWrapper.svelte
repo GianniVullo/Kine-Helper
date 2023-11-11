@@ -1,5 +1,5 @@
 <script>
-	import { pristine } from './actions/pristine';
+	import { pristine } from '../actions/pristine';
 
 	let clazz = '';
 	export { clazz as class };

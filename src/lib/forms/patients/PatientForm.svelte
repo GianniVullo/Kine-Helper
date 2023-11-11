@@ -1,21 +1,23 @@
 <script>
-	import SubmitButton from '../SubmitButton.svelte';
-	import TextField from '../TextField.svelte';
-	import FormWrapper from '../FormWrapper.svelte';
-	import SectionCard from '../SectionCard.svelte';
-	import RadioField from '../RadioField.svelte';
 	import MutualiteField from './MutualiteField.svelte';
-	import CheckboxField from '../CheckboxField.svelte';
 	import { supabase } from '../../stores/supabaseClient';
 	import { goto } from '$app/navigation';
 	import { patients } from '../../stores/PatientStore';
 	import { getToastStore } from '@skeletonlabs/skeleton';
 	import { errorToast } from '$lib/ui/toasts';
 	import { user } from '../../stores/UserStore';
+	import {
+		SubmitButton,
+		TextField,
+		FormWrapper,
+		SectionCard,
+		RadioField,
+		CheckboxField
+	} from '../index';
 
 	const toastStore = getToastStore();
 	let message = '';
-	export let patient;
+	export let patient = undefined;
 	console.log(patient);
 
 	let formSchema = {
@@ -76,9 +78,9 @@
 					1
 				);
 				patients.push(data);
-				return patients
+				return patients;
 			});
-			patients.sortPatient()
+			patients.sortPatient();
 			goto(`/dashboard/patients/${data.patient_id}`);
 		} else {
 			console.log($patients[0], data);
@@ -152,6 +154,7 @@
 				<RadioField
 					name="sexe"
 					value={patient?.sexe}
+					inline
 					label="Sexe"
 					options={[
 						{ value: 'M', label: 'Masculin', checked: patient?.sexe === 'M' },

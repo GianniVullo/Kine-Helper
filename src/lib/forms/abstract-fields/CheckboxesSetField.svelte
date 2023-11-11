@@ -2,6 +2,7 @@
 	import DefaultFieldWrapper from './DefaultFieldWrapper.svelte';
 
 	export let required = undefined;
+	export let name = undefined;
 	export let parentClass = '';
 	export let labelClass = 'text-surface-500 dark:text-surface-300 ml-2 select-none';
 	let clazz = '';
@@ -33,12 +34,12 @@
 
 <DefaultFieldWrapper class="flex items-center space-y-0 {parentClass}">
 	{#each options as option}
-	<label class={option.labelClass ?? labelClass} for={option.id ?? option.name}>{option.label}
+	<label class={option.labelClass ?? labelClass} for={option.id}>{option.label}
 		<input
 		id={option.id ?? option.name}
 		type="checkbox"
 		{required}
-		name={option.name}
+		name={name}
 		value={option.checked ?? false}
 		checked={option.checked}
 		class="checkbox group-[.has-error]/field:border-error-500 {clazz}"

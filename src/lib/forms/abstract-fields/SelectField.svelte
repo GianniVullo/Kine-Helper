@@ -6,12 +6,21 @@
 	export let labelClass = 'text-surface-500 dark:text-surface-300 select-none';
 	export let requiredMessage = 'Ce champ est requis';
 	export let selectClass = '';
-	export let id;
+	export let id = null;
 	export let name;
 	export let required = false;
-	export let placeholder;
-	export let value = undefined;
-	export let multiple = false;
+	export let placeholder = undefined;
+	export let value;
+	export let onChangeHandler = undefined;
+
+	function changeHandlerSetup(node, fn) {
+		node.addEventListener('change', fn);
+		return {
+			destroy() {
+				node.removeEventListener('change', fn);
+			}
+		};
+	}
 </script>
 
 <DefaultFieldWrapper class={parentClass}>
@@ -19,12 +28,15 @@
 	<select
 		id={id ?? name}
 		{required}
-		class="select {selectClass}"
-		{multiple}
+		class="select rounded-lg {selectClass}"
 		{name}
 		{placeholder}
-		{value}
-		data-pristine-required-message={required ? requiredMessage : undefined}>
+		bind:value={value}
+		data-pristine-required-message={required ? requiredMessage : undefined}
+		use:changeHandlerSetup={onChangeHandler}>
+		{#if placeholder}
+			<option value="none" disabled selected>{placeholder}</option>
+		{/if}
 		{#each options as option}
 			<option id={option.id} value={option.value}>{option.label}</option>
 		{/each}

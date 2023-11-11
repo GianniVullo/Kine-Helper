@@ -19,6 +19,8 @@
     "@tauri-apps/plugin-dialog": "^2.0.0-alpha.2",
     "@tauri-apps/plugin-shell": "^2.0.0-alpha.1",
     "@tauri-apps/plugin-window": "^2.0.0-alpha.1",
+    "dayjs": "^1.11.10",
+    "jspdf": "^2.5.1",
     "pristinejs": "^1.1.0",
     "svelte-persisted-store": "^0.7.0"
   },

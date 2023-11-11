@@ -16,6 +16,6 @@
 <div class="fixed bottom-0 left-96 flex w-full items-start justify-start">
 	<!-- <a class="bg-slate-400 p-2" href="/dashboard">Dashboard</a>
 	<a class="bg-slate-400 p-2" href="/">Back to login</a> -->
-	<LightSwitch></LightSwitch>
+	<LightSwitch d></LightSwitch>
 </div>
 <slot />

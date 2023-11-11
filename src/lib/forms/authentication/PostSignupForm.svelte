@@ -1,9 +1,5 @@
 <script>
-	import FormWrapper from '../FormWrapper.svelte';
-	import TextField from '../TextField.svelte';
-	import SubmitButton from '../SubmitButton.svelte';
-	import CheckboxField from '../CheckboxField.svelte';
-	import SectionCard from '../SectionCard.svelte';
+	import { FormWrapper, TextField, SubmitButton, CheckboxField, SectionCard } from '../index';
 	import IbanField from './IbanField.svelte';
 	import { user } from '$lib/index';
 	import { supabase } from '../../stores/supabaseClient';
@@ -19,26 +15,26 @@
 		console.log('in isValid with', formData);
 		submitter.innerHTML = 'Envoi des données...';
 		formData.conventionne ??= false;
-		let { data, error } = await supabase
-			.from('kinesitherapeute')
-			.upsert(formData)
-			.select();
+		let { data, error } = await supabase.from('kinesitherapeute').upsert(formData).select();
 		submitter.innerHTML = 'OK';
 		$user.profil = data[0];
 		console.log(data, error);
 		console.log($user);
 		if (error) {
-			message = error.message
+			message = error.message;
 			throw new Error(error);
 		}
 		goto('/dashboard');
 	}
 	async function test() {
-		formError('Voilà bon ça a merdé', "<div class=\"text-3xl text-primary-500\“><b>Clairement</b> on en est pas fièr</div>")
+		formError(
+			'Voilà bon ça a merdé',
+			'<div class="text-3xl text-primary-500“><b>Clairement</b> on en est pas fièr</div>'
+		);
 	}
 </script>
 
-<button on:click={test} class="btn variant-outline-primary">TEST</button>
+<button on:click={test} class="variant-outline-primary btn">TEST</button>
 <FormWrapper {formSchema}>
 	<span slot="title">Formulaire post-inscription</span>
 	<p class="m-8 text-surface-600">

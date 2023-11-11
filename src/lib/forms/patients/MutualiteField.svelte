@@ -1,5 +1,5 @@
 <script>
-	import AutocompleteField from '../AutocompleteField.svelte';
+	import { AutocompleteField } from '../index';
 	export let query;
 	let mutualite = [
 		// Chretienne
@@ -15,7 +15,12 @@
 			keywords: 'christelijke, 120',
 			meta: {}
 		},
-		{ label: '128 - Mutualité Chrétienne du Hainaut Oriental', value: 128, keywords: 'chrétiennes, 128', meta: {}},
+		{
+			label: '128 - Mutualité Chrétienne du Hainaut Oriental',
+			value: 128,
+			keywords: 'chrétiennes, 128',
+			meta: {}
+		},
 		{ label: '134 - Mutualité chrétienne', value: 134, keywords: 'chrétiennes, 134', meta: {} },
 		// Neutre
 		{
@@ -286,4 +291,10 @@
 	}
 </script>
 
-<AutocompleteField label="Mutualité" {query} name="mutualite" {onOptionSelection} options={mutualite} required />
+<AutocompleteField
+	label="Mutualité"
+	{query}
+	name="mutualite"
+	{onOptionSelection}
+	options={mutualite}
+	required />

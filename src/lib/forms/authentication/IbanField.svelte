@@ -1,5 +1,5 @@
 <script>
-	import TextField from '../TextField.svelte';
+	import {TextField} from '../index';
 
 	let previousLength = 0;
 	export let value = null;

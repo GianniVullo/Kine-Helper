@@ -1,8 +1,7 @@
 <script>
 	import { user } from '$lib/stores/UserStore';
 	import EmailField from './EmailField.svelte';
-	import SubmitButton from '../SubmitButton.svelte';
-	import FormWrapper from '../FormWrapper.svelte';
+	import { SubmitButton, FormWrapper } from '../index';
 
 	let message = '';
 

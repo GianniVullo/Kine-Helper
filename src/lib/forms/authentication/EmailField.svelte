@@ -1,5 +1,5 @@
 <script>
-	import DefaultFieldWrapper from '../DefaultFieldWrapper.svelte';
+	import { DefaultFieldWrapper } from '../index';
 
 	export let value = undefined;
 </script>

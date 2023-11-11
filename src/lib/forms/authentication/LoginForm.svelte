@@ -5,8 +5,7 @@
 	import { user } from '$lib/stores/UserStore';
 	import { patients } from '../../stores/PatientStore';
 	import EmailField from './EmailField.svelte';
-	import SubmitButton from '../SubmitButton.svelte';
-	import FormWrapper from '../FormWrapper.svelte';
+	import { SubmitButton, FormWrapper } from '../index';
 
 	export let message = '';
 
@@ -24,17 +23,17 @@
 			message = `Bienvenue ${data.user.email}!`;
 			console.log(data);
 			submitter.innerHTML = 'Récupération du profil kiné';
-			let kineData = await supabase.from('kinesitherapeute').select().eq('id', data.user.id)
+			let kineData = await supabase.from('kinesitherapeute').select().eq('id', data.user.id);
 			user.set({
 				user: data.user,
 				session: data.session,
 				profil: kineData.data[0]
-			})
+			});
 			console.log(kineData.data);
 			if (kineData.data.length == 0) {
 				submitter.innerHTML = 'Se connecter';
 				submitter.disabled = false;
-				goto('/post-signup-form')
+				goto('/post-signup-form');
 			} else {
 				submitter.innerHTML = 'Récupération des patients';
 				await patients.fetchPatient(data.user);
