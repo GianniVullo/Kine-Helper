@@ -1,6 +1,7 @@
 <script>
 	import {DefaultFieldWrapper} from "../index";
     export let name = 'password';
+    export let withoutValidation = false;
 </script>
 
 <!--! MEGA ATTENTION /^(?=.*\d)(?=.*[!@#$%^&*])(?=.*[a-z])(?=.*[A-Z]).{8,}$/ LE PATTERN A CONSERVER -->
@@ -25,7 +26,7 @@
         <input
             id={name}
             required
-            pattern={name == 'password' ? /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$/ : undefined}
+            pattern={!withoutValidation ? /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$/ : undefined}
             data-pristine-pattern-message={name == 'password' ? "Votre mot de passe doit contenir : <br> - au moins 8 caractères <br> - au moins un caractère spécial (!@#$%^&*) <br> - au moins une lettre majuscule <br> - au moins une lettre minuscule <br> - au moins un chiffre" : undefined}
             data-pristine-required-message="Ce champ est requis"
             {name}

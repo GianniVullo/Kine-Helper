@@ -50,7 +50,7 @@
 		isValid: signIn
 	}}>
 	<EmailField value={$user.user?.email} />
-	<PasswordField />
+	<PasswordField withoutValidation />
 	<div class="font-semibold">{message}</div>
 	<SubmitButton>Se connecter</SubmitButton>
 </FormWrapper>

@@ -21,7 +21,7 @@
 	<p class={labelClass}>{label}</p>
 	<input
 		id={id ?? name}
-		type="text"
+		type="number"
 		{required}
 		{name}
 		{placeholder}
@@ -31,5 +31,5 @@
 		{pattern}
 		data-pristine-pattern-message={patternMessage}
 		data-pristine-required-message={required ? requiredMessage : undefined}
-		on:input />
+		on:change />
 </DefaultFieldWrapper>

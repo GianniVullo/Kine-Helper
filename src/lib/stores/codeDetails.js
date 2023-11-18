@@ -11,15 +11,6 @@ export const groupes = [
 	'Forfait genou/hanche par application mobile'
 ];
 
-export const patholourdeTypes = [
-	'Séance de 20 minutes',
-	'Séance de 30 minutes',
-	'Patient IMC (60 min)',
-	'Drainage 60 min',
-	'Drainage 120 min',
-	'Séance de 45 min après le séjour du bénéficiaire en hôpital ou en centre de revalidation (phase subaiguë). Pour les volets a), c) ou d) uniquement',
-	'Séance de 60 min au global avec minimum 2 périodes distinctes<br>Pour le volet j) uniquement'
-];
 export const lieux = [
 	'1a) Cabinet hors hopital',
 	'1b) Cabinet dans hopital',

@@ -21,6 +21,7 @@ pub fn run() {
         .plugin(tauri_plugin_window::init())
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_fs::init())
         // .plugin(sentry_tauri::plugin())
         .invoke_handler(tauri::generate_handler![greet])
         .run(tauri::generate_context!())

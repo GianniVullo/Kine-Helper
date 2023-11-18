@@ -1,8 +1,10 @@
 <!-- Ici il y a la section génératrice de séances -->
 <script>
 	import { groupes, lieux, lieuxParGroupe } from '../../../../stores/codeDetails';
+	import PathologieLourdeFields from '../../fields/PathologieLourdeFields.svelte';
 	import SectionWrapper from '../SectionWrapper.svelte';
 	import { codes } from '../../../../stores/conventionInami';
+	import { maxLegalNumberSeance } from '../../legalNumberSeance';
 	import {
 		FieldWithPopup,
 		SelectFieldV2,
@@ -11,7 +13,12 @@
 		DateField
 	} from '../../../index';
 	import WarningDisplayer from '../../ui/WarningDisplayer.svelte';
+	import DateTimeWeekDayField from '../../fields/DateTimeWeekDayField.svelte';
+	import NumberField from '../../../abstract-fields/NumberField.svelte';
+	import { daysOfWeek } from '../../../../stores/dateHelpers';
+	import NombreAGenererField from '../../fields/NombreAGenererField.svelte';
 
+	export let patient;
 	// D'abord trouver le CODE de NOMENCLATURE
 	// À la base de tout il y a le groupe pathologique
 	let groupeId;
@@ -39,7 +46,26 @@
 	let nombreCodeCourant = 0;
 	// volet H - Lymphoedème
 	let voletH = false;
-
+	// Patho lourde
+	let pathoLourdeType = 0;
+	let gmfcs;
+	let secondeSeanceE;
+	// TROUVER LA DATE
+	// date de la première séance
+	let premiereSeance;
+	let jour_seance_semaine_heures = daysOfWeek
+		.map((value, index) => {
+			return {
+				id: value.substring(0, 2),
+				label: value,
+				name: 'day_of_week',
+				value: index == 6 ? '0' : `${index + 1}`
+			};
+		})
+		.reduce((a, v) => ({ ...a, [v.value]: { value: false, time: undefined } }), {});
+	// TROUVER LE NOMBRE
+	let deja_faites = 0;
+	let nombreSeances;
 	// Pour les groupes il y a les options suivantes :
 	let groupOptions = groupes
 		.map((value, index) => {
@@ -79,11 +105,12 @@
 		}
 	}
 	// Ici il faut sans arrêt recalculer le code jusqu'à ce qu'il n'y en ait plus qu'un. à ce moment là on pourrait, par exemple changer l'interface pour signaler que c'est bon.
+	let code = [];
 	$: {
 		let groupCasted = parseInt(groupeId);
 		let lieuCasted = parseInt(lieuId);
 		let groupesADureeVariable = [0, 1];
-		let code = codes.filter((element) => {
+		code = codes.filter((element) => {
 			let groupOk = element.groupe == groupCasted;
 			let lieuOk =
 				lieuId !== undefined || lieuId !== 'undefined' ? element.lieu == lieuCasted : true;
@@ -101,12 +128,41 @@
 		});
 		console.log(code);
 	}
+	function defaultSeanceNumber() {
+		if (code.length == 1) {
+			let seancePerWeek = 0;
+			for (const day of Object.values(jour_seance_semaine_heures)) {
+				if (day.value) {
+					seancePerWeek++;
+				}
+			}
+			nombreSeances = maxLegalNumberSeance[parseInt(groupeId)].seance_gen_nombre(parseInt(lieuId), {
+				duree,
+				voletH,
+				voletJ,
+				pathoLourdeType,
+				gmfcs,
+				patient,
+				seancePerWeek,
+				voletH
+			});
+		} else {
+			message = "Veuillez d'abord trouver le code et les dates svp";
+		}
+	}
+	let message;
 </script>
 
+<!--? Trouver le code -->
 <SectionWrapper>
 	<span slot="title">
-		<h3 class="text-xl text-tertiary-600 dark:text-tertiary-400">Définir les codes</h3>
-		<p class="dark:text-surface-400">
+		<h3
+			class:!text-success-600={code.length == 1}
+			class:dark:!text-success-400={code.length == 1}
+			class="cursor-default select-none text-xl text-tertiary-600 dark:text-tertiary-400">
+			{code.length == 1 ? 'Codes trouvés ✓' : 'Définir les codes'}
+		</h3>
+		<p class="cursor-default select-none dark:text-surface-400">
 			Choisissez parmis les options pour que le générateur de séances sache quel code assigner à
 			chaque séance
 		</p>
@@ -121,6 +177,7 @@
 			label="Groupe pathologique"
 			required />
 
+		<!-- Le champ Lieu -->
 		{#if groupeId && groupeId !== 'undefined'}
 			<SelectFieldV2
 				name="lieu"
@@ -206,6 +263,14 @@
 				required />
 		{/if}
 
+		<!--? Pathologie Lourde -->
+		{#if parseInt(groupeId) == 1}
+			<PathologieLourdeFields
+				bind:pathologieLourde={pathoLourdeType}
+				bind:GMFCSScore={gmfcs}
+				bind:secondeSeance={secondeSeanceE} />
+		{/if}
+
 		<!-- Pour le groupe 1 il y a un intake possible pour tout les groupes avec 1 warning cependant -->
 		{#if parseInt(groupeId) == 0}
 			<div>
@@ -217,7 +282,7 @@
 		<!-- Pour le groupe Fa si il s'agit d'un volet j) il faut l'indiquer car cela change le nombre de séance autorisée d'un facteur 2. Aussi peut tarifier avec les codes pathologies courantes si pas sûr de la situation pathologique. Aussi sous conditions le volet c) peut bénéficier d'une seconde séance par jour -->
 		{#if parseInt(groupeId) == 4}
 			<FieldWithPopup target="voletJ">
-				<span slot="content"> j)  Polytraumatismes </span>
+				<span slot="content"> j) Polytraumatismes </span>
 				<div class="flex flex-col">
 					<h5 class="select-none text-surface-500 dark:text-surface-300">Volet J</h5>
 					<CheckboxFieldV2 name="voletJ" label="volet j) (120 séances)" bind:value={voletJ} />
@@ -262,8 +327,8 @@
 						prestations : <br /> - de réanimation (211046, 211142, 211341, 211761, 212225, 213021,
 						213043, 214045) <br />
 						- de l'article 14, k, orthopédie d'une valeur égale ou supérieure à N 500 à l'exception des
-						289015, 289026, 289030, 289041, 289052, 289063, 289074, 289085.
-						Attestable 14 fois dans les 30 jours après la prestation.
+						289015, 289026, 289030, 289041, 289052, 289063, 289074, 289085. Attestable 14 fois dans les
+						30 jours après la prestation.
 					</h5>
 				{:else}
 					<h5 class="select-none text-surface-500 dark:text-surface-300">
@@ -311,5 +376,51 @@
 					"Lorsque le kiné dispose d'une prescription faisant référence à la nécessité d'effectuer une séance	de kinésithérapie avant que le bénéficiaire ne quitte l'hopital."
 				]} />
 		{/if}
+	</span>
+</SectionWrapper>
+
+<!--? Trouver les dates -->
+<SectionWrapper>
+	<span slot="title">
+		<h3
+			class:!text-success-600={code.length == 1}
+			class:dark:!text-success-400={code.length == 1}
+			class="cursor-default select-none text-xl text-tertiary-600 dark:text-tertiary-400">
+			{code.length == 1 ? 'Dates trouvées ✓' : 'Définir les dates'}
+		</h3>
+		<p class="cursor-default select-none dark:text-surface-400">
+			Choisissez les dates de vos prestations.
+		</p>
+	</span>
+	<span slot="fields" class="flex flex-col items-start space-y-4">
+		<DateField
+			label="Date de la première séance"
+			required
+			name="premiereSeanceGen"
+			bind:value={premiereSeance} />
+		<DateTimeWeekDayField bind:value={jour_seance_semaine_heures} />
+	</span>
+</SectionWrapper>
+
+
+<!--? Trouver le nombre -->
+<SectionWrapper>
+	<span slot="title">
+		<h3
+			class:!text-success-600={code.length == 1}
+			class:dark:!text-success-400={code.length == 1}
+			class="cursor-default select-none text-xl text-tertiary-600 dark:text-tertiary-400">
+			{code.length == 1 ? 'Nombre trouvé ✓' : 'Nombre de séances'}
+		</h3>
+		<p class="cursor-default select-none dark:text-surface-400">
+			Définissez le nombre de séances à produire.
+		</p>
+		<button class="btn variant-ghost-secondary my-4" on:click|preventDefault={defaultSeanceNumber}>Nombre max de séances</button>
+		{#if message}
+			<h1 class="text-error-500">{message}</h1>
+		{/if}
+	</span>
+	<span slot="fields" class="flex flex-col items-start space-y-4">
+		<NombreAGenererField bind:dejaFaites={deja_faites} bind:nombreSeances={nombreSeances} />
 	</span>
 </SectionWrapper>

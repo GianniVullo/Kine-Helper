@@ -1,5 +1,5 @@
 import dayjs from 'dayjs';
-import { supabase } from '../../../../stores/supabaseClient';
+import { supabase } from '../../stores/supabaseClient';
 // DOOM File
 
 //? Fonction générale permettant d'enregister ... Peut-être pas nécessaire
