@@ -1,12 +1,16 @@
-import { createClient } from '@supabase/supabase-js'
+import { createClient } from '@supabase/supabase-js';
 
-export const supabase = createClient("https://epzrdxofotzufykimwuc.supabase.co", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVwenJkeG9mb3R6dWZ5a2ltd3VjIiwicm9sZSI6ImFub24iLCJpYXQiOjE2OTE4Mjg4MzQsImV4cCI6MjAwNzQwNDgzNH0.V_N0maXkqeEneoWSKVv0qj1cZbmSpHIRqBP0EUZnSgk")
+export const supabase = createClient(
+	'https://epzrdxofotzufykimwuc.supabase.co',
+	'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVwenJkeG9mb3R6dWZ5a2ltd3VjIiwicm9sZSI6ImFub24iLCJpYXQiOjE2OTE4Mjg4MzQsImV4cCI6MjAwNzQwNDgzNH0.V_N0maXkqeEneoWSKVv0qj1cZbmSpHIRqBP0EUZnSgk'
+);
 
 export async function selectPatients(user) {
-        return await supabase
-			.from('patients')
-			.select(
-				`
+    console.log('in selectPatients() with', user);
+	return await supabase
+		.from('patients')
+		.select(
+			`
             patient_id,
             created_at,
             nom,
@@ -28,24 +32,43 @@ export async function selectPatients(user) {
             actif,
             numero_etablissment,
             service,
-            situation_pathologiques (
+            situations_pathologiques (
                 sp_id,
                 created_at,
                 patient_id,
                 numero_etablissment,
                 service,
-                groupe,
-                duree,
-                lieu,
-                drainage,
                 motif,
                 plan_du_ttt,
-                seconde_autorisee,
-                consultation_demandee,
-                deja_faites,
-                seance_per_week,
-                n_seances,
-                day_of_week,
+                generateurs_de_seances (
+                    created_at,
+                    auto,
+                    groupe_id,
+                    lieu_id,
+                    amb_hos,
+                    duree,
+                    intake,
+                    examen_consultatif,
+                    rapport_ecrit,
+                    rapport_ecrit_date,
+                    rapport_ecrit_custom_date,
+                    volet_j,
+                    seconde_seance_fa,
+                    duree_seconde_seance_fa,
+                    nombre_code_courant_fa,
+                    volet_h,
+                    patho_lourde_type,
+                    gmfcs,
+                    seconde_seance_e,
+                    premiere_seance,
+                    jour_seance_semaine_heures,
+                    deja_faites,
+                    default_seance_description,
+                    nombre_seances,
+                    seances_range,
+                    sp_id,
+                    gen_id
+                ),
                 seances (
                     sp_id,
                     seance_id,
@@ -65,7 +88,6 @@ export async function selectPatients(user) {
                     prescription_id,
                     prescripteur,
                     created_at,
-                    file_path,
                     date,
                     active,
                     jointe_a
@@ -87,6 +109,6 @@ export async function selectPatients(user) {
                     with_intake
                 )
             )`
-			)
-			.eq('kinesitherapeute_id', user.id);
+		)
+		.eq('kinesitherapeute_id', user.id);
 }

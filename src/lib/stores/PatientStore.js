@@ -1,6 +1,121 @@
-import { writable } from 'svelte/store';
+import { get, writable } from 'svelte/store';
 import { selectPatients } from './supabaseClient';
 import { persisted } from 'svelte-persisted-store';
+import { DBAdapter } from '../forms/actions/dbAdapter';
+import { user } from './UserStore';
+
+export class Patient {
+	constructor({
+		patient_id,
+		created_at,
+		nom,
+		prenom,
+		niss,
+		adresse,
+		cp,
+		localite,
+		date_naissance,
+		tel,
+		gsm,
+		email,
+		sexe,
+		mutualite,
+		num_affilie,
+		tiers_payant,
+		ticket_moderateur,
+		bim,
+		actif,
+		numero_etablissment,
+		service
+	}) {
+		this.patient_id = patient_id;
+		this.created_at = created_at;
+		this.nom = nom;
+		this.prenom = prenom;
+		this.niss = niss;
+		this.adresse = adresse;
+		this.cp = cp;
+		this.localite = localite;
+		this.date_naissance = date_naissance;
+		this.tel = tel;
+		this.gsm = gsm;
+		this.email = email;
+		this.sexe = sexe;
+		this.mutualite = mutualite;
+		this.num_affilie = num_affilie;
+		this.tiers_payant = tiers_payant;
+		this.ticket_moderateur = ticket_moderateur;
+		this.bim = bim;
+		this.actif = actif;
+		this.numero_etablissment = numero_etablissment;
+		this.service = service;
+		this.situations_pathologiques = [];
+	}
+
+	addSP(sp) {
+		this.situations_pathologiques.push(new SituationPathologique(sp));
+	}
+
+	does_prescription_have_generator(prescription_id) {}
+}
+
+export class SituationPathologique {
+	constructor({
+		sp_id,
+		created_at,
+		patient_id,
+		numero_etablissment,
+		service,
+		motif,
+		plan_du_ttt,
+		intake,
+		rapport_ecrit,
+		rapport_ecrit_date,
+		rapport_ecrit_custom_date,
+		with_indemnity,
+		generateurs_de_seances = [],
+		prescriptions = [],
+		attestations = [],
+		documents = [],
+		seances = []
+	}) {
+		this.sp_id = sp_id;
+		this.created_at = created_at;
+		this.patient_id = patient_id;
+		this.numero_etablissment = numero_etablissment;
+		this.service = service;
+		this.motif = motif;
+		this.plan_du_ttt = plan_du_ttt;
+		this.generateurs_de_seances = generateurs_de_seances;
+		this.seances = seances;
+		this.prescriptions = prescriptions;
+		this.attestations = attestations;
+		this.documents = documents;
+		this.user_id = get(user).user.id;
+		this.upToDate = false;
+		this.intake = intake;
+		this.rapport_ecrit = rapport_ecrit;
+		this.rapport_ecrit_date = rapport_ecrit_date;
+		this.rapport_ecrit_custom_date = rapport_ecrit_custom_date;
+		this.with_indemnity = with_indemnity;
+	}
+	get toDB() {
+		return {
+			sp_id: this.sp_id,
+			created_at: this.created_at,
+			patient_id: this.patient_id,
+			motif: this.motif,
+			plan_du_ttt: this.plan_du_ttt,
+			with_indemnity: this.with_indemnity,
+			intake: this.intake,
+			rapport_ecrit: this.rapport_ecrit,
+			rapport_ecrit_date: this.rapport_ecrit_date,
+			rapport_ecrit_custom_date: this.rapport_ecrit_custom_date,
+			numero_etablissment: this.numero_etablissment,
+			service: this.service
+		};
+	}
+}
 
 function createPatientStore() {
 	console.log('Initialized $patients with ');
@@ -13,9 +128,17 @@ function createPatientStore() {
 	async function fetchPatient(modifiedUser) {
 		console.log('In fetchPatients from $patients');
 		loading.set(true);
-		const { data, error } = await selectPatients(modifiedUser);
+		let db = new DBAdapter();
+		const { data, error } = await db.list('patients', [['kinesitherapeute_id', modifiedUser.id]], {
+			selectStatement:
+				'patient_id, created_at, nom, prenom, niss, adresse, cp, localite, date_naissance, tel, gsm, email, sexe, mutualite, num_affilie, tiers_payant, ticket_moderateur, bim, actif, numero_etablissment, service'
+			// orderBy: 'nom' Not needed I think
+		});
 		if (error) throw error;
-		console.log('Les patients queried', data);
+		console.log(
+			'Les patients queried',
+			data.map((p) => new Patient(p))
+		);
 		data.sort((a, b) => {
 			if (a.nom > b.nom) {
 				return 1;
@@ -24,7 +147,7 @@ function createPatientStore() {
 			}
 		});
 		loading.set(false);
-		set(data);
+		set(data.map((p) => new Patient(p)));
 	}
 
 	function sortPatient() {
@@ -47,11 +170,58 @@ function createPatientStore() {
 			ps.splice(
 				ps.findIndex((p) => p.patient_id == patient_id),
 				1
-				);
-				console.log('in patients.remove(id)>update with ps length AFTER', ps.length);
+			);
+			console.log('in patients.remove(id)>update with ps length AFTER', ps.length);
 			return ps;
 		});
 	}
+
+	async function getLastSpAndOthers(patient_id) {
+		console.log('in getLastSp() with', patient_id);
+		let db = new DBAdapter();
+		const { data, error } = await db.get_last_sp(patient_id, get(user).user.id);
+		console.log('La SP queried', data);
+		if (error) throw error;
+		let sp = new SituationPathologique(data.ps[0]);
+		sp.upToDate = true;
+		console.log('La dernière situation pathologique', sp);
+		update((ps) => {
+			ps.find((p) => p.patient_id === patient_id).situations_pathologiques.push(sp);
+			return ps;
+		});
+		getOtherSps(patient_id, sp.sp_id).then((others) => {
+			console.log('in getLastSp().getOtherSps() with', others);
+			update((ps) => {
+				let patient = ps.find((p) => p.patient_id === patient_id);
+				for (const dlSp of others) {
+					patient.situations_pathologiques.push(dlSp);
+				}
+				return ps;
+			});
+		});
+	}
+
+	async function getOtherSps(patient_id, sp_id) {
+		console.log('in getLastSp() with', patient_id);
+		let db = new DBAdapter();
+		const { data, error } = await db.list(
+			'situations_pathologiques',
+			[
+				['patient_id', patient_id],
+				['!sp_id', sp_id]
+			],
+			{
+				selectStatement:
+					'sp_id, created_at, patient_id, numero_etablissment, service, motif, plan_du_ttt',
+				orderBy: 'created_at'
+			}
+		);
+		if (error) throw error;
+		let sps = data.map((sp) => new SituationPathologique(sp));
+		console.log('Les SP mapped', sps);
+		return sps;
+	}
+
 	async function insertPatient(data) {
 		console.log('in insertPatient() with', data);
 		loading.set(true);
@@ -64,6 +234,90 @@ function createPatientStore() {
 		return newPatient.data[0];
 	}
 
+	function defaultTestPatient() {
+		return {
+			actif: true,
+			adresse: 'Rue du test heureux, 251',
+			bim: true,
+			cp: 6000,
+			created_at: '2023-08-25T17:50:11.422018+00:00',
+			date_naissance: '1969-07-17',
+			email: null,
+			gsm: null,
+			localite: 'Charleroi',
+			mutualite: 216,
+			niss: '12345612312',
+			nom: 'Test',
+			num_affilie: null,
+			numero_etablissment: null,
+			patient_id: 'test-patient',
+			prenom: 'patient',
+			service: null,
+			sexe: 'M',
+			situations_pathologiques: [
+				{
+					attestations: [
+						{
+							attestation_id: 'e549c550-f196-4274-8223-413e83b8f8d5',
+							created_at: '2023-08-25T17:50:11.753503+00:00',
+							date: '2022-12-23',
+							has_been_printed: true,
+							numero_etablissment: null,
+							patient_id: 'test-patient',
+							porte_prescr: true,
+							prescription_id: '14a74ea8-9fb6-4f5b-acee-7bf09bed5285',
+							service: null,
+							sp_id: '0b017e35-2b9a-4462-8723-fa2740af5ca2',
+							total_recu: 0,
+							valeur_totale: 247.7,
+							with_indemnity: true,
+							with_intake: false
+						}
+					],
+					created_at: '2023-08-25T17:50:11.555401+00:00',
+					generateurs_de_seances: [](0),
+					motif: 'Accident de moto',
+					numero_etablissment: null,
+					patient_id: 'test-patient',
+					plan_du_ttt: 'Rééducation de la hanche',
+					prescriptions: [
+						{
+							active: true,
+							created_at: '2023-08-25T17:50:11.657441+00:00',
+							date: '2022-11-03',
+							file_path: null,
+							jointe_a: '2022-11-24',
+							patient_id: 'test-patient',
+							prescripteur: { nom: '?', inami: '16764865-480', prenom: '?' },
+							prescription_id: '14a74ea8-9fb6-4f5b-acee-7bf09bed5285',
+							sp_id: '0b017e35-2b9a-4462-8723-fa2740af5ca2'
+						}
+					],
+					seances: [
+						{
+							attestation_id: 'e549c550-f196-4274-8223-413e83b8f8d5',
+							code_id: 'a3dada68-55cb-4a07-86b1-30c9d736c057',
+							created_at: '2023-08-25T17:50:11.839361+00:00',
+							description: 'null',
+							end: null,
+							has_been_attested: true,
+							patient_id: 'test-patient',
+							prescription_id: '14a74ea8-9fb6-4f5b-acee-7bf09bed5285',
+							seance_id: '530463af-2ca6-4811-aa9f-594c9938c03c',
+							sp_id: '0b017e35-2b9a-4462-8723-fa2740af5ca2',
+							start: null
+						}
+					],
+					service: null,
+					sp_id: '0b017e35-2b9a-4462-8723-fa2740af5ca2'
+				}
+			],
+			tel: null,
+			ticket_moderateur: false,
+			tiers_payant: true
+		};
+	}
+
 	return {
 		subscribe,
 		update,
@@ -71,7 +325,10 @@ function createPatientStore() {
 		loading,
 		sortPatient,
 		fetchPatient,
-		remove
+		remove,
+		defaultTestPatient,
+		getLastSpAndOthers,
+		getOtherSps
 	};
 }
 

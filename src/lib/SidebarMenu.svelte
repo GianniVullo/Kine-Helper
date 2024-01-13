@@ -2,6 +2,7 @@
 	import logo from '$lib/assets/logo.png';
 	import ChevronLeftIcon from './ui/svgs/ChevronLeftIcon.svelte';
 	import ChevronRightIcon from './ui/svgs/ChevronRightIcon.svelte';
+	import { LightSwitch } from '@skeletonlabs/skeleton';
 	// No need for the activeSection logic since SvelteKit will handle active routes.
 	let menuItems = [
 		{
@@ -84,6 +85,7 @@
 			<div
 				class="absolute -bottom-8 -left-10 h-14 w-14 rounded-full bg-primary-600 opacity-25 duration-200 group-data-[minimized=false]:-left-44 group-data-[minimized=true]:hidden group-data-[minimized=false]:h-48 group-data-[minimized=false]:w-48 dark:opacity-60 md:relative group-data-[minimized=false]:md:bottom-6">
 			</div>
+			<LightSwitch />
 		</ul>
 	</nav>
 	<!-- Minimize button -->

@@ -2,6 +2,7 @@
 	import { patients } from '$lib/stores/PatientStore';
 	import { user } from '$lib/stores/UserStore';
 	import PatientCard from '$lib/patient-detail/PatientCard.svelte';
+	import { goto } from '$app/navigation';
 	import AddPersonIcon from '$lib/ui/svgs/AddPersonIcon.svelte';
 	import MagnifyingGlassIcon from '$lib/ui/svgs/MagnifyingGlassIcon.svelte';
 	import { onMount } from 'svelte';
@@ -12,6 +13,7 @@
 	let searchQuery = '';
 	let inputQuery;
 	let timeOut;
+	let loading = false;
 
 	onMount(() => inputQuery.focus());
 
@@ -38,8 +40,8 @@
 <main class="flex flex-col items-center justify-start" style="scrollbar-gutter: stable;">
 	<div
 		data-has-input={searchQuery.length !== 0}
-		class="md:justify group z-50 flex w-full flex-col items-center justify-center p-4 duration-200 ease-out md:flex-row md:items-start pb-6">
-		<div class="w-auto md:w-1/3 flex items-start">
+		class="md:justify group z-0 flex w-full flex-col items-center justify-center p-4 pb-6 duration-200 ease-out md:flex-row md:items-start">
+		<div class="flex w-auto items-start md:w-1/3">
 			<a
 				href="/dashboard/patients/create"
 				class="variant-outline-secondary btn flex items-start justify-start">
@@ -48,7 +50,8 @@
 			</a>
 		</div>
 
-		<div class="border-b-4 border-surface-300/50 dark:border-surface-700/50 group-hover:border-surface-300 group-hover:dark:border-surface-700 duration-500 rounded-b-[40px] pb-6 mb-4 md:mb-0 md:w-1/3 flex justify-center">
+		<div
+			class="mb-4 flex justify-center rounded-b-[40px] border-b-4 border-surface-300/50 pb-6 duration-500 group-hover:border-surface-300 dark:border-surface-700/50 group-hover:dark:border-surface-700 md:mb-0 md:w-1/3">
 			<div class="relative">
 				<input
 					bind:this={inputQuery}
@@ -67,10 +70,24 @@
 		<h1 class="mb-2 text-lg text-surface-500 dark:text-surface-400">Résultats</h1>
 		<div class="flex flex-wrap gap-4">
 			{#each filteredPatients as patient (patient.patient_id)}
-				<div animate:flip={{ duration: 500, easing: cubicOut }}>
-					<PatientCard {patient} />
-				</div>
+				<button
+					on:click={async () => {
+						loading = true;
+						if (patient.situations_pathologiques.length == 0) {
+							patients.getLastSpAndOthers(patient.patient_id).then((sp) => {
+								loading = false;
+								goto(`/dashboard/patients/${patient.patient_id}`);
+							});
+						} else {
+							loading = false;
+							goto(`/dashboard/patients/${patient.patient_id}`);
+						}
+					}}
+					animate:flip={{ duration: 500, easing: cubicOut }}>
+					<PatientCard {patient} {loading} />
+				</button>
 			{/each}
 		</div>
+		<!-- <a href="/dashboard/patients/test-patient" class="">hidden</a> -->
 	</section>
 </main>

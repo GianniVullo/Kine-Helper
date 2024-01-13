@@ -2,7 +2,6 @@
 	import SidebarMenu from '$lib/SidebarMenu.svelte';
 	import { AppShell } from '@skeletonlabs/skeleton';
 	let isMinimized = true;
-	console.log('in dashboard.layout.svelte');
 </script>
 
 <AppShell>

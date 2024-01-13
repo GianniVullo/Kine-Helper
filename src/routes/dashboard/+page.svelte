@@ -14,5 +14,4 @@
  => other ? -->
 
 <!-- pdfTest -->
-<button class="variant-ringed-tertiary btn" on:click={() => pdfGenerator.save()}>Generate PDF</button>
-<SituationPathologiqueForm patient={$patients[0]} />
+<!-- <button class="variant-ringed-tertiary btn" on:click={() => pdfGenerator.save()}>Generate PDF</button> -->

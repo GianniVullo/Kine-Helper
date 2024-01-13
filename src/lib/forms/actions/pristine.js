@@ -1,4 +1,5 @@
 import Pristine from 'pristinejs';
+import { onMount } from 'svelte';
 
 export function pristine(form_element, { isValid, isValidSync, validators }) {
 	// the node has been mounted in the DOM
@@ -18,18 +19,22 @@ export function pristine(form_element, { isValid, isValidSync, validators }) {
 
 	let pristine = new Pristine(form_element, config);
 
-	if (validators) {
-		for (const key of Object.keys(validators)) {
-			if (Array.isArray(validators[key])) {
-				for (const validator of validators[key]) {
-					pristine.addValidator(document.getElementById(key), validator.fn, validator.errorMessage);
+	onMount(() => {
+		if (validators) {
+			for (const key of Object.keys(validators)) {
+				console.log('adding validators in Pristine with ', key);
+				if (Array.isArray(validators[key])) {
+					for (const validator of validators[key]) {
+						pristine.addValidator(document.getElementById(key), validator.fn, validator.errorMessage);
+					}
+				} else {
+					let validator = validators[key];
+					console.log("validator is not an Array it is ", validator, document.getElementById(key));
+					pristine.addValidator(key, validator.fn, validator.errorMessage);
 				}
-			} else {
-				let validator = validators[key];
-				pristine.addValidator(document.getElementById(key), validator.fn, validator.errorMessage);
 			}
 		}
-	}
+	})
 
 	function validationFlow(e) {
 		e.preventDefault();

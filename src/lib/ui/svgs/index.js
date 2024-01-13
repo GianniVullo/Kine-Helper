@@ -1,0 +1,15 @@
+export { default as AddPersonIcon } from './AddPersonIcon.svelte';
+export { default as ArchiveIcon } from './ArchiveIcon.svelte';
+export { default as ChevronLeftIcon } from './ChevronLeftIcon.svelte';
+export { default as ChevronRightIcon } from './ChevronRightIcon.svelte';
+export { default as ChevronUpIcon } from './ChevronUpIcon.svelte';
+export { default as ChevronDownIcon } from './ChevronDownIcon.svelte';
+export { default as ConsultIcon } from './ConsultIcon.svelte';
+export { default as DeleteIcon } from './DeleteIcon.svelte';
+export { default as FolderIcon } from './FolderIcon.svelte';
+export { default as HomeIcon } from './HomeIcon.svelte';
+export { default as InfoIcon } from './InfoIcon.svelte';
+export { default as MagnifyingGlassIcon } from './MagnifyingGlassIcon.svelte';
+export { default as PageIcon } from './PageIcon.svelte';
+export { default as PlusIcon } from './PlusIcon.svelte';
+export { default as UpdateIcon } from './UpdateIcon.svelte';

@@ -2,15 +2,7 @@
 	import { RadioFieldV2, CheckboxFieldV2 } from '../../index';
 	import GMFCSScoreField from './GMFCSScoreField.svelte';
 	import WarningDisplayer from '../ui/WarningDisplayer.svelte';
-
-	const patholourdeTypes = [
-		'Séance normale (20 ou 30 minutes)',
-		'Patient IMC (60 min)',
-		'Drainage 60 min',
-		'Drainage 120 min',
-		'Séance de 45 min après le séjour du bénéficiaire en hôpital ou en centre de revalidation (phase subaiguë). Pour les volets a), c) ou d) uniquement',
-		'Séance de 60 min au global avec minimum 2 périodes distinctes<br>Pour le volet j) uniquement'
-	];
+	import { patholourdeTypes } from '../../../stores/codeDetails';
 
 	let options = patholourdeTypes.map((value, index) => ({ label: value, value: index }));
 
@@ -56,7 +48,10 @@
 {/if}
 
 {#if pathologieLourde == '0'}
-	<CheckboxFieldV2 bind:value={secondeSeance} name="secondeSeance" label="Générer une seconde séance par jour*" />
+	<CheckboxFieldV2
+		bind:value={secondeSeance}
+		name="secondeSeance"
+		label="Générer une seconde séance par jour*" />
 	<WarningDisplayer
 		descriptionLines={[
 			'La prescription doit explicitement autoriser une seconde séance par jour.'

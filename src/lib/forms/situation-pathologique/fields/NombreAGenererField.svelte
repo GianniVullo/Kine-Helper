@@ -3,7 +3,10 @@
 
 	export let dejaFaites;
 	export let nombreSeances;
+    export let defaultSeanceNumber;
 	let previousDejaFaite = 0;
+
+
 </script>
 
 <div class="flex flex-col md:flex-row space-y-2 space-x-0 md:space-y-0 md:space-x-2">
@@ -31,7 +34,7 @@
     
     <DefaultFieldWrapper class="flex flex-col justify-start items-start">
         <p class="select-none text-surface-500 dark:text-surface-300">Séances générées</p>
-        <div>
+        <div class="flex space-x-2">
             <input
                 name="nombreSeances"
                 type="number"
@@ -40,6 +43,7 @@
                 required
                 data-pristine-required-message=""
                 on:change />
+            <button class="btn variant-ghost-secondary" on:click|preventDefault={() => defaultSeanceNumber()}>MAX</button>
         </div>
         <p class="dark:text-surface-100 text-surface-800">Seul le nombre de séances à générer est pris en compte par le générateur.</p>
     </DefaultFieldWrapper>

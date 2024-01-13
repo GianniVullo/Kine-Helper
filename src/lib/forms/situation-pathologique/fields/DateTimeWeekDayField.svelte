@@ -2,6 +2,7 @@
 	import DefaultFieldWrapper from '../../abstract-fields/DefaultFieldWrapper.svelte';
 	import { daysOfWeek } from '../../../stores/dateHelpers';
 	import { getContext, onMount } from 'svelte';
+	import TimeField from './TimeField.svelte';
 
 	let day_of_weekOptions = daysOfWeek.map((value, index) => {
 		return {
@@ -12,20 +13,20 @@
 		};
 	});
 	export let value;
-	getContext('validators')({
-		day_of_week: {
-			fn: (val) => {
-				console.log('dans le validateur');
-				let checing = true;
-				if (document.getElementById(`${val}-time`).value == '') {
-					checing = false;
-				}
-				return checing;
-			},
-			errorMessage: 'Veuillez indiquer une heure pour les jours sélectionnés svp'
-		}
-	});
-	console.log(`In DateTimeWeekDayField with value == ${value}`, JSON.stringify(value));
+	export let with_seconde_seance;
+	// getContext('validators')({
+	// 	day_of_week: {
+	// 		fn: (val) => {
+	// 			console.log('dans le validateur');
+	// 			let checing = true;
+	// 			if (document.getElementById(`${val}-time`).value == '') {
+	// 				checing = false;
+	// 			}
+	// 			return checing;
+	// 		},
+	// 		errorMessage: 'Veuillez indiquer une heure pour les jours sélectionnés svp'
+	// 	}
+	// });
 </script>
 
 <!--! Il faut trouver une façon de faire passer la sélection pour la version Update du formulaire -->
@@ -36,7 +37,6 @@
 		{#each day_of_weekOptions as option (option.id)}
 			<label class="flex w-full justify-between space-x-2" for={option.id}>
 				<h6 class="select-none">{option.label}</h6>
-				<!--! C'est clairement bizarre mais c'est sur cet input que devrait se trouver le validateur -->
 				<input
 					id={option.id}
 					type="checkbox"
@@ -69,23 +69,23 @@
 		{/each}
 	</DefaultFieldWrapper>
 	<div class="flex flex-col space-y-2">
-		<!-- {JSON.stringify(value)} -->
 		{#each Object.entries(value) as [id, selected] (id)}
 			{#if selected.value}
-				<DefaultFieldWrapper class="flex flex-col items-start justify-start">
-					<h5 class="select-none text-surface-500 dark:text-surface-300">
-						Heure du rdv les {daysOfWeek[parseInt(id) == 0 ? 6 : parseInt(id) - 1]}
-					</h5>
-					<div>
-						<input
-							type="time"
-							name={`${id}-time`}
-							id={`${id}-time`}
-							class="input"
-							bind:value={selected.time}
-							on:change={() => console.log(value)} />
-					</div></DefaultFieldWrapper>
+				<TimeField
+					name={`${id}-time`}
+					id={`${id}-time`}
+					label={`Heure du rdv les ${daysOfWeek[parseInt(id) == 0 ? 6 : parseInt(id) - 1]}`}
+					bind:value={selected.time} />
+					{#if with_seconde_seance}
+					<TimeField
+						name={`${id}-second-seance-time`}
+						id={`${id}-second-seance-time`}
+						label={`Heure des secondes séances les ${daysOfWeek[parseInt(id) == 0 ? 6 : parseInt(id) - 1]}`}
+						bind:value={selected.seconde_seance_time} />
+					 <!-- content here -->
+				{/if}
 			{/if}
+
 		{/each}
 	</div>
 </div>

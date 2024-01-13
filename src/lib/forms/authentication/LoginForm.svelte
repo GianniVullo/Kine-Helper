@@ -6,6 +6,7 @@
 	import { patients } from '../../stores/PatientStore';
 	import EmailField from './EmailField.svelte';
 	import { SubmitButton, FormWrapper } from '../index';
+	import { DBInitializer } from '../../stores/databaseInitializer';
 
 	export let message = '';
 
@@ -24,6 +25,7 @@
 			console.log(data);
 			submitter.innerHTML = 'Récupération du profil kiné';
 			let kineData = await supabase.from('kinesitherapeute').select().eq('id', data.user.id);
+			console.log(kineData);
 			user.set({
 				user: data.user,
 				session: data.session,
@@ -39,6 +41,10 @@
 				await patients.fetchPatient(data.user);
 				submitter.disabled = false;
 				console.log(user);
+				// ADD HERE DATABASE INITIALIZATION
+				submitter.innerHTML = 'Vérification des conventions';
+				let dbInit = new DBInitializer()
+				await dbInit.initialization(submitter)
 				goto('/dashboard');
 			}
 		}

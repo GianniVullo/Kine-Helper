@@ -81,10 +81,8 @@
 		lieuOptions = lieux
 			.map((val, index) => {
 				if (groupeId === 'undefined' || groupeId == undefined) {
-					console.log('bordel');
 					return undefined;
 				}
-				console.log('mais whaaat');
 				let groupSchema = lieuxParGroupe[parseInt(groupeId)];
 				if (groupSchema[0] === '*' || groupSchema.includes(index)) {
 					console.log(

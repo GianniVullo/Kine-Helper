@@ -9,8 +9,11 @@
 		DefaultFieldWrapper,
 		TextFieldV2,
 		DateField,
-		NumberField
+		NumberField,
+		DBAdapter
 	} from '../index';
+	import { GenerateurDeSeances } from './generateurDeSeances';
+	import Database from '@tauri-apps/plugin-sql';
 	import { open } from '@tauri-apps/plugin-dialog';
 	import { user } from '$lib/index';
 	import { getToastStore, popup } from '@skeletonlabs/skeleton';
@@ -26,12 +29,18 @@
 	import DateTimeWeekDayField from './fields/DateTimeWeekDayField.svelte';
 	import { daysOfWeek } from '../../stores/dateHelpers';
 	import NombreAGenererField from './fields/NombreAGenererField.svelte';
-	import PrescriptionForm from '../prescription/PrescriptionForm.svelte';
 	import SubSectionTitle from './sections/SubSectionTitle.svelte';
 	import SectionTitle from './sections/SectionTitle.svelte';
+	import PrescripteurField from '../prescription/PrescripteurField.svelte';
+	import { get } from 'svelte/store';
+	import { supabase } from '../../stores/supabaseClient';
+	import dayjs from 'dayjs';
+	import { SituationPathologique } from '../../stores/PatientStore';
+	import TimeField from './fields/TimeField.svelte';
 
 	const toastStore = getToastStore();
 	let message = '';
+	let numberGenMessage = '';
 
 	export let patient;
 
@@ -46,9 +55,19 @@
 	let formSchema = {
 		isValid: isValid,
 		validators: {
-			password2: {
-				fn: () => console.log('example'),
-				errorMessage: 'Attention'
+			day_of_week: {
+				fn: (value) => {
+					console.log('in day_of_week validator with', value);
+					for (const valueAndTime of Object.values(jour_seance_semaine_heures)) {
+						if (valueAndTime.value) {
+							if (!valueAndTime.time || valueAndTime == '') {
+								return false;
+							}
+						}
+					}
+					return true;
+				},
+				errorMessage: 'Veuillez indiquer une heure svp'
 			},
 			...additionalValidators
 		}
@@ -57,17 +76,65 @@
 	async function isValid({ formData, submitter }) {
 		console.log('in IsValid with', formData);
 		console.log(jour_seance_semaine_heures);
+
 		// ETAPE 1 : Normaliser les données => day of week
+
 		let jour_seance_semaine_heures_filtre = {};
 		for (const jour of Object.entries(jour_seance_semaine_heures)) {
 			if (jour[1].value) {
 				jour_seance_semaine_heures_filtre = {
-					...jour_seance_semaine_heures,
+					...jour_seance_semaine_heures_filtre,
 					[jour[0]]: jour[1].time
 				};
 			}
 		}
+		if (Object.keys(jour_seance_semaine_heures_filtre).length < 1) {
+			message = 'Veuillez choisir les jours et les heures svp';
+			return;
+		}
+
+		// ETAPE 2 : Initialisation des handlers
+
+		let db = new DBAdapter();
+		let sp_id = crypto.randomUUID();
+		let prescription_id = crypto.randomUUID();
+
+		// ETAPE 3 : Construction d'un objet Situation Pathologique et envoi à la db
+
+		let situation_pathologique = buildSituationPathologiqueObject(sp_id);
+		await db.save('situations_pathologiques', situation_pathologique);
+
+		// ETAPE 4 : Construction d'un object Prescription
+
 		console.log(jour_seance_semaine_heures_filtre);
+		let prescription = buildPrescriptionObject(sp_id, prescription_id);
+		await db.save('prescriptions', prescription);
+		await db.saveFile(
+			`${get(user).user.id}/${patient.patient_id}/${prescription_id}`,
+			prescriptionFile
+		);
+		situation_pathologique.prescriptions.push(prescription);
+
+		// ETAPE 5 : Construction d'un objet GénérateurDeSeances
+
+		let conn = await Database.load('sqlite:kinehelper.db');
+		let generateurDeSeance = buildGenerateurDeSeance(
+			sp_id,
+			prescription_id,
+			jour_seance_semaine_heures_filtre
+		);
+		generateurDeSeance.db = conn;
+		await db.save('generateurs_de_seances', generateurDeSeance.toDB);
+		situation_pathologique.generateurs_de_seances.push(generateurDeSeance);
+
+		// ETAPE 6 : Génération des séances
+
+		let seances = await generateurDeSeance.seances();
+		await db.save('seances', seances);
+		await conn.close();
+		situation_pathologique.seances = seances;
+
+		console.log(prescription, situation_pathologique, generateurDeSeance, seances);
 		// if Error
 		// toastStore.trigger(
 		// 		errorToast(
@@ -78,51 +145,124 @@
 		// Etape Finale => submitter reset
 		submitter.disabled = false;
 	}
+
+	function buildSituationPathologiqueObject(sp_id) {
+		return new SituationPathologique({
+			sp_id,
+			patient_id: patient.patient_id,
+			motif,
+			plan_du_ttt,
+			intake,
+			rapport_ecrit,
+			rapport_ecrit_date,
+			rapport_ecrit_custom_date,
+			with_indemnity,
+			service,
+			numero_etablissement
+		});
+	}
+	function buildPrescriptionObject(sp_id, prescription_id) {
+		return {
+			sp_id,
+			prescription_id,
+			patient_id: patient.patient_id,
+			user_id: get(user).user.id,
+			date,
+			nombre_seance,
+			seance_par_semaine,
+			jointe_a,
+			prescripteur: {
+				nom: prescripteurNom,
+				prenom: prescripteurPrenom,
+				inami: prescripteurInami
+			}
+		};
+	}
+	function buildGenerateurDeSeance(sp_id, prescription_id, jour_seance_semaine_heures_filtre) {
+		return new GenerateurDeSeances({
+			sp_id,
+			prescription_id,
+			patient,
+			seconde_seance_palliatif,
+			// Le champ auto sert à déterminer si les codes sont attribués par le générateur ou si l'utilisateur souhaite surclassé le générateur pour le forcer à travailler comme cela lui semble être le mieux (comme l'ancien Kiné Helper le faisait)
+			auto: true,
+			groupe_id,
+			lieu_id,
+			amb_hos,
+			duree,
+			examen_consultatif,
+			examen_ecrit_date,
+			volet_j,
+			seconde_seance_fa,
+			duree_seconde_seance_fa,
+			nombre_code_courant_fa,
+			volet_h,
+			patho_lourde_type,
+			gmfcs,
+			seconde_seance_e,
+			premiere_seance,
+			premiere_seance_heure,
+			jour_seance_semaine_heures: jour_seance_semaine_heures_filtre,
+			deja_faites,
+			nombre_seances,
+			date_presta_chir_fa,
+			default_seance_description
+		});
+	}
 	// Prescription
 	let date;
 	let nombre_seance;
 	let seance_par_semaine;
-	let jointeAlAttestationDu;
+	let jointe_a;
 	let prescriptionFile;
+	let prescripteurNom;
+	let prescripteurPrenom;
+	let prescripteurInami;
 	// Infos légales pour la déclaration d'une situation pathologique
 	let motif;
 	let plan_du_ttt;
 	let service;
-	let numero_etablissement
+	let numero_etablissement;
+	let with_indemnity = true;
 	// D'abord trouver le CODE de NOMENCLATURE
 	// À la base de tout il y a le groupe pathologique
-	let groupeId;
+	let groupe_id;
 	// Ensuite il y a le lieu
-	let lieuId;
+	let lieu_id;
 	// ensuite il y a divers champs qui vont nous mener au code final
 	// pour le lieu 5 uniquement il faut définir si le patient est ambulatoire (AMB) ou hospitalisé (HOS)
-	let ambHos = 'AMB';
+	let amb_hos = 'AMB';
 	// Pour les groupes 0 et 1 et le lieux 4 (Hopital) uniquement
 	let duree;
 	// Il faudrait pouvoir déterminer si il s'agit de la première situation pathologique du patient avec ce kiné
 	let intake = false;
 	// L'examen à titre consultatif est préalable à une situation pathologique. Pourtant il est différencié en fonction du groupe pathologique. Il lui faut donc son potard et ses champs de formulaire à lui tout seul (Pour rajouter la prescription qui le rend valide et la date à laquelle le rajouter. il faut que tout cela soit explicité sur le fomulaire)
-	let examenConsultatif = false;
+	let examen_consultatif = false;
+	let examen_ecrit_date;
 	// Compter un rapport écrit ? première séance, dernière séance, date custom
-	let rapportEcrit = false;
-	let rapportEcritDate = 'first';
-	let rapportEcritCustomDate;
+	let rapport_ecrit = false;
+	let rapport_ecrit_date = 'first';
+	let rapport_ecrit_custom_date;
 	// Le volet J pour la patho Fa (120 séances)
-	let voletJ = false;
+	let volet_j = false;
 	// Sous spécifiques conditions une seconde séance par jour peut être octroyée pour les patients du volet c
-	let secondeSeanceFA = false;
-	let dureeSecondeSeanceFA = 0; // 15 ou 30 min
+	let seconde_seance_fa = false;
+	let duree_seconde_seance_fa = 0; // 15 ou 30 min
+	let date_presta_chir_fa;
 	// Tarification Fa, spécifier si des codes pathologies courantes ont été attestés
-	let nombreCodeCourantFA = 0;
+	let nombre_code_courant_fa = 0;
 	// volet H - Lymphoedème
-	let voletH = false;
+	let volet_h = false;
 	// Patho lourde
-	let pathoLourdeType = 0;
+	let patho_lourde_type = 0;
 	let gmfcs;
-	let secondeSeanceE;
+	let seconde_seance_e = false;
+	let seconde_seance_palliatif = false;
 	// TROUVER LA DATE
 	// date de la première séance
-	let premiereSeance;
+	let premiere_seance;
+	// heure de la première séance Uniquement si le jour de la première séance n'est pas un des jours de la semaine sélectionné dans le DateTimeWeekDayField
+	let premiere_seance_heure;
 	let jour_seance_semaine_heures = daysOfWeek
 		.map((value, index) => {
 			return {
@@ -132,10 +272,11 @@
 				value: index == 6 ? '0' : `${index + 1}`
 			};
 		})
-		.reduce((a, v) => ({ ...a, [v.value]: { value: false, time: undefined } }), {});
+		.reduce((a, v) => ({ ...a, [v.value]: { value: false, time: undefined, seconde_seance_time: undefined } }), {});
 	// TROUVER LE NOMBRE
 	let deja_faites = 0;
-	let nombreSeances;
+	let nombre_seances;
+	let default_seance_description;
 
 	// Pour les groupes il y a les options suivantes :
 	let groupOptions = groupes
@@ -151,12 +292,10 @@
 	$: {
 		lieuOptions = lieux
 			.map((val, index) => {
-				if (groupeId === 'undefined' || groupeId == undefined) {
-					console.log('bordel');
+				if (groupe_id === 'undefined' || groupe_id == undefined) {
 					return undefined;
 				}
-				console.log('mais whaaat');
-				let groupSchema = lieuxParGroupe[parseInt(groupeId)];
+				let groupSchema = lieuxParGroupe[parseInt(groupe_id)];
 				if (groupSchema[0] === '*' || groupSchema.includes(index)) {
 					console.log(
 						`In lieuOptions with groupSchema == ${groupSchema}, value from mapfn == ${val}`
@@ -166,44 +305,43 @@
 			})
 			.filter((val) => val);
 		// Remettre le champ à zéro pour éviter les input invisibles ou sur l'unique valeure
-		let groupCasted = parseInt(groupeId);
+		let groupCasted = parseInt(groupe_id);
 		if (groupCasted == 6) {
-			lieuId = 3;
+			lieu_id = 3;
 		} else if (groupCasted == 7) {
-			lieuId = 6;
+			lieu_id = 6;
 		} else {
-			lieuId = 'undefined';
+			lieu_id = 'undefined';
 		}
 	}
 	// Ici il faut sans arrêt recalculer le code jusqu'à ce qu'il n'y en ait plus qu'un. à ce moment là on pourrait, par exemple changer l'interface pour signaler que c'est bon.
 	let code = [];
 	$: {
-		let groupCasted = parseInt(groupeId);
-		let lieuCasted = parseInt(lieuId);
+		let groupCasted = parseInt(groupe_id);
+		let lieuCasted = parseInt(lieu_id);
 		let groupesADureeVariable = [0, 1];
 		code = codes.filter((element) => {
 			let groupOk = element.groupe == groupCasted;
 			let lieuOk =
-				lieuId !== undefined || lieuId !== 'undefined' ? element.lieu == lieuCasted : true;
+				lieu_id !== undefined || lieu_id !== 'undefined' ? element.lieu == lieuCasted : true;
 			return (
 				groupOk &&
 				element.type == 0 &&
 				lieuOk &&
-				(lieuCasted == 7 ? element.amb_hos == ambHos : true) &&
+				(lieuCasted == 7 ? element.amb_hos == amb_hos : true) &&
 				(lieuCasted == 6
-					? element.duree == duree && groupesADureeVariable.includes(groupeId)
+					? element.duree == duree && groupesADureeVariable.includes(groupe_id)
 					: true) &&
-				(voletH ? element.pathologie == voletH : true) &&
+				(volet_h ? element.pathologie == volet_h : true) &&
 				(duree ? element.duree == duree : true)
 			);
 		});
 		console.log(code);
 	}
 	$: dateFieldsCompleted =
-		premiereSeance &&
+		premiere_seance &&
 		Object.values(jour_seance_semaine_heures).reduce((a, b) => {
 			let truth = b.value ? (b.time && b.time != '' ? true : false) : true;
-			console.log(a, b, truth);
 			return a && truth;
 		}) &&
 		Object.values(jour_seance_semaine_heures).filter((val) => val.value).length > 0;
@@ -216,31 +354,48 @@
 					seancePerWeek++;
 				}
 			}
-			nombreSeances = maxLegalNumberSeance[parseInt(groupeId)].seance_gen_nombre(parseInt(lieuId), {
-				duree,
-				voletH,
-				voletJ,
-				pathoLourdeType,
-				gmfcs,
-				patient,
-				seancePerWeek,
-				voletH
-			});
+			nombre_seances = maxLegalNumberSeance[parseInt(groupe_id)].seance_gen_nombre(
+				parseInt(lieu_id),
+				{
+					duree,
+					volet_h,
+					volet_j,
+					patho_lourde_type,
+					gmfcs,
+					patient,
+					seancePerWeek,
+					volet_h
+				}
+			);
 		} else {
-			message = "Veuillez d'abord trouver le code et les dates svp";
+			numberGenMessage = "Veuillez d'abord trouver le code et les dates svp";
 		}
 	}
+	$: has_seconde_seance = seconde_seance_fa || seconde_seance_e || seconde_seance_palliatif;
+	console.log('day js base object', dayjs('2023-12-19T23:29:21'));
 </script>
 
-<!--! Le projet est trop complexe pour être brisé en autant de petits morceaux malheureusement... Il va falloir remettre l'etièreté de chaque section ICI et faire, en tout cas pour l'instant, un composant de 20 km. Au moins jusqu'à l'avènement de Svelte 5 -->
+<!-- <button on:click={async () => {
+	const { data, error } = await supabase
+  .storage
+  .getBucket('avatars')
+  if (!data) {
+	const { data, error } = await supabase
+	  .storage
+	  .createBucket('avatars')
+  }
+  console.log(data, error);
+  
+}}>
+	RetrieveBucktet
+</button> -->
+<!--! Le projet est trop complexe pour être brisé en petits composants pour l'instant. Au moins jusqu'à l'avènement de Svelte 5 -->
 <FormWrapper {formSchema} class="">
 	<!--? Top level Hidden fields  -->
+	<!-- Je fais le choix de ne pas ajouter des champs patient_id et user_id car il peuvent être retrouvé avec les svelte stores et n'ont pas besoin de validation -->
 	{#if situation_pathologique}
 		<input type="hidden" name="sp_id" value={situation_pathologique?.sp_id} />
 	{/if}
-	<input type="hidden" name="patient_id" value={situation_pathologique?.patient_id} />
-	<input type="hidden" name="user_id" value={$user.user.id} />
-	<input type="hidden" name="created_at" value={situation_pathologique?.created_at ?? new Date()} />
 
 	<div class="flex flex-col flex-wrap md:flex-row">
 		<div class="w-full md:p-4">
@@ -258,11 +413,15 @@
 					</p>
 				</span>
 				<span slot="fields" class="flex flex-col items-start space-y-4">
+					<PrescripteurField bind:prescripteurNom bind:prescripteurPrenom bind:prescripteurInami />
 					<DateField required label="Date de la prescription" bind:value={date} name="date" />
 					<NumberField
 						required
 						label="Nombre de séances prescrites"
 						bind:value={nombre_seance}
+						on:change={() => {
+							nombre_seances = nombre_seance;
+						}}
 						name="nombre_seance" />
 					<NumberField
 						required
@@ -284,8 +443,8 @@
 					</DefaultFieldWrapper>
 					<DateField
 						label="Date de l'attestation à laquelle la prescription est jointe"
-						bind:value={jointeAlAttestationDu}
-						name="jointeAlAttestationDu" />
+						bind:value={jointe_a}
+						name="jointe_a" />
 					<p class="text-surface-800 dark:text-surface-100">
 						Ce champs est nécessaire uniquement si vous n'êtes pas en possession de la prescription
 						car elle a été envoyée à une mutuelle par un autre kiné.
@@ -307,21 +466,37 @@
 					</p>
 				</span>
 				<span slot="fields" class="flex flex-col items-start space-y-4">
-					<label class="select-none text-surface-500 dark:text-surface-300" for="motif"
-						>Motif
-						<textarea id="motif" bind:value={motif} required name="motif" class="textarea rounded-lg mt-2" placeholder="Motivation justifiant une prise en charge kinésithérapeutique" rows="4"></textarea>
-					</label>
-					<label class="select-none text-surface-500 dark:text-surface-300" for="plan_du_ttt"
-						>Plan du traitement
+					<DefaultFieldWrapper>
+						<label class="select-none text-surface-500 dark:text-surface-300" for="motif"
+							>Motif
+							<textarea
+								id="motif"
+								bind:value={motif}
+								required
+								name="motif"
+								class="textarea mt-2 rounded-lg"
+								placeholder="Motivation justifiant une prise en charge kinésithérapeutique"
+								rows="4"></textarea>
+						</label>
+					</DefaultFieldWrapper>
+					<DefaultFieldWrapper>
+						<label class="select-none text-surface-500 dark:text-surface-300" for="plan_du_ttt"
+							>Plan du traitement
 
-						<textarea id="plan_du_ttt" bind:value={plan_du_ttt} name="plan_du_ttt" required class="textarea rounded-lg mt-2" placeholder="Un plan succinct du traitement kinésithérapeutique" rows="4"></textarea>
-					</label>
-					<SubSectionTitle titre="Optionnel" description="Pour évitez d'avoir à réécrire le service et le numéro d'établissement sur chaque attestation, vous pouvez les indiquer ici et Kiné Helper les rendra disponibles lorsque cela sera nécessaire." />
-					<TextFieldV2
-						name="service"
-						bind:value={service}
-						placeholder="service"
-						label="Service" />
+							<textarea
+								id="plan_du_ttt"
+								bind:value={plan_du_ttt}
+								name="plan_du_ttt"
+								required
+								class="textarea mt-2 rounded-lg"
+								placeholder="Un plan succinct du traitement kinésithérapeutique"
+								rows="4"></textarea>
+						</label>
+					</DefaultFieldWrapper>
+					<SubSectionTitle
+						titre="Optionnel"
+						description="Pour évitez d'avoir à réécrire le service et le numéro d'établissement sur chaque attestation, vous pouvez les indiquer ici et Kiné Helper les rendra disponibles lorsque cela sera nécessaire." />
+					<TextFieldV2 name="service" bind:value={service} placeholder="service" label="Service" />
 					<TextFieldV2
 						name="numero_etablissement"
 						bind:value={numero_etablissement}
@@ -338,11 +513,11 @@
 						titreDone="Générateur de séances prêt ✓"
 						description="Choisissez parmis les options pour que le générateur de séances sache quel code assigner
 						à chaque séance"
-						done={code.length == 1 && dateFieldsCompleted && nombreSeances} />
+						done={code.length == 1 && dateFieldsCompleted && nombre_seances} />
 				</span>
 				<span slot="fields" class="flex flex-col items-start">
 					<!--? Generateur_id -->
-					<input type="hidden" name="generateur_id" value={crypto.randomUUID()}>
+					<input type="hidden" name="generateur_id" value={crypto.randomUUID()} />
 					<!--? Trouver le code -->
 					<SubSectionTitle
 						done={code.length == 1}
@@ -353,23 +528,29 @@
 						<!--? Le Champ Groupe Pathologique -->
 						<SelectFieldV2
 							name="groupe"
-							bind:value={groupeId}
+							bind:value={groupe_id}
 							options={groupOptions}
 							placeholder="Choisir un groupe pathologique"
 							label="Groupe pathologique"
 							required />
 						<!--? Le champ Lieu -->
-						{#if groupeId && groupeId !== 'undefined'}
+						{#if groupe_id && groupe_id !== 'undefined'}
 							<SelectFieldV2
 								name="lieu"
-								bind:value={lieuId}
+								bind:value={lieu_id}
 								options={lieuOptions}
 								placeholder="Choisir un lieu"
 								label="Lieu par séance"
 								required />
 						{/if}
+						{#if lieu_id === 3}
+							<CheckboxFieldV2
+								name="with_indemnity"
+								label="Compter les indemnités de déplacements"
+								bind:value={with_indemnity} />
+						{/if}
 						<!--? Si le groupe est Patho Courante ou Lourde ET le lieu est en hopital (4) alors il y a deux cas de figures : des séances de 30 min. ou des séances de 15 min qui mèneront chacun à un code spécifique -->
-						{#if [0, 1].includes(parseInt(groupeId)) && parseInt(lieuId) == 6}
+						{#if [0, 1].includes(parseInt(groupe_id)) && parseInt(lieu_id) == 6}
 							<RadioFieldV2
 								name="duree"
 								bind:value={duree}
@@ -382,55 +563,57 @@
 								required />
 						{/if}
 						<!--? le champ Rapport écrit -->
-						{#if [1, 4, 5].includes(parseInt(groupeId)) && ![6, 7].includes(parseInt(lieuId))}
+						{#if [1, 4, 5].includes(parseInt(groupe_id)) && ![6, 7].includes(parseInt(lieu_id))}
 							<div>
 								<h5 class="select-none text-surface-500 dark:text-surface-300">Rapport écrit</h5>
 								<CheckboxFieldV2
-									name="rapportEcrit"
-									bind:value={rapportEcrit}
+									name="rapport_ecrit"
+									bind:value={rapport_ecrit}
 									label="Ajouter un code rapport écrit" />
-								{#if rapportEcrit}
+								{#if rapport_ecrit}
 									<RadioFieldV2
-										name="rapportEcritDate"
+										name="rapport_ecrit_date"
 										label="Date du rapport"
-										bind:value={rapportEcritDate}
+										bind:value={rapport_ecrit_date}
 										options={[
 											{ value: 'first', label: 'Ajouter le rapport lors de la première séance' },
 											{ value: 'last', label: 'Ajouter le rapport lors de la dernière séance' },
 											{ value: 'custom', label: 'date personalisée' }
 										]} />
-									{#if rapportEcritDate == 'custom'}
+									{#if rapport_ecrit_date == 'custom'}
 										<DateField
 											label="Date personnalisée : "
 											parentClass="flex-row flex"
-											name="rapportEcritCustomDate"
-											bind:value={rapportEcritCustomDate} />
+											name="rapport_ecrit_custom_date"
+											bind:value={rapport_ecrit_custom_date} />
 									{/if}
 								{/if}
 							</div>
 						{/if}
 						<!--? Examen à titre consultatif -->
-						{#if [0, 1, 4, 5].includes(parseInt(groupeId)) && [0, 1, 2, 3].includes(parseInt(lieuId))}
+						{#if [0, 1, 4, 5].includes(parseInt(groupe_id)) && [0, 1, 2, 3].includes(parseInt(lieu_id))}
 							<div>
 								<h5 class="select-none text-surface-500 dark:text-surface-300">
 									Examen à titre consultatif
 								</h5>
 								<CheckboxFieldV2
-									name="examenConsultatif"
-									bind:value={examenConsultatif}
+									name="examen_consultatif"
+									bind:value={examen_consultatif}
 									label="Ajouter un examen à titre consultatif" />
-								{#if examenConsultatif}
-									Formulaire PRescription supplémentaire + Date de l'examen + Signaler que
-									"attention, le code d'examen à titre consultatif sera placé indépendamment de la
-									génération des autres codes du traitement proprement dit." un truc du genre...
+								{#if examen_consultatif}
+									<DateField
+										label="Date de l'examen à titre consultatif : "
+										parentClass="flex-row flex"
+										name="examen_ecrit_date"
+										bind:value={examen_ecrit_date} />
 								{/if}
 							</div>
 						{/if}
 						<!--? Si le lieu sélectionné est Centre de Rééducation (5) alors le patient peut soit être traité en Ambulatoire (AMB) ou hospitalisé (HOS) -->
-						{#if parseInt(lieuId) == 7}
+						{#if parseInt(lieu_id) == 7}
 							<RadioFieldV2
-								name="AmbHos"
-								bind:value={ambHos}
+								name="Amb_hos"
+								bind:value={amb_hos}
 								options={[
 									{ value: 'AMB', label: 'AMB' },
 									{ value: 'HOS', label: 'HOS' }
@@ -440,29 +623,29 @@
 								required />
 						{/if}
 						<!--? Pathologie Lourde -->
-						{#if parseInt(groupeId) == 1}
+						{#if parseInt(groupe_id) == 1}
 							<PathologieLourdeFields
-								bind:pathologieLourde={pathoLourdeType}
+								bind:pathologieLourde={patho_lourde_type}
 								bind:GMFCSScore={gmfcs}
-								bind:secondeSeance={secondeSeanceE} />
+								bind:secondeSeance={seconde_seance_e} />
 						{/if}
 						<!--? Pour le groupe 1 il y a un intake possible pour tout les groupes avec 1 warning cependant -->
-						{#if parseInt(groupeId) == 0}
+						{#if parseInt(groupe_id) == 0}
 							<div>
 								<h5 class="select-none text-surface-500 dark:text-surface-300">Intake</h5>
 								<CheckboxFieldV2 name="intake" label="Ajouter un Intake" bind:value={intake} />
 							</div>
 						{/if}
 						<!--? Pour le groupe Fa si il s'agit d'un volet j) il faut l'indiquer car cela change le nombre de séance autorisée d'un facteur 2. Aussi peut tarifier avec les codes pathologies courantes si pas sûr de la situation pathologique. Aussi sous conditions le volet c) peut bénéficier d'une seconde séance par jour -->
-						{#if parseInt(groupeId) == 4}
-							<FieldWithPopup target="voletJ">
+						{#if parseInt(groupe_id) == 4}
+							<FieldWithPopup target="volet_j">
 								<span slot="content"> j) Polytraumatismes </span>
 								<div class="flex flex-col">
 									<h5 class="select-none text-surface-500 dark:text-surface-300">Volet J</h5>
 									<CheckboxFieldV2
-										name="voletJ"
+										name="volet_j"
 										label="volet j) (120 séances)"
-										bind:value={voletJ} />
+										bind:value={volet_j} />
 								</div>
 							</FieldWithPopup>
 							<FieldWithPopup target="tarificationFA">
@@ -475,24 +658,27 @@
 								<div class="flex flex-col">
 									<h5 class="select-none text-surface-500 dark:text-surface-300">Tarification</h5>
 									<CheckboxFieldV2
-										name="nombreCodeCourantFAs"
+										name="nombre_code_courant_fas"
 										label="Tarifier les 14 premiers jours en pathologie courante ?"
-										bind:value={nombreCodeCourantFA} />
+										bind:value={nombre_code_courant_fa} />
 								</div>
 							</FieldWithPopup>
+						{/if}
+						<!--? MODIFICATION car secondes séances/jour peut s'appliquer dans d'autre cas que la fa lorsque la séance est effectuée en hopital (USI) -->
+						{#if parseInt(groupe_id) == 5 || (parseInt(groupe_id) === 0 && parseInt(lieu_id) === 6)}
 							<div class="flex flex-col">
 								<h5 class="select-none text-surface-500 dark:text-surface-300">
 									Seconde séance par jour
 								</h5>
 								<CheckboxFieldV2
-									name="secondeSeanceFA"
+									name="seconde_seance_fa"
 									label="compter une seconde séance par jour"
-									bind:value={secondeSeanceFA} />
+									bind:value={seconde_seance_fa} />
 							</div>
-							{#if secondeSeanceFA}
+							{#if seconde_seance_fa}
 								<RadioFieldV2
-									name="dureeSecondeSeanceFA"
-									bind:value={dureeSecondeSeanceFA}
+									name="duree_seconde_seance_fa"
+									bind:value={duree_seconde_seance_fa}
 									options={[
 										{ value: 0, label: '15min' },
 										{ value: 2, label: '30min' }
@@ -500,7 +686,14 @@
 									inline
 									label="15 ou 30 minutes ?"
 									required />
-								{#if parseInt(dureeSecondeSeanceFA) == 0}
+								{#if parseInt(duree_seconde_seance_fa) == 0}
+									<DateField
+										label="Date de la prestation de réanimation ou orthopédie : "
+										required
+										parentClass="flex-row flex"
+										name="date_presta_chir_fa"
+										bind:value={date_presta_chir_fa} />
+
 									<h5 class="select-none text-surface-500 dark:text-surface-300">
 										Les séances de 15 minutes sont réservées aux patients pour lesquels ont été
 										attesté une prestations : <br /> - de réanimation (211046, 211142, 211341,
@@ -521,75 +714,108 @@
 							{/if}
 						{/if}
 						<!--? Fb -->
-						{#if parseInt(groupeId) == 5}
-							<FieldWithPopup target="voletH">
+						{#if parseInt(groupe_id) == 5}
+							<FieldWithPopup target="volet_h">
 								<span slot="content"
 									>Uniquement pour les pathologies du "volet H) Lymphoedème".<br />Le générateur
 									utilisera les codes 639xxx.</span>
 								<div class="flex flex-col">
 									<h5 class="select-none text-surface-500 dark:text-surface-300">Volet H</h5>
 									<CheckboxFieldV2
-										name="voletH"
+										name="volet_h"
 										label="J'effectue un drainage"
-										bind:value={voletH} />
+										bind:value={volet_h} />
 								</div>
 							</FieldWithPopup>
 						{/if}
 						<!--? Palliatif à domicile -->
-						{#if parseInt(groupeId) == 6}
+						{#if parseInt(groupe_id) == 6}
 							<FieldWithPopup target="palliatifSecondeSeance">
 								<span slot="content"
 									>Uniquement pour les patients dont l'intervention personnelle est réduite tel
 									qu'explicité dans l'AR du 23 mars 1982, §3.</span>
 								<div class="flex flex-col">
-									<h5 class="select-none text-surface-500 dark:text-surface-300">Volet H</h5>
+									<h5 class="select-none text-surface-500 dark:text-surface-300">
+										Seconde séance par jour
+									</h5>
 									<CheckboxFieldV2
-										name="palliatifSecondeSeance"
+										name="seconde_seance_palliatif"
 										label="J'effectue une seconde séance dans la journée"
-										bind:value={voletH} />
+										bind:value={seconde_seance_palliatif} />
 								</div>
 							</FieldWithPopup>
 						{/if}
 						<!--? Indications relatives au groupe Hopital de jour -->
-						{#if parseInt(groupeId) == 7}
+						{#if parseInt(groupe_id) == 7}
 							<WarningDisplayer
 								descriptionLines={[
 									"Lorsque le kiné dispose d'une prescription faisant référence à la nécessité d'effectuer une séance	de kinésithérapie avant que le bénéficiaire ne quitte l'hopital."
 								]} />
 						{/if}
 					</div>
+
 					<!--? Trouver les dates -->
 					<SubSectionTitle
 						class="mt-12"
 						done={dateFieldsCompleted}
 						titre="Définir les dates"
 						description="Choisissez les dates de vos prestations." />
-					<div class="space-y-4">
+					<div class="flex flex-col items-start space-y-4">
+						<DateTimeWeekDayField
+							bind:value={jour_seance_semaine_heures}
+							with_seconde_seance={has_seconde_seance} />
 						<DateField
 							label="Date de la première séance"
 							required
-							name="premiereSeanceGen"
-							bind:value={premiereSeance} />
-						<DateTimeWeekDayField bind:value={jour_seance_semaine_heures} />
+							name="premiere_seanceGen"
+							bind:value={premiere_seance} />
+						{#if dayjs(premiere_seance).isValid() && !Object.keys(jour_seance_semaine_heures)
+								.filter((weekDay) => {
+									return jour_seance_semaine_heures[weekDay].value;
+								})
+								.includes(dayjs(premiere_seance).day().toString())}
+							<TimeField
+								label="Heure de la première séance"
+								required={dayjs(premiere_seance).isValid() &&
+									!Object.keys(jour_seance_semaine_heures)
+										.filter((weekDay) => {
+											return jour_seance_semaine_heures[weekDay].value;
+										})
+										.includes(dayjs(premiere_seance).day().toString())}
+								name="derniere_seanceGen"
+								bind:value={premiere_seance_heure} />
+							<p>
+								Nécessaire car la première séance n'est pas dans les jours de la semaine sélectionné
+							</p>
+						{/if}
 					</div>
+
 					<!--? Trouver le nombre -->
 					<SubSectionTitle
 						class="mt-12"
-						done={nombreSeances}
+						done={nombre_seances}
 						titre="Nombre de séances"
 						description="Définissez le nombre de séances à produire." />
 					<div class="space-y-4">
-						<NombreAGenererField bind:dejaFaites={deja_faites} bind:nombreSeances />
+						<NombreAGenererField
+							{defaultSeanceNumber}
+							bind:dejaFaites={deja_faites}
+							bind:nombreSeances={nombre_seances} />
+						<h1 class="text-error-500">{numberGenMessage}</h1>
 					</div>
 
 					<!--? Valeurs par défaut -->
 					<SubSectionTitle
 						class="mt-12"
-						done={nombreSeances}
+						done={false}
 						titre="Description séance par défaut"
 						description="Optionnel, ce champ vous laisse définir une description par défaut pour les séances générées." />
 					<div class="space-y-4">
-						<NombreAGenererField bind:dejaFaites={deja_faites} bind:nombreSeances />
+						<TextFieldV2
+							name="default_seance_description"
+							placeholder="Description par défault"
+							label="Description par défault"
+							bind:value={default_seance_description} />
 					</div>
 				</span>
 			</SectionWrapper>
