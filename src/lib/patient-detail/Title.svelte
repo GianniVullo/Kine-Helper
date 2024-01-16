@@ -1,7 +1,8 @@
 <script>
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
-	import {supabase, patients} from '$lib/index'
+	import { supabase } from '$lib/index';
+	import { patients } from '$lib/stores/PatientStore';
 	import UpdateIcon from '$lib/ui/svgs/UpdateIcon.svelte';
 	import DeleteIcon from '$lib/ui/svgs/DeleteIcon.svelte';
 	import InfoIcon from '$lib/ui/svgs/InfoIcon.svelte';
@@ -18,7 +19,7 @@
 		buttonTextConfirm: 'Confirmer',
 		buttonTextCancel: 'Annuler',
 		modalClasses: {
-			buttonPositive: "isModal"
+			buttonPositive: 'isModal'
 		},
 		// buttonPositive: 'isModal',
 		// ARG is TRUE if confirm pressed, FALSE if cancel pressed
@@ -28,10 +29,13 @@
 	async function deletePatient(confirmed) {
 		if (confirmed) {
 			console.log('Pressed confirm');
-			let { data, error } = await supabase.from('patients').delete().eq('patient_id', patient.patient_id)
+			let { data, error } = await supabase
+				.from('patients')
+				.delete()
+				.eq('patient_id', patient.patient_id);
 			console.log('supabase response', data, error);
-			patients.remove(patient.patient_id)
-			goto('/dashboard/patients')
+			patients.remove(patient.patient_id);
+			goto('/dashboard/patients');
 		}
 	}
 	export let patient;
@@ -89,7 +93,10 @@
 			<div class="variant-filled-surface arrow" />
 		</div>
 	</div>
-	<button class="group mx-4 flex items-end justify-center" on:click={()=>modalStore.trigger(modal)} use:popup={deletePopUp}>
+	<button
+		class="group mx-4 flex items-end justify-center"
+		on:click={() => modalStore.trigger(modal)}
+		use:popup={deletePopUp}>
 		<DeleteIcon class="h-4 w-4 stroke-error-800 dark:stroke-error-300" />
 	</button>
 	<div data-popup="deletePopUp">

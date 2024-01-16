@@ -3,7 +3,7 @@ import { user } from '../../stores/UserStore';
 import { supabase } from '../../stores/supabaseClient';
 import { DBInitializer } from '../../stores/databaseInitializer';
 
-export class DBAdapter {
+export default class DBAdapter {
 	constructor() {
 		//? Le type de l'adapter est soit true (Remote (Supabase) soit false (Local (SQLite)).
 		this.offre = get(user).profil.offre;
@@ -95,6 +95,51 @@ export class DBAdapter {
 				return;
 		}
 	}
+	async retrieve_sp(sp_id) {
+		switch (this.offre) {
+			case 'free':
+				let db = await new DBInitializer().openDBConnection();
+				let latestPs = await db.select(
+					'SELECT * FROM situations_pathologiques WHERE sp_id = $1',
+					[sp_id]
+				);
+				if (latestPs.length === 0) {
+					// No record found
+					return {error: 'No record found'};
+				}
+
+				// Fetch related data for each table
+				let seances = await db.select(`SELECT * FROM seances WHERE sp_id = $1`, [sp_id]);
+				let prescriptions = await db.select(`SELECT * FROM prescriptions WHERE sp_id = $1`, [
+					sp_id
+				]);
+				let attestations = await db.select(`SELECT * FROM attestations WHERE sp_id = $1`, [sp_id]);
+				let generateurs = await db.select(`SELECT * FROM generateurs_de_seances WHERE sp_id = $1`, [
+					sp_id
+				]);
+				let documents = await db.select(`SELECT * FROM documents WHERE sp_id = $1`, [sp_id]);
+
+				// Aggregate the data in JavaScript
+				let result = {
+					data: {
+						ps: latestPs,
+						seances: seances,
+						prescriptions: prescriptions,
+						attestations: attestations,
+						generateurs_de_seances: generateurs,
+						documents: documents
+					}
+				};
+				await db.close();
+				return result;
+			case 'cloud':
+				let selectStatement = 'sp_id, created_at, numero_etablissment, service, motif, plan_du_ttt, seances (seance_id,code_id,date,description,has_been_attested,attestation_id,prescription_id,is_paid,gen_id), prescriptions ( prescription_id, date, jointe_a, prescripteur, nombre_seance, seance_par_semaine), attestations (attestation_id, porte_prescr, numero_etablissment, service, has_been_printed, prescription_id, total_recu, valeur_totale, with_indemnity, with_intake, with_rapport, date), generateurs_de_seances (gen_id, created_at, auto, groupe_id, lieu_id, duree, intake, examen_consultatif, rapport_ecrit, rapport_ecrit_custom_date, volet_j, seconde_seance_fa, duree_seconde_seance_fa, nombre_code_courant_fa, volet_h, patho_lourde_type, gmfcs, seconde_seance_e, premiere_seance, jour_seance_semaine_heures, deja_faites, default_seance_description, nombre_seances, seances_range, date_presta_chir_fa, examen_ecrit_date, amb_hos, rapport_ecrit_date), documents (document_id, created_at, form_data)';
+				return await supabase.from('situations_pathologiques').select(selectStatement).eq('sp_id', sp_id);
+			default:
+				console.log(`in DBAdapter.save(${table}, ${id})`);
+				return;
+		}
+	}
 
 	async list(table, filters, { selectStatement, limit, orderBy, ascending = true }) {
 		console.log('in DBAdapter.list() with', table, selectStatement, orderBy, ascending);
@@ -160,7 +205,7 @@ export class DBAdapter {
 			case 'free':
 				let db = await new DBInitializer().openDBConnection();
 				let latestPs = await db.select(
-					`SELECT * FROM situation_pathologiques WHERE patient_id = $1 AND user_id = $2 ORDER BY created_at DESC LIMIT 1`,
+					`SELECT * FROM situations_pathologiques WHERE patient_id = $1 AND user_id = $2 ORDER BY created_at DESC LIMIT 1`,
 					[patient_id, user_id]
 				);
 
@@ -184,12 +229,14 @@ export class DBAdapter {
 
 				// Aggregate the data in JavaScript
 				let result = {
-					ps: latestPs[0],
-					seances: seances,
-					prescriptions: prescriptions,
-					attestations: attestations,
-					generateurs_de_seances: generateurs,
-					documents: documents
+					data: {
+						ps: latestPs,
+						seances: seances,
+						prescriptions: prescriptions,
+						attestations: attestations,
+						generateurs_de_seances: generateurs,
+						documents: documents
+					}
 				};
 				await db.close();
 				return result;

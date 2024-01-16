@@ -1,5 +1,5 @@
 <script>
-	import { patients } from '$lib/index';
+	import { patients } from '$lib/stores/PatientStore';
 	import { page } from '$app/stores';
 	import { PlusIcon } from '$lib/ui/svgs/index';
 	import { getContext } from 'svelte';

@@ -12,7 +12,7 @@
 		ChevronUpIcon
 	} from '../ui/svgs/index';
 	import { TreeView, TreeViewItem } from '@skeletonlabs/skeleton';
-	import { DBAdapter } from '../forms';
+	import DBAdapter from '../forms/actions/dbAdapter';
 	import { SituationPathologique, patients } from '../stores/PatientStore';
 
 	export let patient;
@@ -71,12 +71,7 @@
 							if (sp.upToDate === false) {
 								loading = true;
 								let db = new DBAdapter();
-								let selectStatement =
-									'sp_id, created_at, numero_etablissment, service, motif, plan_du_ttt, seances (seance_id,code_id,date,description,has_been_attested,attestation_id,prescription_id,is_paid,gen_id), prescriptions ( prescription_id, date, jointe_a, prescripteur, nombre_seance, seance_par_semaine), attestations (attestation_id, porte_prescr, numero_etablissment, service, has_been_printed, prescription_id, total_recu, valeur_totale, with_indemnity, with_intake, with_rapport, date), generateurs_de_seances (gen_id, created_at, auto, groupe_id, lieu_id, duree, intake, examen_consultatif, rapport_ecrit, rapport_ecrit_custom_date, volet_j, seconde_seance_fa, duree_seconde_seance_fa, nombre_code_courant_fa, volet_h, patho_lourde_type, gmfcs, seconde_seance_e, premiere_seance, jour_seance_semaine_heures, deja_faites, default_seance_description, nombre_seances, seances_range, date_presta_chir_fa, examen_ecrit_date, amb_hos, rapport_ecrit_date), documents (document_id, created_at, form_data)';
-								let completedSp = await db.retrieve('situations_pathologiques', selectStatement, [
-									'sp_id',
-									sp.sp_id
-								]);
+								let completedSp = await db.retrieve_sp(sp.sp_id);
 								completedSp = new SituationPathologique(completedSp.data[0]);
 								completedSp.upToDate = true;
 								patients.update((p) => {

@@ -1,5 +1,6 @@
 {
 	"id": 8,
+	"convention_id": "65f7a0c9-3d77-4467-8382-e26c24d2e4e3",
 	"titre": "Convention M23",
 	"year": 2023,
 	"month": 1,
@@ -5148,6 +5149,5 @@
 			"code_reference": "639155",
 			"convention_id": "65f7a0c9-3d77-4467-8382-e26c24d2e4e3"
 		}
-	],
-	"convention_id": "65f7a0c9-3d77-4467-8382-e26c24d2e4e3"
+	]
 }

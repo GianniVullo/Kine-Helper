@@ -9,12 +9,11 @@
 		DefaultFieldWrapper,
 		TextFieldV2,
 		DateField,
-		NumberField,
-		DBAdapter
+		NumberField
 	} from '../index';
+	import DBAdapter from '../actions/dbAdapter';
 	import { GenerateurDeSeances } from './generateurDeSeances';
 	import Database from '@tauri-apps/plugin-sql';
-	import { open } from '@tauri-apps/plugin-dialog';
 	import { user } from '$lib/index';
 	import { getToastStore, popup } from '@skeletonlabs/skeleton';
 	import { errorToast } from '$lib/ui/toasts';
@@ -33,7 +32,6 @@
 	import SectionTitle from './sections/SectionTitle.svelte';
 	import PrescripteurField from '../prescription/PrescripteurField.svelte';
 	import { get } from 'svelte/store';
-	import { supabase } from '../../stores/supabaseClient';
 	import dayjs from 'dayjs';
 	import { SituationPathologique } from '../../stores/PatientStore';
 	import TimeField from './fields/TimeField.svelte';

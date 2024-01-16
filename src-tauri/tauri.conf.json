@@ -3,7 +3,7 @@
     "beforeDevCommand": "npm run dev",
     "beforeBuildCommand": "npm run build",
     "devPath": "http://localhost:1420",
-    "distDir": "../dist",
+    "distDir": "../build",
     "withGlobalTauri": false
   },
   "package": {
@@ -28,11 +28,14 @@
     },
     "windows": [
       {
-        "decorations": false,
         "fullscreen": false,
-        "resizable": true
+        "resizable": true,
+        "title": "Kiné Helper",
+        "maximized": true,
+        "contentProtected": true
       }
-    ]
+    ],
+    "macOSPrivateApi": true
   },
   "plugins": {
     "shell": {

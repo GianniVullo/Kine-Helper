@@ -1,7 +1,7 @@
 import { get, writable } from 'svelte/store';
 import { selectPatients } from './supabaseClient';
 import { persisted } from 'svelte-persisted-store';
-import { DBAdapter } from '../forms/actions/dbAdapter';
+import DBAdapter from '../forms/actions/dbAdapter';
 import { user } from './UserStore';
 
 export class Patient {
@@ -185,19 +185,17 @@ function createPatientStore() {
 		let sp = new SituationPathologique(data.ps[0]);
 		sp.upToDate = true;
 		console.log('La dernière situation pathologique', sp);
+		let others = await getOtherSps(patient_id, sp.sp_id);
+		
+		console.log('in getLastSp().getOtherSps() with', others);
 		update((ps) => {
-			ps.find((p) => p.patient_id === patient_id).situations_pathologiques.push(sp);
+
+			let patient = ps.find((p) => p.patient_id === patient_id);
+			patient.situations_pathologiques.push(sp);
+			for (const dlSp of others) {
+				patient.situations_pathologiques.push(dlSp);
+			}
 			return ps;
-		});
-		getOtherSps(patient_id, sp.sp_id).then((others) => {
-			console.log('in getLastSp().getOtherSps() with', others);
-			update((ps) => {
-				let patient = ps.find((p) => p.patient_id === patient_id);
-				for (const dlSp of others) {
-					patient.situations_pathologiques.push(dlSp);
-				}
-				return ps;
-			});
 		});
 	}
 
@@ -232,6 +230,15 @@ function createPatientStore() {
 		patients.value.push(newPatient.data[0]);
 		loading.set(false);
 		return newPatient.data[0];
+	}
+
+	function getPatient(patient_id) {
+		console.log('in getPatient() with', patient_id);
+		if (patient_id == 'test-patient') {
+			return defaultTestPatient();			
+		}
+		return get({subscribe}).find((p) => p.patient_id == patient_id);
+		
 	}
 
 	function defaultTestPatient() {
@@ -326,7 +333,7 @@ function createPatientStore() {
 		sortPatient,
 		fetchPatient,
 		remove,
-		defaultTestPatient,
+		getPatient,
 		getLastSpAndOthers,
 		getOtherSps
 	};

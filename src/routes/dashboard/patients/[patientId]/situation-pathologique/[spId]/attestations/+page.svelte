@@ -5,7 +5,7 @@
 	import { selectPatients } from "../../../../../../../lib/stores/supabaseClient";
 	import dayjs from "dayjs";
 
-    let patient = getContext('patient');
+    let patient = $page.data.patient;
     let sp = patient.situations_pathologiques.find((sp) => sp.sp_id === $page.params.spId);
     let valueSingle = sp.attestations.length > 0 ? sp.attestations[0].attestation_id : null;
     $: selected = sp.attestations.find((attestation) => attestation.attestation_id === valueSingle);

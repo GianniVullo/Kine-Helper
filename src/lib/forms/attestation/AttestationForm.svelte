@@ -18,7 +18,7 @@
 	const modalStore = getModalStore(); // pour le code modal
 
 	let message = '';
-	let patient = getContext('patient');
+	let patient = $page.data.patient;
 	let sp = patient.situations_pathologiques.find((sp) => sp.sp_id === $page.params.spId);
 	//! prescription_id
 	console.log('donnees', donnees);

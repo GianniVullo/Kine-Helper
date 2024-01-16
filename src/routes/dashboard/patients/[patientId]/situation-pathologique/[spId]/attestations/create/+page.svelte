@@ -1,7 +1,8 @@
 <script>
-	import AttestationForm from '../../../../../../../../lib/forms/attestation/AttestationForm.svelte';
+	import AttestationForm from '$lib/forms/attestation/AttestationForm.svelte';
 	import { printAttestation } from "$lib/utils/rawPrinting";
 	import { FormWrapper, SubmitButton } from '$lib/forms/index';
+	import DBAdapter from '$lib/forms/actions/dbAdapter';
 	import { getModalStore } from '@skeletonlabs/skeleton';
 	import { CheckboxFieldV2 } from '$lib/forms/index';
 	import dayjs from 'dayjs';
@@ -12,11 +13,11 @@
 		createAttestationFormState,
 		updateAttestationFormState
 	} from '../attestationFormStore.svelte';
-	import { DBAdapter } from '../../../../../../../../lib/forms';
-	import { patients, user } from '../../../../../../../../lib';
+	import { user } from "$lib/index";
+	import {patients} from "$lib/stores/PatientStore";
 	import { goto } from '$app/navigation';
 
-	let patient = getContext('patient');
+	let patient = $page.data.patient;
 	let sp = patient.situations_pathologiques.find((sp) => sp.sp_id === $page.params.spId);
 	let untill = $page.url.searchParams.get('untill');
 	let { state, loading, codeMap } = createAttestationFormState(patient, untill, $page);

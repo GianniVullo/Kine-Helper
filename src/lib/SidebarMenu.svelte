@@ -82,6 +82,9 @@
 					</a>
 				</li>
 			{/each}
+			<button>
+				
+			</button>
 			<div
 				class="absolute -bottom-8 -left-10 h-14 w-14 rounded-full bg-primary-600 opacity-25 duration-200 group-data-[minimized=false]:-left-44 group-data-[minimized=true]:hidden group-data-[minimized=false]:h-48 group-data-[minimized=false]:w-48 dark:opacity-60 md:relative group-data-[minimized=false]:md:bottom-6">
 			</div>

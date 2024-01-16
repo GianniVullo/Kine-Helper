@@ -1,9 +1,14 @@
 <script>
-	import { PatientForm, user, AnnexeA, patients } from '../../lib/index';
+	import { PatientForm, user, AnnexeA } from '../../lib/index';
+	import { patients } from '../../lib/stores/PatientStore';
 	import PostSignupForm from '../../lib/forms/authentication/PostSignupForm.svelte';
 	import SituationPathologiqueForm from '../../lib/forms/situation-pathologique/SituationPathologiqueForm.svelte';
 	console.log($user);
-	let pdfGenerator = new AnnexeA('generated.pdf', {situation_pathologique: 18, patient: $patients[0], premiereSeance: new Date()})
+	let pdfGenerator = new AnnexeA('generated.pdf', {
+		situation_pathologique: 18,
+		patient: $patients[0],
+		premiereSeance: new Date()
+	});
 </script>
 
 <!--? features :

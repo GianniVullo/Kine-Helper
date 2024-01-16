@@ -1,5 +1,5 @@
 <script>
-	import { SignUpForm, LoginForm, PasswordResetForm, patients } from '../lib/index';
+	import { SignUpForm, LoginForm, PasswordResetForm } from '../lib/index';
 	console.log('Rendering Login Page');
 
 	let selectedForm = 'login';

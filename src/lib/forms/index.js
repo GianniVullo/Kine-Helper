@@ -14,7 +14,6 @@ export { default as RadioFieldV2 } from './abstract-fields/RadioFieldV2.svelte';
 export { default as CheckboxFieldV2 } from './abstract-fields/CheckboxFieldV2.svelte';
 export { default as DateField } from './abstract-fields/DateField.svelte';
 
-export { DBAdapter } from './actions/dbAdapter';
 // UI
 export { default as FormWrapper } from './ui/FormWrapper.svelte';
 export { default as SectionCard } from './ui/SectionCard.svelte';

@@ -1,11 +1,10 @@
 <script>
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
-	import { patients } from '$lib/stores/PatientStore';
 	import { getContext } from 'svelte';
 
 	console.log($page.params);
-	let patient = getContext('patient');
+	let patient = $page.data.patient;
 	let sps =
 		patient.situations_pathologiques !== undefined && patient.situations_pathologiques.length > 0;
 	console.log('sps equal', sps);

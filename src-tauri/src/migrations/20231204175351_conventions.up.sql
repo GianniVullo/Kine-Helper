@@ -71,7 +71,7 @@ CREATE TABLE IF NOT EXISTS patients (
     numero_etablissment TEXT,
     service TEXT,
     kinesitherapeute_id TEXT,
-    FOREIGN KEY(kinesitherapeute_id) REFERENCES kinesitherapeutes(id)
+    FOREIGN KEY(kinesitherapeute_id) REFERENCES kinesitherapeutes(id) ON DELETE CASCADE ON UPDATE NO ACTION
 );
 
 CREATE TABLE IF NOT EXISTS situations_pathologiques (
@@ -88,8 +88,8 @@ CREATE TABLE IF NOT EXISTS situations_pathologiques (
     rapport_ecrit BOOLEAN,
     rapport_ecrit_custom_date TEXT,
     rapport_ecrit_date TEXT CHECK(rapport_ecrit_date IN ('first', 'last', 'custom')),
-    FOREIGN KEY(patient_id) REFERENCES patients(patient_id),
-    FOREIGN KEY(user_id) REFERENCES kinesitherapeutes(id)
+    FOREIGN KEY(patient_id) REFERENCES patients(patient_id) ON DELETE CASCADE ON UPDATE NO ACTION,
+    FOREIGN KEY(user_id) REFERENCES kinesitherapeutes(id) ON DELETE CASCADE ON UPDATE NO ACTION
 );
 
 CREATE TABLE IF NOT EXISTS documents (
@@ -99,9 +99,9 @@ CREATE TABLE IF NOT EXISTS documents (
     sp_id TEXT,
     form_data TEXT,
     user_id TEXT,
-    FOREIGN KEY(patient_id) REFERENCES patients(patient_id),
-    FOREIGN KEY(sp_id) REFERENCES situations_pathologiques(sp_id),
-    FOREIGN KEY(user_id) REFERENCES kinesitherapeutes(id)
+    FOREIGN KEY(patient_id) REFERENCES patients(patient_id) ON DELETE CASCADE ON UPDATE NO ACTION,
+    FOREIGN KEY(sp_id) REFERENCES situations_pathologiques(sp_id) ON DELETE CASCADE ON UPDATE NO ACTION,
+    FOREIGN KEY(user_id) REFERENCES kinesitherapeutes(id) ON DELETE CASCADE ON UPDATE NO ACTION
 );
 
 CREATE TABLE IF NOT EXISTS prescriptions (
@@ -116,9 +116,9 @@ CREATE TABLE IF NOT EXISTS prescriptions (
     prescripteur TEXT,
     nombre_seance INTEGER,
     seance_par_semaine INTEGER,
-    FOREIGN KEY(patient_id) REFERENCES patients(patient_id),
-    FOREIGN KEY(sp_id) REFERENCES situations_pathologiques(sp_id),
-    FOREIGN KEY(user_id) REFERENCES kinesitherapeutes(id)
+    FOREIGN KEY(patient_id) REFERENCES patients(patient_id) ON DELETE CASCADE ON UPDATE NO ACTION,
+    FOREIGN KEY(sp_id) REFERENCES situations_pathologiques(sp_id) ON DELETE CASCADE ON UPDATE NO ACTION,
+    FOREIGN KEY(user_id) REFERENCES kinesitherapeutes(id) ON DELETE CASCADE ON UPDATE NO ACTION
 );
 
 CREATE TABLE IF NOT EXISTS generateurs_de_seances (
@@ -147,9 +147,8 @@ CREATE TABLE IF NOT EXISTS generateurs_de_seances (
     examen_ecrit_date TEXT,
     amb_hos TEXT CHECK(amb_hos IN ('AMB', 'HOS')),
     user_id TEXT,
-    FOREIGN KEY(sp_id) REFERENCES situations_pathologiques(sp_id),
-    FOREIGN KEY(gen_id) REFERENCES generateurs_de_seances(gen_id),
-    FOREIGN KEY(user_id) REFERENCES kinesitherapeutes(id)
+    FOREIGN KEY(sp_id) REFERENCES situations_pathologiques(sp_id) ON DELETE CASCADE ON UPDATE NO ACTION,
+    FOREIGN KEY(user_id) REFERENCES kinesitherapeutes(id) ON DELETE CASCADE ON UPDATE NO ACTION
 );
 
 
@@ -170,10 +169,10 @@ CREATE TABLE IF NOT EXISTS attestations (
     with_intake BOOLEAN,
     date TEXT,
     with_rapport BOOLEAN,
-    FOREIGN KEY(patient_id) REFERENCES patients(patient_id),
-    FOREIGN KEY(sp_id) REFERENCES situations_pathologiques(sp_id),
+    FOREIGN KEY(patient_id) REFERENCES patients(patient_id) ON DELETE CASCADE ON UPDATE NO ACTION,
+    FOREIGN KEY(sp_id) REFERENCES situations_pathologiques(sp_id) ON DELETE CASCADE ON UPDATE NO ACTION,
     FOREIGN KEY(prescription_id) REFERENCES prescriptions(prescription_id),
-    FOREIGN KEY(user_id) REFERENCES kinesitherapeutes(id)
+    FOREIGN KEY(user_id) REFERENCES kinesitherapeutes(id) ON DELETE CASCADE ON UPDATE NO ACTION
 );
 
 CREATE TABLE IF NOT EXISTS seances (
@@ -192,10 +191,10 @@ CREATE TABLE IF NOT EXISTS seances (
     start TEXT,
     end TEXT,
     gen_id TEXT,
-    FOREIGN KEY(attestation_id) REFERENCES attestations(attestation_id),
-    FOREIGN KEY(prescription_id) REFERENCES prescriptions(prescription_id),
-    FOREIGN KEY(user_id) REFERENCES kinesitherapeutes(id),
-    FOREIGN KEY(sp_id) REFERENCES situations_pathologiques(sp_id),
-    FOREIGN KEY(patient_id) REFERENCES patients(patient_id),
-    FOREIGN KEY(gen_id) REFERENCES generateurs_de_seances(gen_id)
+    FOREIGN KEY(attestation_id) REFERENCES attestations(attestation_id) ON DELETE SET NULL ON UPDATE NO ACTION,
+    FOREIGN KEY(prescription_id) REFERENCES prescriptions(prescription_id) ON DELETE SET NULL ON UPDATE NO ACTION,
+    FOREIGN KEY(user_id) REFERENCES kinesitherapeutes(id) ON DELETE CASCADE ON UPDATE NO ACTION,
+    FOREIGN KEY(sp_id) REFERENCES situations_pathologiques(sp_id) ON DELETE CASCADE ON UPDATE NO ACTION,
+    FOREIGN KEY(patient_id) REFERENCES patients(patient_id) ON DELETE CASCADE ON UPDATE NO ACTION,
+    FOREIGN KEY(gen_id) REFERENCES generateurs_de_seances(gen_id) ON DELETE SET NULL ON UPDATE NO ACTION,
 );
