@@ -34,8 +34,7 @@
         "maximized": true,
         "contentProtected": true
       }
-    ],
-    "macOSPrivateApi": true
+    ]
   },
   "plugins": {
     "shell": {

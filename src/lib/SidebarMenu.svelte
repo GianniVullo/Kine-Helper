@@ -82,6 +82,7 @@
 					</a>
 				</li>
 			{/each}
+			<!--! Bouton pour se déconnecter -->
 			<button>
 				
 			</button>
