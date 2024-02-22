@@ -1,8 +1,9 @@
 <script>
 	import { page } from '$app/stores';
-	import { writable } from 'svelte/store';
 	import { goto } from '$app/navigation';
+	import dayjs from 'dayjs';
 	import {
+		ArrowRightIcon,
 		FolderIcon,
 		PageIcon,
 		PlusIcon,
@@ -60,87 +61,110 @@
 		caretOpen="rotate-0">
 		{#key patient}
 			{#each patient.situations_pathologiques ?? [] as sp, idx (sp.sp_id)}
-				<TreeViewItem
-					spacing="space-x-2 mt-2"
-					open={idx === selected}
-					on:toggle={async (state) => {
-						// EN GROS Là on va juste mettre un if params.sp_id == sp.sp_id fais rien sinon goto(params.sp_id)
-						// console.log('In the toggle event', state, $page.params.spId, sp.sp_id);
-						if ($page.params.spId !== sp.sp_id && !loading) {
-							console.log('what is the page', $page);
-							if (sp.upToDate === false) {
-								loading = true;
-								let db = new DBAdapter();
-								let completedSp = await db.retrieve_sp(sp.sp_id);
-								completedSp = new SituationPathologique(completedSp.data[0]);
-								completedSp.upToDate = true;
-								patients.update((p) => {
-									let patientIndex = p.findIndex((p) => p.patient_id === patient.patient_id);
-									let spIndex = p[patientIndex].situations_pathologiques.findIndex(
-										(sp) => sp.sp_id === completedSp.sp_id
-									);
-									p[patientIndex].situations_pathologiques[spIndex] = completedSp;
-									return p;
-								});
-								loading = false;
-								console.log('the completed sp', completedSp);
-							}
-							goto(`/dashboard/patients/${patient.patient_id}/situation-pathologique/${sp.sp_id}`);
-							selected = idx;
-						} else if (
-							$page.params.spId === sp.sp_id &&
-							$page.url.pathname !==
-								'/dashboard/patients/' + patient.patient_id + '/situation-pathologique/' + sp.sp_id
-						) {
-							goto(`/dashboard/patients/${patient.patient_id}/situation-pathologique/${sp.sp_id}`);
-						}
-					}}>
-					<svelte:fragment slot="lead">
-						<FolderIcon
-							class={`h-5 w-5 ${
-								$page.params.spId !== sp.sp_id
-									? 'fill-surface-700 dark:fill-surface-300'
-									: 'fill-error-700 dark:fill-error-300'
-							}`} />
-					</svelte:fragment>
-					<h5 class="text-surface-600 dark:text-surface-200">
-						{loading
-							? 'Chargement...'
-							: `Situation du ${new Date(sp.created_at).toLocaleDateString()}`}
-					</h5>
-					<svelte:fragment slot="children">
-						{#if !loading}
-							<TreeViewItem>
-								<a
-									href={`/dashboard/patients/${patient.patient_id}/situation-pathologique/${sp.sp_id}/prescriptions`}
-									class="text-surface-700 dark:text-surface-100">Prescriptions</a>
-								<svelte:fragment slot="lead">
-									<PageIcon class="h-5 w-5 fill-surface-700 dark:fill-surface-300" />
-								</svelte:fragment>
-							</TreeViewItem>
-							<TreeViewItem>
-								<a
-									href={`/dashboard/patients/${patient.patient_id}/situation-pathologique/${sp.sp_id}/attestations`}
-									class="text-surface-700 dark:text-surface-100">Attestations</a>
-								<svelte:fragment slot="lead">
-									<PageIcon class="h-5 w-5 fill-surface-700 dark:fill-surface-300" />
-								</svelte:fragment>
-							</TreeViewItem>
-							<TreeViewItem>
-								<h5 class="text-surface-700 dark:text-surface-100">Documents</h5>
-								<svelte:fragment slot="lead">
-									<PageIcon class="h-5 w-5 fill-surface-700 dark:fill-surface-300" />
-								</svelte:fragment>
-							</TreeViewItem>
-							<TreeViewItem>
-								<h5 class="text-surface-700 dark:text-surface-100">Séances</h5>
-								<svelte:fragment slot="lead">
-									<PageIcon class="h-5 w-5 fill-surface-700 dark:fill-surface-300" />
-								</svelte:fragment>
-							</TreeViewItem>
-						{/if}
-					</svelte:fragment>
-				</TreeViewItem>
+				<div class="flex">
+					<TreeViewItem spacing="space-x-2 mt-2" open={idx === selected}>
+						<svelte:fragment slot="lead">
+							<FolderIcon
+								class={`h-5 w-5 ${
+									$page.params.spId !== sp.sp_id
+										? 'fill-surface-700 dark:fill-surface-300'
+										: 'fill-error-700 dark:fill-error-300'
+								}`} />
+						</svelte:fragment>
+						<h5 class="text-surface-600 dark:text-surface-200">
+							{loading
+								? 'Chargement...'
+								: `Situation du ${dayjs(sp.created_at).format('DD/MM/YYYY')}`}
+						</h5>
+						<svelte:fragment slot="children">
+							{#if !loading}
+								{#if sp.prescriptions.length > 0}
+									<TreeViewItem>
+										<a
+											href={`/dashboard/patients/${patient.patient_id}/situation-pathologique/${sp.sp_id}/prescriptions`}
+											class="text-surface-700 dark:text-surface-100">Prescriptions</a>
+										<svelte:fragment slot="lead">
+											<PageIcon class="h-5 w-5 fill-surface-700 dark:fill-surface-300" />
+										</svelte:fragment>
+									</TreeViewItem>
+								{/if}
+								{#if sp.attestations.length > 0}
+									<TreeViewItem>
+										<a
+											href={`/dashboard/patients/${patient.patient_id}/situation-pathologique/${sp.sp_id}/attestations`}
+											class="text-surface-700 dark:text-surface-100">Attestations</a>
+										<svelte:fragment slot="lead">
+											<PageIcon class="h-5 w-5 fill-surface-700 dark:fill-surface-300" />
+										</svelte:fragment>
+									</TreeViewItem>
+								{/if}
+								{#if sp.documents.length > 0}
+									<TreeViewItem>
+										<h5 class="text-surface-700 dark:text-surface-100">Documents</h5>
+										<svelte:fragment slot="lead">
+											<PageIcon class="h-5 w-5 fill-surface-700 dark:fill-surface-300" />
+										</svelte:fragment>
+									</TreeViewItem>
+								{/if}
+								<!-- <TreeViewItem>
+									<h5 class="text-surface-700 dark:text-surface-100">Séances</h5>
+									<svelte:fragment slot="lead">
+										<PageIcon class="h-5 w-5 fill-surface-700 dark:fill-surface-300" />
+									</svelte:fragment>
+								</TreeViewItem> -->
+							{/if}
+						</svelte:fragment>
+					</TreeViewItem>
+					{#if ($page.route.id !== '/dashboard/patients/[patientId]/situation-pathologique/[spId]' || $page.params.spId !== sp.sp_id) }
+						<div class="flex items-center justify-center">
+							<button
+								class="variant-filled btn-icon btn-icon-sm flex items-center justify-center"
+								on:click={async (state) => {
+									console.log('going to the sp', sp.sp_id);
+
+									// EN GROS Là on va juste mettre un if params.sp_id == sp.sp_id fais rien sinon goto(params.sp_id)
+									// console.log('In the toggle event', state, $page.params.spId, sp.sp_id);
+									if ($page.params.spId !== sp.sp_id && !loading) {
+										console.log('what is the page', $page);
+										if (sp.upToDate === false) {
+											loading = true;
+											let db = new DBAdapter();
+											let completedSp = await db.retrieve_sp(sp.sp_id);
+											completedSp = new SituationPathologique(completedSp.data[0]);
+											completedSp.upToDate = true;
+											patients.update((p) => {
+												let patientIndex = p.findIndex((p) => p.patient_id === patient.patient_id);
+												let spIndex = p[patientIndex].situations_pathologiques.findIndex(
+													(sp) => sp.sp_id === completedSp.sp_id
+												);
+												p[patientIndex].situations_pathologiques[spIndex] = completedSp;
+												return p;
+											});
+											loading = false;
+											console.log('the completed sp', completedSp);
+										}
+										goto(
+											`/dashboard/patients/${patient.patient_id}/situation-pathologique/${sp.sp_id}`
+										);
+										selected = idx;
+									} else if (
+										$page.params.spId === sp.sp_id &&
+										$page.url.pathname !==
+											'/dashboard/patients/' +
+												patient.patient_id +
+												'/situation-pathologique/' +
+												sp.sp_id
+									) {
+										goto(
+											`/dashboard/patients/${patient.patient_id}/situation-pathologique/${sp.sp_id}`
+										);
+									}
+								}}>
+								<ArrowRightIcon class="h-5 w-5 fill-surface-700 dark:fill-surface-300" />
+							</button>
+						</div>
+					{/if}
+				</div>
 			{/each}
 		{/key}
 	</TreeView>

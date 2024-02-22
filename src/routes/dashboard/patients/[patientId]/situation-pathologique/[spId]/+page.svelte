@@ -1,95 +1,144 @@
 <script>
-	import Dropdown from './Dropdown.svelte';
-
-	import { supabase } from '$lib/index';
 	import { page } from '$app/stores';
-	import { PlusIcon } from '$lib/ui/svgs/index';
-	import { getContext } from 'svelte';
+	import { PlusIcon, UpdateIcon, DeleteIcon } from '$lib/ui/svgs/index';
 	import dayjs from 'dayjs';
-	import { NomenclatureManager } from '../../../../../../lib/utils/nomenclatureManager';
 	import EventCalendar from '../../../../../../lib/EventCalendar.svelte';
+	import { patients } from '../../../../../../lib/stores/PatientStore';
+	import { getEvents } from './eventFigureOuter';
 	import { getModalStore } from '@skeletonlabs/skeleton';
+	import DBAdapter from '../../../../../../lib/forms/actions/dbAdapter';
+	// import { goto } from '$app/navigation';
 
-	export let data;
-	let seanceGesser = new NomenclatureManager();
-
-	async function getSeances() {
-		let events = [];
-		let durations = await seanceGesser.durationGuesser(data.sp.seances);
-		for (let index = 0; index < data.sp.seances.length; index++) {
-			const seance = data.sp.seances[index];
-			let duration = durations[index];
-			let daysjs_end = dayjs(seance.date);
-			let seance_end = daysjs_end.add(duration, 'minute').format('YYYY-MM-DD HH:mm');
-			events.push({
-				id: seance.seance_id,
-				// resourceIds: '',
-				// allDay: false,
-				start: daysjs_end.format('YYYY-MM-DD HH:mm'),
-				end: seance_end,
-				title: data.patient.nom + ' ' + data.patient.prenom,
-				editable: false,
-				startEditable: false,
-				durationEditable: false,
-				backgroundColor: 'rgb(168,85,247)',
-				textColor: '#dbdee9'
-				// extendedProps: ''
-			});
+	const modalStore = getModalStore();
+	const modal = {
+		type: 'confirm',
+		// Data
+		title: 'Attention action irréversible',
+		body: 'Êtes-vous sûr de vouloir supprimer cette situation pathologique ? Toutes les données associées seront perdues.',
+		buttonTextConfirm: 'Confirmer',
+		buttonTextCancel: 'Annuler',
+		buttonPositive: 'variant-filled-error',
+		response: async (r) => {
+			if (r) {
+				let db = new DBAdapter();
+				await db.delete('situations_pathologiques', ['sp_id', $page.params.spId]);
+				$patients.update((p) => {
+					let patient = p.find((p) => p.patient_id === $page.params.patientId);
+					patient.situations_pathologiques = patient.situations_pathologiques.filter(
+						(sp) => sp.sp_id !== $page.params.spId
+					);
+					return p;
+				});
+			}
 		}
-		console.log('the events from getSeances', events);
-		return events;
-	}
-
-	let ec;
-	// ec.setOption()
-	console.log('la situation pathologique :', data);
-
-	let comboboxValue;
-
-	const popupCombobox = {
-		event: 'click',
-		target: 'popupCombobox',
-		placement: 'bottom',
-		closeQuery: '.listbox-item'
 	};
+	const documentSelectionModal = {
+		type: 'component',
+		component: 'documentSelection',
+	}
+	const patient = $patients.find((p) => p.patient_id === $page.params.patientId);
+	const sp = patient.situations_pathologiques.find((sp) => sp.sp_id === $page.params.spId);
+
+	let eventsPromise = new Promise((resolve) => {
+		getEvents(patient, sp).then((events) => {
+			resolve(events);
+		});
+	});
+	let ec;
 
 	let items = [
-		{ name: 'Attestation', href: $page.url.pathname + '/attestations/create' },
-		// { name: 'Prescription', href: $page.url.pathname + '/prescriptions/create' },
-		{ name: 'Document', href: 'movies' },
-		// { name: 'Générateur', href: 'television' },
-		{ name: 'Séances', href: 'movies' }
+		{
+			name: 'Attestation',
+			href: $page.url.pathname + '/attestations/create',
+			condition:
+				sp.seances.filter((seance) => {
+					return (dayjs(dayjs(seance.date).format('YYYY-MM-DD')).isBefore(dayjs())) && !seance.attestation_id;
+				}).length > 0
+		},
+		{ name: 'Prescription', href: $page.url.pathname + '/prescriptions/create', condition: true },
+		{ name: 'Séances', href: $page.url.pathname + '/generateurs/create', condition: true }
+		// { name: 'Document', href: 'movies' },
+		// { name: 'Séances', href: 'movies' }
 	];
 </script>
 
 <div class="mx-4 flex w-full flex-col">
 	<!--* Titre -->
 	<div class="flex flex-col">
-		<h5 class="text-lg text-surface-500 dark:text-surface-400">
-			Situation pathologique du {dayjs(data.sp.created_at).format('DD/MM/YYYY')}
-		</h5>
+		<div class="flex items-center space-x-4">
+			<h5 class="text-lg text-surface-500 dark:text-surface-400">
+				Situation pathologique du {dayjs(sp.created_at).format('DD/MM/YYYY')}
+			</h5>
+			<div class="flex items-center space-x-2">
+				<a
+					href={`/dashboard/patients/${$page.params.patientId}/situation-pathologique/${$page.params.spId}/update`}
+					class="variant-outline btn-icon btn-icon-sm">
+					<UpdateIcon class="h-4 w-4 stroke-warning-800 dark:stroke-warning-300" />
+				</a>
+				<button
+					on:click={() => modalStore.trigger(modal)}
+					class="variant-outline btn-icon btn-icon-sm">
+					<DeleteIcon class="h-4 w-4 stroke-error-800 dark:stroke-error-300" />
+				</button>
+			</div>
+		</div>
 		<div class="flex flex-wrap space-x-2">
 			{#each items as item}
-				<a href={item.href} class="variant-outline-secondary btn btn-sm my-2 flex">
-					<PlusIcon class="h-4 w-4 stroke-surface-600 dark:stroke-surface-300" />
-					<span class="text-sm text-surface-500 dark:text-surface-400">{item.name}</span></a>
+				{#if item.condition}
+					<a href={item.href} class="variant-outline-secondary btn btn-sm my-2 flex">
+						<PlusIcon class="h-4 w-4 stroke-surface-600 dark:stroke-surface-300" />
+						<span class="text-sm text-surface-500 dark:text-surface-400">{item.name}</span></a>
+				{/if}
 			{/each}
+			<button on:click={() => modalStore.trigger(documentSelectionModal)} class="variant-outline-secondary btn btn-sm my-2 flex">
+				<PlusIcon class="h-4 w-4 stroke-surface-600 dark:stroke-surface-300" />
+				<span class="text-sm text-surface-500 dark:text-surface-400">Document</span></button>
 		</div>
 	</div>
 
-	<!--* Motif de la situation pathologique -->
-	<div>
+	<!--* Add the first prescription -->
+	{#if sp.prescriptions.length === 0}
+		<div class="my-4 flex flex-col items-start justify-start space-y-3">
+			<p>Commencez par</p>
+			<a
+				href={`/dashboard/patients/${patient.patient_id}/situation-pathologique/${sp.sp_id}/prescriptions/create`}
+				class="variant-filled-primary btn">créer une prescription</a>
+		</div>
+	{/if}
+
+	{#if sp.prescriptions.length > 0 && sp.seances.length === 0}
+		<div class="flex flex-col items-start justify-start space-y-2 p-2">
+			<p>Maintenant que vous avez créé une prescription vous pouvez</p>
+			<a
+				class="variant-filled-primary btn btn-sm"
+				href={`/dashboard/patients/${patient.patient_id}/situation-pathologique/${sp.sp_id}/generateurs/create`}
+				>Générer des séances</a>
+		</div>
+	{/if}
+
+	<!--* Motif et plan de la situation pathologique -->
+	<div class="flex flex-col space-y-2">
 		<div class="relative flex rounded-xl bg-surface-100 px-4 pb-4 pt-8 dark:bg-surface-800">
 			<p class="absolute left-4 top-1 text-sm text-surface-700 dark:text-surface-400">Motif</p>
-			<p class="text-base text-surface-700 dark:text-surface-300">{data.sp.motif}</p>
+			<p class="text-base text-surface-700 dark:text-surface-300">{sp.motif}</p>
+		</div>
+		<div class="relative flex rounded-xl bg-surface-100 px-4 pb-4 pt-8 dark:bg-surface-800">
+			<p class="absolute left-4 top-1 text-sm text-surface-700 dark:text-surface-400">
+				Plan du ttt
+			</p>
+			<p class="text-base text-surface-700 dark:text-surface-300">{sp.plan_du_ttt}</p>
 		</div>
 	</div>
 
-	<!--* Séances Agenda -->
-	<div class="mt-4 flex w-[90%] flex-col">
-		<h5 class="mb-2 text-lg text-surface-500 dark:text-surface-400">Séances</h5>
-		{#key data}
-			<EventCalendar bind:this={ec} events={data.events} options={{}} />
-		{/key}
-	</div>
+	{#if sp.seances.length > 0}
+		<!--* Séances Agenda -->
+		<div class="mt-4 flex w-[90%] flex-col">
+			<h5 class="mb-2 text-lg text-surface-500 dark:text-surface-400">Séances</h5>
+			{#await eventsPromise}
+				CHARGEMENT...
+			{:then events}
+				<EventCalendar bind:this={ec} {events} options={{}} />
+			{/await}
+		</div>
+	{/if}
 </div>

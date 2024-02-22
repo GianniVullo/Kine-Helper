@@ -1,8 +1,14 @@
 import { get, writable } from 'svelte/store';
-import { writeBinaryFile } from '@tauri-apps/plugin-fs';
+import { writeFile } from '@tauri-apps/plugin-fs';
 import { save } from '@tauri-apps/plugin-dialog';
 import { jsPDF } from 'jspdf';
 import { user } from '../stores/UserStore';
+import dayjs from 'dayjs';
+import DBAdapter from '../forms/actions/dbAdapter';
+import { open } from '@tauri-apps/plugin-shell';
+import { patients } from '../stores/PatientStore';
+import { appLocalDataDir } from '@tauri-apps/api/path';
+import { invoke } from '@tauri-apps/api/core';
 
 function yPositionStore(initialValue) {
 	const yStore = writable(initialValue);
@@ -20,7 +26,7 @@ function yPositionStore(initialValue) {
 }
 
 export class PDFGeneration {
-	constructor(documentName, formData) {
+	constructor(documentName, formData, patient, sp, docType) {
 		this.documentName = documentName;
 		this.formData = formData;
 		this.doc = new jsPDF();
@@ -33,18 +39,66 @@ export class PDFGeneration {
 			left: 24.5,
 			right: 24.5
 		};
+		this.patient = patient;
+		this.sp = sp;
 		this.yPosition = yPositionStore(this.margins.top);
 		this.lineSpacing = 1.5;
 		this.tightLineSpacing = 1.2;
 		this.headingFontSize = 16;
 		this.bodyFontSize = 10;
+		this.docType = docType;
 	}
 	buildPdf() {}
 	async save() {
 		this.buildPdf();
-		let path = await save({ filters: [{ name: this.documentName, extensions: ['pdf'] }] });
-		console.log('in pdfGeneration with path ==', path);
-		await writeBinaryFile(path, this.doc.output('arraybuffer'));
+		//! Finalement, comme l'API ne retourne pas le filePath je choisis d'émettre le pdf dans le dossier utilisateur et de l'ouvrir à partir du dossier utilisateur.
+		// let path = await save({ defaultPath: this.documentName });
+		let docOutput = this.doc.output('arraybuffer');
+		let dataPath = await appLocalDataDir();
+		let dirPath = `${dataPath}/${get(user).user.id}/${this.patient.patient_id}/documents/factures`;
+		console.log('in pdfGeneration with path ==', docOutput);
+		await invoke('setup_path', {
+			dirPath,
+			fileName: this.documentName,
+			fileContent: Array.from(new Uint8Array(docOutput))
+		});
+		let db = new DBAdapter();
+		let document = {
+			form_data: this.formData,
+			docType: this.docType,
+			created_at: dayjs().format('YYYY-MM-DD'),
+			document_id: crypto.randomUUID(),
+			patient_id: this.patient.patient_id,
+			sp_id: this.sp.sp_id,
+			user_id: get(user).user.id
+		};
+		await db.save('documents', document);
+		patients.update((p) => {
+			p.find((p) => p.patient_id === this.patient.patient_id)
+				.situations_pathologiques.find((sp) => sp.sp_id === this.sp.sp_id)
+				.documents.push(document);
+			return p;
+		});
+		console.log('in pdfGeneration with path ==', dirPath + '/' + this.documentName.replaceAll(' ', '\ '));
+		await open(dirPath + '/' + this.documentName.replaceAll(' ', '\ '));
+	}
+
+	fullWidthTable(data, headers, { x = this.margins.left, y = get(this.yPosition) } = {}) {
+		const table = this.doc.table(x, y, data, headers);
+	}
+
+	header(date = dayjs().format('DD/MM/YYYY')) {
+		this.doc.setFontSize(this.bodyFontSize);
+		this.doc.setFont('helvetica', 'normal');
+		const dateText = 'Fait le ' + date;
+		const dateTextWidth =
+			(this.doc.getStringUnitWidth(dateText) * this.doc.internal.getFontSize()) /
+			this.doc.internal.scaleFactor;
+		const xPositionForDate = this.pageWidth - this.margins.right - dateTextWidth; // Subtract text width and margin from page width
+		// La date
+		this.doc.text(dateText, xPositionForDate, this.margins.top);
+		this.signature();
+		this.addParagraph('Kinésithérapeute');
 	}
 	addParagraph(
 		text,
@@ -143,34 +197,5 @@ export class PDFGeneration {
 		this.addParagraph(get(user).profil.adresse, { x: x });
 		this.addParagraph(`${get(user).profil.cp} ${get(user).profil.localite}`, { x: x });
 		this.addParagraph(get(user).profil.inami, { x: x });
-	}
-}
-
-function addHeader(
-	doc,
-	text,
-	yPosition,
-	{ fontSize = 16, fontWeight = 'bold', fontFamily = 'helvetica', fontStyle }
-) {
-	doc.setFontSize(fontSize);
-	doc.setFont(fontFamily, fontWeight);
-	doc.text(text, margins.left, get(yPosition));
-	if (fontStyle == 'underline') {
-		underlineText(doc, text, yPosition);
-	}
-	yPosition.update((y) => y + fontSize + 10); // Update Y position for next element
-}
-
-// Function to draw a checkbox
-function addCheckbox(doc, isChecked, { x = 20, y = null, size = 5 }, yPosition) {
-	if (y === null) {
-		y = get(yPosition);
-		yPosition.update((y) => y + size + 6); // Update Y position for next element
-	}
-	doc.rect(x, y, size, size);
-	if (isChecked) {
-		doc.setFont('zapfdingbats');
-		doc.setFontSize(size);
-		doc.text('4', x + 1, y + size);
 	}
 }

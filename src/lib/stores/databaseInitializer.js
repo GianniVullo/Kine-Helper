@@ -1,9 +1,10 @@
 import Database from '@tauri-apps/plugin-sql';
-import { supabase } from '../index';
-import { invoke } from '@tauri-apps/api/primitives';
+import { supabase } from './supabaseClient';
+import { invoke } from '@tauri-apps/api/core';
 
 export class DBInitializer {
 	async openDBConnection() {
+		// await invoke("sql:allow-load")
 		return await Database.load('sqlite:kinehelper.db');
 	}
 
@@ -18,7 +19,7 @@ export class DBInitializer {
 		// D'abord lister les fichiers dans le bucket static/codes
 		let remoteFilesList = await supabase.storage.from('static').list('codes');
 		remoteFilesList = remoteFilesList.data.map((val) => val.name);
-		console.log(remoteFilesList);
+		console.log('GZ stocké sur le bucket drive', remoteFilesList);
 		// Ensuite fetcher les fichiers dans la base de données
 		let localFilesList = await db.select('SELECT documents from conventions;');
 		localFilesList = localFilesList.map((val) => val.documents);

@@ -23,6 +23,7 @@ export default class DBAdapter {
 				let placeholders;
 				let values = [];
 				if (Array.isArray(formData)) {
+					console.log('Preparing save statement with : ', formData);
 					let placeholderIdx = 1;
 					columns = Object.keys(formData[0]).join(', ');
 					placeholders = [];
@@ -37,22 +38,26 @@ export default class DBAdapter {
 						values = [...values, ...Object.values(item)];
 					}
 					placeholders = placeholders.map((val) => `(${val.join(', ')})`).join(', ');
+					console.log('Prepared save statement with : ', columns, placeholders, values);
 				} else {
+					console.log('Preparing save statement with : ', formData);
 					columns = Object.keys(formData).join(', ');
 					placeholders = Object.keys(formData)
 						.map((val, idx) => `$${idx + 1}`)
 						.join(', ');
 					placeholders = `(${placeholders})`;
 					values = Object.values(formData);
+					console.log('Prepared save statement with : ', columns, placeholders, values);
 				}
 				let db = await new DBInitializer().openDBConnection();
 				// Prepare and run the INSERT statement
-				let query = db.select(
+				let query = await db.select(
 					`INSERT INTO ${table} (${columns}) VALUES ${placeholders} RETURNING *`,
 					values
 				);
+				console.log('Inserted successfully now closing db');
 				await db.close();
-				return query;
+				return { data: query };
 			case 'cloud':
 				return await supabase.from(table).insert(formData).select();
 			default:
@@ -73,9 +78,49 @@ export default class DBAdapter {
 		}
 	}
 
-	async update(table, id, formData) {}
+	async update(table, filters, formData) {
+		switch (this.offre) {
+			case 'free':
+				let db = await new DBInitializer().openDBConnection();
+				let updateStmt = Object.keys(formData).reduce((acc, key, idx) => {
+					return `${acc}${idx > 0 ? ', ' : ''}${key} = $${idx + 1}`;
+				}, '');
+				let whereStmt = filters.reduce((acc, [filterName, _], idx) => {
+					return `${acc}${idx > 0 ? ' AND ' : ''}${filterName} = $${
+						idx + Object.keys(formData).length + 1
+					}`;
+				}, '');
+				let statement = `UPDATE ${table} SET ${updateStmt} WHERE ${whereStmt}`;
+				console.log('in DBAdapter.update() with', updateStmt, whereStmt);
+				const stmt = await db.execute(statement, [
+					...Object.values(formData),
+					...filters.map(([_, filterValue]) => filterValue)
+				]);
+				console.log('updated successfully now closing db');
+				await db.close();
+				return stmt;
 
-	async delete(table, id) {}
+			default:
+				break;
+		}
+	}
+
+	async delete(table, [filterName, filterValue]) {
+		switch (this.offre) {
+			case 'free':
+				let db = await new DBInitializer().openDBConnection();
+				const stmt = await db.execute(`DELETE FROM ${table} WHERE ${filterName} = $1`, [
+					filterValue
+				]);
+				await db.close();
+				return stmt;
+			case 'cloud':
+				return await supabase.from(table).delete().eq('id', id);
+			default:
+				console.log(`in DBAdapter.save(${table}, ${id})`);
+				return;
+		}
+	}
 
 	async retrieve(table, selectStatement, [filterName, filterValue]) {
 		switch (this.offre) {
@@ -87,7 +132,7 @@ export default class DBAdapter {
 					[filterValue]
 				);
 				await db.close();
-				return stmt;
+				return { data: stmt };
 			case 'cloud':
 				return await supabase.from(table).select(selectStatement).eq(filterName, filterValue);
 			default:
@@ -99,13 +144,12 @@ export default class DBAdapter {
 		switch (this.offre) {
 			case 'free':
 				let db = await new DBInitializer().openDBConnection();
-				let latestPs = await db.select(
-					'SELECT * FROM situations_pathologiques WHERE sp_id = $1',
-					[sp_id]
-				);
+				let latestPs = await db.select('SELECT * FROM situations_pathologiques WHERE sp_id = $1', [
+					sp_id
+				]);
 				if (latestPs.length === 0) {
 					// No record found
-					return {error: 'No record found'};
+					return { error: 'No record found' };
 				}
 
 				// Fetch related data for each table
@@ -133,8 +177,12 @@ export default class DBAdapter {
 				await db.close();
 				return result;
 			case 'cloud':
-				let selectStatement = 'sp_id, created_at, numero_etablissment, service, motif, plan_du_ttt, seances (seance_id,code_id,date,description,has_been_attested,attestation_id,prescription_id,is_paid,gen_id), prescriptions ( prescription_id, date, jointe_a, prescripteur, nombre_seance, seance_par_semaine), attestations (attestation_id, porte_prescr, numero_etablissment, service, has_been_printed, prescription_id, total_recu, valeur_totale, with_indemnity, with_intake, with_rapport, date), generateurs_de_seances (gen_id, created_at, auto, groupe_id, lieu_id, duree, intake, examen_consultatif, rapport_ecrit, rapport_ecrit_custom_date, volet_j, seconde_seance_fa, duree_seconde_seance_fa, nombre_code_courant_fa, volet_h, patho_lourde_type, gmfcs, seconde_seance_e, premiere_seance, jour_seance_semaine_heures, deja_faites, default_seance_description, nombre_seances, seances_range, date_presta_chir_fa, examen_ecrit_date, amb_hos, rapport_ecrit_date), documents (document_id, created_at, form_data)';
-				return await supabase.from('situations_pathologiques').select(selectStatement).eq('sp_id', sp_id);
+				let selectStatement =
+					'sp_id, created_at, numero_etablissment, service, motif, plan_du_ttt, seances (seance_id,code_id,date,description,has_been_attested,attestation_id,prescription_id,is_paid,gen_id), prescriptions ( prescription_id, date, jointe_a, prescripteur, nombre_seance, seance_par_semaine), attestations (attestation_id, porte_prescr, numero_etablissment, service, has_been_printed, prescription_id, total_recu, valeur_totale, with_indemnity, with_intake, with_rapport, date), generateurs_de_seances (gen_id, created_at, auto, groupe_id, lieu_id, duree, intake, examen_consultatif, rapport_ecrit, rapport_ecrit_custom_date, volet_j, seconde_seance_fa, duree_seconde_seance_fa, nombre_code_courant_fa, volet_h, patho_lourde_type, gmfcs, seconde_seance_e, premiere_seance, jour_seance_semaine_heures, deja_faites, default_seance_description, nombre_seances, seances_range, date_presta_chir_fa, examen_ecrit_date, amb_hos, rapport_ecrit_date), documents (document_id, created_at, form_data)';
+				return await supabase
+					.from('situations_pathologiques')
+					.select(selectStatement)
+					.eq('sp_id', sp_id);
 			default:
 				console.log(`in DBAdapter.save(${table}, ${id})`);
 				return;
@@ -152,7 +200,7 @@ export default class DBAdapter {
 				if (filters && filters.length > 0) {
 					const filterClauses = filters.map(([filterName, filterValue], idx) => {
 						return filterName.startsWith('!')
-							? `${filterName.substring(1)} != $${idx + 1}}`
+							? `${filterName.substring(1)} != $${idx + 1}`
 							: `${filterName} = $${idx + 1}`;
 					});
 					liteQuery += ` WHERE ${filterClauses.join(' AND ')}`;
@@ -167,14 +215,20 @@ export default class DBAdapter {
 				if (limit) {
 					liteQuery += ` LIMIT ${limit}`;
 				}
-
+				console.log(
+					'in DBAdapter.list() Before query',
+					liteQuery,
+					'with args',
+					filters.map(([_, filterValue]) => filterValue)
+				);
 				// Prepare and execute the query
 				const stmt = await db.select(
 					liteQuery,
 					filters.map(([_, filterValue]) => filterValue)
 				);
+				console.log('in DBAdapter.list() After query', stmt);
 				await db.close();
-				return stmt;
+				return { data: stmt };
 			case 'cloud':
 				let query = supabase.from(table).select(selectStatement);
 				if (orderBy) {
@@ -211,7 +265,7 @@ export default class DBAdapter {
 
 				if (latestPs.length === 0) {
 					// No record found
-					return null;
+					return { data: { ps: [] } };
 				}
 
 				let sp_id = latestPs[0].sp_id;
@@ -262,11 +316,11 @@ export default class DBAdapter {
 					const { seance_id, date, has_been_attested, attestation_id, code_id } = seance;
 					await db.execute(
 						`UPDATE seances SET 
-									  date = ?, 
-									  has_been_attested = ?, 
-									  attestation_id = ?, 
-									  code_id = ? 
-									  WHERE seance_id = ?`,
+									  date = $1, 
+									  has_been_attested = $2, 
+									  attestation_id = $3, 
+									  code_id = $4 
+									  WHERE seance_id = $5`,
 						[date, has_been_attested, attestation_id, code_id, seance_id]
 					);
 				}
@@ -281,10 +335,6 @@ export default class DBAdapter {
 				console.log(`in DBAdapter.update_seances(${seances_array})`);
 				return;
 		}
-		await $1.rpc('get_last_sp', {
-			user_id_param: 'b0f022dc-6688-430c-8da7-3763c469fb9f',
-			patient_id_param: '2f72126f-90e5-44bd-9d5e-bd372c8fd29a'
-		});
 	}
 
 	async customSQL(statement, args) {}

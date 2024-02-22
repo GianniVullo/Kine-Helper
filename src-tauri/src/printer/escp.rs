@@ -1,71 +1,218 @@
-use crate::printer::form_data_modeling::{DocumentFormData, EscpDocument};
+use crate::printer::form_data_modeling::{Attestation, DocumentFormData, Seance};
 
-pub fn build_document(form_data: DocumentFormData) -> EscpDocument {
-    let mut doc = EscpDocument::new();
-    let DocumentFormData { patient, prescription, attestation, kine, situation_pathologique } = form_data;
+use unidecode::unidecode;
 
-    doc.set_page_length_12_inch();
-    doc.vertical_move(60); // \x1b\x4a\x3c
-    doc.add_text(&format!("\t\t     {}", patient.full_name()));
-    doc.vertical_move(108); // \x1b\x4a\x6c
-    doc.add_text(&format!("\r\t\t   {}", patient.mutualite));
-    doc.vertical_move(45); // \x1b\x4a\x2d
-    doc.add_text(&format!("\r\t   {}", patient.niss));
-    doc.vertical_move(63); // \x1b\x4a\x3f
-    doc.add_text(&format!("\r\t\t   {}", patient.adresse));
-    doc.vertical_spacing(4.32);
-    doc.add_text(&format!("\r\t{} {}", patient.cp, patient.localite));
-    doc.vertical_move(125); // \x1b\x4a\x7d
-    doc.vertical_move(17); // \x1b\x4a\x11
-    doc.add_text(&format!("\r\t\t      {}", patient.full_name()));
-    // Repeated vertical spacing
-    for _ in 0..4 {
-        doc.vertical_spacing(10.0);
+struct ESCP {
+    pub is_nine_pin: bool,
+    pub format_to_12_inch: Vec<u8>,
+    pub form_feed_cmd: Vec<u8>,
+    pub set_to_12_cpi: Vec<u8>,
+    pub set_to_10_cpi: Vec<u8>,
+}
+
+impl Default for ESCP {
+    fn default() -> Self {
+        ESCP {
+            is_nine_pin: true,
+            format_to_12_inch: vec![0x1b, 0x43, 0x00, 0x0c],
+            form_feed_cmd: vec![0x0c],
+            set_to_12_cpi: vec![0x1b, 0x4d],
+            set_to_10_cpi: vec![0x1b, 0x50],
+        }
     }
-    doc.vertical_move(64); // \x1b\x4a\x40
-    doc.set_12_cpi();
-    // ... (assuming lignesAttestation is handled separately) ...
-    doc.set_10_cpi();
-    doc.vertical_move(40); // \x1b\x4a\x28
-    doc.add_text(&format!("\r\t       {}", prescription.prescripteur.full_name()));
-    doc.vertical_move(41); // \x1b\x4a\x29
-    doc.add_text(&format!("\r\t      {}", prescription.date));
-    doc.vertical_move(38); // \x1b\x4a\x26
-    doc.add_text(&format!("\r\t\t\t\t{}", prescription.prescripteur.inami));
-    doc.vertical_move(38); // \x1b\x4a\x26
-    doc.vertical_move(51); // \x1b\x4a\x33
-    doc.vertical_move(25); // \x1b\x4a\x19
-    doc.add_text(&format!("\r\t{}", if attestation.porte_prescr { "" } else { "*******" }));
-    doc.vertical_move(16); // \x1b\x4a\x10
-    doc.add_text(&format!("\r\t         {}", if attestation.porte_prescr { "---------" } else { &attestation.date }));
-    doc.vertical_move(32); // \x1b\x4a\x20
-    doc.add_text(&format!("\r\t{}", if situation_pathologique.numero_etablissment.is_empty() && situation_pathologique.service.is_empty() { "------------  ------" } else { "" }));
-    doc.vertical_move(13); // \x1b\x4a\x0d
-    doc.add_text(&format!("\r\t\t\t       {}", situation_pathologique.numero_etablissment));
-    doc.vertical_move(34); // \x1b\x4a\x22
-    doc.add_text(&format!("\r\t\t\t       {}", situation_pathologique.service));
-    doc.vertical_spacing(10.0);
-    doc.vertical_move(32); // \x1b\x4a\x20
-    doc.add_text(&format!("\r\t\t\t\t{}", attestation.total_recu));
-    doc.vertical_spacing(10.0);
-    doc.add_text(&format!("\r\t\t{}", kine.full_name()));
-    doc.vertical_spacing(4.32);
-    doc.add_text(&format!("\r\t\t{}", kine.inami));
-    doc.vertical_spacing(4.32);
-    doc.add_text(&format!("\r\t\t{},", kine.adresse));
-    doc.vertical_spacing(4.32);
-    doc.add_text(&format!("\r\t\t{} {}", kine.cp, kine.localite));
-    doc.vertical_spacing(10.0);
-    doc.vertical_move(80); // \x1b\x4a\x50
-    doc.add_text(&format!("\r\t\t\t      {}", attestation.date));
-    doc.vertical_spacing(10.0);
-    doc.vertical_spacing(10.0);
-    doc.add_text(&format!("\r\t\t\t    {}", kine.numero_bce));
-    doc.vertical_spacing(10.0);
-    doc.add_text(&format!("\r\t\t\t      {}", attestation.date));
-    doc.vertical_spacing(10.0);
-    doc.add_text(&format!("\r\t\t  {}", attestation.total_recu));
-    doc.form_feed();
+}
 
+impl ESCP {
+    pub fn vertical_spacing(&self, mm: f64) -> Vec<u8> {
+        let mut cmd: Vec<u8> = vec![0x1b, 0x4a];
+        let arg: u8 = (mm
+            * (if self.is_nine_pin {
+                8.3 as f64
+            } else {
+                7.1 as f64
+            })
+            .round()) as u8;
+        cmd.push(arg);
+        cmd
+    }
+}
+
+pub fn build_binary(vectors: Vec<Vec<u8>>) -> Vec<u8> {
+    let mut binary: Vec<u8> = vec![];
+    for vector in vectors {
+        binary.append(&mut vector.clone());
+    }
+    binary
+}
+
+pub fn build_document(form_data: DocumentFormData) -> Vec<u8> {
+    let DocumentFormData {
+        patient,
+        prescription,
+        attestation,
+        kine,
+        situation_pathologique,
+        is_nine_pin,
+    } = form_data;
+
+    let escp_cmds = ESCP {
+        is_nine_pin: is_nine_pin,
+        ..Default::default()
+    };
+
+    let section_identification_patient = vec![
+        escp_cmds.format_to_12_inch.clone(),
+        escp_cmds.vertical_spacing(7.05),
+        format!("\t\t     {}", unidecode(&patient.full_name())).into_bytes(),
+        escp_cmds.vertical_spacing(13.7),
+        format!("\r\t\t   {}", patient.mutualite).into_bytes(),
+        escp_cmds.vertical_spacing(6.0),
+        format!("\r\t   {}", patient.niss).into_bytes(),
+        escp_cmds.vertical_spacing(7.5),
+        format!("\r\t\t   {}", unidecode(&patient.adresse)).into_bytes(),
+        escp_cmds.vertical_spacing(5.0),
+        format!("\r\t{} {}", patient.cp, unidecode(&patient.localite)).into_bytes(),
+        escp_cmds.vertical_spacing(17.93),
+    ];
+
+    let section_lignes_prestations: Vec<Vec<u8>> = vec![
+        format!("\r\t\t      {}", unidecode(&patient.full_name())).into_bytes(),
+        escp_cmds.vertical_spacing(10.0),
+        escp_cmds.vertical_spacing(10.0),
+        escp_cmds.vertical_spacing(10.0),
+        escp_cmds.vertical_spacing(10.0),
+        escp_cmds.vertical_spacing(10.52),
+        escp_cmds.set_to_12_cpi.clone(),
+    ]
+    .into_iter()
+    .chain(lignes_attestation(&escp_cmds, &attestation).into_iter())
+    .collect();
+
+    let section_prescription_hospitalisation = vec![
+        escp_cmds.set_to_10_cpi.clone(),
+        escp_cmds.vertical_spacing(4.7),
+        format!(
+            "\r\t       {}",
+            unidecode(&prescription.prescripteur.full_name())
+        )
+        .into_bytes(),
+        escp_cmds.vertical_spacing(4.83),
+        format!("\r\t      {}", prescription.date).into_bytes(),
+        escp_cmds.vertical_spacing(4.47),
+        format!("\r\t\t\t\t{}", prescription.prescripteur.inami).into_bytes(),
+        escp_cmds.vertical_spacing(4.47),
+        escp_cmds.vertical_spacing(6.0),
+        escp_cmds.vertical_spacing(2.95),
+        format!(
+            "\r\t{}",
+            if attestation.porte_prescr {
+                ""
+            } else {
+                "*******"
+            }
+        )
+        .into_bytes(),
+        escp_cmds.vertical_spacing(3.0),
+        format!(
+            "\r\t         {}",
+            if attestation.porte_prescr {
+                String::from("*********")
+            } else {
+                prescription.jointe_a
+            }
+        )
+        .into_bytes(),
+        escp_cmds.vertical_spacing(4.0),
+        format!(
+            "\r\t {}",
+            if situation_pathologique.numero_etablissment.is_empty()
+                && unidecode(&situation_pathologique.service).is_empty()
+            {
+                "------------  ------"
+            } else {
+                ""
+            }
+        )
+        .into_bytes(),
+        escp_cmds.vertical_spacing(1.52),
+        format!(
+            "\r\t\t\t       {}",
+            situation_pathologique.numero_etablissment
+        )
+        .into_bytes(),
+        escp_cmds.vertical_spacing(3.99),
+        format!(
+            "\r\t\t\t       {}",
+            unidecode(&situation_pathologique.service)
+        )
+        .into_bytes(),
+        escp_cmds.vertical_spacing(10.0),
+        escp_cmds.vertical_spacing(5.76),
+    ];
+
+    let section_signature = vec![
+        format!("\r\t\t\t\t{}", attestation.total_recu).into_bytes(),
+        escp_cmds.vertical_spacing(10.0),
+        format!("\r\t\t{}", unidecode(&kine.full_name())).into_bytes(),
+        escp_cmds.vertical_spacing(4.32),
+        format!("\r\t\t{}", kine.inami).into_bytes(),
+        escp_cmds.vertical_spacing(4.32),
+        format!("\r\t\t{}", unidecode(&kine.adresse)).into_bytes(),
+        escp_cmds.vertical_spacing(4.32),
+        format!("\r\t\t{} {}", kine.cp, unidecode(&kine.localite)).into_bytes(),
+        escp_cmds.vertical_spacing(10.0),
+        escp_cmds.vertical_spacing(10.0),
+        format!("\r\t\t\t      {}", attestation.date).into_bytes(),
+        escp_cmds.vertical_spacing(10.0),
+        escp_cmds.vertical_spacing(10.0),
+        escp_cmds.vertical_spacing(2.0),
+    ];
+
+    let section_coupon_remboursement = vec![
+        format!("\r\t\t\t    {}", kine.numero_bce).into_bytes(),
+        escp_cmds.vertical_spacing(10.0),
+        format!("\r\t\t\t      {}", attestation.date).into_bytes(),
+        escp_cmds.vertical_spacing(10.0),
+        format!("\r\t\t  {}", attestation.total_recu).into_bytes(),
+        escp_cmds.form_feed_cmd.clone(),
+    ];
+
+    build_binary(
+        section_identification_patient
+            .into_iter()
+            .chain(section_lignes_prestations.into_iter())
+            .chain(section_prescription_hospitalisation.into_iter())
+            .chain(section_signature.into_iter())
+            .chain(section_coupon_remboursement.into_iter())
+            .collect(),
+    )
+}
+
+fn indexed_seance(seances: &Vec<Seance>, index: usize) -> String {
+    if index < seances.len() {
+        let seance = &seances[index];
+        format!("{} {}", seance.date, seance.code_reference)
+    } else {
+        if index >= 10 && (index - 10) >= seances.len() {
+            "\t        ------".to_string()
+        } else {
+            "------".to_string()
+        }
+    }
+}
+
+fn lignes_attestation(escp_cmds: &ESCP, attestation: &Attestation) -> Vec<Vec<u8>> {
+    let seances = &attestation.seances;
+    let mut doc = vec![];
+    for index in 0..10 {
+        doc.push(format!("\r        {}", indexed_seance(seances, index)).into_bytes());
+        doc.push(format!("         {}", indexed_seance(seances, 10 + index)).into_bytes());
+        if index == 5 {
+            doc.push(escp_cmds.vertical_spacing(1.5));
+        }
+        if index != 9 {
+            doc.push(escp_cmds.vertical_spacing(4.32));
+        }
+    }
     doc
 }

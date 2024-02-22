@@ -1,5 +1,4 @@
 import { get, writable } from 'svelte/store';
-import { selectPatients } from './supabaseClient';
 import { persisted } from 'svelte-persisted-store';
 import DBAdapter from '../forms/actions/dbAdapter';
 import { user } from './UserStore';
@@ -43,10 +42,10 @@ export class Patient {
 		this.sexe = sexe;
 		this.mutualite = mutualite;
 		this.num_affilie = num_affilie;
-		this.tiers_payant = tiers_payant;
-		this.ticket_moderateur = ticket_moderateur;
-		this.bim = bim;
-		this.actif = actif;
+		this.tiers_payant = JSON.parse(tiers_payant);
+		this.ticket_moderateur = JSON.parse(ticket_moderateur);
+		this.bim = JSON.parse(bim);
+		this.actif = JSON.parse(actif ?? null);
 		this.numero_etablissment = numero_etablissment;
 		this.service = service;
 		this.situations_pathologiques = [];
@@ -64,7 +63,7 @@ export class SituationPathologique {
 		sp_id,
 		created_at,
 		patient_id,
-		numero_etablissment,
+		numero_etablissement,
 		service,
 		motif,
 		plan_du_ttt,
@@ -82,7 +81,7 @@ export class SituationPathologique {
 		this.sp_id = sp_id;
 		this.created_at = created_at;
 		this.patient_id = patient_id;
-		this.numero_etablissment = numero_etablissment;
+		this.numero_etablissement = numero_etablissement;
 		this.service = service;
 		this.motif = motif;
 		this.plan_du_ttt = plan_du_ttt;
@@ -93,15 +92,31 @@ export class SituationPathologique {
 		this.documents = documents;
 		this.user_id = get(user).user.id;
 		this.upToDate = false;
-		this.intake = intake;
-		this.rapport_ecrit = rapport_ecrit;
+		this.intake = JSON.parse(intake ?? null);
+		this.rapport_ecrit = JSON.parse(rapport_ecrit ?? null);
 		this.rapport_ecrit_date = rapport_ecrit_date;
 		this.rapport_ecrit_custom_date = rapport_ecrit_custom_date;
-		this.with_indemnity = with_indemnity;
+		this.with_indemnity = JSON.parse(with_indemnity ?? null);
+		if (attestations) {
+			for (const attestation of attestations) {
+				attestation.with_indemnity = JSON.parse(attestation.with_indemnity);
+				attestation.with_intake = JSON.parse(attestation.with_intake);
+				attestation.has_been_printed = JSON.parse(attestation.has_been_printed);
+				attestation.porte_prescr = JSON.parse(attestation.porte_prescr);
+				attestation.with_rapport = JSON.parse(attestation.with_rapport);
+				attestation.mutuelle_paid = JSON.parse(attestation.mutuelle_paid);
+				attestation.patient_paid = JSON.parse(attestation.patient_paid);
+				
+			}
+		}
+	}
+	get factures() {
+		return this.documents.filter((d) => [8, 9].includes(d.docType));
 	}
 	get toDB() {
 		return {
 			sp_id: this.sp_id,
+			user_id: this.user_id,
 			created_at: this.created_at,
 			patient_id: this.patient_id,
 			motif: this.motif,
@@ -111,7 +126,7 @@ export class SituationPathologique {
 			rapport_ecrit: this.rapport_ecrit,
 			rapport_ecrit_date: this.rapport_ecrit_date,
 			rapport_ecrit_custom_date: this.rapport_ecrit_custom_date,
-			numero_etablissment: this.numero_etablissment,
+			numero_etablissement: this.numero_etablissement,
 			service: this.service
 		};
 	}
@@ -134,11 +149,8 @@ function createPatientStore() {
 				'patient_id, created_at, nom, prenom, niss, adresse, cp, localite, date_naissance, tel, gsm, email, sexe, mutualite, num_affilie, tiers_payant, ticket_moderateur, bim, actif, numero_etablissment, service'
 			// orderBy: 'nom' Not needed I think
 		});
+		console.log('Les patients queried', data);
 		if (error) throw error;
-		console.log(
-			'Les patients queried',
-			data.map((p) => new Patient(p))
-		);
 		data.sort((a, b) => {
 			if (a.nom > b.nom) {
 				return 1;
@@ -147,19 +159,21 @@ function createPatientStore() {
 			}
 		});
 		loading.set(false);
-		set(data.map((p) => new Patient(p)));
+		let transformed = data.map((p) => new Patient(p));
+		console.log('Les patients transformed', transformed);
+		set(transformed);
 	}
 
 	function sortPatient() {
-		update((patients) => {
-			patients.sort((a, b) => {
+		update((ps) => {
+			ps.sort((a, b) => {
 				if (a.nom > b.nom) {
 					return 1;
 				} else {
 					return -1;
 				}
 			});
-			return patients;
+			return ps;
 		});
 	}
 
@@ -182,14 +196,23 @@ function createPatientStore() {
 		const { data, error } = await db.get_last_sp(patient_id, get(user).user.id);
 		console.log('La SP queried', data);
 		if (error) throw error;
-		let sp = new SituationPathologique(data.ps[0]);
+		if (data.ps.length === 0) return;
+		let sp = new SituationPathologique({
+			...data.ps[0],
+			prescriptions: data.prescriptions.map((p) => {
+				p.prescripteur = JSON.parse(p.prescripteur);
+				return p;
+			}),
+			seances: data.seances,
+			attestations: data.attestations,
+			documents: data.documents
+		});
 		sp.upToDate = true;
 		console.log('La dernière situation pathologique', sp);
 		let others = await getOtherSps(patient_id, sp.sp_id);
-		
+
 		console.log('in getLastSp().getOtherSps() with', others);
 		update((ps) => {
-
 			let patient = ps.find((p) => p.patient_id === patient_id);
 			patient.situations_pathologiques.push(sp);
 			for (const dlSp of others) {
@@ -210,7 +233,7 @@ function createPatientStore() {
 			],
 			{
 				selectStatement:
-					'sp_id, created_at, patient_id, numero_etablissment, service, motif, plan_du_ttt',
+					'sp_id, created_at, patient_id, numero_etablissement, service, motif, plan_du_ttt',
 				orderBy: 'created_at'
 			}
 		);
@@ -235,10 +258,9 @@ function createPatientStore() {
 	function getPatient(patient_id) {
 		console.log('in getPatient() with', patient_id);
 		if (patient_id == 'test-patient') {
-			return defaultTestPatient();			
+			return defaultTestPatient();
 		}
-		return get({subscribe}).find((p) => p.patient_id == patient_id);
-		
+		return get({ subscribe }).find((p) => p.patient_id == patient_id);
 	}
 
 	function defaultTestPatient() {

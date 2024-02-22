@@ -5,13 +5,15 @@ use std::path::Path;
 use std::process::Command;
 
 #[tauri::command]
-pub fn print_attestation(printer_name: &str, form_data: DocumentFormData) {
+pub fn print_attestation(printer_name: String, form_data: DocumentFormData) {
     // Create a file with raw ESC/P commands
     let file_path = Path::new("temp_print_file.prn");
     let mut file = File::create(&file_path).expect("Failed to create file");
-    for line in build_document(form_data).content {
-        write!(file, "{}", line).expect("Failed to write to file");   
-    }
+    // for line in build_document(form_data) {
+    //     write!(file, "{}", line).expect("Failed to write to file");
+    // }
+    let doc_bytes = build_document(form_data);
+    file.write_all(&doc_bytes).expect("Failed to write to file");
     // Construct the lp command
     let output = Command::new("lp")
         .arg("-d")

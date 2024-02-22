@@ -68,7 +68,7 @@
 	</div>
 	<section class="mt-6 w-full px-12 py-6 opacity-100 duration-300 md:mt-0">
 		<h1 class="mb-2 text-lg text-surface-500 dark:text-surface-400">Résultats</h1>
-		<div data-sveltekit-preload-data="false" class="flex flex-wrap gap-4">
+		<div data-sveltekit-preload-data="off" class="flex flex-wrap gap-4">
 			{#each filteredPatients as patient (patient.patient_id)}
 				<a
 					href={`/dashboard/patients/${patient.patient_id}`}

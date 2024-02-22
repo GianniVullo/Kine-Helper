@@ -2,10 +2,12 @@
 	import Calendar from '@event-calendar/core';
 	import TimeGrid from '@event-calendar/time-grid';
 	import DayGrid from '@event-calendar/day-grid';
-	import {} from '@event-calendar/interaction';
+	import { getModalStore } from '@skeletonlabs/skeleton';
+
+	const modalStore = getModalStore();
 
 	export let events;
-	export let options;
+	export let options = {};
 	export let ec;
 	let plugins = [TimeGrid];
 	let base_options = {
@@ -29,7 +31,7 @@
 			body: 'ec-body h-96',
 			button: 'btn btn-sm variant-filled-primary',
 			buttonGroup: 'btn-group variant-filled-primary [&>*+*]:border-white',
-			event: 'ec-event text-success-400 bg-surface-100',
+			event: 'ec-event text-success-400 bg-surface-100 dark:border-white border-black border',
 			title: 'ec-title md:py-0 py-2',
 			toolbar: 'ec-toolbar flex-wrap'
 		}),
@@ -49,6 +51,16 @@
 	};
 	function handleClickOnEvent(info) {
 		console.log(info);
+		const modal = {
+			type: 'component',
+			component: 'calendarEvent',
+			meta: {
+				event: info.event,
+				component: ec
+			}
+		};
+
+		modalStore.trigger(modal);
 	}
 </script>
 

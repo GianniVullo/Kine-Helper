@@ -1,24 +1,45 @@
 <script>
 	import MutualiteField from './MutualiteField.svelte';
-	import { supabase } from '../../stores/supabaseClient';
 	import { goto } from '$app/navigation';
-	import { patients } from '../../stores/PatientStore';
-	import { getToastStore } from '@skeletonlabs/skeleton';
-	import { errorToast } from '$lib/ui/toasts';
+	import { patients, Patient } from '../../stores/PatientStore';
+	import { get } from 'svelte/store';
 	import { user } from '../../stores/UserStore';
 	import {
 		SubmitButton,
-		TextField,
+		TextFieldV2,
 		FormWrapper,
 		SectionCard,
-		RadioField,
-		CheckboxField
+		RadioFieldV2,
+		CheckboxFieldV2
 	} from '../index';
+	import dayjs from 'dayjs';
+	import DBAdapter from '../actions/dbAdapter';
+	import DateField from '../abstract-fields/DateField.svelte';
+	import NumberField from '../abstract-fields/NumberField.svelte';
+	import { tick } from 'svelte';
 
-	const toastStore = getToastStore();
 	let message = '';
 	export let patient = undefined;
-	console.log(patient);
+
+	let patient_id = patient?.patient_id ?? crypto.randomUUID();
+	let nom = patient?.nom;
+	let prenom = patient?.prenom;
+	let niss = patient?.niss;
+	let date_naissance = patient?.date_naissance;
+	let sexe = patient?.sexe;
+	let adresse = patient?.adresse;
+	let cp = patient?.cp;
+	let localite = patient?.localite;
+	let num_affilie = patient?.num_affilie;
+	let tiers_payant = patient?.tiers_payant ?? false;
+	let ticket_moderateur = patient?.ticket_moderateur ?? true;
+	let bim = patient?.bim ?? false;
+	let mutualite = patient?.mutualite;
+	let numero_etablissment = patient?.numero_etablissment;
+	let service = patient?.service;
+	let tel = patient?.tel;
+	let gsm = patient?.gsm;
+	let email = patient?.email;
 
 	let formSchema = {
 		isValid,
@@ -41,59 +62,94 @@
 
 	async function isValid({ formData, submitter }) {
 		console.log('in PatientForm validation', formData);
-		// First we add the booleans that might not be present cause of inconsistency of form validation with checkboxes
-		formData.tiers_payant ??= false;
-		formData.ticket_moderateur ??= false;
-		formData.bim ??= false;
-		// We encrypt it (Do we tho ?)
-		// then we proceed with sending to Supabase
 		let data;
-		let error;
+		let db = new DBAdapter();
+		// <!--* CREATE PROCEDURE -->
 		if (!patient) {
-			let newPatient = await supabase.from('patients').insert(formData).select();
-			data = newPatient.data[0];
-			error = newPatient.error;
-		} else {
-			let updatedPatient = await supabase
-				.from('patients')
-				.update(formData)
-				.eq('patient_id', formData.patient_id)
-				.select();
-			data = updatedPatient.data[0];
-			error = updatedPatient.error;
-			console.log('In update PatientForm with supabase response = ', data, error);
-		}
-		if (error) {
-			toastStore.trigger(
-				errorToast(
-					`<span class="text-error-700 text-lg">Erreur </span> <br>info : "${error}" <span class"text-surface-700"><br> Si l'erreur persiste merci de bien vouloir nous contacter.</span>`
-				)
-			);
-			throw new Error(error);
-		}
-		if (patient) {
-			patients.update((patients) => {
-				patients.splice(
-					patients.findIndex((patient) => patient.patient_id == data.patient_id),
-					1
-				);
-				patients.push(data);
-				return patients;
+			let newPatientObj = {
+				kinesitherapeute_id: get(user).user.id,
+				patient_id,
+				created_at: dayjs().format('YYYY-MM-DD'),
+				nom,
+				prenom,
+				niss,
+				date_naissance,
+				sexe,
+				adresse,
+				cp,
+				localite,
+				num_affilie,
+				tiers_payant,
+				ticket_moderateur,
+				bim,
+				mutualite,
+				numero_etablissment,
+				service,
+				tel,
+				gsm,
+				email
+			};
+			let newPatient = await db.save('patients', newPatientObj);
+			console.log('in PatientForm validation with newPatient = ', newPatient);
+			data = new Patient(newPatient.data[0]);
+			patients.update((ps) => {
+				ps.push(data);
+				return ps;
 			});
-			patients.sortPatient();
-			goto(`/dashboard/patients/${data.patient_id}`);
 		} else {
-			console.log($patients[0], data);
-			patients.set([...$patients, data]);
-			goto(`/dashboard/patients/${data.patient_id}`);
+			// <!--* UPDATE PROCEDURE -->
+			let updatedPatient = {
+				nom,
+				prenom,
+				niss,
+				date_naissance,
+				sexe,
+				adresse,
+				cp,
+				localite,
+				num_affilie,
+				tiers_payant,
+				ticket_moderateur,
+				bim,
+				mutualite,
+				numero_etablissment,
+				service,
+				tel,
+				gsm,
+				email
+			};
+			await db.update('patients', [['patient_id', patient.patient_id]], updatedPatient);
+			patients.update((ps) => {
+				let rpatient = ps.find((p) => p.patient_id === patient.patient_id);
+				rpatient.nom = nom;
+				rpatient.prenom = prenom;
+				rpatient.niss = niss;
+				rpatient.date_naissance = date_naissance;
+				rpatient.sexe = sexe;
+				rpatient.adresse = adresse;
+				rpatient.cp = cp;
+				rpatient.localite = localite;
+				rpatient.num_affilie = num_affilie;
+				rpatient.tiers_payant = tiers_payant;
+				rpatient.ticket_moderateur = ticket_moderateur;
+				rpatient.bim = bim;
+				rpatient.mutualite = mutualite;
+				rpatient.numero_etablissment = numero_etablissment;
+				rpatient.service = service;
+				rpatient.tel = tel;
+				rpatient.gsm = gsm;
+				rpatient.email = email;
+				return ps;
+			});
 		}
+		patients.sortPatient();
+		await tick();
+		goto(`/dashboard/patients/${patient?.patient_id ?? data.patient_id}`);
 		// I think it might be counter productive as the button will anyway be destroyed
-		// submitter.disabled = false;
+		submitter.disabled = false;
 	}
-
-	function nissToDate(event) {
-		console.log(event.target.value);
-		let date = event.target.value;
+	$: {
+		let date = niss ?? '';
 		if (date.length > 5) {
 			try {
 				// getting the current year
@@ -110,7 +166,7 @@
 					parseInt(year) < parseInt(todaysYear.toString().substring(2, 4)) + 1 ? '20' : '19'
 				}${year}-${mounth}-${day}`;
 				console.log(rigthYear);
-				document.getElementById('date_naissance').value = rigthYear;
+				date_naissance = rigthYear;
 			} catch (error) {
 				console.log(error);
 			}
@@ -119,65 +175,57 @@
 </script>
 
 <FormWrapper {formSchema}>
-	{#if patient}
-		<input name="patient_id" type="hidden" value={patient.patient_id} />
-	{/if}
-	<input name="kinesitherapeute_id" type="hidden" value={$user.user.id} />
-
 	<div class="flex flex-col md:flex-row">
 		<!--* Identification -->
 		<div class="w-full p-2 md:w-1/3 md:p-4 lg:p-8">
 			<SectionCard label="Identification">
-				<TextField name="nom" value={patient?.nom} required placeholder="Nom" label="Nom" />
-				<TextField
+				<TextFieldV2 name="nom" bind:value={nom} required placeholder="Nom" label="Nom" />
+				<TextFieldV2
 					name="prenom"
-					value={patient?.prenom}
+					bind:value={prenom}
 					required
 					placeholder="Prénom"
 					label="Prénom" />
-				<TextField
+				<TextFieldV2
 					name="niss"
-					value={patient?.niss}
+					bind:value={niss}
 					required
 					placeholder="Niss"
 					label="Niss"
 					pattern={/^[0-9]{11}$/}
-					patternMessage="Veuillez entrer 11 chiffres sans formatage particulier"
-					onChangeHandler={nissToDate} />
-				<TextField
+					patternMessage="Veuillez entrer 11 chiffres sans formatage particulier" />
+				<DateField
 					name="date_naissance"
-					value={patient?.date_naissance}
+					bind:value={date_naissance}
 					required
-					type="date"
 					placeholder="Date de naissance"
 					label="Date de naissance" />
-				<RadioField
+				<RadioFieldV2
 					name="sexe"
-					value={patient?.sexe}
+					bind:value={sexe}
 					inline
 					label="Sexe"
 					options={[
 						{ value: 'M', label: 'Masculin', checked: patient?.sexe === 'M' },
 						{ value: 'F', label: 'Féminin', checked: patient?.sexe === 'F' }
 					]} />
-				<TextField
+				<TextFieldV2
 					name="adresse"
-					value={patient?.adresse}
+					bind:value={adresse}
 					required
 					placeholder="Rue et numéro"
 					label="Rue et numéro" />
-				<TextField
+				<NumberField
 					name="cp"
-					value={patient?.cp}
-					type="number"
+					bind:value={cp}
 					pattern={/^[0-9]{4}$/}
 					patternMessage="Le code postal est invalide"
 					required
 					placeholder="Code postal"
 					label="Code postal" />
-				<TextField
+				<TextFieldV2
 					name="localite"
-					value={patient?.localite}
+					bind:value={localite}
 					required
 					placeholder="Localité"
 					label="Localité" />
@@ -186,53 +234,45 @@
 		<!--* Assurabilité -->
 		<div class="w-full p-2 md:w-1/3 md:p-4 lg:p-8">
 			<SectionCard label="Assurabilité">
-				<MutualiteField query={patient?.mutualite} />
-				<TextField
+				<MutualiteField bind:query={mutualite} />
+				<TextFieldV2
 					name="num_affilie"
-					value={patient?.num_affilie}
+					bind:value={num_affilie}
 					placeholder="N° d'affilié (Optionnel)"
 					label="N° d'affilié (Optionnel)" />
-				<CheckboxField
+				<CheckboxFieldV2
 					name="tiers_payant"
-					value={patient?.tiers_payant ?? false}
-					checked={patient?.tiers_payant}
+					bind:value={tiers_payant}
 					placeholder="est tiers payant"
 					label="est tiers payant" />
-				<CheckboxField
+				<CheckboxFieldV2
 					name="ticket_moderateur"
-					value={patient?.ticket_moderateur ?? true}
-					checked={patient?.ticket_moderateur}
+					bind:value={ticket_moderateur}
 					placeholder="est tiers payant"
 					label="paye le ticket modérateur" />
-				<CheckboxField
-					name="bim"
-					value={patient?.bim ?? false}
-					checked={patient?.bim}
-					placeholder="est BIM"
-					label="est BIM" />
-				<TextField
+				<CheckboxFieldV2 name="bim" bind:value={bim} placeholder="est BIM" label="est BIM" />
+				<TextFieldV2
 					name="numero_etablissment"
-					value={patient?.numero_etablissment}
+					bind:value={numero_etablissment}
 					placeholder="N° d'établissement"
 					label="N° d'établissement" />
-				<TextField name="service" value={patient?.service} placeholder="Service" label="Service" />
+				<TextFieldV2 name="service" bind:value={service} placeholder="Service" label="Service" />
 			</SectionCard>
 		</div>
 		<!--* Contact -->
 		<div class="w-full p-2 md:w-1/3 md:p-4 lg:p-8">
 			<SectionCard label="Contact">
-				<TextField
+				<TextFieldV2
 					name="tel"
-					value={patient?.tel}
+					bind:value={tel}
 					placeholder="N° de téléphone"
 					label="N° de téléphone" />
-				<TextField name="gsm" value={patient?.gsm} placeholder="N° de gsm" label="N° de gsm" />
-				<TextField
+				<TextFieldV2 name="gsm" bind:value={gsm} placeholder="N° de gsm" label="N° de gsm" />
+				<!-- <EmailField
 					name="email"
-					value={patient?.email}
+					bind:value={email}
 					placeholder="E-mail"
-					type="email"
-					label="E-mail" />
+					label="E-mail" /> -->
 			</SectionCard>
 			<SubmitButton class="mt-4">
 				{patient ? 'Mettre à jour' : 'Enregistrer'}

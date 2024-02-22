@@ -11,6 +11,7 @@
 		DateField,
 		NumberField
 	} from '../index';
+	import FileField from "../prescription/FileField.svelte";
 	import DBAdapter from '../actions/dbAdapter';
 	import { GenerateurDeSeances } from './generateurDeSeances';
 	import Database from '@tauri-apps/plugin-sql';
@@ -18,7 +19,6 @@
 	import { getToastStore, popup } from '@skeletonlabs/skeleton';
 	import { errorToast } from '$lib/ui/toasts';
 	import { setContext } from 'svelte';
-	export let situation_pathologique = undefined;
 	import { groupes, lieux, lieuxParGroupe } from '../../stores/codeDetails';
 	import PathologieLourdeFields from './fields/PathologieLourdeFields.svelte';
 	import SectionWrapper from './sections/SectionWrapper.svelte';
@@ -343,6 +343,7 @@
 			return a && truth;
 		}) &&
 		Object.values(jour_seance_semaine_heures).filter((val) => val.value).length > 0;
+	$: legalInfosCompleted = motif && plan_du_ttt;
 	$: prescriptionCompleted = date && nombre_seance && seance_par_semaine && prescriptionFile;
 	function defaultSeanceNumber() {
 		if (code.length == 1) {
@@ -370,31 +371,10 @@
 		}
 	}
 	$: has_seconde_seance = seconde_seance_fa || seconde_seance_e || seconde_seance_palliatif;
-	console.log('day js base object', dayjs('2023-12-19T23:29:21'));
 </script>
 
-<!-- <button on:click={async () => {
-	const { data, error } = await supabase
-  .storage
-  .getBucket('avatars')
-  if (!data) {
-	const { data, error } = await supabase
-	  .storage
-	  .createBucket('avatars')
-  }
-  console.log(data, error);
-  
-}}>
-	RetrieveBucktet
-</button> -->
 <!--! Le projet est trop complexe pour être brisé en petits composants pour l'instant. Au moins jusqu'à l'avènement de Svelte 5 -->
 <FormWrapper {formSchema} class="">
-	<!--? Top level Hidden fields  -->
-	<!-- Je fais le choix de ne pas ajouter des champs patient_id et user_id car il peuvent être retrouvé avec les svelte stores et n'ont pas besoin de validation -->
-	{#if situation_pathologique}
-		<input type="hidden" name="sp_id" value={situation_pathologique?.sp_id} />
-	{/if}
-
 	<div class="flex flex-col flex-wrap md:flex-row">
 		<div class="w-full md:p-4">
 			<!--? Prescription Form -->
@@ -427,25 +407,14 @@
 						bind:value={seance_par_semaine}
 						name="seance_par_semaine" />
 					<!--? file dialog field -->
-					<DefaultFieldWrapper>
-						<label for="file-input" class="select-none text-surface-500 dark:text-surface-300"
-							>Copie de la prescription
-						</label>
-						<input
-							id="file-input"
-							class="input"
-							type="file"
-							name="prescriptionFile"
-							placeholder="Sélectionner un fichier"
-							bind:files={prescriptionFile} />
-					</DefaultFieldWrapper>
+						<FileField />
 					<DateField
 						label="Date de l'attestation à laquelle la prescription est jointe"
 						bind:value={jointe_a}
 						name="jointe_a" />
 					<p class="text-surface-800 dark:text-surface-100">
 						Ce champs est nécessaire uniquement si vous n'êtes pas en possession de la prescription
-						car elle a été envoyée à une mutuelle par un autre kiné.
+						et qu'elle est jointe à une attestation que vous n'avez pas enregistrée dans le logiciel.
 					</p>
 				</span>
 			</SectionWrapper>
@@ -454,10 +423,10 @@
 			<SectionWrapper>
 				<span slot="title">
 					<h3
-						class:!text-success-600={prescriptionCompleted}
-						class:dark:!text-success-400={prescriptionCompleted}
+						class:!text-success-600={legalInfosCompleted}
+						class:dark:!text-success-400={legalInfosCompleted}
 						class="cursor-default select-none text-xl text-tertiary-600 dark:text-tertiary-400">
-						{prescriptionCompleted ? 'Informations légales ✓' : 'Informations légales'}
+						{legalInfosCompleted ? 'Informations légales ✓' : 'Informations légales'}
 					</h3>
 					<p class="cursor-default select-none dark:text-surface-400">
 						Enregistrer les informations légales minimales de la situation pathologique.
@@ -514,8 +483,6 @@
 						done={code.length == 1 && dateFieldsCompleted && nombre_seances} />
 				</span>
 				<span slot="fields" class="flex flex-col items-start">
-					<!--? Generateur_id -->
-					<input type="hidden" name="generateur_id" value={crypto.randomUUID()} />
 					<!--? Trouver le code -->
 					<SubSectionTitle
 						done={code.length == 1}

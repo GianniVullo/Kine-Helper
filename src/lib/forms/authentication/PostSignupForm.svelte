@@ -4,6 +4,8 @@
 	import { user } from '$lib/index';
 	import { supabase } from '../../stores/supabaseClient';
 	import { goto } from '$app/navigation';
+	import DBAdapter from '../actions/dbAdapter';
+	import dayjs from 'dayjs';
 
 	let message = '';
 
@@ -15,7 +17,7 @@
 		console.log('in isValid with', formData);
 		submitter.innerHTML = 'Envoi des données...';
 		formData.conventionne ??= false;
-		let { data, error } = await supabase.from('kinesitherapeute').upsert(formData).select();
+		let { data, error } = await supabase.from('kinesitherapeutes').upsert(formData).select();
 		submitter.innerHTML = 'OK';
 		$user.profil = data[0];
 		console.log(data, error);
@@ -24,17 +26,27 @@
 			message = error.message;
 			throw new Error(error);
 		}
-		goto('/dashboard');
-	}
-	async function test() {
-		formError(
-			'Voilà bon ça a merdé',
-			'<div class="text-3xl text-primary-500“><b>Clairement</b> on en est pas fièr</div>'
-		);
+		// si il n'y a pas d'objet settings ou que l'objet settings ne contient pas de raw printer alors on redirige vers la page de configuration
+		let db = new DBAdapter();
+		let userSettings = await db.retrieve('settings', '*', ['user_id', $user.user.id]);
+		if (userSettings) {
+			userSettings.data[0].raw_printer
+				? goto('/dashboard')
+				: goto('/post-signup-forms/printer-setup');
+		} else {
+			await db.save('settings', {
+				user_id: $user.user.id,
+				created_at: dayjs().format('YYYY-MM-DD HH:mm:ss')
+			});
+			user.update((u) => {
+				u.settings = { raw_printer: null };
+				return u;
+			});
+			goto('/post-signup-forms/printer-setup');
+		}
 	}
 </script>
 
-<button on:click={test} class="variant-outline-primary btn">TEST</button>
 <FormWrapper {formSchema}>
 	<span slot="title">Formulaire post-inscription</span>
 	<p class="m-8 text-surface-600">

@@ -1,23 +1,24 @@
 import dayjs from 'dayjs';
-import { NomenclatureManager } from '$lib/utils/nomenclatureManager';
+import { fetchCodeDesSeances, createCodeMap } from '$lib/utils/nomenclatureManager';
 import { get, writable } from 'svelte/store';
 import { user } from '../../../../../../../lib/stores/UserStore';
 import { indmeniteCategory } from '../../../../../../../lib/stores/codeDetails';
 
 export function createAttestationFormState(patient, untill, page) {
-	console.log('in createAttestationFormState with ', patient, untill, page);
+	// console.log('in createAttestationFormState with ', patient, untill, page);
 
 	//* ETAPE 1 : Initialisation : variable de base et trouver la séance limite en date
 	let { state, loading, sp, lastSeance } = initialisation(patient, untill, page);
 
 	//* ETAPE 2 il faut prendre une liste de séance précédant la séance limite (en l'incluant)
 	let seances = filtrageSeanceNonAttesteeJusqua(lastSeance, sp);
-	console.log('Les séances', seances);
+	// console.log('Les séances', seances);
 
 	//* ETAPE 3 il faut construire l'objet State
 	//? Il faut maintenant trouver tous les codes pour pouvoir accéder aux informations cruciales telles que le lieu_id ou les honoraires
 	let { futureStateArray, codeMap, index } = initialisationIntermediaire();
 	fetchCodeDesSeances(loading, seances, sp).then((codes) => {
+		// console.log('codes', codes);
 		constructionEtMiseAJourDeAttestationFormState(
 			loading,
 			seances,
@@ -26,7 +27,7 @@ export function createAttestationFormState(patient, untill, page) {
 			futureStateArray,
 			index
 		);
-		console.log('futureStateArray BEFORE CHAMP MANQUANT', futureStateArray);
+		// console.log('futureStateArray BEFORE CHAMP MANQUANT', futureStateArray);
 		//* ÉTAPE 4 : Réitérer aux travers de toutes les attestations pour ajouter les champs manquants et les honoraires des lignes implicites (intake, indemnité et rapport écrit)
 		champsManquantsEtLignesImplicites(futureStateArray, codes, patient, sp);
 		//* ÉTAPE 5 : Mettre à jour l'objet state et codeMap
@@ -41,7 +42,10 @@ export function createAttestationFormState(patient, untill, page) {
 }
 
 export function updateAttestationFormState(patient, state, page, codes) {
-	console.log('in updateAttestationFormState with ', patient, state, page, codes);
+	//* Ici il faut recréer le state pour prendre en compte si on veut mettre ou pas un rapport écrit ou un intake sur une attestation
+	//? les indemnités devraient toujours être comptées ou bien l'utilisateur devrait le changer sur le formulaire de mise à jour de la sp. C'est une gymnastique vraiment compliquée à faire ici.
+	//! toute réflexion faite, la gymnastique est trop compliquée à faire ici pour TOUTEs ces valeurs... il faut les mettre sur le formulaire de mise à jour de la sp et juste les afficher ici à titre informatif.
+	// console.log('in updateAttestationFormState with ', patient, state, page, codes);
 	const sp = patient.situations_pathologiques.find((sp) => sp.sp_id === page.params.spId);
 
 	champsManquantsEtLignesImplicites(state, codes, patient, sp);
@@ -55,44 +59,24 @@ function initialisation(patient, untill, page) {
 	let lastSeance;
 
 	if (untill) {
-		console.log('untill', untill);
+		// console.log('untill', untill);
 		// trouver la dernière séance à cette date
-		let untillDate = dayjs(untill);
+		let untillDate = dayjs(dayjs(untill).format('YYYY-MM-DD'));
 		lastSeance = sp.seances.find((seance) => {
 			return dayjs(dayjs(seance.date).format('YYYY-MM-DD')).isSame(untillDate);
 		});
 	} else {
-		console.log('pas de untill');
+		// console.log('pas de untill');
 		let untillDate = dayjs(dayjs().format('YYYY-MM-DD'));
-		console.log('untillDate', untillDate);
+		// console.log('untillDate', untillDate);
 		let filteredSeances = sp.seances.filter((seance) => {
 			return dayjs(dayjs(seance.date).format('YYYY-MM-DD')).isBefore(untillDate);
 		});
-		console.log('filteredSeances', filteredSeances);
+		// console.log('filteredSeances', filteredSeances);
 		lastSeance = filteredSeances[filteredSeances.length - 1];
 	}
-	console.log('La dernière séance', lastSeance);
+	// console.log('La dernière séance', lastSeance);
 	return { state, loading, sp, lastSeance };
-}
-
-function fetchCodeDesSeances(loading, seances, sp) {
-	let guesseur = new NomenclatureManager();
-	loading.update((n) => true);
-	return new Promise((resolve, reject) => {
-		guesseur
-			.bulkGuess(seances, async (seances, db) => {
-				for (const seance of seances) {
-					await guesseur.getCode(seance, db);
-				}
-				if (sp.with_indemnity || sp.with_rapport || sp.with_intake) {
-					await guesseur.collectIndemnitIntakeeEtRapporEcrit();
-				}
-			})
-			.then(() => {
-				console.log("guesseur's cache", guesseur.cache);
-				resolve(guesseur.cache);
-			});
-	});
 }
 
 function filtrageSeanceNonAttesteeJusqua(lastSeance, sp) {
@@ -105,44 +89,6 @@ function filtrageSeanceNonAttesteeJusqua(lastSeance, sp) {
 	});
 }
 
-function createCodeMap() {
-	let codeMap = writable();
-	function groupes_has_rapport() {
-		let groupes = [];
-		let codes = get(codeMap);
-		for (const codeId of codes.keys()) {
-			if (Array.isArray(codes.get(codeId))) {
-				for (const code of codes.get(codeId)) {
-					groupes.push(code.groupe_id);
-				}
-				continue;
-			}
-			groupes.push(codes.get(codeId).groupe_id);
-		}
-		return groupes.includes(1) || groupes.includes(4) || groupes.includes(5);
-	}
-	function groupes_has_intake() {
-		let groupes = [];
-		let codes = get(codeMap);
-		for (const codeId of codes.keys()) {
-			if (Array.isArray(codes.get(codeId))) {
-				for (const code of codes.get(codeId)) {
-					groupes.push(code.groupe_id);
-				}
-				continue;
-			}
-			groupes.push(codes.get(codeId).groupe_id);
-		}
-		return groupes.includes(0);
-	}
-	return {
-		subscribe: codeMap.subscribe,
-		set: codeMap.set,
-		update: codeMap.update,
-		groupes_has_rapport,
-		groupes_has_intake
-	};
-}
 function initialisationIntermediaire() {
 	//? d'abord créer un tableau qui sera utilisé pour mettre à jour l'objet state
 	let futureStateArray = [];
@@ -161,14 +107,13 @@ function constructionEtMiseAJourDeAttestationFormState(
 	index
 ) {
 	loading.update((n) => false);
-	console.log('Les codes', codes);
 	//? On itère donc sur toutes les séances pour pouvoir les classer d'abord par Prescription et ensuite par Attestation
 	for (const seance of seances) {
 		//* étape 3a : trouver le code de la séance
 		let code = codes.get(seance.code_id);
 		//* étape 3b : trouver la prescription de la séance
 		let prescr = getPrescr(seance.prescription_id);
-		console.log('prescr', prescr);
+		// console.log('prescr', prescr);
 		//* étape 3.b.2 : si la prescription n'existe pas, il faut la créer et la prépeupler avec la première attestation et la première séance
 		if (!prescr) {
 			//? initialisation de la prescription
@@ -176,10 +121,11 @@ function constructionEtMiseAJourDeAttestationFormState(
 			// Comme il s'agit ici de la première Attestation, nous pouvons être confiant de calculer l'intake, le rapport écrit et le porte_prescr
 			let attestationState = buildAttestationState(index, sp, {
 				with_intake: sp.intake && sp.attestations?.length === 0,
-				porte_prescr: sp.attestations?.length === 0 && !prescription.jointe_a ? true : false,
-				with_indemnity: code.lieu_id === 3
+				porte_prescr:
+					sp.attestations?.length === 0 && !prescriptionState.obj.jointe_a ? true : false,
+				with_indemnity: code.lieu_id === 3 && sp.with_indemnity
 			});
-			console.log('attestationState RIGHT AFTER CREATION', attestationState);
+			// console.log('attestationState RIGHT AFTER CREATION', attestationState);
 			//? initialisation de la séance
 			let seanceState = buildSeanceState(seance, {});
 			attestationState.seances.push(seanceState);
@@ -187,7 +133,7 @@ function constructionEtMiseAJourDeAttestationFormState(
 			futureStateArray.push(prescriptionState);
 			index++;
 			prescr = getPrescr(seance.prescription_id);
-			console.log('newly created prescr', prescr);
+			// console.log('newly created prescr', prescr);
 			continue;
 		}
 		//* ETAPE 3c : Il faut ajouter les attestations aux prescriptions
@@ -195,13 +141,14 @@ function constructionEtMiseAJourDeAttestationFormState(
 		//? 3c1 : trouver l'attestation avec l'index - 1
 		let attestation = prescr.attestations.find((a) => a.id === index - 1);
 		//? 3C2 : Si l'attestation a plus de 20 lignes, il faut créer une nouvelle attestation.
-		if (aMoinsDe20Lignes(attestation)) {
+		// console.log('before aMoinsDe20Lignes(attestation)', index);
+		if (aMoinsDe20Lignes(attestation, sp)) {
 			let attestationState = buildAttestationState(index, sp, {
 				with_intake: false,
 				porte_prescr: false,
-				with_indemnity: code.lieu_id === 3
+				with_indemnity: code.lieu_id === 3 && sp.with_indemnity
 			});
-			console.log('attestationState AFTER AMOINSDE20LINGES', attestationState);
+			// console.log('attestationState AFTER AMOINSDE20LINGES', attestationState);
 			let seanceState = buildSeanceState(seance, {});
 			attestationState.seances.push(seanceState);
 			futureStateArray
@@ -224,6 +171,9 @@ function constructionEtMiseAJourDeAttestationFormState(
 }
 function getUnitRecu(code, patient) {
 	// Calcul le montant que le patient doit donner au kiné
+	if (!code.remboursement) {
+		// console.log('UNDEFINED CODE', code);
+	}
 	let ticket_moderateur =
 		code.remboursement[
 			`part_personnelle${patient.bim ? '_pref' : '_nopref'}${
@@ -248,7 +198,7 @@ function getUnitTotal(code) {
 }
 
 function champsManquantsEtLignesImplicites(futureStateArray, codes, patient, sp) {
-	console.log('in champsManquantsEtLignesImplicites wtih ', futureStateArray);
+	// console.log('in champsManquantsEtLignesImplicites wtih ', futureStateArray);
 	//? Itérer au travers des prescriptions de State
 	for (let pIdx = 0; pIdx < futureStateArray.length; pIdx++) {
 		//? Itérer au travers des attestations de chaque prescription
@@ -291,12 +241,15 @@ function champsManquantsEtLignesImplicites(futureStateArray, codes, patient, sp)
 					}
 				}
 				//* 4.b : on ajoute la ligne explicite
+				let unitRecu = getUnitRecu(codes.get(seance.obj.code_id), patient);
+				let unitTotal = getUnitTotal(codes.get(seance.obj.code_id));
+				console.log('unitRecu', unitRecu);
+				console.log('unitTotal', unitTotal);
 				attestation.total_recu += getUnitRecu(codes.get(seance.obj.code_id), patient);
 				attestation.valeur_totale += getUnitTotal(codes.get(seance.obj.code_id));
 			}
 			//* 4.c si l'attestation contient un rapport écrit, il faut ajouter la valeur du rapport écrit au total_recu et à la valeur_totale
 			if (attestation.with_rapport) {
-				let seance = attestation.seances.find((s) => s.has_rapport);
 				let rapport = codes
 					.get('rapports')
 					.find((c) => c.lieu_id === codes.get(attestation.seances[0].obj.code_id).lieu_id);
@@ -314,9 +267,11 @@ function champsManquantsEtLignesImplicites(futureStateArray, codes, patient, sp)
 			attestation.date = dayjs(attestation.seances[attestation.seances.length - 1].obj.date).format(
 				'YYYY-MM-DD'
 			);
+			attestation.total_recu = parseFloat(attestation.total_recu.toFixed(2));
+			attestation.valeur_totale = parseFloat(attestation.valeur_totale.toFixed(2));
 		}
 	}
-	console.log('futureStateArray', futureStateArray);
+	// console.log('futureStateArray', futureStateArray);
 }
 
 function buildPrescriptionState(sp, seance) {
@@ -339,7 +294,9 @@ function buildAttestationState(
 		toBeProduced: true,
 		with_indemnity,
 		with_intake,
-		with_rapport: null, // rapport écrit c'est mieux de le calculer après car il pourrait être custom et nous ne pouvons pas être sûr que la séance où le rapport devrait être fait sera sur cette attestation
+		with_rapport: null,
+		//// rapport écrit c'est mieux de le calculer après car il pourrait être custom et nous ne pouvons pas être sûr que la séance où le rapport devrait être fait sera sur cette attestation
+		//! Le problème c'est qu'on en a besoin tout de suite pour calculer le nombre de lignes autorisées sur l'attestation.
 		date: null,
 		porte_prescr,
 		numero_etablissment: sp.numero_etablissment,
@@ -351,6 +308,21 @@ function buildAttestationState(
 	};
 }
 
+function figureOutForRapportEcrit(attestation, sp) {
+	//* Ici on doit comprendre si l'attestation doit contenir un rapport écrit
+	//? pour cela il faut vérifier si une des seances de l'attestation a la même date que le rapport écrit
+	// console.log('in figureOutForRapportEcrit with ', attestation, sp);
+	if (!attestation.has_rapport) {
+		return false;
+	}
+	for (const seance of attestation.seances) {
+		if (dayjs(seance.obj.date).isSame(dayjs(sp.rapport_ecrit_custom_date))) {
+			// console.log('seance.date', seance.obj.date);
+			// console.log('sp.rapport_ecrit_date_custom', sp.rapport_ecrit_custom_date);
+			return true;
+		}
+	}
+}
 function buildSeanceState(seance, { selected = true, modified = false }) {
 	return {
 		obj: seance,
@@ -360,15 +332,18 @@ function buildSeanceState(seance, { selected = true, modified = false }) {
 	};
 }
 
-function aMoinsDe20Lignes(attestation) {
-	return (
-		attestation.seances.length ===
-		(attestation.with_indemnity
-			? attestation.with_rapport || attestation.with_intake
-				? 9
-				: 10
-			: attestation.with_rapport || attestation.with_intake
-			? 19
-			: 20)
-	);
+function aMoinsDe20Lignes(attestation, sp) {
+	console.log("lignes de l'attestation", attestation);
+	let has_rapport = figureOutForRapportEcrit(attestation, sp);
+	let limite = attestation.with_indemnity
+		? has_rapport || attestation.with_intake
+			? 9
+			: 10
+		: has_rapport || attestation.with_intake
+		? 19
+		: 20;
+	console.log('limite', limite);
+	let lignes = attestation.seances.length === limite;
+	console.log('lignes', lignes);
+	return lignes;
 }

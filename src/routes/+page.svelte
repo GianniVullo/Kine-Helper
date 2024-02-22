@@ -4,6 +4,7 @@
 
 	let selectedForm = 'login';
 	let message = '';
+
 </script>
 
 <div
@@ -28,10 +29,11 @@
 		{#if selectedForm == 'login'}
 			<LoginForm {message} />
 		{:else if selectedForm == 'signup'}
-			<SignUpForm on:onSignupSuccess={(msg) => {
-				selectedForm = 'login'
-				message = msg;
-			}} />
+			<SignUpForm
+				on:onSignupSuccess={(msg) => {
+					selectedForm = 'login';
+					message = msg;
+				}} />
 		{:else}
 			<PasswordResetForm />
 		{/if}

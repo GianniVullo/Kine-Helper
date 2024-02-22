@@ -1,44 +1,54 @@
 {
-  "build": {
-    "beforeDevCommand": "npm run dev",
-    "beforeBuildCommand": "npm run build",
-    "devPath": "http://localhost:1420",
-    "distDir": "../build",
-    "withGlobalTauri": false
-  },
-  "package": {
-    "productName": "kine-helper",
-    "version": "0.0.0"
-  },
-  "tauri": {
-    "bundle": {
-      "active": true,
-      "targets": "all",
-      "identifier": "be.kinehelper.prod",
-      "icon": [
-        "icons/32x32.png",
-        "icons/128x128.png",
-        "icons/128x128@2x.png",
-        "icons/icon.icns",
-        "icons/icon.ico"
-      ]
-    },
-    "security": {
-      "csp": null
-    },
-    "windows": [
-      {
-        "fullscreen": false,
-        "resizable": true,
-        "title": "Kiné Helper",
-        "maximized": true,
-        "contentProtected": true
-      }
-    ]
-  },
-  "plugins": {
-    "shell": {
-      "open": true
-    }
-  }
+	"build": {
+		"beforeDevCommand": "npm run dev",
+		"beforeBuildCommand": "npm run build",
+		"devUrl": "http://localhost:1420",
+		"frontendDist": "../build"
+	},
+	"productName": "kine-helper",
+	"version": "0.0.0",
+	"identifier": "be.kinehelper.prod",
+	"bundle": {
+		"active": true,
+		"targets": "all",
+		"icon": [
+			"icons/32x32.png",
+			"icons/128x128.png",
+			"icons/128x128@2x.png",
+			"icons/icon.icns",
+			"icons/icon.ico"
+		]
+	},
+	"app": {
+		"withGlobalTauri": false,
+		"security": {
+			"csp": null
+		},
+		"windows": [
+			{
+				"fullscreen": false,
+				"resizable": true,
+				"title": "Kiné Helper",
+				"maximized": true,
+				"contentProtected": true,
+				"url": "/splashscreen"
+			}
+		]
+	},
+	"plugins": {
+		"shell": {
+			"open": "^((mailto:\\w+)|(tel:\\w+)|(https?:\/\/\\w+)|(\/\\w+)|([a-zA-Z]:[\\\/]\\w+)).+"
+		},
+		"fs": {
+			"scope": ["$APPLOCALDATA/**", "$APPLOCALDATA/*"],
+			"all": true
+		},
+		"updater": {
+			"active": true,
+			"endpoints": [
+				"https://epzrdxofotzufykimwuc.supabase.co/functions/v1/update-checker/update-manifest"
+			],
+			"pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDZGODRBRUJGRDgyRjBDQkUKUldTK0RDL1l2NjZFYjFzRVRqWDJYaTJRb0haM3JORjh4NytjVHJSSENpRTV1dmQyU3YvMU4zMGoK"
+		}
+	}
 }

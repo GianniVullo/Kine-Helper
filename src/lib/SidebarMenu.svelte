@@ -1,13 +1,16 @@
 <script>
 	import logo from '$lib/assets/logo.png';
-	import ChevronLeftIcon from './ui/svgs/ChevronLeftIcon.svelte';
-	import ChevronRightIcon from './ui/svgs/ChevronRightIcon.svelte';
-	import { LightSwitch } from '@skeletonlabs/skeleton';
-	// No need for the activeSection logic since SvelteKit will handle active routes.
+	import { SignOutIcon, ChevronRightIcon, ChevronLeftIcon } from './ui/svgs/index';
+	import { LightSwitch, getModalStore } from '@skeletonlabs/skeleton';
+	import { supabase } from '../lib/stores/supabaseClient';
+	import { goto } from '$app/navigation';
+
+	const modalStore = getModalStore();
+
 	let menuItems = [
 		{
 			name: 'Tableau de  bord',
-			path: '/dashboard/',
+			path: '/dashboard',
 			svg: `<path stroke-linecap="round" stroke-linejoin="round" d="M7.5 14.25v2.25m3-4.5v4.5m3-6.75v6.75m3-9v9M6 20.25h12A2.25 2.25 0 0020.25 18V6A2.25 2.25 0 0018 3.75H6A2.25 2.25 0 003.75 6v12A2.25 2.25 0 006 20.25z" />`
 		},
 		{
@@ -20,11 +23,11 @@
 			path: '/dashboard/patients',
 			svg: `<path stroke-linecap="round" stroke-linejoin="round" d="M17.982 18.725A7.488 7.488 0 0012 15.75a7.488 7.488 0 00-5.982 2.975m11.963 0a9 9 0 10-11.963 0m11.963 0A8.966 8.966 0 0112 21a8.966 8.966 0 01-5.982-2.275M15 9.75a3 3 0 11-6 0 3 3 0 016 0z" />`
 		},
-		{
-			name: 'Tarification',
-			path: '/dashboard/billing',
-			svg: `<path stroke-linecap="round" stroke-linejoin="round" d="M14.25 7.756a4.5 4.5 0 100 8.488M7.5 10.5h5.25m-5.25 3h5.25M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />`
-		},
+		// {
+		// 	name: 'Tarification',
+		// 	path: '/dashboard/billing',
+		// 	svg: `<path stroke-linecap="round" stroke-linejoin="round" d="M14.25 7.756a4.5 4.5 0 100 8.488M7.5 10.5h5.25m-5.25 3h5.25M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />`
+		// },
 		{
 			name: 'Paramètres',
 			path: '/',
@@ -32,6 +35,28 @@
 		}
 	];
 	export let isMinimized;
+
+	const modal = {
+		type: 'confirm',
+		// Data
+		title: 'Confirmation',
+		body: 'Êtes-vous sûr de vouloir vous déconnecter ?',
+		buttonTextCancel: 'Annuler',
+		buttonTextConfirm: 'Confirmer',
+		buttonPositive: 'variant-filled-primary',
+		// TRUE if confirm pressed, FALSE if cancel pressed
+		response: async (r) => {
+			console.log(r);
+			if (r) {
+				await supabase.auth.signOut();
+				goto('/');
+			}
+		}
+	};
+	const bugReportModal = {
+		type: 'component',
+		component: 'bugReport'
+	};
 </script>
 
 <!-- Sidebar Navigation -->
@@ -66,7 +91,7 @@
 					<!-- side Icon -->
 					<a
 						href={item.path}
-						class="flex rounded-lg px-4 py-2 text-surface-800 no-underline duration-200 ease-in hover:bg-gray-50 hover:bg-opacity-10 hover:text-gray-100 group-data-[minimized=true]:items-center group-data-[minimized=true]:px-2 dark:text-surface-200">
+						class="my-2 flex rounded-lg px-4 text-surface-800 no-underline duration-200 ease-in hover:bg-gray-50 hover:bg-opacity-10 group-data-[minimized=true]:items-center group-data-[minimized=true]:px-2 dark:text-surface-200">
 						<svg
 							xmlns="http://www.w3.org/2000/svg"
 							fill="none"
@@ -83,13 +108,45 @@
 				</li>
 			{/each}
 			<!--! Bouton pour se déconnecter -->
-			<button>
-				
-			</button>
+			<li class:justify-center={isMinimized} class="flex items-center justify-center">
+				<button
+					class="flex rounded-lg px-4 py-2 text-surface-800 no-underline duration-200 ease-in hover:bg-gray-50 hover:bg-opacity-10 group-data-[minimized=true]:items-center group-data-[minimized=true]:px-2 dark:text-surface-200"
+					on:click={() => modalStore.trigger(modal)}>
+					<SignOutIcon
+						class="h-6 w-6 grow stroke-primary-500 group-data-[minimized=true]:h-8 group-data-[minimized=true]:w-8 group-data-[minimized=true]:stroke-primary-600 group-data-[minimized=true]:duration-200 group-data-[minimized=true]:hover:scale-105 group-data-[minimized=true]:hover:stroke-primary-700 dark:stroke-primary-200 group-data-[minimized=true]:dark:stroke-primary-400 group-data-[minimized=true]:dark:hover:stroke-primary-300" />
+					{#if !isMinimized}
+						<p class="ml-3 grow-[2]">Se déconnecter</p>
+					{/if}
+				</button>
+			</li>
+			<!--! Bouton pour signaler un bug/une seggestion -->
+			<li class:justify-center={isMinimized} class="flex items-center justify-center">
+				<button
+					class="flex rounded-lg px-4 py-2 text-surface-800 no-underline duration-200 ease-in hover:bg-gray-50 hover:bg-opacity-10 group-data-[minimized=true]:items-center group-data-[minimized=true]:px-2 dark:text-surface-200"
+					on:click={() => modalStore.trigger(bugReportModal)}>
+					<svg
+						xmlns="http://www.w3.org/2000/svg"
+						fill="none"
+						viewBox="0 0 24 24"
+						stroke-width="1.5"
+						stroke="currentColor"
+						class="h-6 w-6 grow stroke-primary-500 group-data-[minimized=true]:h-6 group-data-[minimized=true]:w-6 group-data-[minimized=true]:stroke-primary-600 group-data-[minimized=true]:duration-200 group-data-[minimized=true]:hover:scale-105 group-data-[minimized=true]:hover:stroke-primary-700 dark:stroke-primary-200 group-data-[minimized=true]:dark:stroke-primary-400 group-data-[minimized=true]:dark:hover:stroke-primary-300">
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							d="M12 12.75c1.148 0 2.278.08 3.383.237 1.037.146 1.866.966 1.866 2.013 0 3.728-2.35 6.75-5.25 6.75S6.75 18.728 6.75 15c0-1.046.83-1.867 1.866-2.013A24.204 24.204 0 0 1 12 12.75Zm0 0c2.883 0 5.647.508 8.207 1.44a23.91 23.91 0 0 1-1.152 6.06M12 12.75c-2.883 0-5.647.508-8.208 1.44.125 2.104.52 4.136 1.153 6.06M12 12.75a2.25 2.25 0 0 0 2.248-2.354M12 12.75a2.25 2.25 0 0 1-2.248-2.354M12 8.25c.995 0 1.971-.08 2.922-.236.403-.066.74-.358.795-.762a3.778 3.778 0 0 0-.399-2.25M12 8.25c-.995 0-1.97-.08-2.922-.236-.402-.066-.74-.358-.795-.762a3.734 3.734 0 0 1 .4-2.253M12 8.25a2.25 2.25 0 0 0-2.248 2.146M12 8.25a2.25 2.25 0 0 1 2.248 2.146M8.683 5a6.032 6.032 0 0 1-1.155-1.002c.07-.63.27-1.222.574-1.747m.581 2.749A3.75 3.75 0 0 1 15.318 5m0 0c.427-.283.815-.62 1.155-.999a4.471 4.471 0 0 0-.575-1.752M4.921 6a24.048 24.048 0 0 0-.392 3.314c1.668.546 3.416.914 5.223 1.082M19.08 6c.205 1.08.337 2.187.392 3.314a23.882 23.882 0 0 1-5.223 1.082" />
+					</svg>
+					{#if !isMinimized}
+						<p class="ml-3 grow-[2]">Signaler un bug/suggestion</p>
+					{/if}
+				</button>
+			</li>
 			<div
 				class="absolute -bottom-8 -left-10 h-14 w-14 rounded-full bg-primary-600 opacity-25 duration-200 group-data-[minimized=false]:-left-44 group-data-[minimized=true]:hidden group-data-[minimized=false]:h-48 group-data-[minimized=false]:w-48 dark:opacity-60 md:relative group-data-[minimized=false]:md:bottom-6">
 			</div>
-			<LightSwitch />
+			{#if !isMinimized}
+				<LightSwitch />
+			{/if}
 		</ul>
 	</nav>
 	<!-- Minimize button -->

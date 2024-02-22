@@ -8,6 +8,8 @@
 	export let selectClass = '';
 	export let id = null;
 	export let name;
+	export let multiple = false;
+	export let size= undefined;
 	export let required = false;
 	export let placeholder = undefined;
 	export let value;
@@ -15,20 +17,43 @@
 
 <DefaultFieldWrapper class={parentClass}>
 	<p class={labelClass}>{label}</p>
-	<select
-		id={id ?? name}
-		{required}
-		class="select rounded-lg {selectClass}"
-		{name}
-		{placeholder}
-		bind:value={value}
-		data-pristine-required-message={required ? requiredMessage : undefined}
-		on:input>
-		{#if placeholder}
-			<option value="undefined" disabled selected>{placeholder}</option>
-		{/if}
-		{#each options as option}
-			<option id={option.id} value={option.value}>{option.label}</option>
-		{/each}
-	</select>
+	{#if multiple}
+		 <!-- content here -->
+		 <select
+			 id={id ?? name}
+			 {required}
+			 class="select rounded-lg {selectClass}"
+			 multiple
+			 {size}
+			 {name}
+			 {placeholder}
+			 bind:value={value}
+			 data-pristine-required-message={required ? requiredMessage : undefined}
+			 on:input>
+			 {#if placeholder}
+				 <option value="undefined" disabled selected>{placeholder}</option>
+			 {/if}
+			 {#each options as option}
+				 <option id={option.id} value={option.value}>{option.label}</option>
+			 {/each}
+		 </select>
+	{:else}
+		 <select
+			 id={id ?? name}
+			 {required}
+			 class="select rounded-lg {selectClass}"
+			 {size}
+			 {name}
+			 {placeholder}
+			 bind:value={value}
+			 data-pristine-required-message={required ? requiredMessage : undefined}
+			 on:input>
+			 {#if placeholder}
+				 <option value="undefined" disabled selected>{placeholder}</option>
+			 {/if}
+			 {#each options as option}
+				 <option id={option.id} value={option.value}>{option.label}</option>
+			 {/each}
+		 </select>
+	{/if}
 </DefaultFieldWrapper>

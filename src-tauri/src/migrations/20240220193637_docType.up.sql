@@ -1,0 +1,1 @@
+alter table documents add column docType INTEGER not null;

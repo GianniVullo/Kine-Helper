@@ -26,28 +26,6 @@ CREATE TABLE IF NOT EXISTS codes (
     FOREIGN KEY(convention_id) REFERENCES conventions(convention_id) ON DELETE CASCADE ON UPDATE NO ACTION
 );
 
-CREATE TABLE IF NOT EXISTS kinesitherapeutes (
-    id TEXT PRIMARY KEY,
-    created_at TEXT,
-    nom TEXT,
-    prenom TEXT,
-    adresse TEXT,
-    cp INTEGER,
-    localite TEXT,
-    inami TEXT,
-    tel TEXT,
-    email TEXT,
-    gsm TEXT,
-    bce TEXT,
-    iban TEXT,
-    conventionne BOOLEAN,
-    administrateur BOOLEAN,
-    customer_id TEXT,
-    subscription_id TEXT,
-    migrated BOOLEAN,
-    offre TEXT CHECK(offre IN ('free', 'cloud'))
-);
-
 CREATE TABLE IF NOT EXISTS patients (
     patient_id TEXT PRIMARY KEY,
     created_at TEXT,
@@ -67,17 +45,16 @@ CREATE TABLE IF NOT EXISTS patients (
     tiers_payant BOOLEAN,
     ticket_moderateur BOOLEAN,
     bim BOOLEAN,
-    actif BOOLEAN,
+    actif BOOLEAN DEFAULT TRUE,
     numero_etablissment TEXT,
     service TEXT,
-    kinesitherapeute_id TEXT,
-    FOREIGN KEY(kinesitherapeute_id) REFERENCES kinesitherapeutes(id) ON DELETE CASCADE ON UPDATE NO ACTION
+    kinesitherapeute_id TEXT
 );
 
 CREATE TABLE IF NOT EXISTS situations_pathologiques (
     sp_id TEXT PRIMARY KEY,
     created_at TEXT,
-    numero_etablissment TEXT,
+    numero_etablissement TEXT,
     service TEXT,
     patient_id TEXT,
     user_id TEXT,
@@ -88,8 +65,7 @@ CREATE TABLE IF NOT EXISTS situations_pathologiques (
     rapport_ecrit BOOLEAN,
     rapport_ecrit_custom_date TEXT,
     rapport_ecrit_date TEXT CHECK(rapport_ecrit_date IN ('first', 'last', 'custom')),
-    FOREIGN KEY(patient_id) REFERENCES patients(patient_id) ON DELETE CASCADE ON UPDATE NO ACTION,
-    FOREIGN KEY(user_id) REFERENCES kinesitherapeutes(id) ON DELETE CASCADE ON UPDATE NO ACTION
+    FOREIGN KEY(patient_id) REFERENCES patients(patient_id) ON DELETE CASCADE ON UPDATE NO ACTION
 );
 
 CREATE TABLE IF NOT EXISTS documents (
@@ -100,8 +76,7 @@ CREATE TABLE IF NOT EXISTS documents (
     form_data TEXT,
     user_id TEXT,
     FOREIGN KEY(patient_id) REFERENCES patients(patient_id) ON DELETE CASCADE ON UPDATE NO ACTION,
-    FOREIGN KEY(sp_id) REFERENCES situations_pathologiques(sp_id) ON DELETE CASCADE ON UPDATE NO ACTION,
-    FOREIGN KEY(user_id) REFERENCES kinesitherapeutes(id) ON DELETE CASCADE ON UPDATE NO ACTION
+    FOREIGN KEY(sp_id) REFERENCES situations_pathologiques(sp_id) ON DELETE CASCADE ON UPDATE NO ACTION
 );
 
 CREATE TABLE IF NOT EXISTS prescriptions (
@@ -110,20 +85,21 @@ CREATE TABLE IF NOT EXISTS prescriptions (
     patient_id TEXT,
     sp_id TEXT,
     date TEXT,
-    active BOOLEAN,
+    active BOOLEAN DEFAULT TRUE,
     jointe_a TEXT,
     user_id TEXT,
     prescripteur TEXT,
     nombre_seance INTEGER,
     seance_par_semaine INTEGER,
+    file_name TEXT,
     FOREIGN KEY(patient_id) REFERENCES patients(patient_id) ON DELETE CASCADE ON UPDATE NO ACTION,
-    FOREIGN KEY(sp_id) REFERENCES situations_pathologiques(sp_id) ON DELETE CASCADE ON UPDATE NO ACTION,
-    FOREIGN KEY(user_id) REFERENCES kinesitherapeutes(id) ON DELETE CASCADE ON UPDATE NO ACTION
+    FOREIGN KEY(sp_id) REFERENCES situations_pathologiques(sp_id) ON DELETE CASCADE ON UPDATE NO ACTION
 );
 
 CREATE TABLE IF NOT EXISTS generateurs_de_seances (
+    gen_id TEXT PRIMARY KEY,
     created_at TEXT,
-    auto BOOLEAN,
+    auto BOOLEAN DEFAULT TRUE,
     groupe_id INTEGER,
     lieu_id INTEGER,
     duree INTEGER,
@@ -142,13 +118,11 @@ CREATE TABLE IF NOT EXISTS generateurs_de_seances (
     default_seance_description TEXT,
     nombre_seances INTEGER,
     sp_id TEXT,
-    gen_id TEXT,
     date_presta_chir_fa TEXT,
     examen_ecrit_date TEXT,
     amb_hos TEXT CHECK(amb_hos IN ('AMB', 'HOS')),
     user_id TEXT,
-    FOREIGN KEY(sp_id) REFERENCES situations_pathologiques(sp_id) ON DELETE CASCADE ON UPDATE NO ACTION,
-    FOREIGN KEY(user_id) REFERENCES kinesitherapeutes(id) ON DELETE CASCADE ON UPDATE NO ACTION
+    FOREIGN KEY(sp_id) REFERENCES situations_pathologiques(sp_id) ON DELETE CASCADE ON UPDATE NO ACTION
 );
 
 
@@ -160,7 +134,7 @@ CREATE TABLE IF NOT EXISTS attestations (
     porte_prescr BOOLEAN,
     numero_etablissment TEXT,
     service TEXT,
-    has_been_printed BOOLEAN,
+    has_been_printed BOOLEAN DEFAULT FALSE,
     prescription_id TEXT,
     total_recu REAL,
     valeur_totale REAL,
@@ -171,8 +145,7 @@ CREATE TABLE IF NOT EXISTS attestations (
     with_rapport BOOLEAN,
     FOREIGN KEY(patient_id) REFERENCES patients(patient_id) ON DELETE CASCADE ON UPDATE NO ACTION,
     FOREIGN KEY(sp_id) REFERENCES situations_pathologiques(sp_id) ON DELETE CASCADE ON UPDATE NO ACTION,
-    FOREIGN KEY(prescription_id) REFERENCES prescriptions(prescription_id),
-    FOREIGN KEY(user_id) REFERENCES kinesitherapeutes(id) ON DELETE CASCADE ON UPDATE NO ACTION
+    FOREIGN KEY(prescription_id) REFERENCES prescriptions(prescription_id)
 );
 
 CREATE TABLE IF NOT EXISTS seances (
@@ -181,20 +154,27 @@ CREATE TABLE IF NOT EXISTS seances (
     code_id TEXT,
     date TEXT,
     description TEXT,
-    has_been_attested BOOLEAN,
+    has_been_attested BOOLEAN DEFAULT FALSE,
     attestation_id TEXT,
     prescription_id TEXT,
     user_id TEXT,
     sp_id TEXT,
     patient_id TEXT,
-    is_paid BOOLEAN,
+    is_paid BOOLEAN DEFAULT FALSE,
     start TEXT,
     end TEXT,
     gen_id TEXT,
     FOREIGN KEY(attestation_id) REFERENCES attestations(attestation_id) ON DELETE SET NULL ON UPDATE NO ACTION,
     FOREIGN KEY(prescription_id) REFERENCES prescriptions(prescription_id) ON DELETE SET NULL ON UPDATE NO ACTION,
-    FOREIGN KEY(user_id) REFERENCES kinesitherapeutes(id) ON DELETE CASCADE ON UPDATE NO ACTION,
     FOREIGN KEY(sp_id) REFERENCES situations_pathologiques(sp_id) ON DELETE CASCADE ON UPDATE NO ACTION,
     FOREIGN KEY(patient_id) REFERENCES patients(patient_id) ON DELETE CASCADE ON UPDATE NO ACTION,
-    FOREIGN KEY(gen_id) REFERENCES generateurs_de_seances(gen_id) ON DELETE SET NULL ON UPDATE NO ACTION,
+    FOREIGN KEY(gen_id) REFERENCES generateurs_de_seances(gen_id) ON DELETE SET NULL ON UPDATE NO ACTION
+);
+
+CREATE TABLE IF NOT EXISTS settings (
+    setting_id TEXT PRIMARY KEY,
+    created_at TEXT,
+    user_id TEXT,
+    raw_printer TEXT,
+    printer TEXT
 );

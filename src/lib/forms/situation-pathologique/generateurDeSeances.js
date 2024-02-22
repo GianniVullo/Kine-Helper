@@ -42,7 +42,6 @@ export class GenerateurDeSeances {
 		seconde_seance_palliatif,
 		premiere_seance_heure,
 		sp_id,
-		gen_id,
 		prescription_id
 	}) {
 		this.auto = auto;
@@ -89,12 +88,12 @@ export class GenerateurDeSeances {
 			lieu_id: this.lieu_id,
 			amb_hos: this.amb_hos,
 			duree: this.duree,
-			intake: this.intake,
-			examen_consultatif: this.examen_consultatif,
+			// intake: this.intake,
+			// examen_consultatif: this.examen_consultatif,
 			examen_ecrit_date: this.examen_ecrit_date,
-			rapport_ecrit: this.rapport_ecrit,
-			rapport_ecrit_date: this.rapport_ecrit_date,
-			rapport_ecrit_custom_date: this.rapport_ecrit_custom_date,
+			// rapport_ecrit: this.rapport_ecrit,
+			// rapport_ecrit_date: this.rapport_ecrit_date,
+			// rapport_ecrit_custom_date: this.rapport_ecrit_custom_date,
 			volet_j: this.volet_j,
 			seconde_seance_fa: this.seconde_seance_fa,
 			duree_seconde_seance_fa: this.duree_seconde_seance_fa,
@@ -127,7 +126,7 @@ export class GenerateurDeSeances {
 		let counter = (this.nombre_seances ?? 0) - 1;
 		// (parce que ça commence à 0)
 		let premiere_seance_date = this.premiere_seance_date_time();
-		let datesList = [this.premiere_seance];
+		let datesList = [premiere_seance_date];
 		for (var i = 1; counter > 0; i++) {
 			let comparatingDate = this.premiere_seance;
 			let dateToAnalize = comparatingDate.add(i, 'd');
@@ -258,11 +257,16 @@ export class GenerateurDeSeances {
 		if (this.duree) {
 			sqlStatementArgs.push(this.duree);
 		}
+		if (this.volet_h) {
+			sqlStatementArgs.push(this.volet_h);
+		}
 		//? "Compiler" la requête SQL
 		let sqlStatement = `SELECT * from codes WHERE groupe = $1 AND type = $2 AND lieu = $3 AND convention_id = '${
 			convention.convention_id
 		}'${duree || this.duree ? ' AND duree = $4' : ''}${
-			this.volet_h || [2, 3].includes(this.patho_lourde_type) ? ` AND drainage = TRUE` : ''
+			this.volet_h || [2, 3].includes(this.patho_lourde_type)
+				? ` AND drainage = ${duree || this.duree ? '$5' : '$4'}`
+				: ''
 		};`;
 
 		console.log(`le statement SQL : ${sqlStatement} et ses arguments : ${sqlStatementArgs}`);

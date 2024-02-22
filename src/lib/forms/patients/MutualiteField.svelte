@@ -293,7 +293,7 @@
 
 <AutocompleteField
 	label="Mutualité"
-	{query}
+	bind:query={query}
 	name="mutualite"
 	{onOptionSelection}
 	options={mutualite}

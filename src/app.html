@@ -5,16 +5,58 @@
 	<meta charset="utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
 	%sveltekit.head%
+	<style>
+		/* Define the fade-out animation */
+		@keyframes fadeOut {
+			from {
+				opacity: 1;
+			}
+
+			to {
+				opacity: 0;
+			}
+		}
+
+		.fade-out {
+			animation: fadeOut 1s ease-out forwards;
+		}
+	</style>
 	<script>
-		window.addEventListener("load", (event) => {
-			document.getElementById("loader").style.display = "none";
-		  });
+		document.addEventListener("svelteLoaded", (event) => {
+			console.log("DOM fully loaded and parsed");
+			document.getElementById("loader").classList+= ' fade-out'
+		});
 	</script>
 </head>
 
-<body data-theme="kine-helper" data-sveltekit-preload-data="hover" class="!overscroll-none fixed w-full h-full overflow-hidden">
-	<div id="loader" style="background: rgb(126,64,185); background: linear-gradient(135deg, rgba(126,64,185,1) 0%, rgba(11,124,160,1) 100%); height: 100vh; width: 100vw; z-index: 999; position: fixed;"></div>
-	<div data-tauri-drag-region id="titlebar-drag"
+<body data-theme="kine-helper" data-sveltekit-preload-data="hover"
+	class="!overscroll-none fixed w-full h-full overflow-hidden">
+
+	<div id="loader"
+		style="pointer-events: none; background: rgb(126,64,185); background: linear-gradient(135deg, rgba(126,64,185,1) 0%, rgba(11,124,160,1) 100%); height: 100vh; width: 100vw; z-index: 999; position: fixed; top: 0; left: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; ">
+		<!--? CENTERED CARD -->
+		<!-- <div
+			style="padding-left: 1.5rem; padding-right: 1.5rem; padding-top: 1rem; padding-bottom: 1rem; position: relative; width: 350px; display: flex; flex-direction: column; justify-content: space-around; align-items: center; height: 500px; padding: 1rem; border: solid #d2d6e3 .5px; background-color: #2c3656; border-radius: 40px; min-height: 150px; display: flex; justify-content: space-around; overflow: hidden;">
+			<div
+				style="position: absolute; right: -40px; top: -50px; height: 8rem; width: 8rem; border-radius: 9999px; background-color: #6b21a8; opacity: 0.25;">
+			</div>
+			<div
+				style="position: absolute; bottom: -50px; left: -40px; height: 8rem; width: 8rem; border-radius: 9999px; background-color: #0284c7; opacity: 0.25;">
+			</div>
+				<div class="flex flex-col justify-start">
+					<h2
+						style="margin-bottom: 0.5rem; text-align: center; font-size: 3rem; font-weight: bold; color: #a855f7;">
+						Kiné Helper
+					</h2>
+					<p style="text-align: center; font-size: 1.5rem; color: #9ca3af; margin-top: 30px; overflow: hidden;">
+						Open-source & gratuit <br> pour tous les kinés
+					</p>
+				</div>
+				<h1 style="text-align: center; font-size: 18px; line-height: 1; margin: 0; padding: 0; color: white;">CHARGEMENT EN COURS
+				</h1>
+		</div> -->
+	</div>
+	<!-- <div data-tauri-drag-region id="titlebar-drag"
 		class="h-6 justify-end fixed hidden top-0 md:flex left-0 w-full z-20">
 		<div class="flex space-x-2 group h-full p-2">
 			<div class="w-3 h-3 rounded-full bg-success-500 flex justify-center items-center" id="titlebar-maximize">
@@ -40,7 +82,7 @@
 				</svg>
 			</div>
 		</div>
-	</div>
+	</div> -->
 	<div style="display: contents">%sveltekit.body%</div>
 </body>
 

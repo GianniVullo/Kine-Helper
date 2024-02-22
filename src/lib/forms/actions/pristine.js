@@ -42,7 +42,7 @@ export function pristine(form_element, { isValid, isValidSync, validators }) {
 		let submitter = e.submitter;
 		submitter.disabled = true;
 		const form_data = new FormData(e.target);
-		console.log('now validating in Pristine Action');
+		console.log('now validating in Pristine Action with ', pristine, Array.from(form_data.entries()));
 		// check if the form is valid
 		let valid = pristine.validate();
 		console.log('is it valid ?', valid);

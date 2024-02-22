@@ -9,7 +9,7 @@
 	import { popup } from '@skeletonlabs/skeleton';
 	import ArchiveIcon from '$lib/ui/svgs/ArchiveIcon.svelte';
 	import { getModalStore } from '@skeletonlabs/skeleton';
-
+	import DBAdapter from '../forms/actions/dbAdapter';
 	const modalStore = getModalStore();
 	const modal = {
 		type: 'confirm',
@@ -29,11 +29,8 @@
 	async function deletePatient(confirmed) {
 		if (confirmed) {
 			console.log('Pressed confirm');
-			let { data, error } = await supabase
-				.from('patients')
-				.delete()
-				.eq('patient_id', patient.patient_id);
-			console.log('supabase response', data, error);
+			let db = new DBAdapter();
+			await db.delete('patients', ['patient_id', patient.patient_id]);
 			patients.remove(patient.patient_id);
 			goto('/dashboard/patients');
 		}
@@ -48,22 +45,17 @@
 		target: 'udpatePopUp',
 		placement: 'left'
 	};
-	const archivePopUp = {
-		event: 'hover',
-		target: 'archivePopUp',
-		placement: 'right'
-	};
+	// const archivePopUp = {
+	// 	event: 'hover',
+	// 	target: 'archivePopUp',
+	// 	placement: 'right'
+	// };
 	const deletePopUp = {
 		event: 'hover',
 		target: 'deletePopUp',
 		placement: 'bottom'
 	};
 
-	const moreInfoPopup = {
-		event: 'click',
-		target: 'popupFeatured',
-		placement: 'right'
-	};
 </script>
 
 <!--* Title and Actions -->
@@ -84,17 +76,17 @@
 			<div class="variant-filled-surface arrow" />
 		</div>
 	</div>
-	<button class="group flex items-end justify-center" use:popup={archivePopUp}>
+	<!-- <button class="group flex items-end justify-center" use:popup={archivePopUp}>
 		<ArchiveIcon class="h-4 w-4 stroke-error-800 dark:stroke-error-300" />
-	</button>
-	<div data-popup="archivePopUp">
+	</button> -->
+	<!-- <div data-popup="archivePopUp">
 		<div class="card variant-filled-surface p-2">
 			<p class="text-xs">Archiver</p>
 			<div class="variant-filled-surface arrow" />
 		</div>
-	</div>
+	</div> -->
 	<button
-		class="group mx-4 flex items-end justify-center"
+		class="group flex items-end justify-center"
 		on:click={() => modalStore.trigger(modal)}
 		use:popup={deletePopUp}>
 		<DeleteIcon class="h-4 w-4 stroke-error-800 dark:stroke-error-300" />
@@ -105,44 +97,4 @@
 			<div class="variant-filled-surface arrow" />
 		</div>
 	</div>
-	<!--* Patient info -->
-	<button class="group" use:popup={moreInfoPopup}>
-		<InfoIcon
-			class="h-4 w-4 stroke-secondary-600 group-hover:stroke-secondary-700 dark:stroke-secondary-300" />
-		<div class="card ml-4 w-72 p-4 shadow-xl" data-popup="popupFeatured">
-			<p class="mb-1 text-sm text-surface-700 dark:text-surface-300">
-				📍 {patient.adresse}
-			</p>
-			<p class="mb-1 text-sm text-surface-700 dark:text-surface-300">
-				📮 {patient.cp}
-				{patient.localite}
-			</p>
-			<p class="mb-1 text-sm text-surface-700 dark:text-surface-300"></p>
-			<p class="mb-1 text-sm text-surface-700 dark:text-surface-300">
-				📆 {patient.date_naissance}
-			</p>
-			<p class="mb-1 text-sm text-surface-700 dark:text-surface-300">
-				Sexe : {patient.sexe}
-			</p>
-			<p class="mb-1 text-sm text-surface-700 dark:text-surface-300">
-				NISS : {patient.niss}
-			</p>
-			{#if patient.email}
-				<p class="mb-1 text-sm text-surface-700 dark:text-surface-300">
-					📧 {patient.email}
-				</p>
-			{/if}
-			{#if patient.gsm}
-				<p class="mb-1 text-sm text-surface-700 dark:text-surface-300">
-					📱 {patient.gsm}
-				</p>
-			{/if}
-			{#if patient.tel}
-				<p class="mb-1 text-sm text-surface-700 dark:text-surface-300">
-					☎️ {patient.telephone}
-				</p>
-			{/if}
-			<div class="bg-surface-100-800-token arrow" />
-		</div>
-	</button>
 </section>

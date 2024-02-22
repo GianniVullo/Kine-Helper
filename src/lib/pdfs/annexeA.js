@@ -3,8 +3,8 @@ import { get } from 'svelte/store';
 import { user } from '../stores/UserStore';
 
 export class AnnexeA extends PDFGeneration {
-	constructor(documentName, formData) {
-		super(documentName, formData);
+	constructor(documentName, formData, patient, sp) {
+		super(documentName, formData, patient, sp);
 		this.situationsPathologiques = [
 			this.a,
 			this.a,
@@ -61,13 +61,13 @@ export class AnnexeA extends PDFGeneration {
 		this.addParagraph('(compléter ou apposer une vignette O.A.)');
 		this.yPosition.update(5);
 		this.addParagraph(
-			`Nom et prénom : ${this.formData.patient.nom} ${this.formData.patient.prenom}`
+			`Nom et prénom : ${this.patient.nom} ${this.patient.prenom}`
 		);
 		this.addParagraph(
-			`Adresse : ${this.formData.patient.adresse} ${this.formData.patient.cp} ${this.formData.patient.localite}`
+			`Adresse : ${this.patient.adresse} ${this.patient.cp} ${this.patient.localite}`
 		);
-		this.addParagraph(`Date de naissance : ${this.formData.patient.date_naissance}`);
-		this.addParagraph(`Numéro d’inscription O.A. : ${this.formData.patient.niss}`);
+		this.addParagraph(`Date de naissance : ${this.patient.date_naissance}`);
+		this.addParagraph(`Numéro d’inscription O.A. : ${this.patient.niss}`);
 		this.yPosition.update(5);
 		this.title('2.   ', 'Déclaration du kinésithérapeute');
 		this.yPosition.update(5);
