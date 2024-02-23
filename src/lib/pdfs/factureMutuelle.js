@@ -1,4 +1,4 @@
-import { PDFGeneration } from './kineHelperPdfs';
+import { PDFGeneration } from './KineHelperPdfs';
 import { get } from 'svelte/store';
 import { user } from '../stores/UserStore';
 import dayjs from 'dayjs';

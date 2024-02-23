@@ -3,8 +3,14 @@ import { get } from 'svelte/store';
 import { user } from '../stores/UserStore';
 
 export class AnnexeA extends PDFGeneration {
-	constructor(documentName, formData, patient, sp) {
-		super(documentName, formData, patient, sp);
+	constructor(formData, patient, sp) {
+		super(
+			`Annexe A ${patient.nom} ${patient.prenom} ${formData.date}.pdf`,
+			formData,
+			patient,
+			sp,
+			0
+		);
 		this.situationsPathologiques = [
 			this.a,
 			this.a,
@@ -49,7 +55,7 @@ export class AnnexeA extends PDFGeneration {
 		];
 	}
 	buildPdf() {
-		console.log(`Now building PDF Annexe A with ${this.formData} and user ==`, get(user));
+		console.log(`Now building PDF Annexe A with ${this.formData} ==`);
 		this.addCenteredText('Annexe 5a', this.yPosition);
 		this.yPosition.update(5);
 		this.addParagraph(
@@ -60,9 +66,7 @@ export class AnnexeA extends PDFGeneration {
 		this.title('1.   ', 'Données d’identification du patient');
 		this.addParagraph('(compléter ou apposer une vignette O.A.)');
 		this.yPosition.update(5);
-		this.addParagraph(
-			`Nom et prénom : ${this.patient.nom} ${this.patient.prenom}`
-		);
+		this.addParagraph(`Nom et prénom : ${this.patient.nom} ${this.patient.prenom}`);
 		this.addParagraph(
 			`Adresse : ${this.patient.adresse} ${this.patient.cp} ${this.patient.localite}`
 		);
@@ -75,7 +79,7 @@ export class AnnexeA extends PDFGeneration {
 			`Je, soussigné(e), ${get(user).profil.nom} ${
 				get(user).profil.prenom
 			}, kinésithérapeute, déclare au médecin-conseil que je commence/j’ai commencé le traitement de la situation pathologique indiquée ci-dessous en date du ${
-				this.formData.premiereSeance
+				this.formData.date
 			}.`
 		);
 		this.yPosition.update(5);

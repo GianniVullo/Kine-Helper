@@ -3,8 +3,14 @@ import { get } from 'svelte/store';
 import { user } from '../stores/UserStore';
 
 export class AnnexeB extends PDFGeneration {
-	constructor(documentName, formData, patient, sp) {
-		super(documentName, formData, patient, sp);
+	constructor(formData, patient, sp) {
+		super(
+			`Annexe A ${patient.nom} ${patient.prenom} ${formData.date}.pdf`,
+			formData,
+			patient,
+			sp,
+			1
+		);
 		this.situationsPathologiques = [this.a, this.b, this.c, this.d, this.e, this.f, this.g, this.h];
 		this.indexOfSP = ['51.', '59.', '54.', '55.', '56.', '57.', '58.', '60.'];
 	}
@@ -29,9 +35,7 @@ export class AnnexeB extends PDFGeneration {
 		this.title('2.   ', 'Données d’identification du patient');
 		this.addParagraph('(compléter ou apposer une vignette O.A.)');
 		this.yPosition.update(5);
-		this.addParagraph(
-			`Nom et prénom : ${this.patient.nom} ${this.patient.prenom}`
-		);
+		this.addParagraph(`Nom et prénom : ${this.patient.nom} ${this.patient.prenom}`);
 		this.addParagraph(
 			`Adresse : ${this.patient.adresse} ${this.patient.cp} ${this.patient.localite}`
 		);
@@ -44,7 +48,7 @@ export class AnnexeB extends PDFGeneration {
 			`Je, soussigné(e), ${get(user).profil.nom} ${
 				get(user).profil.prenom
 			}, kinésithérapeute, déclare au médecin-conseil que je commence/j’ai commencé le traitement de la situation pathologique indiquée ci-dessous en date du ${
-				this.formData.premiereSeance
+				this.formData.date
 			}.`
 		);
 		this.yPosition.update(5);
@@ -233,9 +237,15 @@ export class AnnexeB extends PDFGeneration {
 		this.voletAvecSituationsMultiples('f)	Syndrome fibromyalgique', sousSituations, '57.');
 	}
 	g() {
-		this.voletAvecSituationUnique('g)	Dystonie cervicale primaire démontrée par un rapport diagnostique établi par un médecin-spécialiste en neurologie', '58.');
+		this.voletAvecSituationUnique(
+			'g)	Dystonie cervicale primaire démontrée par un rapport diagnostique établi par un médecin-spécialiste en neurologie',
+			'58.'
+		);
 	}
 	h() {
-		this.voletAvecSituationUnique('h)	lymphoedème répondant aux conditions prévues dans la nomenclature.', '60.');
+		this.voletAvecSituationUnique(
+			'h)	lymphoedème répondant aux conditions prévues dans la nomenclature.',
+			'60.'
+		);
 	}
 }

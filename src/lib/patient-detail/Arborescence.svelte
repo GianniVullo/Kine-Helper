@@ -100,7 +100,9 @@
 								{/if}
 								{#if sp.documents.length > 0}
 									<TreeViewItem>
-										<h5 class="text-surface-700 dark:text-surface-100">Documents</h5>
+										<a
+											href={`/dashboard/patients/${patient.patient_id}/situation-pathologique/${sp.sp_id}/documents`}
+											class="text-surface-700 dark:text-surface-100">Documents</a>
 										<svelte:fragment slot="lead">
 											<PageIcon class="h-5 w-5 fill-surface-700 dark:fill-surface-300" />
 										</svelte:fragment>
@@ -115,7 +117,7 @@
 							{/if}
 						</svelte:fragment>
 					</TreeViewItem>
-					{#if ($page.route.id !== '/dashboard/patients/[patientId]/situation-pathologique/[spId]' || $page.params.spId !== sp.sp_id) }
+					{#if $page.route.id !== '/dashboard/patients/[patientId]/situation-pathologique/[spId]' || $page.params.spId !== sp.sp_id}
 						<div class="flex items-center justify-center">
 							<button
 								class="variant-filled btn-icon btn-icon-sm flex items-center justify-center"

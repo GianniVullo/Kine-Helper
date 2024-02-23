@@ -2,6 +2,9 @@
 	import { PatientForm, user, AnnexeA, supabase } from '../../lib/index';
 	import { patients } from '../../lib/stores/PatientStore';
 	import { FactureMutuelle } from '../../lib/pdfs/factureMutuelle';
+	import SituationPathologiqueSelector from '../../lib/forms/documents/SituationPathologiqueSelector.svelte';
+	import AnnexeAForm from '../../lib/forms/documents/AnnexeAForm.svelte';
+	import AnnexeBForm from '../../lib/forms/documents/AnnexeBForm.svelte';
 
 	console.log($patients);
 	let pdfGenerator = new AnnexeA('generated.pdf', {
@@ -101,6 +104,8 @@
 		console.log(res);
 	});
 }}>Test</button>
+
+<AnnexeBForm patient={$patients[0]} sp={$patients[0].situations_pathologiques[0]} />
 <!--? features :
  => vote de la communauté
  => actions rapides

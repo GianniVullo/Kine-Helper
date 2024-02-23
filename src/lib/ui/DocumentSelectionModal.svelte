@@ -22,7 +22,9 @@
 	let formData;
 	// We've created a custom submit function to pass the response and close the modal.
 	function isValid() {
-		goto($page.url.pathname + '/documents/create?docType=' + formData);
+		goto(
+			`/dashboard/patients/${$page.params.patientId}/situation-pathologique/${$page.params.spId}/documents/create?docType=${formData}`
+		);
 		modalStore.close();
 	}
 
@@ -38,7 +40,12 @@
 		<article></article>
 		<FormWrapper {formSchema}>
 			<!-- <SelectFieldV2 bind:value={formData} label="Types de document" required {options} /> -->
-			<RadioFieldV2 bind:value={formData} label="Type de document" name="docType" required {options} />
+			<RadioFieldV2
+				bind:value={formData}
+				label="Type de document"
+				name="docType"
+				required
+				{options} />
 			<SubmitButton>Poursuivre</SubmitButton>
 		</FormWrapper>
 	</div>
