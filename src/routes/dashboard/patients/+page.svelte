@@ -77,6 +77,5 @@
 				</a>
 			{/each}
 		</div>
-		<!-- <a href="/dashboard/patients/test-patient" class="">hidden</a> -->
 	</section>
 </main>

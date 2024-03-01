@@ -141,8 +141,8 @@ function constructionEtMiseAJourDeAttestationFormState(
 		//? 3c1 : trouver l'attestation avec l'index - 1
 		let attestation = prescr.attestations.find((a) => a.id === index - 1);
 		//? 3C2 : Si l'attestation a plus de 20 lignes, il faut créer une nouvelle attestation.
-		// console.log('before aMoinsDe20Lignes(attestation)', index);
-		if (aMoinsDe20Lignes(attestation, sp)) {
+		// console.log('before aPlusDe20Lignes(attestation)', index);
+		if (aPlusDe20Lignes(attestation, sp)) {
 			let attestationState = buildAttestationState(index, sp, {
 				with_intake: false,
 				porte_prescr: false,
@@ -207,12 +207,14 @@ function champsManquantsEtLignesImplicites(futureStateArray, codes, patient, sp)
 			attestation.total_recu = 0.0;
 			attestation.valeur_totale = 0.0;
 			//? Ici on évalue si le cas de figue où l'attestation est la première et qu'elle contient un rapport écrit
-			if (sp.rapport_ecrit && sp.rapport_ecrit_date === 'first') {
-				if (sp.attestations?.length === 0 && pIdx === 0 && aIdx === 0) {
-					attestation.with_rapport = true;
-					attestation.seances[0].has_rapport = true;
-				}
-			}
+			//! Finalement je n'utilise le champ rapport écrit que pour savoir la date à insérer dans le champ rapport_écrit_custom_date
+			//! Donc il suffit de savoir si la date custom du rapport écrit est la même que la date de la séance
+			// if (sp.rapport_ecrit && sp.rapport_ecrit_date === 'first') {
+			// 	if (sp.attestations?.length === 0 && pIdx === 0 && aIdx === 0) {
+			// 		attestation.with_rapport = true;
+			// 		attestation.seances[0].has_rapport = true;
+			// 	}
+			// }
 
 			for (const seance of attestation.seances) {
 				let code = codes.get(seance.obj.code_id);
@@ -222,34 +224,26 @@ function champsManquantsEtLignesImplicites(futureStateArray, codes, patient, sp)
 					let codeIdemnite = codes
 						.get('indemnites')
 						.find((c) => c.code_reference === indmeniteCategory[code.groupe_id]);
-					console.log('codeIdemnite', codeIdemnite);
+					// console.log('codeIdemnite', codeIdemnite);
 					let indemnity_recu_value = getUnitRecu(codeIdemnite, patient);
 					let indemnity_total_value = getUnitTotal(codeIdemnite);
-					console.log('indemnity_recu_value', indemnity_recu_value);
-					console.log('indemnity_total_value', indemnity_total_value);
+					// console.log('indemnity_recu_value', indemnity_recu_value);
+					// console.log('indemnity_total_value', indemnity_total_value);
 					attestation.total_recu += indemnity_recu_value;
 					attestation.valeur_totale += indemnity_total_value;
 				}
 				//? Si le rapport écrit n'est pas 'first' alors il faut trouver la bonne attestation pour ajouter le rapport écrit
-				if (
-					sp.rapport_ecrit &&
-					(sp.rapport_ecrit_date === 'last' || sp.rapport_ecrit_date === 'custom')
-				) {
-					if (dayjs(seance.obj.date).isSame(dayjs(sp.rapport_ecrit_date_custom))) {
-						attestation.with_rapport = true;
-						seance.has_rapport = true;
-					}
-				}
+				//! à nouveau je n'utilise que le champ custom désormais et c'est caclulé dans figureOutForRapportEcrit
 				//* 4.b : on ajoute la ligne explicite
 				let unitRecu = getUnitRecu(codes.get(seance.obj.code_id), patient);
 				let unitTotal = getUnitTotal(codes.get(seance.obj.code_id));
-				console.log('unitRecu', unitRecu);
-				console.log('unitTotal', unitTotal);
+				// console.log('unitRecu', unitRecu);
+				// console.log('unitTotal', unitTotal);
 				attestation.total_recu += getUnitRecu(codes.get(seance.obj.code_id), patient);
 				attestation.valeur_totale += getUnitTotal(codes.get(seance.obj.code_id));
 			}
-			//* 4.c si l'attestation contient un rapport écrit, il faut ajouter la valeur du rapport écrit au total_recu et à la valeur_totale
 			if (attestation.with_rapport) {
+				//* 4.c si l'attestation contient un rapport écrit, il faut ajouter la valeur du rapport écrit au total_recu et à la valeur_totale
 				let rapport = codes
 					.get('rapports')
 					.find((c) => c.lieu_id === codes.get(attestation.seances[0].obj.code_id).lieu_id);
@@ -312,16 +306,23 @@ function figureOutForRapportEcrit(attestation, sp) {
 	//* Ici on doit comprendre si l'attestation doit contenir un rapport écrit
 	//? pour cela il faut vérifier si une des seances de l'attestation a la même date que le rapport écrit
 	// console.log('in figureOutForRapportEcrit with ', attestation, sp);
-	if (!attestation.has_rapport) {
-		return false;
-	}
 	for (const seance of attestation.seances) {
-		if (dayjs(seance.obj.date).isSame(dayjs(sp.rapport_ecrit_custom_date))) {
-			// console.log('seance.date', seance.obj.date);
-			// console.log('sp.rapport_ecrit_date_custom', sp.rapport_ecrit_custom_date);
+		let isSameDate =
+			dayjs(seance.obj.date).format('DD-MM-YYYY') ===
+			dayjs(sp.rapport_ecrit_custom_date).format('DD-MM-YYYY');
+		console.log('isSameDate', isSameDate);
+		console.log(
+			'In figureOutForRapportEcrit',
+			dayjs(seance.obj.date),
+			dayjs(sp.rapport_ecrit_custom_date)
+		);
+		if (isSameDate && sp.rapport_ecrit) {
+			attestation.with_rapport = true;
+			seance.has_rapport = true;
 			return true;
 		}
 	}
+	return false;
 }
 function buildSeanceState(seance, { selected = true, modified = false }) {
 	return {
@@ -332,8 +333,8 @@ function buildSeanceState(seance, { selected = true, modified = false }) {
 	};
 }
 
-function aMoinsDe20Lignes(attestation, sp) {
-	console.log("lignes de l'attestation", attestation);
+function aPlusDe20Lignes(attestation, sp) {
+	// console.log("lignes de l'attestation", attestation);
 	let has_rapport = figureOutForRapportEcrit(attestation, sp);
 	let limite = attestation.with_indemnity
 		? has_rapport || attestation.with_intake
@@ -342,8 +343,8 @@ function aMoinsDe20Lignes(attestation, sp) {
 		: has_rapport || attestation.with_intake
 		? 19
 		: 20;
-	console.log('limite', limite);
+	// console.log('limite', limite);
 	let lignes = attestation.seances.length === limite;
-	console.log('lignes', lignes);
+	// console.log('lignes', lignes);
 	return lignes;
 }

@@ -166,7 +166,7 @@ export default class DBAdapter {
 				// Aggregate the data in JavaScript
 				let result = {
 					data: {
-						ps: latestPs,
+						...latestPs[0],
 						seances: seances,
 						prescriptions: prescriptions,
 						attestations: attestations,

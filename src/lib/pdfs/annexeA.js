@@ -1,15 +1,18 @@
-import { PDFGeneration } from './KineHelperPdfs';
+import { PDFGeneration } from './kineHelperPdfs';
 import { get } from 'svelte/store';
 import { user } from '../stores/UserStore';
+import dayjs from 'dayjs';
 
 export class AnnexeA extends PDFGeneration {
-	constructor(formData, patient, sp) {
+	constructor(formData, patient, sp, obj) {
 		super(
-			`Annexe A ${patient.nom} ${patient.prenom} ${formData.date}.pdf`,
+			`Annexe A ${patient.nom} ${patient.prenom} ${obj?.created_at ?? dayjs().format('YYYY-MM-DD')}`,
 			formData,
 			patient,
 			sp,
-			0
+			0,
+			'',
+			obj
 		);
 		this.situationsPathologiques = [
 			this.a,

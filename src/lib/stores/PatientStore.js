@@ -106,7 +106,23 @@ export class SituationPathologique {
 				attestation.with_rapport = JSON.parse(attestation.with_rapport);
 				attestation.mutuelle_paid = JSON.parse(attestation.mutuelle_paid);
 				attestation.patient_paid = JSON.parse(attestation.patient_paid);
-				
+			}
+		}
+		if (prescriptions) {
+			for (const prescription of prescriptions) {
+				prescription.prescripteur =
+					typeof prescription.prescripteur === 'string'
+						? JSON.parse(prescription.prescripteur)
+						: prescription.prescripteur;
+			}
+		}
+		if (documents) {
+			for (const document of documents) {
+				document.docType = parseInt(document.docType);
+				document.form_data =
+					typeof document.form_data === 'string'
+						? JSON.parse(document.form_data)
+						: document.form_data;
 			}
 		}
 	}

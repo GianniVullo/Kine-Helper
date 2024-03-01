@@ -99,6 +99,27 @@
 				value: 18
 			}
 	};
+	let annexeAIdx = [
+		'a',
+		'a2',
+		'a3',
+		'a4',
+		'a5',
+		'b',
+		'c',
+		'd',
+		'e',
+		'e2',
+		'e3',
+		'f',
+		'g',
+		'h',
+		'h2',
+		'h3',
+		'i',
+		'j',
+		'k'
+	];
 	let annexeBOptions = {
 		'a) Situations qui nécessitent une rééducation fonctionnelle de la marche pour les  bénéficiaires  à  partir  leur  65ème  anniversaire  ayant  déjà  été  victime  d’une  chute  et présentant un risque de récidive, à objectiver par le médecin traitant et le kinésithérapeute au moyen: <br>&nbsp&nbsp&nbsp&nbsp1) du test « Timed up & go », avec un score supérieur à 20 secondes ;<br>&nbsp&nbsp&nbsp&nbsp2) du résultat positif à au moins un des deux tests suivants, ceux-ci devant tous deux être effectués:<br>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp(01) - le test « Tinetti », avec un score inférieur à 20/28 ;<br>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp(02) - le  test « Timed chair stands », avec un score supérieur à 14 secondes.':
 			{
@@ -131,8 +152,10 @@
 	export let value;
 </script>
 
-<h5 class="my-2 select-none text-surface-500 dark:text-surface-300">Veuillez choisir une situation pathologique</h5>
-{#each Object.entries(aOrB === 'A' ? annexeAOptions : annexeBOptions) as item}
+<h5 class="my-2 select-none text-surface-500 dark:text-surface-300">
+	Veuillez choisir une situation pathologique
+</h5>
+{#each Object.entries(aOrB === 'A' ? annexeAOptions : annexeBOptions) as item, idx}
 	<div class="flex">
 		{#if Array.isArray(item[1])}
 			<div class="mb-4 flex flex-col space-y-4">
@@ -141,7 +164,7 @@
 					{#each item[1] as subItem, idx}
 						<label
 							class:!text-sm={value && value !== subItem.value}
-							class="has-[:checked]:border-2 has-[:checked]:text-surface-100 has-[:checked]:bg-surface-700 has-[:checked]:text-lg has-[:checked]:border-secondary-400 flex cursor-pointer rounded-lg border px-2 py-2 text-surface-300 duration-200 dark:border-surface-400 dark:hover:bg-surface-800"
+							class="flex cursor-pointer rounded-lg border px-2 py-2 text-surface-300 duration-200 has-[:checked]:border-2 has-[:checked]:border-secondary-400 has-[:checked]:bg-surface-700 has-[:checked]:text-lg has-[:checked]:text-surface-100 dark:border-surface-400 dark:hover:bg-surface-800"
 							for={item[0].substring(0, 2) + idx.toString()}>
 							<input
 								class="invisible"
@@ -157,8 +180,8 @@
 			</div>
 		{:else}
 			<label
-				for={item[0].substring(0, 2)}
-				class="has-[:checked]:border-2 has-[:checked]:text-surface-100 has-[:checked]:bg-surface-700 has-[:checked]:text-lg has-[:checked]:!border-secondary-400 mb-4 flex cursor-pointer rounded-lg border px-2 py-2 pl-5 pr-10 text-surface-300 duration-200 dark:border-surface-400 dark:hover:bg-surface-800">
+				for={aOrB === 'A' ? annexeAIdx[idx] : item[0].substring(0, 2)}
+				class="mb-4 flex cursor-pointer rounded-lg border px-2 py-2 pl-5 pr-10 text-surface-300 duration-200 has-[:checked]:border-2 has-[:checked]:!border-secondary-400 has-[:checked]:bg-surface-700 has-[:checked]:text-lg has-[:checked]:text-surface-100 dark:border-surface-400 dark:hover:bg-surface-800">
 				<div>{@html item[0]}</div>
 				<input
 					class="invisible"
@@ -166,7 +189,7 @@
 					value={item[1].value}
 					bind:group={value}
 					name="situation_pathologique"
-					id={item[0].substring(0, 2)} /></label>
+					id={aOrB === 'A' ? annexeAIdx[idx] : item[0].substring(0, 2)} /></label>
 		{/if}
 	</div>
 {/each}

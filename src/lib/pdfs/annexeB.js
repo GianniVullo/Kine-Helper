@@ -1,21 +1,28 @@
-import { PDFGeneration } from './KineHelperPdfs';
+import { PDFGeneration } from './kineHelperPdfs';
 import { get } from 'svelte/store';
 import { user } from '../stores/UserStore';
+import dayjs from 'dayjs';
+import { invoke } from '@tauri-apps/api/core';
 
 export class AnnexeB extends PDFGeneration {
-	constructor(formData, patient, sp) {
+	constructor(formData, patient, sp, obj) {
 		super(
-			`Annexe A ${patient.nom} ${patient.prenom} ${formData.date}.pdf`,
+			`Annexe B ${patient.nom} ${patient.prenom} ${
+				obj?.created_at ?? dayjs().format('YYYY-MM-DD')
+			}`,
 			formData,
 			patient,
 			sp,
-			1
+			1,
+			'',
+			obj
 		);
 		this.situationsPathologiques = [this.a, this.b, this.c, this.d, this.e, this.f, this.g, this.h];
 		this.indexOfSP = ['51.', '59.', '54.', '55.', '56.', '57.', '58.', '60.'];
 	}
+
 	buildPdf() {
-		console.log(`Now building PDF Annexe A with ${this.formData} and user ==`, get(user));
+		console.log(`Now building PDF Annexe B with and user ==`, this.formData, get(user));
 		this.addCenteredText('Annexe 5b', this.yPosition);
 		this.yPosition.update(5);
 		this.addParagraph(
@@ -26,15 +33,21 @@ export class AnnexeB extends PDFGeneration {
 		this.addParagraph(
 			'1.   Indiquer par une croix s’il s’agit d’une notification ou d’un renouvellement de notification :'
 		);
-		this.checkbox(
-			this.formData.notification ? 'Notification' : 'Renouvellement de notification',
-			this.yPosition,
-			this.formData.notification
-		);
-		this.addParagraph(' Notification');
+		// this.checkbox(
+		// 	this.formData.notification ? 'Notification' : 'Renouvellement de notification',
+		// 	this.yPosition,
+		// 	this.formData.notification
+		// );
+		this.yPosition.update(1);
+		if (this.formData.notification) {
+			this.addParagraph('        Notification', { fontWeight: 'bold' });
+		} else {
+			this.addParagraph('        Renouvellement de notification', { fontWeight: 'bold' });
+		}
+		this.yPosition.update(5);
 		this.title('2.   ', 'Données d’identification du patient');
 		this.addParagraph('(compléter ou apposer une vignette O.A.)');
-		this.yPosition.update(5);
+		this.yPosition.update(3);
 		this.addParagraph(`Nom et prénom : ${this.patient.nom} ${this.patient.prenom}`);
 		this.addParagraph(
 			`Adresse : ${this.patient.adresse} ${this.patient.cp} ${this.patient.localite}`
@@ -43,7 +56,7 @@ export class AnnexeB extends PDFGeneration {
 		this.addParagraph(`Numéro d’inscription O.A. : ${this.patient.niss}`);
 		this.yPosition.update(5);
 		this.title('3.   ', 'Déclaration du kinésithérapeute');
-		this.yPosition.update(5);
+		this.yPosition.update(3);
 		this.addParagraph(
 			`Je, soussigné(e), ${get(user).profil.nom} ${
 				get(user).profil.prenom
@@ -51,17 +64,17 @@ export class AnnexeB extends PDFGeneration {
 				this.formData.date
 			}.`
 		);
-		this.yPosition.update(5);
+		this.yPosition.update(2);
 		this.addParagraph(
 			'J’ai pris connaissance des conditions pour pouvoir attester les prestations dans le cadre de la situation pathologique ci-dessous et en particulier de l’article 7, § 14 de la nomenclature des prestations de santé.'
 		);
-		this.yPosition.update(5);
+		this.yPosition.update(2);
 		this.addParagraph(
 			'Je garde une copie de la prescription ainsi que les éléments indiquant que le patient se trouve dans la situation cochée ci-dessous dans le dossier.'
 		);
 		this.yPosition.update(5);
 		this.title('4.   ', 'Situations pathologiques de la liste F § 14, 5°, B. ¹');
-		this.yPosition.update(5);
+		this.yPosition.update(3);
 		this.addParagraph(
 			'Indiquer par une croix la situation pathologique concernée (maximum 1 situation pathologique)'
 		);
@@ -69,10 +82,15 @@ export class AnnexeB extends PDFGeneration {
 			'Le formulaire n’est pas valide s’il s’écarte du texte, si des commentaires sont ajoutés à ce texte ou s’il est rempli de façon incomplète',
 			{ width: 130, fontSize: 10, fontWeight: 'bold', cardColor: '#000000', padding: 3 }
 		);
+		console.log('this.formData.situation_pathologique', this.formData.situation_pathologique);
+		console.log(
+			'this.situationsPathologiques',
+			this.situationsPathologiques[this.formData.situation_pathologique]
+		);
 		this.situationsPathologiques[this.formData.situation_pathologique].bind(this)();
 		this.yPosition.update(5);
 		this.title('5.   ', 'Signature');
-		this.yPosition.update(5);
+		this.yPosition.update(3);
 		this.addRow(
 			[
 				[this.addParagraph, ['Le kinésithérapeute', { dontUpdatePosition: true }]],
@@ -82,17 +100,34 @@ export class AnnexeB extends PDFGeneration {
 				columnsWidth: [5, this.pageWidth - this.margins.left - this.margins.right - 5]
 			}
 		);
-		this.yPosition.update(5);
-		this.addRow([
-			[this.addParagraph, ['¹', { fontSize: 8, dontUpdatePosition: true }]],
+		this.addRow(
 			[
-				this.addParagraph,
+				[this.addParagraph, ['¹', { fontSize: 8, dontUpdatePosition: true }]],
 				[
-					'Si le formulaire est établi par des moyens informatiques, seule la rubrique concernée (a), b), c), d), e) ,f), g), h), i), j) ou k)) du point 3 doit être reproduite. Le texte complet de cette rubrique doit être repris et la situation pathologique concernée doit être indiquée.',
-					{ fontSize: 8, x: this.margins.left + 7, dontUpdatePosition: true }
+					this.addParagraph,
+					[
+						'Si le formulaire est établi par des moyens informatiques, seule la rubrique concernée (a), b), c), d), e) ,f), g), h), i), j) ou k)) du point 3 doit être reproduite. Le texte complet de cette rubrique doit être repris et la situation pathologique concernée doit être indiquée.',
+						{ fontSize: 8, x: this.margins.left + 7, dontUpdatePosition: true }
+					]
 				]
-			]
-		]);
+			],
+			{ y: this.pageHeight - 10 }
+		);
+	}
+
+	async save_file() {
+		console.log('Now signing the file');
+		this.buildPdf();
+		await this.authSignature();
+
+		let docOutput = this.doc.output('arraybuffer');
+		let dirPath = await this.buildPath();
+		await invoke('setup_path', {
+			dirPath,
+			fileName: this.documentName + '.pdf',
+			fileContent: Array.from(new Uint8Array(docOutput))
+		});
+		return { dirPath };
 	}
 
 	checkbox(text, y, checked) {
@@ -139,7 +174,7 @@ export class AnnexeB extends PDFGeneration {
 		]);
 	}
 
-	voletAvecSituationsMultiples(situation, sousSituations, index, additionalSpace) {
+	voletAvecSituationsMultiples(situation, sousSituations, index, additionalSpace, listStyle = '') {
 		this.addParagraph(situation);
 		let yPositionBeforeParagraph = get(this.yPosition);
 		this.checkbox(
@@ -149,7 +184,7 @@ export class AnnexeB extends PDFGeneration {
 		);
 		for (let index = 0; index < sousSituations.length; index++) {
 			const sousSituation = sousSituations[index];
-			this.sousSituation(sousSituation);
+			this.sousSituation(sousSituation, listStyle);
 			if (additionalSpace) {
 				this.yPosition.update(additionalSpace);
 			}
@@ -188,7 +223,7 @@ export class AnnexeB extends PDFGeneration {
 			'    (02) - le test « Timed chair stands », avec un score supérieur à 14 secondes.'
 		];
 		this.voletAvecSituationsMultiples(
-			'a) Situations qui nécessitent une rééducation fonctionnelle de la marche pour 51. les bénéficiaires à partir leur 65ème anniversaire ayant déjà été victime d’une chute et présentant un risque de récidive, à objectiver par le médecin traitant et le kinésithérapeute au moyen :',
+			'a) Situations qui nécessitent une rééducation fonctionnelle de la marche pour les bénéficiaires à partir leur 65ème anniversaire ayant déjà été victime d’une chute et présentant un risque de récidive, à objectiver par le médecin traitant et le kinésithérapeute au moyen :',
 			subSituations,
 			'51.'
 		);

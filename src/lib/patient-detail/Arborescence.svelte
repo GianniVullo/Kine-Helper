@@ -1,28 +1,16 @@
 <script>
 	import { page } from '$app/stores';
-	import { goto } from '$app/navigation';
-	import dayjs from 'dayjs';
 	import {
 		ArrowRightIcon,
-		FolderIcon,
-		PageIcon,
 		PlusIcon,
 		ChevronDownIcon,
 		ChevronRightIcon,
 		ChevronLeftIcon,
 		ChevronUpIcon
 	} from '../ui/svgs/index';
-	import { TreeView, TreeViewItem } from '@skeletonlabs/skeleton';
-	import DBAdapter from '../forms/actions/dbAdapter';
-	import { SituationPathologique, patients } from '../stores/PatientStore';
 
 	export let patient;
-	const homeUrl = () => {
-		return `/dashboard/patients/${$page.params.patientId}`;
-	};
 	let open = true;
-	let selected = 0;
-	let loading = false;
 	$: urlSegments = $page.url.pathname.split('/');
 	$: patientTree = urlSegments[urlSegments.length - 1];
 	console.log(patientTree, urlSegments, $page.url.pathname.split('/'));
@@ -52,122 +40,57 @@
 		<PlusIcon class="h-4 w-4 stroke-surface-600 dark:stroke-surface-300" />
 		<span class="text-sm text-surface-500 dark:text-surface-400">Situation</span>
 		<span class="text-sm text-surface-500 dark:text-surface-400">patho.</span></a>
-	<TreeView
-		width="w-full group-data-[open=false]:hidden"
-		hyphenOpacity="hidden"
-		indent="ml-2"
-		padding="px-2 py-1"
-		caretClosed="-rotate-90"
-		caretOpen="rotate-0">
-		{#key patient}
-			{#each patient.situations_pathologiques ?? [] as sp, idx (sp.sp_id)}
-				<div class="flex">
-					<TreeViewItem spacing="space-x-2 mt-2" open={idx === selected}>
-						<svelte:fragment slot="lead">
-							<FolderIcon
-								class={`h-5 w-5 ${
-									$page.params.spId !== sp.sp_id
-										? 'fill-surface-700 dark:fill-surface-300'
-										: 'fill-error-700 dark:fill-error-300'
-								}`} />
-						</svelte:fragment>
-						<h5 class="text-surface-600 dark:text-surface-200">
-							{loading
-								? 'Chargement...'
-								: `Situation du ${dayjs(sp.created_at).format('DD/MM/YYYY')}`}
-						</h5>
-						<svelte:fragment slot="children">
-							{#if !loading}
-								{#if sp.prescriptions.length > 0}
-									<TreeViewItem>
-										<a
-											href={`/dashboard/patients/${patient.patient_id}/situation-pathologique/${sp.sp_id}/prescriptions`}
-											class="text-surface-700 dark:text-surface-100">Prescriptions</a>
-										<svelte:fragment slot="lead">
-											<PageIcon class="h-5 w-5 fill-surface-700 dark:fill-surface-300" />
-										</svelte:fragment>
-									</TreeViewItem>
-								{/if}
-								{#if sp.attestations.length > 0}
-									<TreeViewItem>
-										<a
-											href={`/dashboard/patients/${patient.patient_id}/situation-pathologique/${sp.sp_id}/attestations`}
-											class="text-surface-700 dark:text-surface-100">Attestations</a>
-										<svelte:fragment slot="lead">
-											<PageIcon class="h-5 w-5 fill-surface-700 dark:fill-surface-300" />
-										</svelte:fragment>
-									</TreeViewItem>
-								{/if}
-								{#if sp.documents.length > 0}
-									<TreeViewItem>
-										<a
-											href={`/dashboard/patients/${patient.patient_id}/situation-pathologique/${sp.sp_id}/documents`}
-											class="text-surface-700 dark:text-surface-100">Documents</a>
-										<svelte:fragment slot="lead">
-											<PageIcon class="h-5 w-5 fill-surface-700 dark:fill-surface-300" />
-										</svelte:fragment>
-									</TreeViewItem>
-								{/if}
-								<!-- <TreeViewItem>
-									<h5 class="text-surface-700 dark:text-surface-100">Séances</h5>
-									<svelte:fragment slot="lead">
-										<PageIcon class="h-5 w-5 fill-surface-700 dark:fill-surface-300" />
-									</svelte:fragment>
-								</TreeViewItem> -->
-							{/if}
-						</svelte:fragment>
-					</TreeViewItem>
-					{#if $page.route.id !== '/dashboard/patients/[patientId]/situation-pathologique/[spId]' || $page.params.spId !== sp.sp_id}
-						<div class="flex items-center justify-center">
-							<button
-								class="variant-filled btn-icon btn-icon-sm flex items-center justify-center"
-								on:click={async (state) => {
-									console.log('going to the sp', sp.sp_id);
 
-									// EN GROS Là on va juste mettre un if params.sp_id == sp.sp_id fais rien sinon goto(params.sp_id)
-									// console.log('In the toggle event', state, $page.params.spId, sp.sp_id);
-									if ($page.params.spId !== sp.sp_id && !loading) {
-										console.log('what is the page', $page);
-										if (sp.upToDate === false) {
-											loading = true;
-											let db = new DBAdapter();
-											let completedSp = await db.retrieve_sp(sp.sp_id);
-											completedSp = new SituationPathologique(completedSp.data[0]);
-											completedSp.upToDate = true;
-											patients.update((p) => {
-												let patientIndex = p.findIndex((p) => p.patient_id === patient.patient_id);
-												let spIndex = p[patientIndex].situations_pathologiques.findIndex(
-													(sp) => sp.sp_id === completedSp.sp_id
-												);
-												p[patientIndex].situations_pathologiques[spIndex] = completedSp;
-												return p;
-											});
-											loading = false;
-											console.log('the completed sp', completedSp);
-										}
-										goto(
-											`/dashboard/patients/${patient.patient_id}/situation-pathologique/${sp.sp_id}`
-										);
-										selected = idx;
-									} else if (
-										$page.params.spId === sp.sp_id &&
-										$page.url.pathname !==
-											'/dashboard/patients/' +
-												patient.patient_id +
-												'/situation-pathologique/' +
-												sp.sp_id
-									) {
-										goto(
-											`/dashboard/patients/${patient.patient_id}/situation-pathologique/${sp.sp_id}`
-										);
-									}
-								}}>
-								<ArrowRightIcon class="h-5 w-5 fill-surface-700 dark:fill-surface-300" />
-							</button>
-						</div>
+	<div class="mt-8 flex select-none flex-col space-y-4">
+		{#each patient.situations_pathologiques as sp, i}
+			<div
+				class="flex flex-col space-y-2 rounded-lg border border-surface-400 px-4 py-2 shadow duration-200 hover:bg-surface-100/25 group-data-[open=false]:hidden hover:dark:bg-surface-600/25 {sp.sp_id ===
+				$page.params.spId
+					? '!border-primary-500 dark:bg-surface-800 hover:dark:bg-surface-800'
+					: 'opacity-50 hover:opacity-100'}">
+				<!--* Header -->
+				<!--? Titre et bouton d'accès -->
+				<div class="flex cursor-default select-none items-center justify-between">
+					<h5 class="text-sm text-surface-700 dark:text-surface-300">
+						{sp.motif.substring(0, 20)}{sp.motif.length > 20 ? '...' : ''}
+					</h5>
+					{#if $page.params.spId !== sp.sp_id || $page.route.id !== '/dashboard/patients/[patientId]/situation-pathologique/[spId]'}
+						<a
+							href={`/dashboard/patients/${patient.patient_id}/situation-pathologique/${sp.sp_id}`}
+							class="btn-icon btn-icon-sm rounded-lg bg-surface-300 dark:bg-surface-600/35"
+							><ArrowRightIcon class="stroke-surf h-5 w-5" /></a>
 					{/if}
 				</div>
-			{/each}
-		{/key}
-	</TreeView>
+				<!--* Navigation -->
+				{#if sp.upToDate}
+					<div
+						class="flex flex-col space-y-1 rounded-2xl border border-surface-600 bg-surface-200/85 py-2 pl-4 text-surface-500 shadow-md duration-200 dark:bg-surface-800 dark:text-surface-300">
+						<a
+							href={`/dashboard/patients/${patient.patient_id}/situation-pathologique/${sp.sp_id}/prescriptions`}
+							class="flex cursor-pointer items-center duration-200 hover:translate-x-2 hover:text-surface-800 hover:dark:text-surface-200">
+							<ChevronRightIcon class="h-5 w-5" />
+							<h5>Prescriptions</h5>
+						</a>
+						<a
+							href={`/dashboard/patients/${patient.patient_id}/situation-pathologique/${sp.sp_id}/attestations`}
+							class="flex cursor-pointer items-center duration-200 hover:translate-x-2 hover:text-surface-800 hover:dark:text-surface-200">
+							<ChevronRightIcon class="h-5 w-5" />
+							<h5>Attestations</h5>
+						</a>
+						<a
+							href={`/dashboard/patients/${patient.patient_id}/situation-pathologique/${sp.sp_id}/documents`}
+							class="flex cursor-pointer items-center duration-200 hover:translate-x-2 hover:text-surface-800 hover:dark:text-surface-200">
+							<ChevronRightIcon class="h-5 w-5" />
+							<h5>Documents</h5>
+						</a>
+						<div
+							class="flex cursor-pointer items-center duration-200 hover:translate-x-2 hover:text-surface-800 hover:dark:text-surface-200">
+							<ChevronRightIcon class="h-5 w-5" />
+							<h5>Séances</h5>
+						</div>
+					</div>
+				{/if}
+			</div>
+		{/each}
+	</div>
 </div>

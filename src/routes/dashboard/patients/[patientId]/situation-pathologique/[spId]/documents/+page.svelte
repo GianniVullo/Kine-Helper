@@ -7,19 +7,26 @@
 	import OpenIcon from '../../../../../../../lib/ui/svgs/OpenIcon.svelte';
 	import DeleteIcon from '../../../../../../../lib/ui/svgs/DeleteIcon.svelte';
 	import UpdateIcon from '../../../../../../../lib/ui/svgs/UpdateIcon.svelte';
+	import { AnnexeA } from '../../../../../../../lib/pdfs/annexeA';
+	import { AnnexeB } from '../../../../../../../lib/pdfs/annexeB';
 
 	const modalStore = getModalStore();
 	const patient = $patients.find((p) => p.patient_id === $page.params.patientId);
 	const sp = patient.situations_pathologiques.find((sp) => sp.sp_id === $page.params.spId);
-	const factureModal = {
-		type: 'component',
-		component: 'factureCreation',
-		meta: { sp: sp }
-	};
+
 	const documentSelectionModal = {
 		type: 'component',
 		component: 'documentSelection'
 	};
+
+	function instantiateAccord(accord) {
+		if (accord.docType === 0) {
+			return new AnnexeA(accord.form_data, patient, sp, accord);
+		}
+		if (accord.docType === 1) {
+			return new AnnexeB(accord.form_data, patient, sp, accord);
+		}
+	}
 </script>
 
 <div class="ml-2 flex flex-col space-y-4">
@@ -29,11 +36,6 @@
 			Documents de la situation pathologique du {dayjs(sp.created_at).format('DD/MM/YYYY')}
 		</h5>
 		<div class="flex space-x-2">
-			<button
-				on:click={() => modalStore.trigger(factureModal)}
-				class="variant-outline-secondary btn btn-sm my-2 flex">
-				<PlusIcon class="h-4 w-4 stroke-surface-600 dark:stroke-surface-300" />
-				<span class="text-sm text-surface-500 dark:text-surface-400">Facture</span></button>
 			<button
 				on:click={() => modalStore.trigger(documentSelectionModal)}
 				class="variant-outline-secondary btn btn-sm my-2 flex">
@@ -61,15 +63,36 @@
 									Demande d'accord du {dayjs(accord.created_at).format('DD/MM/YYYY')}
 								</h5>
 								<div class="flex space-x-2">
-									<button class="variant-outline-warning btn-icon btn-icon-sm"
+									<a href={`/dashboard/patients/${patient.patient_id}/situation-pathologique/${sp.sp_id}/documents/${accord.document_id}/update`} class="variant-outline-warning btn-icon btn-icon-sm"
 										><UpdateIcon
-											class="h-5 w-5 stroke-surface-600 dark:stroke-surface-200" /></button>
-									<button class="variant-outline-error btn-icon btn-icon-sm"
+											class="h-5 w-5 stroke-surface-600 dark:stroke-surface-200" /></a>
+									<button
+										on:click={async () => {
+											modalStore.trigger({
+												title: 'Confirmation',
+												body: `êtes-vous sûr de vouloir supprimer définitivement la demande d'accord du ${dayjs(
+													accord.created_at
+												).format('DD/MM/YYYY')}`,
+												type: 'confirm',
+												response: async (response) => {
+													if (response) {
+														let a = instantiateAccord(accord);
+														await a.delete();
+													}
+												}
+											});
+										}}
+										class="variant-outline-error btn-icon btn-icon-sm"
 										><DeleteIcon
 											class="h-5 w-5 stroke-surface-600 dark:stroke-surface-200" /></button>
 									<button
 										class="variant-filled btn-icon btn-icon-sm dark:variant-filled"
-										on:click={async () => {}}><OpenIcon class="h-5 w-5" /></button>
+										on:click={async () => {
+											console.log('accord', accord);
+											let annexe = instantiateAccord(accord);
+											await annexe.save_file();
+											await annexe.open();
+										}}><OpenIcon class="h-5 w-5" /></button>
 								</div>
 							</div>
 							<!--? Accord INFO -->
@@ -77,8 +100,8 @@
 						</div>
 					{/each}
 				</div>
-                {:else}
-                    Vous n'avez pas encore ajouté d'accord.
+			{:else}
+				Vous n'avez pas encore ajouté d'accord.
 			{/if}
 		</div>
 		<!-- <div class="flex flex-col flex-wrap">

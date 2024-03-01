@@ -3,8 +3,6 @@
 	import { printAttestation } from '$lib/utils/rawPrinting';
 	import { FormWrapper, SubmitButton } from '$lib/forms/index';
 	import DBAdapter from '$lib/forms/actions/dbAdapter';
-	import { getModalStore } from '@skeletonlabs/skeleton';
-	import { CheckboxFieldV2 } from '$lib/forms/index';
 	import dayjs from 'dayjs';
 	import { page } from '$app/stores';
 	import { get } from 'svelte/store';
@@ -16,10 +14,7 @@
 	import { user } from '$lib/index';
 	import { patients } from '$lib/stores/PatientStore';
 	import { goto } from '$app/navigation';
-	import { FactureMutuelle } from '../../../../../../../../lib/pdfs/factureMutuelle';
-	import { FacturePatient } from '../../../../../../../../lib/pdfs/facturePatient';
 
-	const modalStore = getModalStore();
 	let patient = $patients.find((p) => p.patient_id === $page.params.patientId);
 	let sp = patient.situations_pathologiques.find((sp) => sp.sp_id === $page.params.spId);
 	let untill = $page.url.searchParams.get('untill');
@@ -90,20 +85,6 @@
 	}
 	async function isValid({ formData, submitter }) {
 		console.log('in IsValid with', formData, $state);
-		let needsFacture = new Promise((resolve) => {
-			const modal = {
-				type: 'component',
-				component: 'attestationCreation',
-				meta: {
-					patient
-				},
-				response: (r) => {
-					resolve(r);
-				}
-			};
-			modalStore.trigger(modal);
-		});
-		const { factureMutuelle, facturePatient, with_details } = await needsFacture;
 		let codes = [];
 		let codesNumber = 0;
 		let totalValeurRecue = 0.0;
@@ -143,50 +124,6 @@
 				totalRemboursement += attestation.valeur_totale - attestation.total_recu;
 			}
 		}
-		if (factureMutuelle) {
-			// imprimer une facture mutuelle
-			let fMut = new FactureMutuelle(
-				{
-					tableRows: [
-						{
-							Nom: `${patient.nom}\n${patient.prenom}`,
-							NISS: patient.niss,
-							Codes: codes.reduce((acc, code) => acc + '\n' + code, ''),
-							'Nbr. de codes utilisés': `${codesNumber}`,
-							total: totalRemboursement
-						}
-					]
-				},
-				patient,
-				sp
-			);
-			await fMut.save();
-		}
-		if (facturePatient) {
-			let fPat = new FacturePatient(
-				{
-					total: totalValeurRecue,
-					codes: $codeMap,
-					attestationIds: $state.reduce((acc, prescr) => {
-						let ids = prescr.attestations.reduce((acc2, att) => {
-							acc2.push(att.attestation_id);
-							return acc2;
-						}, []);
-						acc = [...acc, ...ids];
-						return acc;
-					}, []),
-					attestations: $state.reduce((acc, prescr) => {
-						acc = [...acc, ...prescr.attestations];
-						return acc;
-					}, []),
-					with_details
-				},
-				patient,
-				sp
-			);
-			await fPat.save();
-			// imprimer une facture patient
-		}
 		// <!--*  ÉTAPE 4 : REDIRIGER VERS ? -->
 		// Ensuite il faut rediriger vers le dashboard qui est maintenant atualisé Ou vers la page Attestations ??
 		goto(`/dashboard/patients/${patient.patient_id}/situation-pathologique/${sp.sp_id}`);
@@ -201,7 +138,7 @@
 	{#if $loading}
 		chargement en cours
 	{:else}
-		{#each $state as prescription, i}
+		{#each $state as prescription}
 			<div class="card flex h-[85vh] flex-col items-start overflow-x-scroll px-8 py-4 md:w-[75vw]">
 				<h5 class="mb-4 text-xl text-surface-700 dark:text-surface-100">
 					Prescription de {prescription.obj.prescripteur.nom}

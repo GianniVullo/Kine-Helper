@@ -128,7 +128,7 @@
 			console.log('succesfully updated rapport_ecrit');
 			situationPathologique.rapport_ecrit_date = rapport_ecrit_date;
 			console.log('succesfully updated rapport_ecrit_date');
-			situationPathologique.rapport_ecrit_custom_date = rapport_ecrit_custom_date;
+			situationPathologique.rapport_ecrit_custom_date = dateDeduite;
 			console.log('succesfully updated rapport_ecrit_custom_date');
 			situationPathologique.with_indemnity = with_indemnity;
 			console.log('succesfully updated with_indemnity');
@@ -203,7 +203,7 @@
 	let examen_ecrit_date;
 	// Compter un rapport écrit ? première séance, dernière séance, date custom
 	let rapport_ecrit = false;
-	let rapport_ecrit_date = 'first';
+	let rapport_ecrit_date;
 	let rapport_ecrit_custom_date;
 	// Le volet J pour la patho Fa (120 séances)
 	let volet_j = false;

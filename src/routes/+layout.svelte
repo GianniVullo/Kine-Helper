@@ -1,10 +1,9 @@
 <script>
 	import '../app.css';
-	import { LightSwitch, Toast, Modal } from '@skeletonlabs/skeleton';
+	import { Toast, Modal } from '@skeletonlabs/skeleton';
 	import { initializeStores } from '@skeletonlabs/skeleton';
 	import { computePosition, autoUpdate, offset, shift, flip, arrow } from '@floating-ui/dom';
 	import { storePopup } from '@skeletonlabs/skeleton';
-	import { getCurrent } from '@tauri-apps/api/window';
 	import AttestationModal from '../lib/ui/AttestationModal.svelte';
 	import DocumentSelectionModal from '../lib/ui/DocumentSelectionModal.svelte';
 	import CodeSelectionModal from '../lib/ui/CodeSelectionModal.svelte';
@@ -12,7 +11,7 @@
 	import CalendarEventModal from '../lib/ui/CalendarEventModal.svelte';
 	import { check } from '@tauri-apps/plugin-updater';
 	import { relaunch } from '@tauri-apps/plugin-process';
-	import { emit, listen } from '@tauri-apps/api/event';
+	import { emit } from '@tauri-apps/api/event';
 	import { onMount } from 'svelte';
 	import BugReportModal from '../lib/ui/BugReportModal.svelte';
 	import FactureCreationModal from '../lib/ui/FactureCreationModal.svelte';

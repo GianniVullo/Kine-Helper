@@ -1,6 +1,7 @@
 <script>
 	import { page } from '$app/stores';
 	import AnnexeAForm from '../../../../../../../../lib/forms/documents/AnnexeAForm.svelte';
+	import AnnexeBForm from '../../../../../../../../lib/forms/documents/AnnexeBForm.svelte';
 	import { patients } from '../../../../../../../../lib/stores/PatientStore';
 
 	const patient = $patients.find((p) => p.patient_id === $page.params.patientId);
@@ -12,6 +13,6 @@
 {#if docType === 0}
 	<AnnexeAForm {patient} {sp} />
 {/if}
-<!-- {#if docType === 8}
-	 <Facture
-{/if} -->
+{#if docType === 1}
+	 <AnnexeBForm {patient} {sp} />
+{/if}

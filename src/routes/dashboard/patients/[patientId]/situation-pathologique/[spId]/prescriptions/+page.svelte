@@ -1,45 +1,144 @@
 <script>
-	import { ListBox, ListBoxItem } from '@skeletonlabs/skeleton';
 	import { page } from '$app/stores';
-	import { getContext } from 'svelte';
-	import { selectPatients } from '../../../../../../../lib/stores/supabaseClient';
 	import { patients } from '../../../../../../../lib/stores/PatientStore';
 	import dayjs from 'dayjs';
+	import { OpenIcon, DeleteIcon, UpdateIcon, PlusIcon } from '$lib/ui/svgs/index';
+	import { getModalStore } from '@skeletonlabs/skeleton';
+	import DBAdapter from '$lib/forms/actions/dbAdapter';
+	import { appLocalDataDir } from '@tauri-apps/api/path';
+	import { open } from '@tauri-apps/plugin-shell';
+	import { user } from '$lib/stores/UserStore';
+	import { invoke } from '@tauri-apps/api/core';
+
+	const modalStore = getModalStore();
 
 	let patient = $patients.find((p) => p.patient_id === $page.params.patientId);
 	let sp = patient.situations_pathologiques.find((sp) => sp.sp_id === $page.params.spId);
-	let valueSingle = sp.prescriptions.length > 0 ? sp.prescriptions[0].prescription_id : null;
-	$: selected = sp.prescriptions.find(
-		(prescription) => prescription.prescription_id === valueSingle
-	);
+
+	async function prescriptionPath(prescription) {
+		let dirpath = await appLocalDataDir();
+		return `${dirpath}/${$user.user.id}/${patient.nom}-${patient.prenom}(${patient.patient_id})/situation-pathologique-${sp.created_at}(${sp.sp_id})/prescriptions/${prescription.prescripteur.nom}-${prescription.prescripteur.prenom}-${prescription.date}(${prescription.prescription_id}).${prescription.file_name}`;
+	}
+
+	async function deletePrescription(prescription) {
+		// First delete with the DBAdapter
+		let db = new DBAdapter();
+		await db.delete('prescriptions', ['prescription_id', prescription.prescription_id]);
+		patients.update((ps) => {
+			let p = ps.find((p) => p.patient_id === patient.patient_id);
+			let sp = p.situations_pathologiques.find((sp) => sp.sp_id === $page.params.spId);
+			sp.prescriptions = sp.prescriptions.filter(
+				(p) => p.prescription_id !== prescription.prescription_id
+			);
+			return ps;
+		});
+		let path = await prescriptionPath(prescription);
+		if (await invoke('file_exists', { path })) {
+			await invoke('delete_file', { path });
+		}
+	}
+	async function openPrescription(prescription) {
+		let path = await prescriptionPath(prescription);
+		console.log('path', path);
+		let pathExists = await invoke('file_exists', { path });
+		console.log('pathExists', pathExists);
+		if (pathExists) {
+			await open(path);
+		}
+	}
 </script>
 
 {#if sp.prescriptions.length > 0}
-	<div class="flex flex-col md:flex-row">
-		<ListBox>
-			{#each sp.prescriptions as prescription}
-				<ListBoxItem bind:group={valueSingle} name="medium" value={prescription.prescription_id}
-					>prescription du {dayjs(prescription.date).format('DD/MM/YYYY')}</ListBoxItem>
-			{/each}
-		</ListBox>
-		<div class="flex flex-col px-0 md:px-8">
-			<div class="mb-4">
+	<div class="ml-2 flex flex-col items-start justify-start space-y-4">
+		<div class="flex flex-col justify-between">
+			<h5 class="text-lg text-surface-500 dark:text-surface-400">
+				Prescriptions de la situation pathologique du {dayjs(sp.created_at).format('DD/MM/YYYY')}
+			</h5>
+			<div class="flex">
 				<a
-					class="variant-outline-primary btn"
-					href={`/dashboard/patients/${patient.patient_id}/situation-pathologique/${sp.sp_id}/prescriptions/${selected.prescription_id}/update`}
-					>Modifier la prescription</a>
+					href={`/dashboard/patients/${patient.patient_id}/situation-pathologique/${sp.sp_id}/prescriptions/create`}
+					class="variant-outline-secondary btn btn-sm my-2 flex">
+					<PlusIcon class="h-4 w-4 stroke-surface-600 dark:stroke-surface-300" />
+					<span class="text-sm text-surface-500 dark:text-surface-400">Prescription</span></a>
 			</div>
-			<div class="card px-8 py-4">
-				<h5 class="mb-4 text-lg text-surface-600 dark:text-surface-300">
-					Prescrite par {selected.prescripteur.nom + ' ' + selected.prescripteur.prenom} (inami : {selected
-						.prescripteur.inami}), le {dayjs(selected.date).format('DD/MM/YYYY')}
-				</h5>
-				<p class="text-surface-800 dark:text-surface-100">
-					valable pour <span class="font-bold">{selected.nombre_seance}</span> prestations à raison
-					de <span class="font-bold">{selected.seance_par_semaine}</span> fois par semaine.
-				</p>
-			</div>
-			<!-- {JSON.stringify(selected)} -->
+		</div>
+
+		<div class="flex flex-wrap items-start justify-start">
+			{#each $patients
+				.find((p) => p.patient_id === $page.params.patientId)
+				.situations_pathologiques.find((rsp) => rsp.sp_id === $page.params.spId).prescriptions as prescription}
+				<!--* PRESCRIPTION BOX  -->
+				<div
+					class="mb-2 mr-2 flex flex-col justify-between rounded-lg border border-surface-400 px-4 py-2 shadow duration-200 hover:bg-surface-100 dark:hover:bg-surface-800/50">
+					<!--* Header -->
+					<div class="mb-2 flex items-center justify-between space-x-4">
+						<h5 class="pointer-events-none select-none text-secondary-800 dark:text-secondary-200">
+							Prescription du {dayjs(prescription.date).format('DD/MM/YYYY')}
+						</h5>
+						<!--? Prescription CONTROLS  -->
+						<div class="flex space-x-2">
+							<a
+								href={`/dashboard/patients/${patient.patient_id}/situation-pathologique/${sp.sp_id}/prescriptions/${prescription.prescription_id}/update`}
+								class="variant-outline-warning btn-icon btn-icon-sm"
+								><UpdateIcon class="h-5 w-5 stroke-surface-600 dark:stroke-surface-200" /></a>
+							<button
+								on:click={async () => {
+									modalStore.trigger({
+										title: 'ATTENTION',
+										body: `Vous êtes sur le point de supprimer définitivement la prescription du ${dayjs(
+											prescription.date
+										).format(
+											'DD/MM/YYYY'
+										)}. Cela <span class="text-error-400">supprimera également TOUTES les attestations, générateurs et séances liés à la prescription</span>! <br /> Vous pouvez aussi modifier la prescription.`,
+										type: 'confirm',
+										response: async (response) => {
+											if (response) {
+												await deletePrescription(prescription);
+											}
+										}
+									});
+								}}
+								class="variant-outline-error btn-icon btn-icon-sm"
+								><DeleteIcon class="h-5 w-5 stroke-surface-600 dark:stroke-surface-200" /></button>
+							<button
+								on:click={async () => {
+									console.log('open prescription');
+									if (prescription.file_name) {
+										await openPrescription(prescription);
+									} else {
+										console.log('no file');
+										modalStore.trigger({
+											type: 'alert',
+											title: 'Non disponible',
+											body: `La prescription du ${dayjs(prescription.date).format(
+												'DD/MM/YYYY'
+											)} n'a pas encore de fichier associé. Vous pouvez en ajouter un en modifiant la prescription.`
+										});
+									}
+								}}
+								class="variant-filled btn-icon btn-icon-sm dark:variant-filled"
+								><OpenIcon class="h-5 w-5" /></button>
+						</div>
+					</div>
+					<!--* Body -->
+					<div class="flex flex-col text-surface-800 dark:text-surface-100">
+						<h5 class="text-secondary-500">
+							<span class="text-surface-400">Dr. </span>{prescription.prescripteur.nom +
+								' ' +
+								prescription.prescripteur.prenom} <br />
+						</h5>
+						<p class="mb-1 text-surface-400">{prescription.prescripteur.inami}</p>
+						<h5 class="text-surface-700 dark:text-surface-300">
+							<span class="font-medium text-surface-800 dark:text-surface-200"
+								>{prescription.nombre_seance}</span>
+							séances
+							<br />
+							<span class="font-medium text-surface-800 dark:text-surface-200"
+								>{prescription.seance_par_semaine}</span> fois par semaine.
+						</h5>
+					</div>
+				</div>
+			{/each}
 		</div>
 	</div>
 {:else}

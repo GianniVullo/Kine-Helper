@@ -17,19 +17,21 @@ export class FacturePatient extends PDFGeneration {
 	 * @param {string} documentName - Le nom du document.
 	 * @param {FormData} formData - Les infos pour créer le pdf.
 	 */
-	constructor(formData, patient, sp) {
+	constructor(formData, patient, sp, obj) {
 		super(
-			`facture-patient ${patient.nom} ${patient.prenom} du ${dayjs(formData.created_at).format(
+			`facture-patient ${patient.nom} ${patient.prenom} du ${dayjs(formData.date).format(
 				'DD-MM-YYYY'
-			)}.pdf`,
+			)}`,
 			formData,
 			patient,
 			sp,
-			8
+			8,
+			'factures',
+			obj
 		);
-		this.attestations = formData.attestations ?? sp.attestations.filter((a) =>
-			formData.attestationsIds.includes(a.attestation_id)
-		);
+		this.attestations =
+			formData.attestations ??
+			sp.attestations.filter((a) => formData.attestationsIds.includes(a.attestation_id));
 		if (formData.attestations) {
 			delete this.formData.attestations;
 		}

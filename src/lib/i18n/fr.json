@@ -1,0 +1,120 @@
+{
+	"login": {
+		"subtitle": "Open-source & gratuit pour tous les kinés",
+		"controls.email": "Email",
+		"controls.password": "Mot de passe",
+		"controls.submit": "Connectez-vous",
+		"controls.forgot": "Mot de passe oublié ?",
+		"controls.register.question": "Pas encore de compte ?",
+		"controls.register.link": "Inscrivez-vous",
+		"controls.resetCancel": "Ça vous est revenu ?",
+		"controls.SignupCancel": "Déjà un compte ?"
+	},
+	"patients.list": {
+		"add": "Ajouter un patient",
+		"search": "Chercher un patient",
+		"results": "Résultats"
+	},
+	"patients.detail": {
+		"404": "Patient introuvable",
+		"start": "Pour commencer, ajoutez une nouvelle situation pathologique",
+		"deleteModal.title": "Supprimer le patient",
+		"deleteModal.body": "Êtes-vous sûr de vouloir supprimer cette situation pathologique ? Toutes les données seront perdues.",
+		"deleteModal.confirm": "Supprimer",
+		"deleteModal.cancel": "Annuler",
+		"attestation": "Attestation",
+		"prescription": "Prescription",
+		"prestations": "Séances"
+	},
+	"sp.detail": {
+		"titre": "Situation pathologique du {{date}}",
+		"content.start": "Commencez par",
+		"button.start": "Ajouter une prescription",
+		"content.start2": "Maintenant que vous avez créé une prescription vous pouvez",
+		"button.start2": "Générer des séances",
+		"reason": "Motif",
+		"plan": "Plan de traitement"
+	},
+	"attestation.list": {
+		"title": "Attestations et factures de la situation pathologique du {{date}}",
+		"empty": "Aucune attestation pour le moment",
+		"bill": "Facture"
+	},
+	"attestation.detail": {
+		"title": "Attestation du {{date}}",
+		"bill": "Facture",
+		"printModal.title": "Imprimer l'attestation",
+		"printModal.body": "Voulez-vous imprimer l'attestation du {{date}} ?",
+		"printModal.confirm": "Imprimer",
+		"printModal.cancel": "Annuler",
+		"porte_prescr": "Porte la prescription",
+		"mutuelle_paid": "Payée par la mutuelle",
+		"patient_paid": "Payée par le patient",
+		"total_recu": "Total reçu",
+		"valeur_totale": "Valeur totale"
+	},
+	"attestation.create": {
+		"prescription.group": "Prescription de {{prescripteurFullName}} datant du {{date}}",
+		"attestation.group": "Attestation n°{{number}}"
+	},
+	"document.list": {
+		"title": "Documents de la situation pathologique du {{date}}",
+		"empty": "Aucun document pour le moment",
+		"accord": "Accord",
+		"accords": "Accords",
+		"card.title": "Demande d'accord du {{date}}",
+		"deleteModal.title": "Supprimer le document",
+		"deleteModal.body": "Êtes-vous sûr de vouloir supprimer ce document ?"
+	},
+	"prescription.list": {
+		"title": "Prescriptions de la situation pathologique du {{date}}",
+		"empty": "Aucune prescription pour le moment",
+		"add": "Prescription",
+		"card.title": "Prescription du {{date}}",
+		"deleteModal.title": "Supprimer la prescription",
+		"deleteModal.body": "Êtes-vous sûr de vouloir supprimer cette prescription ?",
+		"alertModal.title": "Non disponible",
+		"alertModal.body": "La prescription du {{date}} n'a pas encore de fichier associé. Vous pouvez en ajouter un en modifiant la prescription.",
+		"card.subtitle": "<span class=\"text-surface-400\">Dr.  </span>{{prescripteurFullName}}",
+		"card.timesPerWeek": "fois par semaine"
+	},
+	"prescription.create": {
+		"title": "Nouvelle prescription"
+	},
+	"sp.update": {
+		"title": "Modifier la situation pathologique du {{date}}",
+		"label.service": "Service",
+		"label.numero_etablissement": "Numéro établissement",
+		"label.with_indemnity": "Compter les indemnités de déplacements",
+		"label.rapport_ecrit": "Rapport écrit",
+		"label.rapport_ecrit_custom_date": "Rapport écrit : date personnalisée"
+	},
+	"sp.create": {
+		"title": "Nouvelle situation pathologique"
+	},
+	"patient.create": {
+		"title": "Nouveau patient"
+	},
+	"printerSetup": {
+		"title": "Configuration de l'imprimante matricielle",
+		"subTitle": "Cette étape est cruciale pour l'utiliisation de Kiné Helper. <br /> Le logiciel a besoin du nom programmatique de votre imprimante matricielle. <br /> Pour le trouver, veuillez suivre les instructions ci-dessous.",
+		"explaination": "Explications",
+		"label.printer": "Nom de l'imprimante",
+		"ignore": "Ignorer cette étape",
+		"confirmModal.title": "Confirmation demandée",
+		"confirmModal.body": "Sans cette étape de configuration vous ne pourrez pas imprimer vos attestations. Voulez-vous poursuivre sans configurer votre imprimante matricielle ?"
+	},
+    "splash": {
+        "loading": "Chargement de l'interface",
+        "update": "Recherche de mises à jour",
+        "download": "Téléchargement en cours ..., l'application va redémarrer automatiquement",
+        "finished": "Téléchargement terminé",
+        "domLoaded": "DOM chargé"
+    },
+	"shared": {
+		"loading": "Chargement...",
+		"confirm": "Confirmer",
+		"cancel": "Annuler",
+		"for": "Pour"
+	}
+}

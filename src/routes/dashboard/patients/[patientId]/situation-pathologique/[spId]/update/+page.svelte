@@ -60,6 +60,7 @@
         await tick();
         goto(`/dashboard/patients/${$page.params.patientId}/situation-pathologique/${sp.sp_id}`);
 	}
+	console.log('sp', sp);
 </script>
 
 <div class="flex flex-col">
@@ -73,7 +74,7 @@
 		<TextFieldV2
 			name="numero_etablissement"
 			bind:value={numero_etablissement}
-			label="Numero établissement" />
+			label="Numéro établissement" />
 		<CheckboxFieldV2 name="intake" bind:value={intake} label="Intake" />
 		<CheckboxFieldV2
 			name="with_indemnity"

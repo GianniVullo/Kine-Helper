@@ -1,18 +1,20 @@
-import { PDFGeneration } from './KineHelperPdfs';
+import { PDFGeneration } from './kineHelperPdfs';
 import { get } from 'svelte/store';
 import { user } from '../stores/UserStore';
 import dayjs from 'dayjs';
 
 export class FactureMutuelle extends PDFGeneration {
-	constructor(formData, patient, sp) {
+	constructor(formData, patient, sp, obj) {
 		super(
-			`facture-mutuelle ${patient.nom} ${patient.prenom} du ${dayjs(formData.created_at).format(
+			`facture-mutuelle ${patient.nom} ${patient.prenom} du ${dayjs(formData.date).format(
 				'DD-MM-YYYY'
-			)}.pdf`,
+			)}`,
 			formData,
 			patient,
 			sp,
-			9
+			9,
+			'factures',
+			obj
 		);
 	}
 	buildPdf() {

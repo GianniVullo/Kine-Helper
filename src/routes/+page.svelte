@@ -42,7 +42,7 @@
 				<button
 					on:click={() => (selectedForm = 'signup')}
 					class="group text-gray-600 dark:text-gray-300"
-					>Pas de compte ? <span
+					>Pas encore de compte ? <span
 						class="border-purple-500 text-base duration-200 group-hover:border-b"
 						>Inscrivez-vous</span
 					></button>
@@ -54,7 +54,6 @@
 						class="border-purple-500 text-base duration-200 group-hover:border-b"
 						>Connectez-vous</span
 					></button>
-				<!-- else content here -->
 			{/if}
 			{#if selectedForm !== 'passwordReset'}
 				<button

@@ -55,7 +55,6 @@
 		target: 'deletePopUp',
 		placement: 'bottom'
 	};
-
 </script>
 
 <!--* Title and Actions -->

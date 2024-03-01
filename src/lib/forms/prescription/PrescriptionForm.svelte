@@ -1,17 +1,15 @@
 <script>
 	import { FormWrapper, NumberField, DateField, SubmitButton } from '../index';
 	import PrescripteurField from './PrescripteurField.svelte';
-	import { getToastStore } from '@skeletonlabs/skeleton';
 	import FileField from './FileField.svelte';
-	import { errorToast } from '$lib/ui/toasts';
 	import DBAdapter from '../actions/dbAdapter';
 	import { user } from '$lib/index';
-	import { page } from '$app/stores';
-	import { BaseDirectory, exists, readFile } from '@tauri-apps/plugin-fs';
 	import { get } from 'svelte/store';
 	import dayjs from 'dayjs';
 	import { goto } from '$app/navigation';
 	import { patients } from '../../stores/PatientStore';
+	import { appLocalDataDir } from '@tauri-apps/api/path';
+	import { invoke } from '@tauri-apps/api/core';
 
 	export let prescription = null;
 	export let patient;
@@ -26,29 +24,7 @@
 	let prescripteurPrenom = prescription?.prescripteur?.prenom;
 	let prescripteurInami = prescription?.prescripteur?.inami;
 	let fileField;
-	function extractFile() {
-		return new Promise(async (resolve, reject) => {
-			if (prescription) {
-				prescriptionFiles = new DataTransfer();
-				let doesFileExist = await exists(
-					`${$user.user.id}/${patient.patient_id}/${sp.sp_id}/${prescription.prescription_id}`,
-					{ dir: BaseDirectory.AppData }
-				);
-				if (doesFileExist) {
-					prescriptionFiles.items.add(
-						await readFile(
-							`${$user.user.id}/${patient.patient_id}/${sp.sp_id}/${prescription.prescription_id}`,
-							{ dir: BaseDirectory.AppData }
-						)
-					);
-					resolve(true);
-				}
-			}
-			resolve(false);
-		});
-	}
 
-	const toastStore = getToastStore();
 	let message = '';
 
 	let formSchema = {
@@ -59,6 +35,8 @@
 	async function isValid({ formData, submitter }) {
 		console.log('in IsValid with', formData);
 		let db = new DBAdapter();
+		let { fileResponse, buffer } = fileField.getBufferAndResponse();
+		let filExt = fileResponse?.path.split('.').pop();
 		if (prescription) {
 			let updatedPrescription = {
 				prescription_id,
@@ -70,13 +48,15 @@
 					nom: prescripteurNom,
 					prenom: prescripteurPrenom,
 					inami: prescripteurInami
-				})
+				}),
+				file_name: filExt
 			};
 			await db.update(
 				'prescriptions',
 				[['prescription_id', prescription.prescription_id]],
 				updatedPrescription
 			);
+			await saveFile(filExt, buffer);
 			patients.update((p) => {
 				let rprescription = p
 					.find((p) => p.patient_id === patient.patient_id)
@@ -87,12 +67,13 @@
 				rprescription.nombre_seance = nombre_seance;
 				rprescription.seance_par_semaine = seance_par_semaine;
 				rprescription.prescripteur = JSON.parse(updatedPrescription.prescripteur);
+				rprescription.file_name = filExt;
 				return p;
 			});
 			goto('/dashboard/patients/' + patient.patient_id + '/situation-pathologique/' + sp.sp_id);
-
 			return;
 		}
+
 		let newPrescription = {
 			user_id: get(user).user.id,
 			prescription_id,
@@ -108,8 +89,10 @@
 				nom: prescripteurNom,
 				prenom: prescripteurPrenom,
 				inami: prescripteurInami
-			})
+			}),
+			file_name: filExt
 		};
+		console.log('newPrescription', newPrescription);
 		await db.save('prescriptions', newPrescription);
 		newPrescription.prescripteur = JSON.parse(newPrescription.prescripteur);
 		patients.update((patients) => {
@@ -118,8 +101,21 @@
 			tsp.prescriptions.push(newPrescription);
 			return patients;
 		});
-		await fileField.save();
+		if (filExt && buffer) {
+			await saveFile(filExt, buffer);
+		}
 		goto('/dashboard/patients/' + patient.patient_id + '/situation-pathologique/' + sp.sp_id);
+	}
+	async function saveFile(filExt, buffer) {
+		let dirPath = await appLocalDataDir();
+		await invoke('setup_path', {
+			dirPath: `${dirPath}/${get(user).user.id}/${patient.nom}-${patient.prenom}(${
+				patient.patient_id
+			})/situation-pathologique-${sp.created_at}(${sp.sp_id})/prescriptions`,
+			fileName: `${prescripteurNom}-${prescripteurPrenom}-${date}(${prescription_id}).${filExt}`,
+			fileContent: Array.from(buffer)
+		});
+		console.log('fil saved');
 	}
 </script>
 
@@ -136,8 +132,15 @@
 		label="Nombre de séances par semaines" />
 	<FileField
 		bind:this={fileField}
-		fileName={prescription_id}
-		filePath={prescription?.prescription_id}
+		filePath={prescription?.file_name
+			? `/${get(user).user.id}/${patient.nom}-${patient.prenom}(${
+					patient.patient_id
+			  })/situation-pathologique-${sp.created_at}(${
+					sp.sp_id
+			  })/prescriptions/${prescripteurNom}-${prescripteurPrenom}-${date}(${prescription_id}).${
+					prescription.file_name
+			  }`
+			: null}
 		withOpener={true}
 		label="Photocopie de la prescription" />
 	<DateField

@@ -5,7 +5,7 @@
 		"devUrl": "http://localhost:1420",
 		"frontendDist": "../build"
 	},
-	"productName": "kine-helper",
+	"productName": "Kiné Helper",
 	"version": "0.0.0",
 	"identifier": "be.kinehelper.prod",
 	"bundle": {
@@ -37,10 +37,10 @@
 	},
 	"plugins": {
 		"shell": {
-			"open": "^((mailto:\\w+)|(tel:\\w+)|(https?:\/\/\\w+)|(\/\\w+)|([a-zA-Z]:[\\\/]\\w+)).+"
+			"open": "^((mailto:\\w+)|(tel:\\w+)|(https?://\\w+)|(/\\w+)|([a-zA-Z]:[\\/]\\w+)).+"
 		},
 		"fs": {
-			"scope": ["$APPLOCALDATA/**", "$APPLOCALDATA/*"],
+			"scope": ["$APPLOCALDATA/**", "$APPLOCALDATA/*", "$APPLOCALDATA/", "$APPLOCALDATA"],
 			"all": true
 		},
 		"updater": {

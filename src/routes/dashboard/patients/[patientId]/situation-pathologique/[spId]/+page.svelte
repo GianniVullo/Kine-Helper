@@ -3,10 +3,11 @@
 	import { PlusIcon, UpdateIcon, DeleteIcon } from '$lib/ui/svgs/index';
 	import dayjs from 'dayjs';
 	import EventCalendar from '../../../../../../lib/EventCalendar.svelte';
-	import { patients } from '../../../../../../lib/stores/PatientStore';
+	import { patients, SituationPathologique } from '../../../../../../lib/stores/PatientStore';
 	import { getEvents } from './eventFigureOuter';
 	import { getModalStore } from '@skeletonlabs/skeleton';
 	import DBAdapter from '../../../../../../lib/forms/actions/dbAdapter';
+	import { tick } from 'svelte';
 	// import { goto } from '$app/navigation';
 
 	const modalStore = getModalStore();
@@ -34,32 +35,45 @@
 	};
 	const documentSelectionModal = {
 		type: 'component',
-		component: 'documentSelection',
-	}
+		component: 'documentSelection'
+	};
 	const patient = $patients.find((p) => p.patient_id === $page.params.patientId);
 	const sp = patient.situations_pathologiques.find((sp) => sp.sp_id === $page.params.spId);
-
-	let eventsPromise = new Promise((resolve) => {
-		getEvents(patient, sp).then((events) => {
-			resolve(events);
-		});
-	});
-	let ec;
-
 	let items = [
 		{
 			name: 'Attestation',
 			href: $page.url.pathname + '/attestations/create',
 			condition:
-				sp.seances.filter((seance) => {
-					return (dayjs(dayjs(seance.date).format('YYYY-MM-DD')).isBefore(dayjs())) && !seance.attestation_id;
+				sp?.seances.filter((seance) => {
+					return (
+						dayjs(dayjs(seance.date).format('YYYY-MM-DD')).isBefore(dayjs()) &&
+						!seance.attestation_id
+					);
 				}).length > 0
 		},
-		{ name: 'Prescription', href: $page.url.pathname + '/prescriptions/create', condition: true },
+		{
+			name: 'Prescription',
+			href: $page.url.pathname + '/prescriptions/create',
+			condition: true
+		},
 		{ name: 'Séances', href: $page.url.pathname + '/generateurs/create', condition: true }
-		// { name: 'Document', href: 'movies' },
-		// { name: 'Séances', href: 'movies' }
 	];
+	let eventsAreLoading = false;
+	let eventsPromise = new Promise(async (resolve) => {
+		console.log('sp', sp);
+		if (!eventsAreLoading) {
+			await tick();
+			eventsAreLoading = true;
+			getEvents(patient, sp).then((events) => {
+				eventsAreLoading = false;
+				resolve(events);
+			});
+		} else {
+			eventsAreLoading = false;
+			resolve();
+		}
+	});
+	let ec;
 </script>
 
 <div class="mx-4 flex w-full flex-col">
@@ -90,7 +104,9 @@
 						<span class="text-sm text-surface-500 dark:text-surface-400">{item.name}</span></a>
 				{/if}
 			{/each}
-			<button on:click={() => modalStore.trigger(documentSelectionModal)} class="variant-outline-secondary btn btn-sm my-2 flex">
+			<button
+				on:click={() => modalStore.trigger(documentSelectionModal)}
+				class="variant-outline-secondary btn btn-sm my-2 flex">
 				<PlusIcon class="h-4 w-4 stroke-surface-600 dark:stroke-surface-300" />
 				<span class="text-sm text-surface-500 dark:text-surface-400">Document</span></button>
 		</div>

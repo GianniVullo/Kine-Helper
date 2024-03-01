@@ -1,6 +1,4 @@
 import { get, writable } from 'svelte/store';
-import { writeFile } from '@tauri-apps/plugin-fs';
-import { save } from '@tauri-apps/plugin-dialog';
 import { jsPDF } from 'jspdf';
 import { user } from '../stores/UserStore';
 import dayjs from 'dayjs';
@@ -26,7 +24,7 @@ function yPositionStore(initialValue) {
 }
 
 export class PDFGeneration {
-	constructor(documentName, formData, patient, sp, docType) {
+	constructor(documentName, formData, patient, sp, docType, dirPath, obj) {
 		this.documentName = documentName;
 		this.formData = formData;
 		this.doc = new jsPDF();
@@ -47,21 +45,39 @@ export class PDFGeneration {
 		this.headingFontSize = 16;
 		this.bodyFontSize = 10;
 		this.docType = docType;
+		this.dirPath = dirPath;
+		this.data = obj;
 	}
 	buildPdf() {}
-	async save() {
-		this.buildPdf();
-		//! Finalement, comme l'API ne retourne pas le filePath je choisis d'émettre le pdf dans le dossier utilisateur et de l'ouvrir à partir du dossier utilisateur.
-		// let path = await save({ defaultPath: this.documentName });
-		let docOutput = this.doc.output('arraybuffer');
+
+	buildDirPath() {
+		return `${get(user).user.id}/${this.patient.nom}-${this.patient.prenom}(${
+			this.patient.patient_id
+		})/situation-pathologique-${this.sp.created_at}(${this.sp.sp_id})${
+			this.dirPath.length > 0 ? '/' + this.dirPath : ''
+		}`;
+	}
+
+	async buildPath() {
 		let dataPath = await appLocalDataDir();
-		let dirPath = `${dataPath}/${get(user).user.id}/${this.patient.patient_id}/documents/factures`;
-		console.log('in pdfGeneration with path ==', docOutput);
+		let dirPath = `${dataPath}/${this.buildDirPath()}`;
+		return dirPath;
+	}
+	async save_file() {
+		this.buildPdf();
+
+		let docOutput = this.doc.output('arraybuffer');
+		let dirPath = await this.buildPath();
 		await invoke('setup_path', {
 			dirPath,
-			fileName: this.documentName,
+			fileName: this.documentName + '.pdf',
 			fileContent: Array.from(new Uint8Array(docOutput))
 		});
+		return { dirPath };
+	}
+	async save() {
+		//! Finalement, comme l'API ne retourne pas le filePath je choisis d'émettre le pdf dans le dossier utilisateur et de l'ouvrir à partir du dossier utilisateur.
+		let { dirPath } = await this.save_file();
 		let db = new DBAdapter();
 		let document = {
 			form_data: this.formData,
@@ -73,14 +89,49 @@ export class PDFGeneration {
 			user_id: get(user).user.id
 		};
 		await db.save('documents', document);
+		this.data = document;
 		patients.update((p) => {
 			p.find((p) => p.patient_id === this.patient.patient_id)
 				.situations_pathologiques.find((sp) => sp.sp_id === this.sp.sp_id)
 				.documents.push(document);
 			return p;
 		});
-		console.log('in pdfGeneration with path ==', dirPath + '/' + this.documentName.replaceAll(' ', '\ '));
-		await open(dirPath + '/' + this.documentName.replaceAll(' ', '\ '));
+		console.log(
+			'in pdfGeneration with path ==',
+			dirPath + '/' + this.documentName.replaceAll(' ', ' ')
+		);
+		await open(dirPath + '/' + this.documentName.replaceAll(' ', ' ') + '.pdf');
+	}
+
+	async delete() {
+		let db = new DBAdapter();
+		await db.delete('documents', ['document_id', this.data.document_id]);
+		let dirpath = await this.buildPath();
+		let path = dirpath + '/' + this.documentName + '.pdf';
+		if (await invoke('file_exists', { path })) {
+			await invoke('delete_file', { path });
+		}
+		patients.update((ps) => {
+			let p = ps.find((p) => p.patient_id === this.patient.patient_id);
+			let sp = p.situations_pathologiques.find((sp) => sp.sp_id === this.sp.sp_id);
+			sp.documents = sp.documents.filter((d) => d.document_id !== this.data.document_id);
+			return ps;
+		});
+	}
+
+	async open() {
+		let dirpath = await this.buildPath();
+		let path = dirpath + '/' + this.documentName + '.pdf';
+		console.log('path', path);
+		let exists = await invoke('file_exists', { path });
+		console.log('exists', exists);
+		if (exists) {
+			console.log('try open facture');
+			await open(path);
+		} else {
+			await this.save_file();
+			await open(path);
+		}
 	}
 
 	fullWidthTable(data, headers, { x = this.margins.left, y = get(this.yPosition) } = {}) {
@@ -180,9 +231,12 @@ export class PDFGeneration {
 		{
 			columnsWidth, //* liste de columns Width
 			x = this.margins.left, //* x start of columns pack
-			y = get(this.yPosition) //* y start of columns pack
+			y = undefined //* y start of columns pack
 		} = {}
 	) {
+		if (y) {
+			this.yPosition.set(y);
+		}
 		for (const column of columns) {
 			// console.log(`in addColumns forloop with ${column}`);
 			if (column.length > 1) {
@@ -197,5 +251,27 @@ export class PDFGeneration {
 		this.addParagraph(get(user).profil.adresse, { x: x });
 		this.addParagraph(`${get(user).profil.cp} ${get(user).profil.localite}`, { x: x });
 		this.addParagraph(get(user).profil.inami, { x: x });
+	}
+	async authSignature() {
+		let dirPath = await appLocalDataDir();
+		let path = `${dirPath}/signature.png`;
+		if (await invoke('file_exists', { path })) {
+			let img = this.uint8ArrayToBase64(Uint8Array.from(await invoke('retrieve_file', { path })));
+			console.log(this.doc);
+			let desperateAttempt65 = new Image();
+			desperateAttempt65.src = img;
+			console.log('img', desperateAttempt65);
+			this.doc.addImage(
+				img,
+				'png',
+				this.margins.left + (this.pageWidth / 2),
+				this.pageHeight - 60
+			);
+		}
+	}
+
+	uint8ArrayToBase64(byteArray) {
+		let binaryString = byteArray.reduce((acc, byte) => acc + String.fromCharCode(byte), '');
+		return `data:image/png;base64,${window.btoa(binaryString)}`;
 	}
 }

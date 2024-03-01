@@ -6,14 +6,7 @@
 	import { patients } from '../../../../../../../lib/stores/PatientStore';
 	import { printAttestation } from '../../../../../../../lib/utils/rawPrinting';
 	import { PrinterIcon, UpdateIcon, DeleteIcon } from '../../../../../../../lib/ui/svgs/index';
-	import { user } from '../../../../../../../lib/stores/UserStore';
-	import { appLocalDataDir } from '@tauri-apps/api/path';
 	import { fetchCodeDesSeances } from '../../../../../../../lib/utils/nomenclatureManager';
-	import { open } from '@tauri-apps/plugin-shell';
-	import { FacturePatient } from '../../../../../../../lib/pdfs/facturePatient';
-	import { FactureMutuelle } from '../../../../../../../lib/pdfs/factureMutuelle';
-	import DBAdapter from '../../../../../../../lib/forms/actions/dbAdapter';
-	import { parse } from 'svelte/compiler';
 	import FactureBox from '../../../../../../../lib/ui/FactureBox.svelte';
 
 	let patient = $patients.find((p) => p.patient_id === $page.params.patientId);
@@ -31,8 +24,8 @@
 </script>
 
 {#if sp.attestations.length > 0}
-	<!--* TITRE -->
-	<div class="ml-2 flex flex-col space-y-4">
+<div class="ml-2 flex flex-col space-y-4">
+		<!--* TITRE -->
 		<div class="flex flex-col">
 			<h5 class="text-lg text-surface-500 dark:text-surface-400">
 				Attestations et factures de la situation pathologique du {dayjs(sp.created_at).format(
@@ -53,7 +46,7 @@
 				<div class="flex flex-col space-y-2">
 					{#each sp.attestations as attestation}
 						<div
-							class="flex flex-col justify-between rounded-lg border border-surface-400 px-4 py-2 shadow duration-200 hover:bg-surface-100 dark:hover:bg-surface-700">
+							class="flex flex-col justify-between rounded-lg border border-surface-400 px-4 py-2 shadow duration-200 hover:bg-surface-100 dark:hover:bg-surface-800/50">
 							<!--? ATTESTATION CONTROLS  -->
 							<div class="mb-2 flex items-center space-x-4">
 								<h5
@@ -98,7 +91,7 @@
 								</div>
 							</div>
 							<!--? ATTESTATION INFO -->
-							<div class="flex flex-col text-success-800 dark:text-surface-100">
+							<div class="flex flex-col text-surface-800 dark:text-surface-100">
 								{#if attestation.porte_prescr}
 									<h5>Porte la prescription</h5>
 								{/if}

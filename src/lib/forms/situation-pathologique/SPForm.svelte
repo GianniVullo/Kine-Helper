@@ -5,9 +5,6 @@
 	import {
 		FormWrapper,
 		SubmitButton,
-		SelectFieldV2,
-		RadioFieldV2,
-		CheckboxFieldV2,
 		DefaultFieldWrapper,
 		TextFieldV2,
 		DateField,
@@ -68,6 +65,7 @@
 
 		submitter.disabled = false;
 	}
+	console.log('the situation_pathologique', situation_pathologique);
 </script>
 
 <FormWrapper {formSchema}>
