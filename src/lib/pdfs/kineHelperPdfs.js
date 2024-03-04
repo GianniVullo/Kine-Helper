@@ -12,7 +12,6 @@ function yPositionStore(initialValue) {
 	const yStore = writable(initialValue);
 	function update(y) {
 		yStore.update((n) => {
-			console.log(`Store value == ${n}, value to add == ${y}, sum == ${n + y}`);
 			return n + y;
 		});
 	}
@@ -220,7 +219,7 @@ export class PDFGeneration {
 		const textHeight = ((textLines.length * fontSize) / 3.52778) * 1.2;
 		const textstart = x + 20;
 		this.yPosition.update(5);
-		this.addParagraph(text, { maxWidth: width, x: textstart, fontWeight: 'bold' });
+		this.addParagraph(text, { maxWidth: width, x: textstart, fontWeight: 'bold', fontSize });
 		// Set card style
 		this.doc.setDrawColor(cardColor);
 		this.doc.rect(textstart - padding, y, width + padding * 2, textHeight + padding * 2);
@@ -252,7 +251,7 @@ export class PDFGeneration {
 		this.addParagraph(`${get(user).profil.cp} ${get(user).profil.localite}`, { x: x });
 		this.addParagraph(get(user).profil.inami, { x: x });
 	}
-	async authSignature() {
+	async authSignature({ x = this.margins.left + this.pageWidth / 2, y = this.pageHeight - 60 }) {
 		let dirPath = await appLocalDataDir();
 		let path = `${dirPath}/signature.png`;
 		if (await invoke('file_exists', { path })) {
@@ -261,12 +260,7 @@ export class PDFGeneration {
 			let desperateAttempt65 = new Image();
 			desperateAttempt65.src = img;
 			console.log('img', desperateAttempt65);
-			this.doc.addImage(
-				img,
-				'png',
-				this.margins.left + (this.pageWidth / 2),
-				this.pageHeight - 60
-			);
+			this.doc.addImage(img, 'png', x, y);
 		}
 	}
 

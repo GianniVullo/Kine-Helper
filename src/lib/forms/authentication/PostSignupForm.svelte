@@ -6,6 +6,8 @@
 	import { goto } from '$app/navigation';
 	import DBAdapter from '../actions/dbAdapter';
 	import dayjs from 'dayjs';
+	import { t } from '../../i18n';
+	import { get } from 'svelte/store';
 
 	let message = '';
 
@@ -15,13 +17,11 @@
 
 	async function isValid({ formData, submitter }) {
 		console.log('in isValid with', formData);
-		submitter.innerHTML = 'Envoi des données...';
+		submitter.innerHTML = get(t)('shared', 'loading');
 		formData.conventionne ??= false;
 		let { data, error } = await supabase.from('kinesitherapeutes').upsert(formData).select();
 		submitter.innerHTML = 'OK';
 		$user.profil = data[0];
-		console.log(data, error);
-		console.log($user);
 		if (error) {
 			message = error.message;
 			throw new Error(error);
@@ -48,10 +48,9 @@
 </script>
 
 <FormWrapper {formSchema}>
-	<span slot="title">Formulaire post-inscription</span>
+	<span slot="title">{$t('form.postSignup', 'title')}</span>
 	<p class="m-8 text-surface-600">
-		Ces informations sont nécessaires pour certaines fonctionnalités de Kiné Helper. Elles ne seront
-		jamais partagées avec qui que ce soit.
+		{$t('form.postSignup', 'description')}
 	</p>
 	<div class="flex flex-col md:flex-row">
 		<div class="w-full p-2 md:w-1/3 md:p-4 lg:p-8">
@@ -61,40 +60,40 @@
 					name="nom"
 					value={$user.profil?.nom ?? undefined}
 					required
-					label="nom"
-					placeholder="nom" />
+					label={$t('shared', 'name')}
+					placeholder={$t('shared', 'name')} />
 				<TextField
 					name="prenom"
 					value={$user.profil?.prenom ?? undefined}
 					required
-					label="prenom"
-					placeholder="prenom" />
+					label={$t('shared', 'surname')}
+					placeholder={$t('shared', 'surname')} />
 				<TextField
 					name="adresse"
 					value={$user.profil?.adresse ?? undefined}
 					required
-					placeholder="Rue et numéro"
-					label="Rue et numéro" />
+					placeholder={$t('shared', 'address')}
+					label={$t('shared', 'address')} />
 				<TextField
 					name="cp"
 					value={$user.profil?.cp ?? undefined}
 					type="number"
 					pattern={/^[0-9]{4}$/}
-					patternMessage="Le code postal est invalide"
+					patternMessage={$t('form.post.code', 'validation.postCode')}
 					required
-					placeholder="Code postal"
-					label="Code postal" />
+					placeholder={$t('form.post.code', 'label.postCode')}
+					label={$t('form.post.code', 'label.postCode')} />
 				<TextField
 					name="localite"
 					value={$user.profil?.localite ?? undefined}
 					required
-					placeholder="Localité"
-					label="Localité" />
+					placeholder={$t('form.post.code', 'label.city')}
+					label={$t('form.post.code', 'label.city')} />
 				<TextField
 					name="gsm"
 					value={$user.profil?.gsm ?? undefined}
-					placeholder="N° de gsm"
-					label="N° de gsm" />
+					placeholder={$t('form.post.code', 'label.cellPhone')}
+					label={$t('form.post.code', 'label.cellPhone')} />
 			</SectionCard>
 		</div>
 		<div class="w-full p-2 md:w-1/3 md:p-4 lg:p-8">
@@ -104,26 +103,25 @@
 					value={$user.profil?.inami ?? undefined}
 					required
 					pattern={/^\d{11}$/}
-					patternMessage="Doit comporter 11 chiffres sans espaces ni slash (/)"
+					patternMessage={$t('form.postSignup', 'validation.inami')}
 					label="INAMI"
-					placeholder="N° INAMI" />
+					placeholder="INAMI" />
 				<IbanField value={$user.profil?.iban ?? undefined} />
 				<TextField
 					name="bce"
 					value={$user.profil?.bce ?? undefined}
 					required
 					pattern={/^\d{10}$/}
-					patternMessage="Doit comporter 10 chiffres sans espaces ni slash (/)"
-					label="N° Banque Carrefour Entreprise"
-					placeholder="N° BCE" />
+					patternMessage={$t('form.postSignup', 'validation.bce')}
+					label={$t('form.post.code', 'label.bce')}
+					placeholder={$t('form.post.code', 'label.bce')} />
 				<CheckboxField
 					name="conventionne"
 					value={$user.profil?.conventionne ?? undefined ?? true}
 					checked={$user.profil?.conventionne ?? undefined ?? true}
-					placeholder="Conventionnement"
-					label="Est conventionné" />
+					label={$t('form.post.code', 'label.convention')} />
 			</SectionCard>
-			<SubmitButton class="m-4 md:m-8">Envoyer</SubmitButton>
+			<SubmitButton class="m-4 md:m-8" />
 		</div>
 	</div>
 	<div class="font-semibold">{message}</div>

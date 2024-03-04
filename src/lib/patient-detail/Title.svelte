@@ -10,14 +10,17 @@
 	import ArchiveIcon from '$lib/ui/svgs/ArchiveIcon.svelte';
 	import { getModalStore } from '@skeletonlabs/skeleton';
 	import DBAdapter from '../forms/actions/dbAdapter';
+	import { t } from '../i18n';
+	import { get } from 'svelte/store';
+
 	const modalStore = getModalStore();
 	const modal = {
 		type: 'confirm',
 		// Data
-		title: 'Confirmation requise',
-		body: 'Êtes-vous sûr de vouloir <span class="text-error-500 font-medium">supprimer</span> ce patient ?<br>Attention cette action est <span class="font-medium">irréversible</span>.',
-		buttonTextConfirm: 'Confirmer',
-		buttonTextCancel: 'Annuler',
+		title: get(t)('patients.detail', 'pdeleteModal.title'),
+		body: get(t)('patients.detail', 'pdeleteModal.body'),
+		buttonTextConfirm: get(t)('shared', 'confirm'),
+		buttonTextCancel: get(t)('shared', 'cancel'),
 		modalClasses: {
 			buttonPositive: 'isModal'
 		},
@@ -28,7 +31,6 @@
 
 	async function deletePatient(confirmed) {
 		if (confirmed) {
-			console.log('Pressed confirm');
 			let db = new DBAdapter();
 			await db.delete('patients', ['patient_id', patient.patient_id]);
 			patients.remove(patient.patient_id);
@@ -71,7 +73,7 @@
 	</a>
 	<div data-popup="udpatePopUp">
 		<div class="card variant-filled-surface p-2">
-			<p class="text-xs">Modifier</p>
+			<p class="text-xs">{$t('shared', 'update')}</p>
 			<div class="variant-filled-surface arrow" />
 		</div>
 	</div>
@@ -92,7 +94,7 @@
 	</button>
 	<div data-popup="deletePopUp">
 		<div class="card variant-filled-surface p-2">
-			<p class="text-xs">Supprimer</p>
+			<p class="text-xs">{$t('patients.detail', 'deleteModal.confirm')}</p>
 			<div class="variant-filled-surface arrow" />
 		</div>
 	</div>

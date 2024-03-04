@@ -1,13 +1,13 @@
 <script>
     import { ProgressRadial } from "@skeletonlabs/skeleton";
-
+	import { t } from "../../i18n";
     let clazz = '';
     export { clazz as class }
 
 </script>
 <button class="variant-filled-primary btn self-center justify-self-center {clazz}" type="submit">
 		<slot>
-            Enregistrer
+            {$t('shared', 'save')}
         </slot>
 		<ProgressRadial
 			width="w-6 ml-2 group-[.isLoading]/form:block hidden"

@@ -1,5 +1,6 @@
 <script>
 	import {DefaultFieldWrapper} from "../index";
+    import { t } from "../../i18n";
     export let name = 'password';
     export let withoutValidation = false;
 </script>
@@ -7,7 +8,7 @@
 <!--! MEGA ATTENTION /^(?=.*\d)(?=.*[!@#$%^&*])(?=.*[a-z])(?=.*[A-Z]).{8,}$/ LE PATTERN A CONSERVER -->
 
 <DefaultFieldWrapper>
-    <p>{name == 'password' ? "Mot de passe" : 'Confirmation du mot de passe'}</p>
+    <p>{name == 'password' ? $t('login', 'controls.password') : $t('login', 'label.password')}</p>
     <div class="input-group input-group-divider grid-cols-[auto_1fr_auto] group-[.has-error]/field:border-error-500">
         <div class="input-group-shim">
             <svg
@@ -27,8 +28,8 @@
             id={name}
             required
             pattern={!withoutValidation ? /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$/ : undefined}
-            data-pristine-pattern-message={name == 'password' ? "Votre mot de passe doit contenir : <br> - au moins 8 caractères <br> - au moins un caractère spécial (!@#$%^&*) <br> - au moins une lettre majuscule <br> - au moins une lettre minuscule <br> - au moins un chiffre" : undefined}
-            data-pristine-required-message="Ce champ est requis"
+            data-pristine-pattern-message={name == 'password' ? $t('login', 'validation.password') : undefined}
+            data-pristine-required-message={$t('shared', 'required')}
             {name}
             type="password"
             class="input group-[.has-error]/field:border-error-500" />

@@ -19,3 +19,4 @@ export { default as PrinterIcon } from './PrinterIcon.svelte';
 export { default as EuroIcon } from './EuroIcon.svelte';
 export { default as TableCellIcon } from './TableCellIcon.svelte';
 export { default as OpenIcon } from './OpenIcon.svelte';
+export { default as CircleArrowIcon } from './CircleArrowIcon.svelte';

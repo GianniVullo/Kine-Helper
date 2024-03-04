@@ -9,6 +9,7 @@
 	import UpdateIcon from '../../../../../../../lib/ui/svgs/UpdateIcon.svelte';
 	import { AnnexeA } from '../../../../../../../lib/pdfs/annexeA';
 	import { AnnexeB } from '../../../../../../../lib/pdfs/annexeB';
+	import { t } from '../../../../../../../lib/i18n';
 
 	const modalStore = getModalStore();
 	const patient = $patients.find((p) => p.patient_id === $page.params.patientId);
@@ -33,14 +34,14 @@
 	<!--* Header -->
 	<header class="flex flex-col">
 		<h5 class="text-lg text-surface-500 dark:text-surface-400">
-			Documents de la situation pathologique du {dayjs(sp.created_at).format('DD/MM/YYYY')}
+			{$t('document.list', 'title', { date: dayjs(sp.created_at).format('DD/MM/YYYY') })}
 		</h5>
 		<div class="flex space-x-2">
 			<button
 				on:click={() => modalStore.trigger(documentSelectionModal)}
 				class="variant-outline-secondary btn btn-sm my-2 flex">
 				<PlusIcon class="h-4 w-4 stroke-surface-600 dark:stroke-surface-300" />
-				<span class="text-sm text-surface-500 dark:text-surface-400">Accord</span></button>
+				<span class="text-sm text-surface-500 dark:text-surface-400">{$t('document.list', 'accord')}</span></button>
 		</div>
 	</header>
 	<!--* Body -->
@@ -49,7 +50,9 @@
 			<!--* Accord LIST -->
 			{#if sp.documents.filter((d) => [0, 1].includes(d.docType)).length > 0}
 				<div class="flex flex-col">
-					<h5 class="text-lg text-surface-500 dark:text-surface-400">Accords</h5>
+					<h5 class="text-lg text-surface-500 dark:text-surface-400">
+						{$t('document.list', 'accord')}s
+					</h5>
 					{#each $patients
 						.find((p) => p.patient_id === patient.patient_id)
 						.situations_pathologiques.find((rsp) => rsp.sp_id === sp.sp_id)
@@ -60,19 +63,22 @@
 							<div class="mb-2 flex items-center space-x-4">
 								<h5
 									class="pointer-events-none select-none text-secondary-800 dark:text-secondary-200">
-									Demande d'accord du {dayjs(accord.created_at).format('DD/MM/YYYY')}
+									{$t('document.list', 'card.title', {
+										date: dayjs(accord.created_at).format('DD/MM/YYYY')
+									})}
 								</h5>
 								<div class="flex space-x-2">
-									<a href={`/dashboard/patients/${patient.patient_id}/situation-pathologique/${sp.sp_id}/documents/${accord.document_id}/update`} class="variant-outline-warning btn-icon btn-icon-sm"
-										><UpdateIcon
-											class="h-5 w-5 stroke-surface-600 dark:stroke-surface-200" /></a>
+									<a
+										href={`/dashboard/patients/${patient.patient_id}/situation-pathologique/${sp.sp_id}/documents/${accord.document_id}/update`}
+										class="variant-outline-warning btn-icon btn-icon-sm"
+										><UpdateIcon class="h-5 w-5 stroke-surface-600 dark:stroke-surface-200" /></a>
 									<button
 										on:click={async () => {
 											modalStore.trigger({
-												title: 'Confirmation',
-												body: `êtes-vous sûr de vouloir supprimer définitivement la demande d'accord du ${dayjs(
-													accord.created_at
-												).format('DD/MM/YYYY')}`,
+												title: $t('document.list', 'deleteModal.title'),
+												body: $t('document.list', 'deleteModal.body'),
+												buttonTextConfirm: $t('shared', 'confirm'),
+												buttonTextCancel: $t('shared', 'cancel'),
 												type: 'confirm',
 												response: async (response) => {
 													if (response) {
@@ -101,7 +107,7 @@
 					{/each}
 				</div>
 			{:else}
-				Vous n'avez pas encore ajouté d'accord.
+				{$t('document.list', 'empty')}
 			{/if}
 		</div>
 		<!-- <div class="flex flex-col flex-wrap">

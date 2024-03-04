@@ -1,18 +1,16 @@
 <script>
 	import dayjs from 'dayjs';
 	import { goto } from '$app/navigation';
-	import { page } from '$app/stores';
 	import {
 		FormWrapper,
 		SubmitButton,
 		DefaultFieldWrapper,
 		TextFieldV2,
-		DateField,
-		NumberField
 	} from '../index';
 	import DBAdapter from '../actions/dbAdapter';
 	import { SituationPathologique } from '../../stores/PatientStore';
 	import { patients } from '../../stores/PatientStore';
+	import { t } from '../../i18n';
 
 	export let patient;
 	export let situation_pathologique = null;
@@ -36,7 +34,6 @@
 	};
 
 	async function isValid({ formData, submitter }) {
-		console.log('in isValid');
 		let db = new DBAdapter();
 		let situation_pathologique = new SituationPathologique({
 			sp_id,
@@ -53,7 +50,6 @@
 			numero_etablissement
 		});
 		let dbStatus = await db.save('situations_pathologiques', situation_pathologique.toDB);
-		console.log('the db status', dbStatus);
 		patients.update((patients) => {
 			let rpatient = patients.find((p) => p.patient_id == patient.patient_id);
 			rpatient.situations_pathologiques.push(situation_pathologique);
@@ -65,47 +61,44 @@
 
 		submitter.disabled = false;
 	}
-	console.log('the situation_pathologique', situation_pathologique);
 </script>
 
 <FormWrapper {formSchema}>
 	<DefaultFieldWrapper>
 		<label class="select-none text-surface-500 dark:text-surface-300" for="motif"
-			>Motif
+			>{$t('sp.detail', 'reason')}
 			<textarea
 				id="motif"
 				bind:value={motif}
 				required
-				name="motif"
+				name={$t('sp.detail', 'reason')}
 				class="textarea mt-2 rounded-lg"
-				placeholder="Motivation justifiant une prise en charge kinésithérapeutique"
+				placeholder={$t('sp.detail', 'reason.label')}
 				rows="4"></textarea>
 		</label>
 	</DefaultFieldWrapper>
 	<DefaultFieldWrapper>
 		<label class="select-none text-surface-500 dark:text-surface-300" for="plan_du_ttt"
-			>Plan du traitement
-
+			>{$t('sp.detail', 'plan')}
 			<textarea
 				id="plan_du_ttt"
 				bind:value={plan_du_ttt}
 				name="plan_du_ttt"
 				required
 				class="textarea mt-2 rounded-lg"
-				placeholder="Un plan succinct du traitement kinésithérapeutique"
+				placeholder={$t('sp.detail', 'plan.label')}
 				rows="4"></textarea>
 		</label>
 	</DefaultFieldWrapper>
-	<h2 class="font-bold text-surface-600 dark:text-surface-400">Champs Optionnels</h2>
+	<h2 class="font-bold text-surface-600 dark:text-surface-400">{$t('sp.detail', 'nonRequired')}</h2>
 	<h4 class="text-surface-800 dark:text-surface-300">
-		Pour évitez d'avoir à réécrire les champs suivants de nombreuses fois, vous pouvez les indiquer
-		ici et Kiné Helper les rendra disponibles lorsque cela sera nécessaire.
+		{$t('sp.detail', 'nonRequired.help')}
 	</h4>
-	<TextFieldV2 name="service" bind:value={service} placeholder="service" label="Service" />
+	<TextFieldV2 name="service" bind:value={service} placeholder={$t('sp.update', 'label.service')} label={$t('sp.update', 'label.service')} />
 	<TextFieldV2
 		name="numero_etablissement"
 		bind:value={numero_etablissement}
-		placeholder="N° d'établissement"
-		label="Numéro d'établissement" />
-	<SubmitButton>Enregistrer</SubmitButton>
+		placeholder={$t('sp.update', 'label.numero_etablissement')}
+		label={$t('sp.update', 'label.numero_etablissement')} />
+	<SubmitButton />
 </FormWrapper>

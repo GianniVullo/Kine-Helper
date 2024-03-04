@@ -1,10 +1,11 @@
 <script>
 	// Stores
 	import { getModalStore } from '@skeletonlabs/skeleton';
-	import { FormWrapper, SelectFieldV2, SubmitButton, RadioFieldV2 } from '../forms/index';
-	import { user } from '../stores/UserStore';
+	import { FormWrapper, SubmitButton, RadioFieldV2 } from '../forms/index';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
+	import { t } from '../i18n';
+	import { get } from 'svelte/store';
 
 	export let parent;
 
@@ -15,8 +16,8 @@
 	};
 
 	const options = [
-		{ value: 0, label: 'Annexe A' },
-		{ value: 1, label: 'Annexe B' }
+		{ value: 0, label: get(t)('shared', 'annexe') + ' A' },
+		{ value: 1, label: get(t)('shared', 'annexe') + ' B' }
 	];
 
 	let formData;
@@ -28,7 +29,6 @@
 		modalStore.close();
 	}
 
-	console.log(parent);
 	// Base Classes
 	const cBase = 'card p-4 w-modal shadow-xl space-y-4';
 	const cHeader = 'text-2xl font-bold';
@@ -36,17 +36,17 @@
 
 {#if $modalStore[0]}
 	<div class="modal-example-form {cBase}">
-		<header class={cHeader}>Signaler un bug/Soumettre une idée</header>
+		<header class={cHeader}>{$t('otherModal', 'doc.create')}</header>
 		<article></article>
 		<FormWrapper {formSchema}>
 			<!-- <SelectFieldV2 bind:value={formData} label="Types de document" required {options} /> -->
 			<RadioFieldV2
 				bind:value={formData}
-				label="Type de document"
+				label={$t('otherModal', 'doc.type')}
 				name="docType"
 				required
 				{options} />
-			<SubmitButton>Poursuivre</SubmitButton>
+			<SubmitButton>{$t('shared', 'confirm')}</SubmitButton>
 		</FormWrapper>
 	</div>
 {/if}

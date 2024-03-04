@@ -5,6 +5,8 @@
 	import { goto } from '$app/navigation';
 	import { AnnexeA } from '../../pdfs/annexeA';
 	import { patients } from '../../stores/PatientStore';
+	import { t } from '../../i18n';
+	import { get } from 'svelte/store';
 
 	let message = '';
 
@@ -19,13 +21,12 @@
 	};
 
 	async function isValid({ formData, submitter }) {
-		console.log('in IsValid with', formData, situationPathologique);
 		if (
 			![0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18].includes(
 				parseInt(situationPathologique)
 			)
 		) {
-			message = 'Veuillez sélectionner une situation pathologique';
+			message = get(t)('form.annexeA', 'validation.sp');
 			submitter.disabled = false;
 			return;
 		}
@@ -83,8 +84,8 @@
 </script>
 
 <FormWrapper {formSchema}>
-	<DateField bind:value={date} label="Date de la première séance" name="date" required />
+	<DateField bind:value={date} label={$t('form.annexeA', 'label.date')} name="date" required />
 	<SituationPathologiqueSelector aOrB="A" bind:value={situationPathologique} />
 	<div class="font-semibold">{message}</div>
-	<SubmitButton>Envoyer</SubmitButton>
+	<SubmitButton />
 </FormWrapper>

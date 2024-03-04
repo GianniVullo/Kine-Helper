@@ -3,6 +3,7 @@ import { get } from 'svelte/store';
 import { user } from '../stores/UserStore';
 import dayjs from 'dayjs';
 import { invoke } from '@tauri-apps/api/core';
+import { locale } from '../i18n';
 
 export class AnnexeB extends PDFGeneration {
 	constructor(formData, patient, sp, obj) {
@@ -17,6 +18,8 @@ export class AnnexeB extends PDFGeneration {
 			'',
 			obj
 		);
+		const langDict = { NL: [], FR: [] };
+		const points = { NL: {}, FR: {} };
 		this.situationsPathologiques = [this.a, this.b, this.c, this.d, this.e, this.f, this.g, this.h];
 		this.indexOfSP = ['51.', '59.', '54.', '55.', '56.', '57.', '58.', '60.'];
 	}
@@ -135,7 +138,6 @@ export class AnnexeB extends PDFGeneration {
 		this.doc.text(text, xMargin, y);
 		let x1 = xMargin + 5 + 1;
 		let y1 = y - 4;
-		//! ICI IL FAUT RAJOUTER LA POSSIBILITé DE LE déCOCHER
 		if (checked) {
 			this.doc.line(x1, y1, x1 + 5, y1 + 5);
 			this.doc.line(x1, y1 + 5, x1 + 5, y1);

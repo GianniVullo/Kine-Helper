@@ -2,6 +2,8 @@
 	// import HomeIcon from '../ui/svgs/HomeIcon.svelte'
 	import { ProgressRadial } from '@skeletonlabs/skeleton';
 	import ConsultIcon from '../ui/svgs/ConsultIcon.svelte';
+	import { t } from '../i18n';
+
 	export let patient; // Patient object passed as a prop
 	export let loading = false;
 </script>
@@ -11,8 +13,8 @@
 	<div class="mb-4 h-1 bg-gradient-to-r from-primary-400 to-secondary-500 opacity-50"></div>
 	<h2 class="text-xl font-medium text-surface-900">{patient.nom} {patient.prenom}</h2>
 	{#if loading}
-		<div class="flex flex-col mt-4 space-y-2">
-			<p class="text-surface-900">Chargement du dossier patient...</p>
+		<div class="mt-4 flex flex-col space-y-2">
+			<p class="text-surface-900">{$t('shared', 'loading')}</p>
 			<ProgressRadial width="w-12" />
 		</div>
 	{:else}
@@ -27,7 +29,7 @@
 			<ConsultIcon
 				class="h-6 w-6 stroke-surface-600 duration-200 group-hover/consultation:text-surface-700" />
 			<p class="text-sm text-surface-600 duration-200 group-hover/consultation:text-surface-700">
-				Consulter
+				{$t('patients.detail', 'consult')}
 			</p>
 		</div>
 	{/if}

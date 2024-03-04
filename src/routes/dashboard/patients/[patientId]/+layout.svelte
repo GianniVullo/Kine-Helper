@@ -1,4 +1,5 @@
 <script>
+	import { t } from '../../../../lib/i18n';
 	import Title from '$lib/patient-detail/Title.svelte';
 	import Arborescence from '../../../../lib/patient-detail/Arborescence.svelte';
 	import { patients, SituationPathologique } from '../../../../lib/stores/PatientStore';
@@ -20,7 +21,7 @@
 		return new Promise(async (resolve) => {
 			await tick();
 			loadingInProgress = true;
-			console.log('in makeSpGreatAgain with', p);
+			// console.log('in makeSpGreatAgain with', p);
 			if (p.params.spId) {
 				const spBeforeCheck = patient.situations_pathologiques.find(
 					(sp) => sp.sp_id === p.params.spId
@@ -28,7 +29,7 @@
 				if (spBeforeCheck?.upToDate === false) {
 					let db = new DBAdapter();
 					let completedSp = await db.retrieve_sp(spBeforeCheck.sp_id);
-					console.log('completedSp', completedSp);
+					// console.log('completedSp', completedSp);
 					completedSp = new SituationPathologique(completedSp.data);
 					completedSp.upToDate = true;
 					patients.update((p) => {
@@ -67,13 +68,13 @@
 
 {#if patient}
 	{#await spPromied}
-		CHARGEMENT...
+		{$t('shared', 'loading')}
 	{:then value}
 		<div class="flex h-full w-full flex-col items-start justify-start">
 			<Title {patient} />
 			{#key loading}
 				{#await loading}
-					Chargement ...
+					{$t('shared', 'loading')}
 					<div
 						style="margin: 4px;"
 						class="h-5 w-5 animate-spin rounded-full border-2 border-secondary-500 border-b-primary-500 text-4xl">
@@ -88,5 +89,5 @@
 		</div>
 	{/await}
 {:else}
-	Patient n'existe pas
+	{$t('patients.detail', '404')}
 {/if}

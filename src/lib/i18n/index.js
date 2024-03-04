@@ -1,28 +1,35 @@
-import { derived, writable } from "svelte/store";
+import { derived, get } from 'svelte/store';
+import { persisted } from 'svelte-persisted-store';
 
-export const locale = writable("en");
-export const locales = Object.keys(translations);
+export const locale = persisted('locale', null);
+export const dictionnary = persisted('dictionnary', {});
 
-function translate(locale, key, vars) {
-  // Let's throw some errors if we're trying to use keys/locales that don't exist.
-  // We could improve this by using Typescript and/or fallback values.
-  if (!key) throw new Error("no key provided to $t()");
-  if (!locale) throw new Error(`no translation for key "${key}"`);
+function translate(locale, page, message, vars, fallback) {
+	// Let's throw some errors if we're trying to use keys/locales that don't exist.
+	// We could improve this by using Typescript and/or fallback values.
+	if (!page) throw new Error('no key provided to $t()');
+	if (!locale) return fallback;
+	
+	
+	// Grab the translation from the translations object.
+	let text = get(dictionnary)[locale][page][message];
+	console.log(text, fallback);
+	if (!text) return fallback;
 
-  // Grab the translation from the translations object.
-  let text = translations[locale][key];
+	// Replace any passed in variables in the translation string.
+	if (vars) {
+		Object.keys(vars).map((k) => {
+			const regex = new RegExp(`{{${k}}}`, 'g');
+			text = text.replace(regex, vars[k]);
+		});
+	}
 
-  if (!text) throw new Error(`no translation found for ${locale}.${key}`);
-
-  // Replace any passed in variables in the translation string.
-  Object.keys(vars).map((k) => {
-    const regex = new RegExp(`{{${k}}}`, "g");
-    text = text.replace(regex, vars[k]);
-  });
-
-  return text;
+	return text;
 }
 
-export const t = derived(locale, ($locale) => (key, vars = {}) =>
-  translate($locale, key, vars)
+export const t = derived(
+	locale,
+	($locale) =>
+		(page, message, vars = {}, fallback) =>
+			translate($locale, page, message, vars, fallback)
 );

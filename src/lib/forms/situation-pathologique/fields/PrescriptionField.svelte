@@ -3,6 +3,7 @@
     import {SelectFieldV2} from '../../index'
 	import { page } from '$app/stores';
 	import { patients } from '../../../stores/PatientStore';
+    import { t } from '../../../i18n';
 
     export let value = null;
     const patient = $patients.find((p) => p.patient_id === $page.params.patientId);
@@ -12,7 +13,7 @@
         let prescripteur = prescription.prescripteur;
         return {
             value: prescription.prescription_id,
-            label: `${prescripteur.nom} ${prescripteur.prenom} - ${prescription.date} - (${prescription.nombre_seance} séances, ${prescription.seance_par_semaine}x/semaine)`
+            label: `${prescripteur.nom} ${prescripteur.prenom} - ${prescription.date} - (${prescription.nombre_seance} ${$t('patients.detail', 'prestations')}, ${prescription.seance_par_semaine}x/${$t('shared', 'week')})`
         }
     })
 </script>

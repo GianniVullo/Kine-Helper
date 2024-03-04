@@ -9,6 +9,8 @@
 	import { DBInitializer } from '../../stores/databaseInitializer';
 	import DBAdapter from '../actions/dbAdapter';
 	import dayjs from 'dayjs';
+	import { get } from 'svelte/store';
+	import { t } from '../../i18n';
 
 	export let message = '';
 
@@ -23,38 +25,31 @@
 			spinner.classList.remove('!block');
 			throw new Error(error);
 		} else {
-			message = `Bienvenue ${data.user.email}!`;
-			console.log(data);
-			submitter.innerHTML = 'Récupération du profil kiné';
+			message = `${get(t)('shared', 'welcome')} ${data.user.email}!`;
+			submitter.innerHTML = get(t)('login', 'submission.profil');
 			let kineData = await supabase.from('kinesitherapeutes').select().eq('id', data.user.id);
-			console.log(kineData);
 			user.set({
 				user: data.user,
 				session: data.session,
 				profil: kineData.data[0]
 			});
-			console.log(kineData.data);
 			if (kineData.data.length == 0) {
-				submitter.innerHTML = 'Se connecter';
 				submitter.disabled = false;
 				goto('/post-signup-forms/kine-profile');
 			} else {
-				console.log(user);
 				// ADD HERE DATABASE INITIALIZATION
-				submitter.innerHTML = 'Vérification des conventions';
+				submitter.innerHTML = get(t)('login', 'submission.convention');
 				let dbInit = new DBInitializer();
 				await dbInit.initialization(submitter);
-				submitter.innerHTML = 'Récupération des patients';
+				submitter.innerHTML = get(t)('login', 'submission.patient');
 				await patients.fetchPatient(data.user);
-				submitter.innerHTML = 'Récupération des configurations hardware';
+				submitter.innerHTML = get(t)('login', 'submission.settings');
 				let db = new DBAdapter();
 				let userSettings = await db.retrieve('settings', '*', ['user_id', $user.user.id]);
-				console.log('UserSettings', userSettings);
 				user.update((u) => {
 					u.settings = userSettings.data[0];
 					return u;
 				});
-				// submitter.disabled = false;
 				if (userSettings.data.length === 0) {
 					await db.save('settings', {
 						user_id: $user.user.id,
@@ -82,5 +77,5 @@
 	<EmailField value={$user.user?.email} />
 	<PasswordField withoutValidation />
 	<div class="font-semibold">{message}</div>
-	<SubmitButton>Se connecter</SubmitButton>
+	<SubmitButton>{$t('login', 'controls.submit2')}</SubmitButton>
 </FormWrapper>

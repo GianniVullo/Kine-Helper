@@ -5,6 +5,8 @@
 	import PasswordField from './PasswordField.svelte';
 	import { SubmitButton, FormWrapper } from '../index';
 	import { createEventDispatcher } from 'svelte';
+	import { get } from 'svelte/store';
+	import { t } from '../../i18n';
 
 	let message = '';
 
@@ -19,7 +21,7 @@
 						document.getElementById('password').value == document.getElementById('password2').value
 					);
 				},
-				errorMessage: 'Les mots de passe ne correspondent pas'
+				errorMessage: get(t)('signup', 'passwordsDontMatch')
 			}
 		}
 	};
@@ -34,18 +36,15 @@
 			submitter.disabled = false;
 			throw new Error(error);
 		} else {
-			message = `Un email de confirmation vous a été envoyé sur ${data.user.email}.`;
-			console.log(data);
+			message = get(t)('signup', 'emailConfirmation', { email: formData.email.toLowerCase() });
 			user.set({
 				user: data.user,
 				session: data.session
 			});
 			dispatch('onSignupSuccess', {
-				message: 'vous pourrez vous connecter ici une fois votre email confirmé'
+				message: get(t)('signup', 'success')
 			});
 			submitter.disabled = false;
-			console.log(user);
-			console.log($user);
 		}
 	}
 </script>
@@ -55,5 +54,5 @@
 	<PasswordField />
 	<PasswordField name="password2" />
 	<div class="font-semibold">{message}</div>
-	<SubmitButton>S'inscrire</SubmitButton>
+	<SubmitButton>{$t('login', 'treeStructure')}</SubmitButton>
 </FormWrapper>

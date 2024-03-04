@@ -1,22 +1,16 @@
 <script>
-	import { FormWrapper, SubmitButton, DateField, NumberField, TextFieldV2 } from '../index';
-	import { SlideToggle, getToastStore, getModalStore } from '@skeletonlabs/skeleton';
+	import { DateField, NumberField, TextFieldV2 } from '../index';
 	import { page } from '$app/stores';
-	import { getContext } from 'svelte';
-	import { errorToast } from '$lib/ui/toasts';
-	import { get } from 'svelte/store';
 	import CheckboxFieldV2 from '../abstract-fields/CheckboxFieldV2.svelte';
 	import SeancesField from './SeancesField.svelte';
 	import { patients } from '$lib/stores/PatientStore';
+	import { t } from '../../i18n';
 
 	export let donnees;
 	export let padding;
 	export let codeMap;
 
 	export let updateState;
-
-	const toastStore = getToastStore();
-	const modalStore = getModalStore(); // pour le code modal
 
 	let message = '';
 	let patient = $patients.find((p) => p.patient_id === $page.params.patientId);
@@ -30,11 +24,11 @@
 		<CheckboxFieldV2
 			bind:value={donnees.porte_prescr}
 			name={`${padding}porte_prescr`}
-			label="Porte la prescription" />
+			label={$t('attestation.detail', 'porte_prescr')} />
 		<CheckboxFieldV2
 			bind:value={donnees.has_been_printed}
 			name={`${padding}has_been_printed`}
-			label="Imprimer tout de suite" />
+			label={$t('attestation.create', 'printNow')} />
 		<div class="flex flex-col border-l-2 border-l-error-500 pl-2">
 			{#if codeMap.is_lieu3()}
 				<CheckboxFieldV2
@@ -42,7 +36,7 @@
 					bind:value={donnees.with_indemnity}
 					name={`${padding}with_indemnity`}
 					on:change={updateState}
-					label="Avec indemnité" />
+					label={$t('sp.update', 'label.with_indemnity')} />
 			{/if}
 			{#if codeMap.groupes_has_intake()}
 				<CheckboxFieldV2
@@ -50,7 +44,7 @@
 					bind:value={donnees.with_intake}
 					name={`${padding}with_intake`}
 					on:change={updateState}
-					label="Avec Intake" />
+					label={`${$t('shared', 'with')} Intake`} />
 			{/if}
 			{#if codeMap.groupes_has_rapport()}
 				<CheckboxFieldV2
@@ -58,28 +52,33 @@
 					bind:value={donnees.with_rapport}
 					name={`${padding}with_rapport`}
 					on:change={updateState}
-					label="Avec rapport" />
+					label={$t('attestation.form', 'with_rapport')} />
 			{/if}
 			<p class="text-surface-400">
-				Ces valeurs ne sont là qu'à titre informatif, veuillez les modifier dans le formulaire "<a
+				{$t('attestation.form', 'help')} "<a
 					class="text-primary-500 hover:underline dark:text-primary-400"
 					href={`/dashboard/patients/${patient.patient_id}/situation-pathologique/${sp.sp_id}/update`}
-					>situation pathologique</a
+					>{$t('shared', 'pathologicalSituation')}</a
 				>"
 			</p>
 		</div>
-		<DateField label="Date de l'attestation" bind:value={donnees.date} name={`${padding}date`} />
-		<NumberField bind:value={donnees.total_recu} name={`${padding}total_recu`} label="Total reçu" />
+		<DateField
+			label={$t('attestation.form', 'label.date')}
+			bind:value={donnees.date}
+			name={`${padding}date`} />
+		<NumberField bind:value={donnees.total_recu} name={`${padding}total_recu`} label={
+			$t('attestation.detail', 'total_recu')
+		}/>
 		<NumberField
 			bind:value={donnees.valeur_totale}
 			name={`${padding}valeur_totale`}
-			label="Valeur totale" />
+			label={$t('attestation.detail', 'valeur_totale')} />
 		<TextFieldV2
 			bind:value={donnees.numero_etablissment}
 			name={`${padding}numero_etablissment`}
-			label="Numéro d'établissement" />
-		<TextFieldV2 bind:value={donnees.service} name={`${padding}service`} label="Service" />
-		<h4>Les séances</h4>
+			label={$t('sp.update', 'label.numero_etablissment')} />
+		<TextFieldV2 bind:value={donnees.service} name={`${padding}service`} label={$t('sp.update', 'label.service')} />
+		<h4>{$t('patients.detail', 'prestations')}</h4>
 		<SeancesField seances={donnees.seances} />
 		<div class="font-semibold">{message}</div>
 	</div>

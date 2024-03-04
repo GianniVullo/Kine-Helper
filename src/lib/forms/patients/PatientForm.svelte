@@ -17,6 +17,7 @@
 	import DateField from '../abstract-fields/DateField.svelte';
 	import NumberField from '../abstract-fields/NumberField.svelte';
 	import { tick } from 'svelte';
+	import { t } from '../../i18n';
 
 	let message = '';
 	export let patient = undefined;
@@ -35,7 +36,7 @@
 	let ticket_moderateur = patient?.ticket_moderateur ?? true;
 	let bim = patient?.bim ?? false;
 	let mutualite = patient?.mutualite;
-	let numero_etablissment = patient?.numero_etablissment;
+	let numero_etablissement = patient?.numero_etablissement;
 	let service = patient?.service;
 	let tel = patient?.tel;
 	let gsm = patient?.gsm;
@@ -46,8 +47,6 @@
 		validators: {
 			mutualite: {
 				fn: function mutualiteValide(value) {
-					console.log('in the mutaliteValide with value', value);
-
 					return [
 						100, 120, 128, 134, 200, 203, 216, 228, 235, 300, 304, 306, 309, 311, 319, 322, 323,
 						400, 403, 407, 409, 411, 417, 500, 509, 515, 526, 600, 600, 675, 602, 603, 604, 605,
@@ -55,13 +54,12 @@
 						940, 941, 942
 					].includes(parseInt(value));
 				},
-				errorMessage: 'Veuillez entrer un numéro de mutualité valide'
+				errorMessage: $t('form.patient', 'validation.mutualite')
 			}
 		}
 	};
 
 	async function isValid({ formData, submitter }) {
-		console.log('in PatientForm validation', formData);
 		let data;
 		let db = new DBAdapter();
 		// <!--* CREATE PROCEDURE -->
@@ -83,14 +81,13 @@
 				ticket_moderateur,
 				bim,
 				mutualite,
-				numero_etablissment,
+				numero_etablissement,
 				service,
 				tel,
 				gsm,
 				email
 			};
 			let newPatient = await db.save('patients', newPatientObj);
-			console.log('in PatientForm validation with newPatient = ', newPatient);
 			data = new Patient(newPatient.data[0]);
 			patients.update((ps) => {
 				ps.push(data);
@@ -112,7 +109,7 @@
 				ticket_moderateur,
 				bim,
 				mutualite,
-				numero_etablissment,
+				numero_etablissement,
 				service,
 				tel,
 				gsm,
@@ -134,7 +131,7 @@
 				rpatient.ticket_moderateur = ticket_moderateur;
 				rpatient.bim = bim;
 				rpatient.mutualite = mutualite;
-				rpatient.numero_etablissment = numero_etablissment;
+				rpatient.numero_etablissement = numero_etablissement;
 				rpatient.service = service;
 				rpatient.tel = tel;
 				rpatient.gsm = gsm;
@@ -178,109 +175,117 @@
 	<div class="flex flex-col md:flex-row">
 		<!--* Identification -->
 		<div class="w-full p-2 md:w-1/3 md:p-4 lg:p-8">
-			<SectionCard label="Identification">
-				<TextFieldV2 name="nom" bind:value={nom} required placeholder="Nom" label="Nom" />
+			<SectionCard label={$t('form.patient', 'cardLabel.id')}>
+				<TextFieldV2
+					name="nom"
+					bind:value={nom}
+					required
+					placeholder={$t('shared', 'name')}
+					label={$t('shared', 'name')} />
 				<TextFieldV2
 					name="prenom"
 					bind:value={prenom}
 					required
-					placeholder="Prénom"
-					label="Prénom" />
+					placeholder={$t('shared', 'surname')}
+					label={$t('shared', 'surname')} />
 				<TextFieldV2
 					name="niss"
 					bind:value={niss}
 					required
-					placeholder="Niss"
-					label="Niss"
+					placeholder={$t('form.patient', 'label.niss')}
+					label={$t('form.patient', 'label.niss')}
 					pattern={/^[0-9]{11}$/}
-					patternMessage="Veuillez entrer 11 chiffres sans formatage particulier" />
+					patternMessage={$t('form.patient', 'validation.niss')} />
 				<DateField
 					name="date_naissance"
 					bind:value={date_naissance}
 					required
-					placeholder="Date de naissance"
-					label="Date de naissance" />
+					placeholder={$t('form.patient', 'label.birthDate')}
+					label={$t('form.patient', 'label.birthDate')} />
 				<RadioFieldV2
 					name="sexe"
 					bind:value={sexe}
 					inline
-					label="Sexe"
+					label={$t('form.patient', 'label.sex')}
 					options={[
-						{ value: 'M', label: 'Masculin', checked: patient?.sexe === 'M' },
-						{ value: 'F', label: 'Féminin', checked: patient?.sexe === 'F' }
+						{ value: 'M', label: $t('form.patient', 'sex.male'), checked: patient?.sexe === 'M' },
+						{ value: 'F', label: $t('form.patient', 'sex.female'), checked: patient?.sexe === 'F' }
 					]} />
 				<TextFieldV2
 					name="adresse"
 					bind:value={adresse}
 					required
-					placeholder="Rue et numéro"
-					label="Rue et numéro" />
+					placeholder={$t('shared', 'address')}
+					label={$t('shared', 'address')} />
 				<NumberField
 					name="cp"
 					bind:value={cp}
 					pattern={/^[0-9]{4}$/}
-					patternMessage="Le code postal est invalide"
+					patternMessage={$t('form.postSignup', 'validation.postCode')}
 					required
-					placeholder="Code postal"
-					label="Code postal" />
+					placeholder={$t('form.postSignup', 'label.postCode')}
+					label={$t('form.postSignup', 'label.postCode')} />
 				<TextFieldV2
 					name="localite"
 					bind:value={localite}
 					required
-					placeholder="Localité"
-					label="Localité" />
+					placeholder={$t('form.postSignup', 'label.city')}
+					label={$t('form.postSignup', 'label.city')} />
 			</SectionCard>
 		</div>
 		<!--* Assurabilité -->
 		<div class="w-full p-2 md:w-1/3 md:p-4 lg:p-8">
-			<SectionCard label="Assurabilité">
+			<SectionCard label={$t('form.patient', 'cardLabel.assur')}>
 				<MutualiteField bind:query={mutualite} />
 				<TextFieldV2
 					name="num_affilie"
 					bind:value={num_affilie}
-					placeholder="N° d'affilié (Optionnel)"
-					label="N° d'affilié (Optionnel)" />
+					placeholder={$t('form.patient', 'label.num_affilie')}
+					label={$t('form.patient', 'label.num_affilie')} />
 				<CheckboxFieldV2
 					name="tiers_payant"
 					bind:value={tiers_payant}
-					placeholder="est tiers payant"
-					label="est tiers payant" />
+					placeholder={$t('form.patient', 'label.tiers_payant')}
+					label={$t('form.patient', 'label.tiers_payant')} />
 				<CheckboxFieldV2
 					name="ticket_moderateur"
 					bind:value={ticket_moderateur}
-					placeholder="est tiers payant"
-					label="paye le ticket modérateur" />
-				<CheckboxFieldV2 name="bim" bind:value={bim} placeholder="est BIM" label="est BIM" />
+					label={$t('form.patient', 'label.ticket_moderateur')} />
+				<CheckboxFieldV2
+					name="bim"
+					bind:value={bim}
+					placeholder={$t('form.patient', 'label.bim')}
+					label={$t('form.patient', 'label.bim')} />
 				<TextFieldV2
-					name="numero_etablissment"
-					bind:value={numero_etablissment}
-					placeholder="N° d'établissement"
-					label="N° d'établissement" />
-				<TextFieldV2 name="service" bind:value={service} placeholder="Service" label="Service" />
+					name="numero_etablissement"
+					bind:value={numero_etablissement}
+					placeholder={$t('sp.update', 'label.numero_etablissement')}
+					label={$t('sp.update', 'label.numero_etablissement')} />
+				<TextFieldV2
+					name="service"
+					bind:value={service}
+					placeholder={$t('sp.update', 'label.service')}
+					label={$t('sp.update', 'label.service')} />
 			</SectionCard>
 		</div>
 		<!--* Contact -->
 		<div class="w-full p-2 md:w-1/3 md:p-4 lg:p-8">
-			<SectionCard label="Contact">
+			<SectionCard label={$t('form.patient', 'cardLabel.contact')}>
 				<TextFieldV2
 					name="tel"
 					bind:value={tel}
-					placeholder="N° de téléphone"
-					label="N° de téléphone" />
-				<TextFieldV2 name="gsm" bind:value={gsm} placeholder="N° de gsm" label="N° de gsm" />
-				<!-- <EmailField
-					name="email"
-					bind:value={email}
-					placeholder="E-mail"
-					label="E-mail" /> -->
+					placeholder={$t('form.patient', 'label.tel')}
+					label={$t('form.patient', 'label.tel')} />
+				<TextFieldV2
+					name="gsm"
+					bind:value={gsm}
+					placeholder={$t('form.postSignup', 'label.cellPhone')}
+					label={$t('form.postSignup', 'label.cellPhone')} />
 			</SectionCard>
 			<SubmitButton class="mt-4">
-				{patient ? 'Mettre à jour' : 'Enregistrer'}
+				{patient ? $t('shared', 'update') : $t('shared', 'save')}
 			</SubmitButton>
 		</div>
 	</div>
-	<!--? Actif doit être présent uniquement dans UpdateForm => If (patient) {} -->
-	<!--! Actif, doit être renomé "archivé" -->
-	<!--* doit devenir juste un bouton et ne pas figurer sur le formulaire -->
 	{message}
 </FormWrapper>

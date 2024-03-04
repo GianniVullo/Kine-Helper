@@ -18,6 +18,14 @@
 		"sql:allow-execute",
 		"shell:allow-open",
 		"dialog:allow-open",
+		{
+			"identifier": "fs:scope",
+			"allow": [
+				{ "path": "$APPLOCALDATA" },
+				{ "path": "$$APPLOCALDATA/*" },
+				{ "path": "$APPLOCALDATA/**" }
+			]
+		},
 		"fs:allow-app-write",
 		"fs:allow-app-write-recursive",
 		"fs:allow-appcache-write",

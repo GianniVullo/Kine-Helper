@@ -6,6 +6,7 @@
 	import { get } from 'svelte/store';
 	import { supabase } from '../stores/supabaseClient';
 	import SubmitButton from '../forms/ui/SubmitButton.svelte';
+	import { t } from '../i18n';
 
 	export let parent;
 
@@ -47,12 +48,12 @@
 
 {#if $modalStore[0]}
 	<div class="modal-example-form {cBase}">
-		<header class={cHeader}>Signaler un bug/Soumettre une idée</header>
-		<article>Ici vous pouvez envoyer une idée ou un signalement d'un bug</article>
+		<header class={cHeader}>{$t('sidebar', 'bugReport')}</header>
+		<article>{$t('bugModal', 'description')}</article>
 		<FormWrapper {formSchema}>
-			<TextFieldV2 bind:value={request.fullName} label="Nom et Prénom" name="fullName" />
+			<TextFieldV2 bind:value={request.fullName} label={$t('bugModal', 'label.name')} name="fullName" />
 			<label for="email"
-				><h5 class="text-surface-50 dark:text-surface-300">Contact</h5>
+				><h5 class="text-surface-50 dark:text-surface-300">{$t('form.patient', 'cardLabel.contact')}</h5>
 				<input
 					id="email"
 					type="email"
@@ -60,10 +61,10 @@
 					readonly
 					bind:value={request.email}
 					name="email" /></label>
-			<TextFieldV2 bind:value={request.titre} label="Titre" name="titre" />
+			<TextFieldV2 bind:value={request.titre} label={$t('bugModal', 'title')} name="titre" />
 			<DefaultFieldWrapper>
 				<label for="mess" class="select-none space-y-2 text-surface-500 dark:text-surface-300"
-					><h5>Message</h5>
+					><h5>{$t('bugModal', 'label.message')}</h5>
 					<textarea
 						class="textarea rounded-lg"
 						name="message"
@@ -78,8 +79,8 @@
 				name="accord"
 				required
 				bind:value={request.accord}
-				label="Je donne mon accord pour que le développeur me contacte pour avoir de plus amples informations" />
-			<SubmitButton>Envoyer</SubmitButton>
+				label={$t('bugModal', 'label.consent')} />
+			<SubmitButton />
 		</FormWrapper>
 	</div>
 {/if}

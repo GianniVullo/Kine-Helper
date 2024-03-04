@@ -1,8 +1,8 @@
 <script>
 	import DefaultFieldWrapper from '../../abstract-fields/DefaultFieldWrapper.svelte';
 	import { daysOfWeek } from '../../../stores/dateHelpers';
-	import { getContext, onMount } from 'svelte';
 	import TimeField from './TimeField.svelte';
+	import { t } from '../../../i18n';
 
 	let day_of_weekOptions = daysOfWeek.map((value, index) => {
 		return {
@@ -14,26 +14,14 @@
 	});
 	export let value;
 	export let with_seconde_seance;
-	// getContext('validators')({
-	// 	day_of_week: {
-	// 		fn: (val) => {
-	// 			console.log('dans le validateur');
-	// 			let checing = true;
-	// 			if (document.getElementById(`${val}-time`).value == '') {
-	// 				checing = false;
-	// 			}
-	// 			return checing;
-	// 		},
-	// 		errorMessage: 'Veuillez indiquer une heure pour les jours sélectionnés svp'
-	// 	}
-	// });
 </script>
 
-<!--! Il faut trouver une façon de faire passer la sélection pour la version Update du formulaire -->
 <div class="flex flex-col space-y-4 md:flex-row md:space-x-4 md:space-y-0">
 	<!-- Jour de la semaine -->
 	<DefaultFieldWrapper class="flex flex-col items-start space-y-0">
-		<h5 class="select-none text-surface-500 dark:text-surface-300">Jour de la semaine</h5>
+		<h5 class="select-none text-surface-500 dark:text-surface-300">
+			{$t('form.generateur', 'day_of_week.title')}
+		</h5>
 		{#each day_of_weekOptions as option (option.id)}
 			<label class="flex w-full justify-between space-x-2" for={option.id}>
 				<h6 class="select-none">{option.label}</h6>
@@ -48,7 +36,6 @@
 					on:click={(e) => {
 						if (e.shiftKey) {
 							option.value;
-							console.log('Shift enfoncé sur ', option.value);
 							for (const val of Object.entries(value)) {
 								console.log(val);
 
@@ -74,18 +61,20 @@
 				<TimeField
 					name={`${id}-time`}
 					id={`${id}-time`}
-					label={`Heure du rdv les ${daysOfWeek[parseInt(id) == 0 ? 6 : parseInt(id) - 1]}`}
+					label={$t('form.generateur', 'time.label', {
+						day: daysOfWeek[parseInt(id) == 0 ? 6 : parseInt(id) - 1]
+					})}
 					bind:value={selected.time} />
-					{#if with_seconde_seance}
+				{#if with_seconde_seance}
 					<TimeField
 						name={`${id}-second-seance-time`}
 						id={`${id}-second-seance-time`}
-						label={`Heure des secondes séances les ${daysOfWeek[parseInt(id) == 0 ? 6 : parseInt(id) - 1]}`}
+						label={$t('form.generateur', 'time2.label', {
+							day: daysOfWeek[parseInt(id) == 0 ? 6 : parseInt(id) - 1]
+						})}
 						bind:value={selected.seconde_seance_time} />
-					 <!-- content here -->
 				{/if}
 			{/if}
-
 		{/each}
 	</div>
 </div>

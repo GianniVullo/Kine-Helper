@@ -8,7 +8,6 @@
 
 	export let codeActif;
 	export let onChangeCallback;
-	console.log('codeActif', codeActif);
 
 	let code = {
 		groupe_id: codeActif.groupe_id.toString(),
@@ -19,7 +18,6 @@
 		duree: codeActif.duree_id?.toString(),
 		drainage: codeActif.drainage
 	};
-	console.log('code', code);
 
 	let disabled = false;
 
@@ -30,24 +28,24 @@
 		});
 	}
 
-	let options = patholourdeTypes.map((value, index) => ({ label: value, value: `${index}` }));
-	let typesOptions = types.map((value, index) => ({ label: value, value: `${index}` }));
-	let groupOptions = groupes.map((value, index) => ({
+	let options = patholourdeTypes().map((value, index) => ({ label: value, value: `${index}` }));
+	let typesOptions = types().map((value, index) => ({ label: value, value: `${index}` }));
+	let groupOptions = groupes().map((value, index) => ({
 		label: value,
 		value: `${index}`,
 		id: `group${index}`
 	}));
-	let lieuOptions = lieux.map((value, index) => ({
+	let lieuOptions = lieux().map((value, index) => ({
 		label: value,
 		value: `${index}`,
 		id: `lieu${index}`
 	}));
 
-    let dureesOptions = durees.map((value, index) => ({
-        label: value,
-        value: `${index}`,
-        id: `duree${index}`
-    }));
+	let dureesOptions = durees().map((value, index) => ({
+		label: value,
+		value: `${index}`,
+		id: `duree${index}`
+	}));
 </script>
 
 <div class:pointer-events-none={disabled} class="space-y-2">

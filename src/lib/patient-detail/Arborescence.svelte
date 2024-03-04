@@ -8,6 +8,7 @@
 		ChevronLeftIcon,
 		ChevronUpIcon
 	} from '../ui/svgs/index';
+	import { t } from '../i18n';
 
 	export let patient;
 	let open = true;
@@ -32,14 +33,15 @@
 	</button>
 	<h3
 		class="ml-2 mt-2 text-surface-500 group-data-[open=false]:mt-0 dark:text-surface-300 group-data-[open=false]:md:hidden">
-		Arborescence
+		{$t('sp.detail', 'treeStructure')}
 	</h3>
 	<a
 		href={`/dashboard/patients/${patient.patient_id}/situation-pathologique/create`}
 		class="variant-outline-secondary btn btn-sm my-2 flex flex-wrap group-data-[open=false]:hidden">
 		<PlusIcon class="h-4 w-4 stroke-surface-600 dark:stroke-surface-300" />
-		<span class="text-sm text-surface-500 dark:text-surface-400">Situation</span>
-		<span class="text-sm text-surface-500 dark:text-surface-400">patho.</span></a>
+		<span class="text-sm text-surface-500 dark:text-surface-400"
+			>{$t('shared', 'pathologicalSituation')}</span
+		></a>
 
 	<div class="mt-8 flex select-none flex-col space-y-4">
 		{#each patient.situations_pathologiques as sp, i}
@@ -69,24 +71,24 @@
 							href={`/dashboard/patients/${patient.patient_id}/situation-pathologique/${sp.sp_id}/prescriptions`}
 							class="flex cursor-pointer items-center duration-200 hover:translate-x-2 hover:text-surface-800 hover:dark:text-surface-200">
 							<ChevronRightIcon class="h-5 w-5" />
-							<h5>Prescriptions</h5>
+							<h5>{$t('sp.detail', 'prescriptions')}</h5>
 						</a>
 						<a
 							href={`/dashboard/patients/${patient.patient_id}/situation-pathologique/${sp.sp_id}/attestations`}
 							class="flex cursor-pointer items-center duration-200 hover:translate-x-2 hover:text-surface-800 hover:dark:text-surface-200">
 							<ChevronRightIcon class="h-5 w-5" />
-							<h5>Attestations</h5>
+							<h5>{$t('sp.detail', 'attestations')}</h5>
 						</a>
 						<a
 							href={`/dashboard/patients/${patient.patient_id}/situation-pathologique/${sp.sp_id}/documents`}
 							class="flex cursor-pointer items-center duration-200 hover:translate-x-2 hover:text-surface-800 hover:dark:text-surface-200">
 							<ChevronRightIcon class="h-5 w-5" />
-							<h5>Documents</h5>
+							<h5>{$t('sp.detail', 'documents')}</h5>
 						</a>
 						<div
 							class="flex cursor-pointer items-center duration-200 hover:translate-x-2 hover:text-surface-800 hover:dark:text-surface-200">
 							<ChevronRightIcon class="h-5 w-5" />
-							<h5>Séances</h5>
+							<h5>{$t('patients.detail', 'prestations')}</h5>
 						</div>
 					</div>
 				{/if}

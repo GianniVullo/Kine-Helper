@@ -1,11 +1,12 @@
 <script>
 	import { DefaultFieldWrapper } from '../index';
+	import { t } from '../../i18n';
 
 	export let value = undefined;
 </script>
 
 <DefaultFieldWrapper>
-	<p>Email</p>
+	<p>{$t('login', 'controls.email')}</p>
 	<div
 		class="input-group input-group-divider grid-cols-[auto_1fr_auto] group-[.has-error]/field:border-error-500">
 		<div class="input-group-shim">

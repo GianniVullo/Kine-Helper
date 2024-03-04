@@ -1,5 +1,6 @@
 <script>
 	import DefaultFieldWrapper from '../../abstract-fields/DefaultFieldWrapper.svelte';
+    import { t } from '../../../i18n';
 
 	export let dejaFaites;
 	export let nombreSeances;
@@ -11,7 +12,7 @@
 
 <div class="flex flex-col md:flex-row space-y-2 space-x-0 md:space-y-0 md:space-x-2">
     <DefaultFieldWrapper class="flex flex-col justify-start items-start">
-        <p class="select-none text-surface-500 dark:text-surface-300">Séances déjà effectuées</p>
+        <p class="select-none text-surface-500 dark:text-surface-300">{$t('form.generateur', 'alredaydone.title')}</p>
         <div>
             <input
                 name="deja_faites"
@@ -29,11 +30,13 @@
                     }
                 }} />
         </div>
-        <p class="dark:text-surface-100 text-surface-800">Le nombre de séances déjà effectuées est automatiquement soustraits du nombre à générer</p>
+        <p class="dark:text-surface-100 text-surface-800">
+            {$t('form.generateur', 'alredaydone.help')}
+        </p>
     </DefaultFieldWrapper>
     
     <DefaultFieldWrapper class="flex flex-col justify-start items-start">
-        <p class="select-none text-surface-500 dark:text-surface-300">Séances générées</p>
+        <p class="select-none text-surface-500 dark:text-surface-300">{$t('form.generateur', 'generated')}</p>
         <div class="flex space-x-2">
             <input
                 name="nombreSeances"
@@ -45,6 +48,8 @@
                 on:change />
             <button class="btn variant-ghost-secondary" on:click|preventDefault={() => defaultSeanceNumber()}>MAX</button>
         </div>
-        <p class="dark:text-surface-100 text-surface-800">Seul le nombre de séances à générer est pris en compte par le générateur.</p>
+        <p class="dark:text-surface-100 text-surface-800">
+            {$t('form.generateur', 'generated.help')}
+        </p>
     </DefaultFieldWrapper>
 </div>

@@ -3,6 +3,8 @@
 	import TimeGrid from '@event-calendar/time-grid';
 	import DayGrid from '@event-calendar/day-grid';
 	import { getModalStore } from '@skeletonlabs/skeleton';
+	import { t } from './i18n';
+	import { get } from 'svelte/store';
 
 	const modalStore = getModalStore();
 
@@ -13,17 +15,17 @@
 	let base_options = {
 		view: 'timeGridWeek',
 		buttonText: {
-			close: 'Fermer',
-			dayGridMonth: 'Mois',
-			listDay: 'Liste',
-			listMonth: 'Liste',
-			listWeek: 'Liste',
-			listYear: 'Liste',
-			resourceTimeGridDay: 'Jour',
-			resourceTimeGridWeek: 'Semaine',
-			timeGridDay: 'Jour',
-			timeGridWeek: 'Semaine',
-			today: "Aujourd'hui"
+			close: get(t)('shared', 'close'),
+			dayGridMonth: get(t)('shared', 'month'),
+			listDay: get(t)('shared', 'list'),
+			listMonth: get(t)('shared', 'list'),
+			listWeek: get(t)('shared', 'list'),
+			listYear: get(t)('shared', 'list'),
+			resourceTimeGridDay: get(t)('shared', 'day'),
+			resourceTimeGridWeek: get(t)('shared', 'week'),
+			timeGridDay: get(t)('shared', 'day'),
+			timeGridWeek: get(t)('shared', 'week'),
+			today: get(t)('shared', 'today'),
 		},
 		theme: (theme) => ({
 			...theme,

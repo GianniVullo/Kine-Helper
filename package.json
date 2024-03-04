@@ -31,7 +31,6 @@
     "dayjs": "^1.11.10",
     "jspdf": "^2.5.1",
     "pristinejs": "^1.1.0",
-    "sortablejs": "^1.15.1",
     "svelte-persisted-store": "^0.7.0"
   },
   "devDependencies": {

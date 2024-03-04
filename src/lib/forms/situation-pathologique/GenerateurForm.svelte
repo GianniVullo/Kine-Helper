@@ -26,17 +26,16 @@
 	import NombreAGenererField from './fields/NombreAGenererField.svelte';
 	import PathologieLourdeFields from './fields/PathologieLourdeFields.svelte';
 	import { GenerateurDeSeances } from './generateurDeSeances';
+	import { t } from '../../i18n';
+	import { get } from 'svelte/store';
 
 	let numberGenMessage = '';
-
-	console.log('in GenerateurForm.svelte', $page);
 
 	let formSchema = {
 		isValid: isValid,
 		validators: {
 			day_of_week: {
 				fn: (value) => {
-					console.log('in day_of_week validator with', value);
 					for (const valueAndTime of Object.values(jour_seance_semaine_heures)) {
 						if (valueAndTime.value) {
 							if (!valueAndTime.time || valueAndTime == '') {
@@ -46,7 +45,7 @@
 					}
 					return true;
 				},
-				errorMessage: 'Veuillez indiquer une heure svp'
+				errorMessage: get(t)('form.generateur', 'validator')
 			}
 		}
 	};
@@ -54,7 +53,6 @@
 	const sp = patient.situations_pathologiques.find((sp) => sp.sp_id == $page.params.spId);
 
 	async function isValid({ formData, submitter }) {
-		console.log('in isValid with', formData);
 		// ETAPE 1 : Normaliser les données => day of week
 
 		let jour_seance_semaine_heures_filtre = {};
@@ -79,7 +77,6 @@
 			prescription_id,
 			jour_seance_semaine_heures_filtre
 		);
-		console.log('now saving generateurDeSeance to db', generateurDeSeance);
 		await db.save('generateurs_de_seances', generateurDeSeance.toDB);
 
 		// ETAPE 6 : Génération des séances
@@ -87,13 +84,10 @@
 		let conn = await Database.load('sqlite:kinehelper.db');
 		generateurDeSeance.db = conn;
 		let seances = await generateurDeSeance.seances();
-		console.log('now generating seances', seances);
-		console.log('now closing db');
 		await conn.close();
 		await db.save('seances', seances);
 
 		// ETAPE 7 : Mise à jour de la situation pathologique
-		console.log('now updating sp');
 		let dateDeduite;
 
 		if (rapport_ecrit_date == 'first') {
@@ -112,33 +106,21 @@
 		});
 
 		// Etape 8 garder le store patients à jour
-		console.log('now updating patients store');
 		patients.update((p) => {
-			console.log('in patients.update with', p);
 			let rpatient = p.find((p) => p.patient_id == patient.patient_id);
 			let situationPathologique = rpatient.situations_pathologiques.find(
 				(sp) => sp.sp_id == $page.params.spId
 			);
 
 			situationPathologique.seances = [...situationPathologique.seances, ...seances];
-			console.log('succesfully Added Seances');
 			situationPathologique.intake = intake;
-			console.log('succesfully updated intake');
 			situationPathologique.rapport_ecrit = rapport_ecrit;
-			console.log('succesfully updated rapport_ecrit');
 			situationPathologique.rapport_ecrit_date = rapport_ecrit_date;
-			console.log('succesfully updated rapport_ecrit_date');
 			situationPathologique.rapport_ecrit_custom_date = dateDeduite;
-			console.log('succesfully updated rapport_ecrit_custom_date');
 			situationPathologique.with_indemnity = with_indemnity;
-			console.log('succesfully updated with_indemnity');
 			situationPathologique.generateurs_de_seances.push(generateurDeSeance.toDB);
-			console.log('succesfully updated generateurs_de_seances');
-			console.log('succesfully updated patients store');
 			return p;
 		});
-
-		console.log('now going to the sp page');
 
 		goto(`/dashboard/patients/${patient.patient_id}/situation-pathologique/${sp.sp_id}`);
 		submitter.disabled = false;
@@ -247,7 +229,7 @@
 	let default_seance_description;
 
 	// Pour les groupes il y a les options suivantes :
-	let groupOptions = groupes
+	let groupOptions = groupes()
 		.map((value, index) => {
 			if ([0, 1, 3, 4, 5, 6, 7].includes(index)) {
 				return { label: value, value: `${index}`, id: `group${index}` };
@@ -258,16 +240,13 @@
 	let lieuOptions;
 	// Ici il est nécessaire de filtrer les lieux en fonction du groupe sélectionné ici ça peut être un computed pour pouvoir tenir la variation de groupe
 	$: {
-		lieuOptions = lieux
+		lieuOptions = lieux()
 			.map((val, index) => {
 				if (groupe_id === 'undefined' || groupe_id == undefined) {
 					return undefined;
 				}
 				let groupSchema = lieuxParGroupe[parseInt(groupe_id)];
 				if (groupSchema[0] === '*' || groupSchema.includes(index)) {
-					console.log(
-						`In lieuOptions with groupSchema == ${groupSchema}, value from mapfn == ${val}`
-					);
 					return { label: val, value: index, id: `lieu${index}` };
 				}
 			})
@@ -304,7 +283,6 @@
 				(duree ? element.duree == duree : true)
 			);
 		});
-		console.log(code);
 	}
 	$: has_seconde_seance = seconde_seance_fa || seconde_seance_e || seconde_seance_palliatif;
 
@@ -316,11 +294,11 @@
 </script>
 
 <FormWrapper {formSchema} class="group/form flex flex-wrap space-y-2 px-4">
-	<SectionCard label="Choisir la prescription">
+	<SectionCard label={$t('form.generateur', 'card.title')}>
 		<PrescriptionField bind:value={prescription_id} />
 	</SectionCard>
 
-	<SectionCard label="Trouver le code">
+	<SectionCard label={$t('form.generateur', 'card.title2')}>
 		<!--? Trouver le code -->
 		<div class="space-y-4">
 			<!--? Le Champ Groupe Pathologique -->
@@ -328,8 +306,8 @@
 				name="groupe"
 				bind:value={groupe_id}
 				options={groupOptions}
-				placeholder="Choisir un groupe pathologique"
-				label="Groupe pathologique"
+				placeholder={$t('form.generateur', 'group.placeholder')}
+				label={$t('form.generateur', 'group.label')}
 				required />
 			<!--? Le champ Lieu -->
 			{#if groupe_id && groupe_id !== 'undefined'}
@@ -337,14 +315,14 @@
 					name="lieu"
 					bind:value={lieu_id}
 					options={lieuOptions}
-					placeholder="Choisir un lieu"
-					label="Lieu par séance"
+					placeholder={$t('form.generateur', 'lieu.placeholder')}
+					label={$t('form.generateur', 'lieu.label')}
 					required />
 			{/if}
 			{#if lieu_id === 3}
 				<CheckboxFieldV2
 					name="with_indemnity"
-					label="Compter les indemnités de déplacements"
+					label={$t('sp.update', 'label.with_indemnity')}
 					bind:value={with_indemnity} />
 			{/if}
 			<!--? Si le groupe est Patho Courante ou Lourde ET le lieu est en hopital (4) alors il y a deux cas de figures : des séances de 30 min. ou des séances de 15 min qui mèneront chacun à un code spécifique -->
@@ -357,7 +335,7 @@
 						{ value: 2, label: '30min' }
 					]}
 					inline
-					label="15 ou 30 minutes ?"
+					label={$t('form.generateur', 'duree.label')}
 					required />
 			{/if}
 			<!--? le champ Rapport écrit -->
@@ -367,20 +345,20 @@
 					<CheckboxFieldV2
 						name="rapport_ecrit"
 						bind:value={rapport_ecrit}
-						label="Ajouter un code rapport écrit" />
+						label={$t('form.generateur', 'rapport.label')} />
 					{#if rapport_ecrit}
 						<RadioFieldV2
 							name="rapport_ecrit_date"
-							label="Date du rapport"
+							label={$t('form.generateur', 'rapport.date')}
 							bind:value={rapport_ecrit_date}
 							options={[
-								{ value: 'first', label: 'Ajouter le rapport lors de la première séance' },
-								{ value: 'last', label: 'Ajouter le rapport lors de la dernière séance' },
-								{ value: 'custom', label: 'date personalisée' }
+								{ value: 'first', label: $t('form.generateur', 'rapport.first') },
+								{ value: 'last', label: $t('form.generateur', 'rapport.last') },
+								{ value: 'custom', label: $t('form.generateur', 'rapport.custom') }
 							]} />
 						{#if rapport_ecrit_date == 'custom'}
 							<DateField
-								label="Date personnalisée : "
+								label={$t('form.generateur', 'rapport.custom')}
 								parentClass="flex-row flex"
 								name="rapport_ecrit_custom_date"
 								bind:value={rapport_ecrit_custom_date} />
@@ -392,15 +370,15 @@
 			{#if [0, 1, 4, 5].includes(parseInt(groupe_id)) && [0, 1, 2, 3].includes(parseInt(lieu_id))}
 				<div>
 					<h5 class="select-none text-surface-500 dark:text-surface-300">
-						Examen à titre consultatif
+						{$t('form.generateur', 'examination.label')}
 					</h5>
 					<CheckboxFieldV2
 						name="examen_consultatif"
 						bind:value={examen_consultatif}
-						label="Ajouter un examen à titre consultatif" />
+						label={$t('form.generateur', 'examination.label2')} />
 					{#if examen_consultatif}
 						<DateField
-							label="Date de l'examen à titre consultatif : "
+							label={$t('form.generateur', 'examination.date')}
 							parentClass="flex-row flex"
 							name="examen_ecrit_date"
 							bind:value={examen_ecrit_date} />
@@ -417,7 +395,7 @@
 						{ value: 'HOS', label: 'HOS' }
 					]}
 					inline
-					label="Ambulatoire ou Hospitalisé ?"
+					label={$t('form.generateur', 'amb_hos')}
 					required />
 			{/if}
 			<!--? Pathologie Lourde -->
@@ -431,43 +409,50 @@
 			{#if parseInt(groupe_id) == 0}
 				<div>
 					<h5 class="select-none text-surface-500 dark:text-surface-300">Intake</h5>
-					<CheckboxFieldV2 name="intake" label="Ajouter un Intake" bind:value={intake} />
+					<CheckboxFieldV2
+						name="intake"
+						label={$t('form.generateur', 'intake.label')}
+						bind:value={intake} />
 				</div>
 			{/if}
 			<!--? Pour le groupe Fa si il s'agit d'un volet j) il faut l'indiquer car cela change le nombre de séance autorisée d'un facteur 2. Aussi peut tarifier avec les codes pathologies courantes si pas sûr de la situation pathologique. Aussi sous conditions le volet c) peut bénéficier d'une seconde séance par jour -->
 			{#if parseInt(groupe_id) == 4}
 				<FieldWithPopup target="volet_j">
-					<span slot="content"> j) Polytraumatismes </span>
+					<span slot="content">{$t('form.generateur', 'info.j')}</span>
 					<div class="flex flex-col">
-						<h5 class="select-none text-surface-500 dark:text-surface-300">Volet J</h5>
-						<CheckboxFieldV2 name="volet_j" label="volet j) (120 séances)" bind:value={volet_j} />
+						<h5 class="select-none text-surface-500 dark:text-surface-300">
+							{$t('form.generateur', 'j')}
+						</h5>
+						<CheckboxFieldV2
+							name="volet_j"
+							label={$t('form.generateur', 'j.label')}
+							bind:value={volet_j} />
 					</div>
 				</FieldWithPopup>
 				<FieldWithPopup target="tarificationFA">
 					<span slot="content"
 						><span class="text-surface-100 dark:text-surface-300"
-							>"La somme des codes pathologie courante et Fa normaux ne peuvent dépasser 20" (A.R.
-							9.5.2021)</span
-						><br />Laisser la valeur du champ sur 0 si vous n'avez pas utilisé de code pathologie
-						courante.</span>
-					<div class="flex flex-col">
-						<h5 class="select-none text-surface-500 dark:text-surface-300">Tarification</h5>
-						<CheckboxFieldV2
-							name="nombre_code_courant_fas"
-							label="Tarifier les 14 premiers jours en pathologie courante ?"
-							bind:value={nombre_code_courant_fa} />
-					</div>
-				</FieldWithPopup>
+							>{@html $t('form.generateur', 'j.help')}</span>
+						<div class="flex flex-col">
+							<h5 class="select-none text-surface-500 dark:text-surface-300">
+								{$t('form.generateur', 'tarification.title')}
+							</h5>
+							<CheckboxFieldV2
+								name="nombre_code_courant_fas"
+								label={$t('form.generateur', 'tarification.label')}
+								bind:value={nombre_code_courant_fa} />
+						</div>
+					</span></FieldWithPopup>
 			{/if}
 			<!--? MODIFICATION car secondes séances/jour peut s'appliquer dans d'autre cas que la fa lorsque la séance est effectuée en hopital (USI) -->
 			{#if parseInt(groupe_id) == 5 || (parseInt(groupe_id) === 0 && parseInt(lieu_id) === 6)}
 				<div class="flex flex-col">
 					<h5 class="select-none text-surface-500 dark:text-surface-300">
-						Seconde séance par jour
+						{$t('form.generateur', 'second.title')}
 					</h5>
 					<CheckboxFieldV2
 						name="seconde_seance_fa"
-						label="compter une seconde séance par jour"
+						label={$t('form.generateur', 'second.label')}
 						bind:value={seconde_seance_fa} />
 				</div>
 				{#if seconde_seance_fa}
@@ -479,31 +464,22 @@
 							{ value: 2, label: '30min' }
 						]}
 						inline
-						label="15 ou 30 minutes ?"
+						label={$t('form.generateur', 'duree.label')}
 						required />
 					{#if parseInt(duree_seconde_seance_fa) == 0}
 						<DateField
-							label="Date de la prestation de réanimation ou orthopédie : "
+							label={$t('form.generateur', 'second_fa.label')}
 							required
 							parentClass="flex-row flex"
 							name="date_presta_chir_fa"
 							bind:value={date_presta_chir_fa} />
 
 						<h5 class="select-none text-surface-500 dark:text-surface-300">
-							Les séances de 15 minutes sont réservées aux patients pour lesquels ont été attesté
-							une prestations : <br /> - de réanimation (211046, 211142, 211341, 211761, 212225,
-							213021, 213043, 214045) <br />
-							- de l'article 14, k, orthopédie d'une valeur égale ou supérieure à N 500 à l'exception
-							des 289015, 289026, 289030, 289041, 289052, 289063, 289074, 289085. Attestable 14 fois
-							dans les 30 jours après la prestation.
+							{@html $t('form.generateur', 'second_fa.help')}
 						</h5>
 					{:else}
 						<h5 class="select-none text-surface-500 dark:text-surface-300">
-							Les séances de 30 minutes sont réservées aux patients séjournant en : <br /> - soins
-							intensifs (code 490) <br />
-							- soins néonatails locaux (fonction N*)(code 190)
-							<br /> - néonatologie intensive (NIC) (code 270)
-							<br /> pendant toute la durée de leur séjour dans ces fonctions ou services.
+							{$t('form.generateur', 'second_fa.help2')}
 						</h5>
 					{/if}
 				{/if}
@@ -511,52 +487,50 @@
 			<!--? Fb -->
 			{#if parseInt(groupe_id) == 5}
 				<FieldWithPopup target="volet_h">
-					<span slot="content"
-						>Uniquement pour les pathologies du "volet H) Lymphoedème".<br />Le générateur utilisera
-						les codes 639xxx.</span>
+					<span slot="content">{@html $t('form.generateur', 'h.help')}</span>
 					<div class="flex flex-col">
-						<h5 class="select-none text-surface-500 dark:text-surface-300">Volet H</h5>
-						<CheckboxFieldV2 name="volet_h" label="J'effectue un drainage" bind:value={volet_h} />
+						<h5 class="select-none text-surface-500 dark:text-surface-300">
+							{$t('form.generateur', 'h')}
+						</h5>
+						<CheckboxFieldV2
+							name="volet_h"
+							label={$t('form.generateur', 'h.label')}
+							bind:value={volet_h} />
 					</div>
 				</FieldWithPopup>
 			{/if}
 			<!--? Palliatif à domicile -->
 			{#if parseInt(groupe_id) == 6}
 				<FieldWithPopup target="palliatifSecondeSeance">
-					<span slot="content"
-						>Uniquement pour les patients dont l'intervention personnelle est réduite tel
-						qu'explicité dans l'AR du 23 mars 1982, §3.</span>
+					<span slot="content">{$t('form.generateur', 'pallia.help')}</span>
 					<div class="flex flex-col">
 						<h5 class="select-none text-surface-500 dark:text-surface-300">
-							Seconde séance par jour
+							{$t('form.generateur', 'second.title')}
 						</h5>
 						<CheckboxFieldV2
 							name="seconde_seance_palliatif"
-							label="J'effectue une seconde séance dans la journée"
+							label={$t('form.generateur', 'second.label')}
 							bind:value={seconde_seance_palliatif} />
 					</div>
 				</FieldWithPopup>
 			{/if}
 			<!--? Indications relatives au groupe Hopital de jour -->
 			{#if parseInt(groupe_id) == 7}
-				<WarningDisplayer
-					descriptionLines={[
-						"Lorsque le kiné dispose d'une prescription faisant référence à la nécessité d'effectuer une séance	de kinésithérapie avant que le bénéficiaire ne quitte l'hopital."
-					]} />
+				<WarningDisplayer descriptionLines={[$t('form.generateur', 'warning')]} />
 			{/if}
 		</div>
 	</SectionCard>
 
-	<SectionCard label="Définir les date">
+	<SectionCard label={$t('form.generateur', 'card.title3')}>
 		<!--? Trouver les dates -->
 		<div class="flex flex-col items-start space-y-4">
 			<DateTimeWeekDayField
 				bind:value={jour_seance_semaine_heures}
 				with_seconde_seance={has_seconde_seance} />
 			<DateField
-				label="Date de la première séance"
+				label={$t('form.annexeA', 'label.date')}
 				required
-				name="premiere_seanceGen"
+				name={$t('form.annexeA', 'label.date')}
 				bind:value={premiere_seance} />
 			{#if dayjs(premiere_seance).isValid() && !Object.keys(jour_seance_semaine_heures)
 					.filter((weekDay) => {
@@ -564,14 +538,13 @@
 					})
 					.includes(dayjs(premiere_seance).day().toString())}
 				<TimeField
-					label="Heure de la première séance"
+					label={$t('form.generateur', 'heure.label')}
 					name="derniere_seanceGen"
 					bind:value={premiere_seance_heure} />
-				<p>Nécessaire car la première séance n'est pas dans les jours de la semaine sélectionné</p>
 			{/if}
 		</div>
 	</SectionCard>
-	<SectionCard label="Définissez le nombre de séances à produire">
+	<SectionCard label={$t('form.generateur', 'card.title4')}>
 		<!--? Trouver le nombre -->
 		<div class="space-y-4">
 			<NombreAGenererField
@@ -582,12 +555,12 @@
 		</div>
 	</SectionCard>
 	<!--? Valeurs par défaut -->
-	<SectionCard label="Valeurs par défault">
+	<SectionCard label={$t('form.generateur', 'card.title5')}>
 		<div class="space-y-4">
 			<TextFieldV2
 				name="default_seance_description"
-				placeholder="Description par défault"
-				label="Description par défault"
+				placeholder={$t('form.generateur', 'description.label')}
+				label={$t('form.generateur', 'description.label')}
 				bind:value={default_seance_description} />
 		</div>
 	</SectionCard>

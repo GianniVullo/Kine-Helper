@@ -5,17 +5,17 @@
 	import { goto } from '$app/navigation';
 	import DBAdapter from '../actions/dbAdapter';
 	import { patients } from '../../stores/PatientStore';
+	import { t } from '../../i18n';
+	import { get } from 'svelte/store';
 
 	let message = '';
 
 	export let patient;
 	export let sp;
 	export let doc = null;
-	console.log('doc', doc);
 	let situationPathologique = doc ? doc.form_data.situation_pathologique : [];
 	let date = doc?.form_data.date;
 	let notification = doc?.form_data.notification ?? true;
-	console.log('situationPathologique', situationPathologique);
 	let formSchema = {
 		isValid: isValid,
 		validators: {}
@@ -54,25 +54,24 @@
 			let annexeB = new AnnexeB(formObj, patient, sp);
 			await annexeB.save();
 		}
-		console.log('in IsValid with', formObj);
 		goto('/dashboard/patients/' + patient.patient_id + '/situation-pathologique/' + sp.sp_id);
 		submitter.disabled = false;
 	}
 	let options = [
-		{ value: true, label: 'Notification' },
-		{ value: false, label: 'Renouvellement' }
+		{ value: true, label: get(t)('form.annexeA', 'notification') },
+		{ value: false, label: get(t)('form.annexeA', 'renewal') }
 	];
 </script>
 
 <FormWrapper {formSchema}>
 	<RadioFieldV2
 		bind:value={notification}
-		label="Renouvellement ou Notification ?"
+		label={$t('form.annexeA', 'label.rewal')}
 		name="notification"
 		required
 		{options} />
-	<DateField bind:value={date} name="date" label="Date de la première séance" required />
+	<DateField bind:value={date} name="date" label={$t('form.annexeA', 'label.date')} required />
 	<SituationPathologiqueSelector aOrB="B" bind:value={situationPathologique} />
 	<div class="font-semibold">{message}</div>
-	<SubmitButton>Envoyer</SubmitButton>
+	<SubmitButton />
 </FormWrapper>

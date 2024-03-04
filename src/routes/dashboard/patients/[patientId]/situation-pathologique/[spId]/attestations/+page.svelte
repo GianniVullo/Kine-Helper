@@ -1,13 +1,13 @@
 <script>
 	import { getModalStore } from '@skeletonlabs/skeleton';
-	import { PlusIcon } from '$lib/ui/svgs/index';
+	import { PlusIcon, PrinterIcon, UpdateIcon, DeleteIcon } from '$lib/ui/svgs/index';
 	import { page } from '$app/stores';
 	import dayjs from 'dayjs';
 	import { patients } from '../../../../../../../lib/stores/PatientStore';
 	import { printAttestation } from '../../../../../../../lib/utils/rawPrinting';
-	import { PrinterIcon, UpdateIcon, DeleteIcon } from '../../../../../../../lib/ui/svgs/index';
 	import { fetchCodeDesSeances } from '../../../../../../../lib/utils/nomenclatureManager';
 	import FactureBox from '../../../../../../../lib/ui/FactureBox.svelte';
+	import { t } from '../../../../../../../lib/i18n';
 
 	let patient = $patients.find((p) => p.patient_id === $page.params.patientId);
 	let sp = patient.situations_pathologiques.find((sp) => sp.sp_id === $page.params.spId);
@@ -24,20 +24,20 @@
 </script>
 
 {#if sp.attestations.length > 0}
-<div class="ml-2 flex flex-col space-y-4">
+	<div class="ml-2 flex flex-col space-y-4">
 		<!--* TITRE -->
 		<div class="flex flex-col">
 			<h5 class="text-lg text-surface-500 dark:text-surface-400">
-				Attestations et factures de la situation pathologique du {dayjs(sp.created_at).format(
-					'DD/MM/YYYY'
-				)}
+				{$t('attestation.detail', 'title', { date: dayjs(sp.created_at).format('DD/MM/YYYY') })}
 			</h5>
 			<div class="flex">
 				<button
 					on:click={() => modalStore.trigger(documentSelectionModal)}
 					class="variant-outline-secondary btn btn-sm my-2 flex">
 					<PlusIcon class="h-4 w-4 stroke-surface-600 dark:stroke-surface-300" />
-					<span class="text-sm text-surface-500 dark:text-surface-400">Facture</span></button>
+					<span class="text-sm text-surface-500 dark:text-surface-400"
+						>{$t('attestation.detail', 'bill')}</span
+					></button>
 			</div>
 		</div>
 		<div class="flex space-x-4">
@@ -51,7 +51,9 @@
 							<div class="mb-2 flex items-center space-x-4">
 								<h5
 									class="pointer-events-none select-none text-secondary-800 dark:text-secondary-200">
-									Attestation du {dayjs(attestation.date).format('DD/MM/YYYY')}
+									{$t('attestation.detail', 'title', {
+										date: dayjs(attestation.date).format('DD/MM/YYYY')
+									})}
 								</h5>
 								<div class="flex space-x-2">
 									<button class="variant-outline-warning btn-icon btn-icon-sm"
@@ -64,10 +66,12 @@
 										class="variant-filled btn-icon btn-icon-sm dark:variant-filled"
 										on:click={async () => {
 											modalStore.trigger({
-												title: 'Impression',
-												body: `Voulez-vous imprimer l'attestation du ${dayjs(
-													attestation.date
-												).format('DD/MM/YYYY')} ?`,
+												title: $t('attestation.detail', 'printModal.title'),
+												body: $t('attestation.detail', 'printModal.body', {
+													date: dayjs(attestation.date).format('DD/MM/YYYY')
+												}),
+												buttonTextConfirm: $t('attestation.detail', 'printModal.confirm'),
+												buttonTextCancel: $t('shared', 'cancel'),
 												type: 'confirm',
 												response: async (response) => {
 													if (response) {
@@ -93,17 +97,20 @@
 							<!--? ATTESTATION INFO -->
 							<div class="flex flex-col text-surface-800 dark:text-surface-100">
 								{#if attestation.porte_prescr}
-									<h5>Porte la prescription</h5>
+									<h5>{$t('attestation.detail', 'porte_prescr')}</h5>
 								{/if}
 								{#if attestation.mutuelle_paid}
-									<h5>Payée par la mutuelle</h5>
+									<h5>{$t('attestation.detail', 'mutuelle_paid')}</h5>
 								{/if}
 								{#if attestation.patient_paid}
-									<h5>Payée par le patient</h5>
+									<h5>{$t('attestation.detail', 'patient_paid')}</h5>
 								{/if}
-								<h5><span class="text-surface-400">Total reçu:</span> {attestation.total_recu}€</h5>
 								<h5>
-									<span class="text-surface-400">Valeur totale:</span>
+									<span class="text-surface-400">{$t('attestation.detail', 'total_recu')}:</span>
+									{attestation.total_recu}€
+								</h5>
+								<h5>
+									<span class="text-surface-400">{$t('attestation.detail', 'valeur_totale')}</span>
 									{attestation.valeur_totale}€
 								</h5>
 							</div>
@@ -125,5 +132,5 @@
 		</div>
 	</div>
 {:else}
-	<p>Il n'y a pas encore d'attestations pour cette situation pathologique.</p>
+	<p>{$t('attestation.list', 'empty')}</p>
 {/if}

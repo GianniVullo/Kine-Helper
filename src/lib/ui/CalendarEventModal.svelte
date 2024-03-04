@@ -6,6 +6,7 @@
 	import { patients } from '../stores/PatientStore';
 	import DBAdapter from '../forms/actions/dbAdapter';
 	import { tick } from 'svelte';
+	import { t } from '../i18n';
 
 	const modalStore = getModalStore();
 	// <!--*--> IDÉE GÉNÉRALE
@@ -109,8 +110,7 @@
 			<div class="flex w-full items-baseline justify-between">
 				<div class="flex items-center justify-start">
 					<h1 class="mr-4 text-2xl">
-						{event.extendedProps.seance ? 'Séance' : 'Évènement'} de {patient.nom}
-						{patient.prenom}
+						{$t('otherModal', 'calendar.title', { patientFullName: `${patient.nom} ${patient.prenom}` })}
 					</h1>
 					<!--? Informations supplémentaires -->
 					<div use:popup={attestedPopup}>
@@ -163,7 +163,7 @@
 						date = dayjs(event.extendedProps.seance.date).format('YYYY-MM-DD');
 						heure = dayjs(event.extendedProps.seance.date).format('HH:mm');
 					}}
-					class="variant-filled btn btn-sm">Reporter la séance</button>
+					class="variant-filled btn btn-sm">{$t('otherModal', 'calendarcontrols.report')}</button>
 				<button
 					on:click={() => {
 						modalStore.clear();
@@ -171,7 +171,7 @@
 							`/dashboard/patients/${event.extendedProps.seance.patient_id}/situation-pathologique/${event.extendedProps.seance.sp_id}/attestations/create?untill=${event.extendedProps.seance.date}`
 						);
 					}}
-					class="variant-filled-secondary btn btn-sm">Facturer jusqu'ici</button>
+					class="variant-filled-secondary btn btn-sm">{$t('otherModal', 'calendarcontrols.bill')}</button>
 			{/if}
 			{#if !event.extendedProps.seance.has_been_attested}
 				<button
@@ -180,7 +180,7 @@
 						modification = false;
 						deletion = true;
 					}}
-					class="variant-filled-error btn btn-sm">Supprimer</button>
+					class="variant-filled-error btn btn-sm">{$t('patients.detail', 'deleteModal.confirm')}</button>
 			{/if}
 		</article>
 
@@ -192,12 +192,12 @@
 			<div class="flex flex-col items-start justify-start space-y-4">
 				<label for="dateSeance" class="space-y-2">
 					<p class="select-none text-sm text-surface-500 dark:text-surface-300">
-						Date de la séance
+						{$t('otherModal', 'calendar.dateinput')}
 					</p>
 					<input bind:value={date} class="input" type="date" name="date" id="dateSeance" /></label>
 				<label for="heureSeance" class="space-y-2">
 					<p class="select-none text-sm text-surface-500 dark:text-surface-300">
-						Heure de la séance
+						{$t('otherModal', 'calendar.timeinput')}
 					</p>
 					<input
 						bind:value={heure}
@@ -210,19 +210,19 @@
 						on:click={() => {
 							report = false;
 						}}
-						class="variant-outline btn btn-sm mt-2">retour</button>
+						class="variant-outline btn btn-sm mt-2">{$t('patient.create', 'back')}</button>
 					<button
 						on:click={async () => {
 							await performDateTimeUpdate();
 							report = false;
 						}}
-						class="variant-filled-primary btn btn-sm">Enregistrer</button>
+						class="variant-filled-primary btn btn-sm">{$t('shared', 'save')}</button>
 				</div>
 			</div>
 		{:else if modification}
 			<!--? Changement de la description de la séance -->
 			<article class="relative mb-4 flex rounded-xl bg-surface-200 p-6 dark:bg-surface-700">
-				<h5 class="absolute left-1 top-1 text-xs text-surface-400">description</h5>
+				<h5 class="absolute left-1 top-1 text-xs text-surface-400">{$t('otherModal', 'calendar.description')}</h5>
 				<div class:hidden={!modification} class="flex flex-col space-y-2">
 					<textarea
 						bind:this={textarea}
@@ -237,13 +237,13 @@
 							on:click={() => {
 								modification = false;
 							}}
-							class="variant-outline btn btn-sm">retour</button>
+							class="variant-outline btn btn-sm">{$t('patient.create', 'back')}</button>
 						<button
 							on:click={async () => {
 								await performDescriptionUpdate();
 								modification = false;
 							}}
-							class="variant-filled-primary btn btn-sm">Enregistrer</button>
+							class="variant-filled-primary btn btn-sm">{$t('shared', 'save')}</button>
 					</div>
 				</div>
 			</article>
@@ -251,22 +251,22 @@
 			<!--? Suppression de la séance -->
 			<div class="flex flex-col items-start justify-start space-y-4">
 				<p class="text-surface-500 dark:text-surface-300">
-					Êtes-vous sûr de vouloir supprimer cette séance ?
+					{$t('otherModal', 'calendar.delete')}
 				</p>
 				<div class="mt-2 flex items-end justify-end space-x-2">
 					<button
 						on:click={() => {
 							deletion = false;
 						}}
-						class="variant-outline btn btn-sm">retour</button>
+						class="variant-outline btn btn-sm">{$t('patient.create', 'back')}</button>
 					<button on:click={deleteIfHasntBeenAttested} class="variant-filled-error btn btn-sm"
-						>Supprimer</button>
+						>{$t('shared', 'save')}</button>
 				</div>
 			</div>
 		{:else}
 			<article class="relative mb-4 flex rounded-xl bg-surface-200 p-6 dark:bg-surface-700">
-				<h5 class="absolute left-1 top-1 text-xs text-surface-400">description</h5>
-				<p>{event.extendedProps.seance.description ?? 'Aucune description fournie'}</p>
+				<h5 class="absolute left-1 top-1 text-xs text-surface-400">{$t('otherModal', 'calendar.description')}</h5>
+				<p>{event.extendedProps.seance.description ?? $t('otherModal', 'calendar.description.empty')}</p>
 				<button
 					on:click={async () => {
 						description = event.extendedProps.seance.description;
@@ -281,9 +281,7 @@
 		{/if}
 
 		<footer class="modal-footer {parent.regionFooter}">
-			<button class="btn {parent.buttonNeutral}" on:click={parent.onClose}>fermer</button>
-			<!-- <button class="btn {parent.buttonPositive}" on:click={console.log('test')}
-				>Select Flavors</button> -->
+			<button class="btn {parent.buttonNeutral}" on:click={parent.onClose}>{$t('shared', 'close')}</button>
 		</footer>
 	</div>
 {/if}

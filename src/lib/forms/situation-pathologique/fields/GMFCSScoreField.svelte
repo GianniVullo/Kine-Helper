@@ -1,18 +1,20 @@
 <script>
 	import { RadioFieldV2 } from '../../index';
+	import { t } from '../../../i18n';
+	import { get } from 'svelte/store';
 
 	let options = [
-		{ value: 1, label: 'Niveau 1 : Marche sans restriction des mouvements' },
-		{ value: 2, label: 'Niveau 2 : Marche avec restriction des mouvements' },
-		{ value: 3, label: 'Niveau 3 : Marche avec aide technique à la marche' },
+		{ value: 1, label: get(t)('form.generateur', 'gmfcs1')},
+		{ value: 2, label: get(t)('form.generateur', 'gmfcs2')},
+		{ value: 3, label: get(t)('form.generateur', 'gmfcs3')},
 		{
 			value: 4,
 			label:
-				'Niveau 4 : Mobilité autonome avec restriction des mouvements ; peut utiliser une aide motorisée.'
+				get(t)('form.generateur', 'gmfcs4')
 		},
-		{ value: 5, label: 'Niveau 5 : Déplacement en fauteuil roulant manuel, poussé par un adulte.' }
+		{ value: 5, label: get(t)('form.generateur', 'gmfcs5') }
 	];
 	export let value;
 </script>
 
-<RadioFieldV2 bind:value name="gmfcs" {options} label="Score GMFCS" />
+<RadioFieldV2 bind:value name="gmfcs" {options} label={$t('form.generateur', 'gmfcsScore')} />

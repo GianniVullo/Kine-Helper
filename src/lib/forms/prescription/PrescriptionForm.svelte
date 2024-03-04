@@ -10,6 +10,7 @@
 	import { patients } from '../../stores/PatientStore';
 	import { appLocalDataDir } from '@tauri-apps/api/path';
 	import { invoke } from '@tauri-apps/api/core';
+	import { t } from '../../i18n';
 
 	export let prescription = null;
 	export let patient;
@@ -19,7 +20,6 @@
 	let jointe_a = prescription?.jointe_a;
 	let nombre_seance = prescription?.nombre_seance;
 	let seance_par_semaine = prescription?.seance_par_semaine;
-	let prescriptionFiles;
 	let prescripteurNom = prescription?.prescripteur?.nom;
 	let prescripteurPrenom = prescription?.prescripteur?.prenom;
 	let prescripteurInami = prescription?.prescripteur?.inami;
@@ -33,7 +33,6 @@
 	};
 
 	async function isValid({ formData, submitter }) {
-		console.log('in IsValid with', formData);
 		let db = new DBAdapter();
 		let { fileResponse, buffer } = fileField.getBufferAndResponse();
 		let filExt = fileResponse?.path.split('.').pop();
@@ -92,7 +91,6 @@
 			}),
 			file_name: filExt
 		};
-		console.log('newPrescription', newPrescription);
 		await db.save('prescriptions', newPrescription);
 		newPrescription.prescripteur = JSON.parse(newPrescription.prescripteur);
 		patients.update((patients) => {
@@ -115,21 +113,20 @@
 			fileName: `${prescripteurNom}-${prescripteurPrenom}-${date}(${prescription_id}).${filExt}`,
 			fileContent: Array.from(buffer)
 		});
-		console.log('fil saved');
 	}
 </script>
 
 <FormWrapper {formSchema}>
 	<PrescripteurField bind:prescripteurNom bind:prescripteurPrenom bind:prescripteurInami />
-	<DateField label="Date de la prescription" bind:value={date} name="date" />
+	<DateField label={$t('form.prescription', 'date.label')} bind:value={date} name="date" />
 	<NumberField
 		bind:value={nombre_seance}
 		name="nombre_seance"
-		label="Nombre de séances prescrites" />
+		label={$t('form.prescription', 'nombre_seance.label')} />
 	<NumberField
 		bind:value={seance_par_semaine}
 		name="seance_par_semaine"
-		label="Nombre de séances par semaines" />
+		label={$t('form.prescription', 'seance_par_semaine.label')} />
 	<FileField
 		bind:this={fileField}
 		filePath={prescription?.file_name
@@ -142,16 +139,15 @@
 			  }`
 			: null}
 		withOpener={true}
-		label="Photocopie de la prescription" />
+		label={$t('form.prescription', 'copy.label')} />
 	<DateField
-		label="Date de l'attestation à laquelle la prescription est jointe"
+		label={$t('form.prescription', 'jointe_a.label')}
 		bind:value={jointe_a}
 		name="jointe_a" />
 	<p>
-		Ce champs est nécessaire uniquement si vous n'êtes pas en possession de la prescription et
-		qu'elle est jointe à une attestation que vous n'avez pas enregistrée dans le logiciel.
+		{$t('form.prescription', 'jointe_a.help')}
 	</p>
 
 	<div class="font-semibold">{message}</div>
-	<SubmitButton>Envoyer</SubmitButton>
+	<SubmitButton />
 </FormWrapper>

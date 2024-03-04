@@ -14,6 +14,7 @@
 	import { user } from '$lib/index';
 	import { patients } from '$lib/stores/PatientStore';
 	import { goto } from '$app/navigation';
+	import { t } from '../../../../../../../../lib/i18n';
 
 	let patient = $patients.find((p) => p.patient_id === $page.params.patientId);
 	let sp = patient.situations_pathologiques.find((sp) => sp.sp_id === $page.params.spId);
@@ -136,15 +137,15 @@
 
 <FormWrapper {formSchema}>
 	{#if $loading}
-		chargement en cours
+		{$t('shared', 'loading')}
 	{:else}
 		{#each $state as prescription}
 			<div class="card flex h-[85vh] flex-col items-start overflow-x-scroll px-8 py-4 md:w-[75vw]">
 				<h5 class="mb-4 text-xl text-surface-700 dark:text-surface-100">
-					Prescription de {prescription.obj.prescripteur.nom}
-					{prescription.obj.prescripteur.prenom} datant du {dayjs(prescription.obj.date).format(
-						'DD/MM/YYYY'
-					)}
+					{$t('attestation.create', 'prescription.group', {
+						prescripteurFullName: `${prescription.obj.prescripteur.nom} ${prescription.obj.prescripteur.prenom}`,
+						date: dayjs(prescription.obj.date).format('DD/MM/YYYY')
+					})}
 				</h5>
 				<div class="flex">
 					{#each prescription.attestations as attestation, padding}
@@ -152,7 +153,7 @@
 							class="card mr-4 flex flex-col items-start justify-start rounded-xl !bg-surface-200 p-2 shadow-md last:mr-0 dark:!bg-surface-700 dark:shadow-none">
 							<h5
 								class="mb-4 border-b border-secondary-400 text-xl text-secondary-700 dark:text-secondary-400">
-								Attestation n°{padding + 1}
+								{$t('attestation.create', 'attestation.group', { number: padding + 1 })}
 							</h5>
 							<AttestationForm donnees={attestation} {padding} {updateState} {codeMap} />
 						</div>

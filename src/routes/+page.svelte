@@ -1,10 +1,9 @@
 <script>
 	import { SignUpForm, LoginForm, PasswordResetForm } from '../lib/index';
-	console.log('Rendering Login Page');
+	import { t } from '../lib/i18n';
 
 	let selectedForm = 'login';
 	let message = '';
-
 </script>
 
 <div
@@ -23,7 +22,7 @@
 				Kiné Helper
 			</h2>
 			<p class=" text-center text-sm text-gray-600 dark:text-gray-300">
-				Open-source & gratuit pour tous les kinés
+				{$t('login', 'subtitle')}
 			</p>
 		</div>
 		{#if selectedForm == 'login'}
@@ -42,17 +41,19 @@
 				<button
 					on:click={() => (selectedForm = 'signup')}
 					class="group text-gray-600 dark:text-gray-300"
-					>Pas encore de compte ? <span
-						class="border-purple-500 text-base duration-200 group-hover:border-b"
-						>Inscrivez-vous</span
+					>{$t('login', 'controls.register.question')}
+					<span class="border-purple-500 text-base duration-200 group-hover:border-b"
+						>{$t('login', 'controls.register.link')}</span
 					></button>
 			{:else}
 				<button
 					on:click={() => (selectedForm = 'login')}
 					class="group text-gray-600 dark:text-gray-300"
-					>{selectedForm == 'passwordReset' ? 'Ça vous est revenu ? ' : 'Déjà un compte ? '}<span
+					>{@html selectedForm == 'passwordReset'
+						? $t('login', 'controls.resetCancel')
+						: $t('login', 'controls.SignupCancel')}<span
 						class="border-purple-500 text-base duration-200 group-hover:border-b"
-						>Connectez-vous</span
+						>{$t('login', 'controls.submit')}</span
 					></button>
 			{/if}
 			{#if selectedForm !== 'passwordReset'}
@@ -60,7 +61,8 @@
 					on:click={() => {
 						selectedForm = 'passwordReset';
 					}}
-					class="text-gray-600 dark:text-gray-300">Mot de passe oublié ?</button>
+					class="text-gray-600 dark:text-gray-300">
+					{$t('login', 'controls.forgot')}</button>
 			{/if}
 		</div>
 	</div>

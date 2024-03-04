@@ -1,5 +1,6 @@
 <script>
 	import { AutocompleteField } from '../index';
+	import { t } from '../../i18n';
 	export let query;
 	let mutualite = [
 		// Chretienne
@@ -292,7 +293,7 @@
 </script>
 
 <AutocompleteField
-	label="Mutualité"
+	label={$t('form.patient', 'mutualite')}
 	bind:query={query}
 	name="mutualite"
 	{onOptionSelection}

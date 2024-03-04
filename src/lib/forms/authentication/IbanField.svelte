@@ -1,5 +1,6 @@
 <script>
 	import {TextField} from '../index';
+	import { t } from '../../i18n';
 
 	let previousLength = 0;
 	export let value = null;
@@ -38,11 +39,11 @@
 
 <TextField
 	placeholder="IBAN : BEXX XXXX XXXX XXXX"
-	label="N° de compte bancaire"
+	label={$t('login', 'label.iban')}
     autocomplete="off"
 	name="iban"
 	{value}
 	required
 	pattern={/\b[A-Z]{2}[0-9]{2}(?:[ ]?[0-9]{4}){4}(?:[ ]?[0-9]{0,2})?$\b|\bBE[0-9]{2}(?:[ ]?[0-9]{4}){3}\b/}
-	patternMessage="Veuillez insérer 'BE' suivis de 14 chiffres"
+	patternMessage={$t('login', 'validation.iban')}
 	onChangeHandler={ibanHandler} />

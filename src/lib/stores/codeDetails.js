@@ -1,3 +1,6 @@
+import { get } from 'svelte/store';
+import { t } from '../i18n/index';
+
 export class Code {
 	constructor({
 		code_id,
@@ -32,19 +35,19 @@ export class Code {
 	}
 
 	get duree() {
-		return durees[this.duree_id];
+		return durees()[this.duree_id];
 	}
 	get lieu() {
-		return lieux[this.lieu_id];
+		return lieux()[this.lieu_id];
 	}
 	get groupe() {
-		return groupes[this.groupe_id];
+		return groupes()[this.groupe_id];
 	}
 	get type() {
-		return types[this.type_id];
+		return types()[this.type_id];
 	}
 	get lourde_type() {
-		return patholourdeTypes[this.lourde_type];
+		return patholourdeTypes()[this.lourde_type];
 	}
 
 	get duree_min_int() {
@@ -140,30 +143,34 @@ class NomenclatureManager {
 	}
 }
 
-export const groupes = [
-	'Pathologies Courantes',
-	'Pathologies Lourdes',
-	'Pathologies à 2 séances par jour',
-	'Grossesse et Post-Partum',
-	'Liste Fa',
-	'Liste Fb',
-	'Patients Palliatifs à domicile',
-	'Hôpital de jour non concernés par ces dispositions',
-	'covid',
-	'Indemnités de déplacement par groupe'
-];
+export function groupes() {
+	return [
+		get(t)('stores', 'code.grp1'),
+		get(t)('stores', 'code.grp2'),
+		get(t)('stores', 'code.grp3'),
+		get(t)('stores', 'code.grp4'),
+		get(t)('stores', 'code.grp5'),
+		get(t)('stores', 'code.grp6'),
+		get(t)('stores', 'code.grp7'),
+		get(t)('stores', 'code.grp8'),
+		get(t)('stores', 'code.grp9'),
+		get(t)('stores', 'code.grp10')
+	];
+}
 
-export const lieux = [
-	'1a) Cabinet hors hopital',
-	'1b) Cabinet dans hopital',
-	'1c) Cabinet dans service médicalisé',
-	'2) Domicile',
-	'3a) Résidence communautaire',
-	'3b) Maison de soins psychiatriques',
-	'4) Hopital',
-	'5) Centre de rééducation',
-	'6) Maison de repos'
-];
+export function lieux() {
+	return [
+		get(t)('stores', 'code.l1'),
+		get(t)('stores', 'code.l2'),
+		get(t)('stores', 'code.l3'),
+		get(t)('stores', 'code.l4'),
+		get(t)('stores', 'code.l5'),
+		get(t)('stores', 'code.l6'),
+		get(t)('stores', 'code.l7'),
+		get(t)('stores', 'code.l8'),
+		get(t)('stores', 'code.l9')
+	];
+}
 
 export const lieuxParGroupe = [
 	['*'], // Pathologie courante peut s'effectuer dans tous les lieux
@@ -213,32 +220,38 @@ export function dureeObjectSplittingPerLieu(group, lieu) {
 	console.log(`in dureeObjectSplittingPerLieu(${group}, ${lieu}) with ${duree} (duree)`);
 	return duree;
 }
-export const durees = [
-	'15 minutes',
-	'20 minutes',
-	'30 minutes',
-	'45 minutes',
-	'60 minutes',
-	'120 minutes'
-];
-export const types = [
-	'Séance normale',
-	'Dépassement',
-	'Dépassement 2',
-	'Rapport écrit',
-	'À titre consultatif',
-	'2ème séance dans la journée',
-	'Intake à la 1ère séance d’un traitement'
-];
+export function durees() {
+	return [
+		`15 ${get(t)('shared', 'minutes')}`,
+		`20 ${get(t)('shared', 'minutes')}`,
+		`30 ${get(t)('shared', 'minutes')}`,
+		`45 ${get(t)('shared', 'minutes')}`,
+		`60 ${get(t)('shared', 'minutes')}`,
+		`120 ${get(t)('shared', 'minutes')}`
+	];
+}
+export function types() {
+	[
+		get(t)('stores', 'code.t1'),
+		get(t)('stores', 'code.t2'),
+		get(t)('stores', 'code.t3'),
+		get(t)('stores', 'code.t4'),
+		get(t)('stores', 'code.t5'),
+		get(t)('stores', 'code.t6'),
+		get(t)('stores', 'code.t7')
+	];
+}
 
-export const patholourdeTypes = [
-	'Séance normale (20 ou 30 minutes)',
-	'Patient IMC (60 min)',
-	'Drainage 60 min',
-	'Drainage 120 min',
-	'Séance de 45 min après le séjour du bénéficiaire en hôpital ou en centre de revalidation (phase subaiguë). Pour les volets a), c) ou d) uniquement',
-	'Séance de 60 min au global avec minimum 2 périodes distinctes<br>Pour le volet j) uniquement'
-];
+export function patholourdeTypes() {
+	[
+		get(t)('stores', 'code.plt1'),
+		get(t)('stores', 'code.plt2'),
+		get(t)('stores', 'code.plt3'),
+		get(t)('stores', 'code.plt4'),
+		get(t)('stores', 'code.plt5'),
+		get(t)('stores', 'code.plt6')
+	];
+}
 
 export const indmeniteCategory = [
 	'639170',
@@ -249,9 +262,9 @@ export const indmeniteCategory = [
 	'639155',
 	'639111',
 	'639170',
-	'639170'//,
+	'639170' //,
 	// indemnité de déplacement par groupe
-]
+];
 
 export const SEANCE_NORMALE = 0;
 export const DEPASSEMENT = 1;

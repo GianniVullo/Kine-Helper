@@ -1,19 +1,15 @@
 <script>
 	// Stores
 	import { getModalStore } from '@skeletonlabs/skeleton';
-	import {
-		FormWrapper,
-		SelectFieldV2,
-		SubmitButton,
-		RadioFieldV2,
-		CheckboxFieldV2
-	} from '../forms/index';
+	import { FormWrapper, SelectFieldV2, SubmitButton, RadioFieldV2 } from '../forms/index';
 	import dayjs from 'dayjs';
 	import { fetchCodeDesSeances } from '../utils/nomenclatureManager';
 	import { FacturePatient } from '../pdfs/facturePatient';
 	import { FactureMutuelle } from '../pdfs/factureMutuelle';
 	import { patients } from '../stores/PatientStore';
 	import DateField from '../forms/abstract-fields/DateField.svelte';
+	import { t } from '../i18n';
+	import { get } from 'svelte/store';
 
 	export let parent;
 
@@ -26,8 +22,14 @@
 	const patient = $patients.find((p) => p.patient_id === sp.patient_id);
 
 	const options = [
-		{ value: 0, label: 'Facture patient' },
-		{ value: 1, label: 'Facture mutuelle' }
+		{
+			value: 0,
+			label: `${get(t)('otherModal', 'facture')} ${get(t)('otherModal', 'facture.patient')}`
+		},
+		{
+			value: 1,
+			label: `${get(t)('otherModal', 'facture')} ${get(t)('otherModal', 'facture.mutuelle')}`
+		}
 	];
 
 	let factureType;
@@ -37,10 +39,10 @@
 	let attestations = sp.attestations.map((att) => {
 		return {
 			value: att.attestation_id,
-			label: 'Attestation du ' + dayjs(att.date).format('DD/MM/YYYY')
+			label: get(t)('attestation.detail', 'title', { date: dayjs(att.date).format('DD/MM/YYYY') })
 		};
 	});
-	async function isValid(formData, submitter) {
+	async function isValid({ formData, submitter }) {
 		console.log(attestationsIds);
 		let valeurTotale = 0.0;
 		let totalValeurRecue = 0.0;
@@ -70,12 +72,14 @@
 						NISS: patient.niss,
 						Codes: codeRefChain(codes),
 						'Nbr. de prestations effectuées': `${codeNumber}`,
-						total: sp.attestations.reduce((acc, a) => {
-							if (attestationsIds.includes(a.attestation_id)) {
-								acc += a.valeur_totale - a.total_recu;
-							}
-							return acc;
-						}, 0.0).toFixed(2)
+						total: sp.attestations
+							.reduce((acc, a) => {
+								if (attestationsIds.includes(a.attestation_id)) {
+									acc += a.valeur_totale - a.total_recu;
+								}
+								return acc;
+							}, 0.0)
+							.toFixed(2)
 					}
 				]
 			};
@@ -165,26 +169,25 @@
 
 {#if $modalStore[0]}
 	<div class="modal-example-form {cBase}">
-		<header class={cHeader}>Choix de facture</header>
-		<article></article>
+		<header class={cHeader}>{$t('otherModal', 'fcreate.title')}</header>
 		<FormWrapper {formSchema}>
 			<RadioFieldV2
 				bind:value={factureType}
-				label="Type de document"
+				label={$t('otherModal', 'doc.type')}
 				name="docType"
 				required
 				{options} />
 			{#if attestations}
 				<SelectFieldV2
-					label="Attestations (maj+click)"
+					label={$t('otherModal', 'fcreate.label')}
 					multiple
 					bind:value={attestationsIds}
 					name="attestationIds"
 					required
 					options={attestations} />
 			{/if}
-			<DateField label="Date de facturation" name="date" bind:value={dateFactu} />
-			<SubmitButton>Poursuivre</SubmitButton>
+			<DateField label={$t('otherModal', 'fcreate.date')} name="date" bind:value={dateFactu} />
+			<SubmitButton>{$t('shared', 'confirm')}</SubmitButton>
 		</FormWrapper>
 	</div>
 {/if}

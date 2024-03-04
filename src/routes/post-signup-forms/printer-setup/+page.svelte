@@ -5,15 +5,16 @@
 	import { goto } from '$app/navigation';
 	import DBAdapter from '../../../lib/forms/actions/dbAdapter';
 	import { user } from '../../../lib/index';
+	import { t } from '../../../lib/i18n';
+	import { get } from 'svelte/store';
 
 	const modalStore = getModalStore();
 	const modal = {
 		type: 'confirm',
-		// Data
-		title: 'Confirmation demandée',
-		body: 'Sans cette étape de configuration vous ne pourrez pas imprimer vos attestations. Voulez-vous poursuivre sans configurer votre imprimante matricielle ?',
-		buttonTextConfirm: 'Continuer',
-		buttonTextCancel: 'Annuler',
+		title: get(t)('printerSetup', 'confirmModal.title'),
+		body: get(t)('printerSetup', 'confirmModal.body'),
+		buttonTextConfirm: get(t)('shared', 'confirm'),
+		buttonTextCancel: get(t)('shared', 'cancel'),
 		response: (r) => {
 			if (r) {
 				goto('/dashboard');
@@ -47,24 +48,24 @@
 </script>
 
 <main class="p-10">
-	<h1 class="text-surface-400">Configuration de l'imprimante matricielle</h1>
+	<h1 class="text-surface-400">
+		{$t('printerSetup', 'title')}
+	</h1>
 	<p class="text-surface-800 dark:text-surface-200">
-		Cette étape est cruciale pour l'utiliisation de Kiné Helper. <br /> Le logiciel a besoin du nom
-		programmatique de votre imprimante matricielle. <br /> Pour le trouver, veuillez suivre les instructions
-		ci-dessous.
+		{@html $t('printerSetup', 'description')}
 	</p>
 	<div class="mt-4 flex flex-col space-y-4">
 		<div>
-			<h5 class="text-xl text-secondary-200">Pour windows</h5>
-			<button on:click={gotoKineHelperbeWindows}>explications</button>
+			<h5 class="text-xl text-secondary-200">{$t('shared', 'for')} windows</h5>
+			<button on:click={gotoKineHelperbeWindows}>{$t('printerSetup', 'explainations')}</button>
 		</div>
 		<div>
-			<h5 class="text-xl text-secondary-200">Pour macOs</h5>
-			<button on:click={gotoKineHelperbeMacOs}>explications</button>
+			<h5 class="text-xl text-secondary-200">{$t('shared', 'for')} macOs</h5>
+			<button on:click={gotoKineHelperbeMacOs}>{$t('printerSetup', 'explainations')}</button>
 		</div>
 		<div>
-			<h5 class="text-xl text-secondary-200">Pour Linux</h5>
-			<button on:click={gotoKineHelperbeLinux}>explications</button>
+			<h5 class="text-xl text-secondary-200">{$t('shared', 'for')} Linux</h5>
+			<button on:click={gotoKineHelperbeLinux}>{$t('printerSetup', 'explainations')}</button>
 		</div>
 	</div>
 	<div class="">
@@ -73,13 +74,13 @@
 			{formSchema}>
 			<TextFieldV2
 				class="min-w-[24rem] max-w-sm"
-				label="Nom de l'imprimante"
+				label={$t('printerSetup', 'label.printer')}
 				name="printer"
 				bind:value={printer} />
 			<div class="flex w-full justify-between">
 				<SubmitButton class="!self-start" />
 				<button on:click={() => modalStore.trigger(modal)} class="variant-outline-secondary btn"
-					>Ignorer cette étape</button>
+					>{$t('printerSetup', 'ignore')}</button>
 			</div>
 		</FormWrapper>
 	</div>

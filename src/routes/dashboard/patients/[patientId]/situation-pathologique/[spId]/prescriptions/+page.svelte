@@ -9,6 +9,7 @@
 	import { open } from '@tauri-apps/plugin-shell';
 	import { user } from '$lib/stores/UserStore';
 	import { invoke } from '@tauri-apps/api/core';
+	import { t } from '../../../../../../../lib/i18n';
 
 	const modalStore = getModalStore();
 
@@ -52,14 +53,16 @@
 	<div class="ml-2 flex flex-col items-start justify-start space-y-4">
 		<div class="flex flex-col justify-between">
 			<h5 class="text-lg text-surface-500 dark:text-surface-400">
-				Prescriptions de la situation pathologique du {dayjs(sp.created_at).format('DD/MM/YYYY')}
+				{$t('prescription.list', 'title', { date: dayjs(sp.created_at).format('DD/MM/YYYY') })}
 			</h5>
 			<div class="flex">
 				<a
 					href={`/dashboard/patients/${patient.patient_id}/situation-pathologique/${sp.sp_id}/prescriptions/create`}
 					class="variant-outline-secondary btn btn-sm my-2 flex">
 					<PlusIcon class="h-4 w-4 stroke-surface-600 dark:stroke-surface-300" />
-					<span class="text-sm text-surface-500 dark:text-surface-400">Prescription</span></a>
+					<span class="text-sm text-surface-500 dark:text-surface-400"
+						>{$t('prescription.list', 'add')}</span
+					></a>
 			</div>
 		</div>
 
@@ -73,7 +76,9 @@
 					<!--* Header -->
 					<div class="mb-2 flex items-center justify-between space-x-4">
 						<h5 class="pointer-events-none select-none text-secondary-800 dark:text-secondary-200">
-							Prescription du {dayjs(prescription.date).format('DD/MM/YYYY')}
+							{$t('prescription.list', 'card.title', {
+								date: dayjs(prescription.date).format('DD/MM/YYYY')
+							})}
 						</h5>
 						<!--? Prescription CONTROLS  -->
 						<div class="flex space-x-2">
@@ -84,12 +89,10 @@
 							<button
 								on:click={async () => {
 									modalStore.trigger({
-										title: 'ATTENTION',
-										body: `Vous êtes sur le point de supprimer définitivement la prescription du ${dayjs(
-											prescription.date
-										).format(
-											'DD/MM/YYYY'
-										)}. Cela <span class="text-error-400">supprimera également TOUTES les attestations, générateurs et séances liés à la prescription</span>! <br /> Vous pouvez aussi modifier la prescription.`,
+										title: $t('prescription.list', 'deleteModal.title'),
+										body: $t('prescription.list', 'deleteModal.body'),
+										buttonTextConfirm: $t('shared', 'confirm'),
+										buttonTextCancel: $t('shared', 'cancel'),
 										type: 'confirm',
 										response: async (response) => {
 											if (response) {
@@ -109,10 +112,8 @@
 										console.log('no file');
 										modalStore.trigger({
 											type: 'alert',
-											title: 'Non disponible',
-											body: `La prescription du ${dayjs(prescription.date).format(
-												'DD/MM/YYYY'
-											)} n'a pas encore de fichier associé. Vous pouvez en ajouter un en modifiant la prescription.`
+											title: $t('prescription.list', 'alertModal.title'),
+											body: $t('prescription.list', 'alertModal.body')
 										});
 									}
 								}}
@@ -123,18 +124,19 @@
 					<!--* Body -->
 					<div class="flex flex-col text-surface-800 dark:text-surface-100">
 						<h5 class="text-secondary-500">
-							<span class="text-surface-400">Dr. </span>{prescription.prescripteur.nom +
-								' ' +
-								prescription.prescripteur.prenom} <br />
+								{@html $t('prescription.list', 'card.subtitle', {
+									prescripteurFullName: `${prescription.prescripteur.nom} ${prescription.prescripteur.prenom}`
+								})} <br />
 						</h5>
 						<p class="mb-1 text-surface-400">{prescription.prescripteur.inami}</p>
 						<h5 class="text-surface-700 dark:text-surface-300">
 							<span class="font-medium text-surface-800 dark:text-surface-200"
 								>{prescription.nombre_seance}</span>
-							séances
+								{$t('patients.detail', 'prestations')}
 							<br />
 							<span class="font-medium text-surface-800 dark:text-surface-200"
-								>{prescription.seance_par_semaine}</span> fois par semaine.
+								>{prescription.seance_par_semaine}</span>
+							{$t('prescription.list', 'card.timesPerWeek')}.
 						</h5>
 					</div>
 				</div>
@@ -142,5 +144,5 @@
 		</div>
 	</div>
 {:else}
-	<p>Il n'y a pas encore de prescriptions pour cette situation pathologique.</p>
+	<p>{$t('prescription.list', 'empty')}</p>
 {/if}

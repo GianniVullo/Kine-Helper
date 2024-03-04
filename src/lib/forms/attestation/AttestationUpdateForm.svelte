@@ -1,10 +1,10 @@
 <script>
-	import { FormWrapper, SubmitButton, DateField, NumberField, TextFieldV2 } from '../index';
+	import { FormWrapper, SubmitButton, NumberField } from '../index';
 	import { createCodeMap } from '../../utils/nomenclatureManager';
 	import { page } from '$app/stores';
 	import CheckboxFieldV2 from '../abstract-fields/CheckboxFieldV2.svelte';
-	// import SeancesField from './SeancesField.svelte';
 	import { patients } from '$lib/stores/PatientStore';
+	import { t } from '../../i18n';
 
 	export let attestation;
 	export let codes;
@@ -31,20 +31,17 @@
 			<CheckboxFieldV2
 				bind:value={attestation.mutuelle_paid}
 				name={'mutuelle_paid'}
-				label="Payée par le mutuelle" />
+				label={$t('attestation.detail', 'mutuelle_paid')} />
 			<CheckboxFieldV2
 				bind:value={attestation.patient_paid}
 				name={'patient_paid'}
-				label="Payée par le patient" />
-			<NumberField bind:value={attestation.total_recu} name={'total_recu'} label="Total reçu" />
+				label={$t('attestation.detail', 'patient_paid')} />
+			<NumberField bind:value={attestation.total_recu} name={'total_recu'} label={$t('attestation.detail', 'total_recu')} />
 			<NumberField
 				bind:value={attestation.valeur_totale}
 				name={'valeur_totale'}
-				label="Valeur totale" />
-			<!-- <h4>Les séances</h4>
-                <SeancesField seances={attestation.seances} /> -->
+				label={$t('attestation.detail', 'valeur_totale')} />
 		</div>
 	</div>
-
-	<SubmitButton>Envoyer</SubmitButton>
+	<SubmitButton />
 </FormWrapper>

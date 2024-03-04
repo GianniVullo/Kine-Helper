@@ -2,6 +2,8 @@
 	import { user } from '$lib/stores/UserStore';
 	import EmailField from './EmailField.svelte';
 	import { SubmitButton, FormWrapper } from '../index';
+	import { t } from '../../i18n';
+	import { get } from 'svelte/store';
 
 	let message = '';
 
@@ -18,11 +20,10 @@
 			submitter.disabled = false;
 			throw new Error(error);
 		} else {
-			message = `Un email va être envoyé à ${formData.email.toLowerCase()} pour réinitialiser votre mot de passe`;
-			console.log(data);
-			submitter.innerHTML = 'Demande envoyée';
-			console.log(user);
-			console.log($user);
+			message = get(t)('login', 'reset.help', { email: formData.email.toLowerCase() });
+			submitter.innerHTML = get(t)('login', 'reset.success', {
+				email: formData.email.toLowerCase()
+			});
 		}
 	}
 </script>
@@ -32,6 +33,6 @@
 		isValid: passwordReset
 	}}>
 	<EmailField />
-	<SubmitButton>Envoyer</SubmitButton>
+	<SubmitButton />
 	<div class="text-center font-medium text-secondary-700">{message}</div>
 </FormWrapper>
