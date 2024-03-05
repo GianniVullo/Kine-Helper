@@ -1,0 +1,1 @@
+ALTER TABLE patients RENAME COLUMN numero_etablissment TO numero_etablissement;

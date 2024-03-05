@@ -34,7 +34,7 @@
 				patient_id: patient.patient_id,
 				sp_id: sp.sp_id,
 				porte_prescr: attestation.porte_prescr,
-				numero_etablissment: attestation.numero_etablissment,
+				numero_etablissement: attestation.numero_etablissement,
 				service: attestation.service,
 				has_been_printed: attestation.has_been_printed,
 				prescription_id: prescription.prescription_id,

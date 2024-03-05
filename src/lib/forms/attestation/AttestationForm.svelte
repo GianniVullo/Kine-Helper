@@ -74,9 +74,9 @@
 			name={`${padding}valeur_totale`}
 			label={$t('attestation.detail', 'valeur_totale')} />
 		<TextFieldV2
-			bind:value={donnees.numero_etablissment}
-			name={`${padding}numero_etablissment`}
-			label={$t('sp.update', 'label.numero_etablissment')} />
+			bind:value={donnees.numero_etablissement}
+			name={`${padding}numero_etablissement`}
+			label={$t('sp.update', 'label.numero_etablissement')} />
 		<TextFieldV2 bind:value={donnees.service} name={`${padding}service`} label={$t('sp.update', 'label.service')} />
 		<h4>{$t('patients.detail', 'prestations')}</h4>
 		<SeancesField seances={donnees.seances} />

@@ -125,7 +125,7 @@ pub fn build_document(form_data: DocumentFormData) -> Vec<u8> {
         escp_cmds.vertical_spacing(4.0),
         format!(
             "\r\t {}",
-            if situation_pathologique.numero_etablissment.is_empty()
+            if situation_pathologique.numero_etablissement.is_empty()
                 && unidecode(&situation_pathologique.service).is_empty()
             {
                 "------------  ------"
@@ -137,7 +137,7 @@ pub fn build_document(form_data: DocumentFormData) -> Vec<u8> {
         escp_cmds.vertical_spacing(1.52),
         format!(
             "\r\t\t\t       {}",
-            situation_pathologique.numero_etablissment
+            situation_pathologique.numero_etablissement
         )
         .into_bytes(),
         escp_cmds.vertical_spacing(3.99),

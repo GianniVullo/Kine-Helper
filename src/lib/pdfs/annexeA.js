@@ -203,8 +203,8 @@ export class AnnexeA extends PDFGeneration {
 				}
 			}
 		};
-		this.langDict = langDict[locale === 'FR' ? 'FR' : 'NL'];
-		this.points = points[locale === 'FR' ? 'FR' : 'NL'];
+		this.langDict = langDict[get(locale) === 'FR' ? 'FR' : 'NL'];
+		this.points = points[get(locale) === 'FR' ? 'FR' : 'NL'];
 		this.situationsPathologiques = [
 			this.a,
 			this.a,
@@ -297,6 +297,8 @@ export class AnnexeA extends PDFGeneration {
 				columnsWidth: [5, this.pageWidth - this.margins.left - this.margins.right - 5]
 			}
 		);
+		this.yPosition.update(3);
+		this.addParagraph("Fait le : " + dayjs(this.formData.date).format('DD/MM/YYYY'));
 		this.yPosition.set(this.pageHeight - this.margins.bottom);
 		this.addRow([
 			[this.addParagraph, ['¹', { fontSize: 8, dontUpdatePosition: true }]],

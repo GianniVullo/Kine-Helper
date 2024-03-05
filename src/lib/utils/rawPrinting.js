@@ -82,7 +82,7 @@ export async function printAttestation(
 			numero_bce: profile.bce
 		},
 		situation_pathologique: {
-			numero_etablissment: situation_pathologique.numero_etablissment ?? '',
+			numero_etablissement: situation_pathologique.numero_etablissement ?? '',
 			service: situation_pathologique.service ?? ''
 		}
 	};

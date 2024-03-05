@@ -64,7 +64,7 @@ export class PDFGeneration {
 	}
 	async save_file() {
 		this.buildPdf();
-
+		console.log('in save_file, pdf built');
 		let docOutput = this.doc.output('arraybuffer');
 		let dirPath = await this.buildPath();
 		await invoke('setup_path', {
@@ -72,6 +72,7 @@ export class PDFGeneration {
 			fileName: this.documentName + '.pdf',
 			fileContent: Array.from(new Uint8Array(docOutput))
 		});
+		console.log('in save_file, pdf sent');
 		return { dirPath };
 	}
 	async save() {
@@ -99,7 +100,6 @@ export class PDFGeneration {
 			'in pdfGeneration with path ==',
 			dirPath + '/' + this.documentName.replaceAll(' ', ' ')
 		);
-		await open(dirPath + '/' + this.documentName.replaceAll(' ', ' ') + '.pdf');
 	}
 
 	async delete() {
@@ -233,6 +233,7 @@ export class PDFGeneration {
 			y = undefined //* y start of columns pack
 		} = {}
 	) {
+		console.log('in addRow');
 		if (y) {
 			this.yPosition.set(y);
 		}
@@ -251,15 +252,19 @@ export class PDFGeneration {
 		this.addParagraph(`${get(user).profil.cp} ${get(user).profil.localite}`, { x: x });
 		this.addParagraph(get(user).profil.inami, { x: x });
 	}
-	async authSignature({ x = this.margins.left + this.pageWidth / 2, y = this.pageHeight - 60 }) {
+	async authSignature({
+		x = this.margins.left + this.pageWidth / 2,
+		y = this.pageHeight - 60
+	} = {}) {
+		console.log('in authSignature');
 		let dirPath = await appLocalDataDir();
+		console.log('in authSignature', dirPath);
 		let path = `${dirPath}/signature.png`;
 		if (await invoke('file_exists', { path })) {
+			console.log('in authSignature the file exists');
 			let img = this.uint8ArrayToBase64(Uint8Array.from(await invoke('retrieve_file', { path })));
-			console.log(this.doc);
 			let desperateAttempt65 = new Image();
 			desperateAttempt65.src = img;
-			console.log('img', desperateAttempt65);
 			this.doc.addImage(img, 'png', x, y);
 		}
 	}

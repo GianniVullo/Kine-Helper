@@ -2,6 +2,7 @@ import { PDFGeneration } from './kineHelperPdfs';
 import { get } from 'svelte/store';
 import { user } from '../stores/UserStore';
 import dayjs from 'dayjs';
+import { t } from '../i18n';
 
 /**.
  * @typedef {Object} FormData
@@ -41,47 +42,32 @@ export class FacturePatient extends PDFGeneration {
 		console.log('formData', this.formData);
 		this.header(dayjs(this.formData.date).format('DD/MM/YYYY'));
 		this.yPosition.update(10);
-		this.addCenteredText('Facture', { fontSize: this.headingFontSize });
+		this.addCenteredText(get(t)('otherModal', 'facture'), { fontSize: this.headingFontSize });
 		this.yPosition.update(10);
-		this.addParagraph(
-			this.patient.sexe
-				? this.patient.sexe === 'M'
-					? `Cher Mr ${this.patient.nom},`
-					: `Chère Mme ${this.patient.nom},`
-				: 'Madame, Monsieur,'
-		);
+		this.addParagraph(get(t)('shared', 'greet'));
 		this.yPosition.update(5);
 		this.addParagraph(
-			`	Pouvez-vous verser la somme de ${this.formData.total ?? '0'} € sur le compte ${
-				get(user).profil.iban
-			} pour les prestations de kinésithérapie dispensées ? Veuillez mentionner en communication : "kiné-${
-				this.patient.nom
-			}".`
+			get(t)('pdfs', 'facture.body2', {
+				total: this.formData.total ?? '0',
+				iban: get(user).profil.iban,
+				patientNom: this.patient.nom
+			})
 		);
 		if (!this.patient.tiers_payant) {
 			this.yPosition.update(3);
-			this.addParagraph(
-				'	Veuillez envoyer le(s) document(s) joint(s) à cette lettre à votre mutuelle pour être remboursé. Je vous invite à faire une copie de chacun des documents avant d’envoyer l’original à votre mutuelle.'
-			);
+			this.addParagraph(get(t)('pdfs', 'facture.consigne'));
 		}
 		this.yPosition.update(5);
-		this.addParagraph(
-			'Recevez, ' +
-				(this.patient.sexe
-					? this.patient.sexe === 'M'
-						? 'cher Mr '
-						: 'chère Mme '
-					: 'Madame, Monsieur,') +
-				this.patient.nom +
-				', mes meilleures salutations.'
-		);
+		this.addParagraph(get(t)('pdfs', 'greetings'));
 		if (this.formData.with_details && this.formData.codes && this.attestations) {
 			this.yPosition.update(10);
-			this.addParagraph('Détail des prestations :', { fontWeight: 'bold' });
+			this.addParagraph('', { fontWeight: 'bold' });
 			this.yPosition.update(1);
 			if (this.attestations.reduce((acc, att) => acc || att.with_indemnity, false)) {
 				this.addParagraph(
-					`(I) = indemnité (code ${this.formData.codes.get('indemnites')[0].code_reference})`,
+					`(I) = ${get(t)('pdfs', 'facture.ind')} (code ${
+						this.formData.codes.get('indemnites')[0].code_reference
+					})`,
 					{ fontSize: 8 }
 				);
 			}
@@ -90,7 +76,9 @@ export class FacturePatient extends PDFGeneration {
 				this.formData.codes.get('rapports').length > 0
 			) {
 				this.addParagraph(
-					`(R) = rapport (code ${this.formData.codes.get('rapports')[0].code_reference})`,
+					`(R) = ${get(t)('sp.update', 'label.rapport_ecrit')} (code ${
+						this.formData.codes.get('rapports')[0].code_reference
+					})`,
 					{ fontSize: 8 }
 				);
 			}
@@ -107,6 +95,11 @@ export class FacturePatient extends PDFGeneration {
 
 	buildDetail() {
 		let lignes = [];
+		let prestaSuite = get(t)('pdfs', 'facture.detail');
+		prestaSuite = `${prestaSuite.substring(0, prestaSuite.length - 1)} (${get(t)(
+			'shared',
+			'next'
+		)}) :`;
 		for (const attestation of this.attestations) {
 			let seances =
 				attestation.seances ??
@@ -125,25 +118,28 @@ export class FacturePatient extends PDFGeneration {
 				lignes.push({ Code: seance_ref, Date: seance_date });
 			}
 		}
-		this.fullWidthTable(lignes.slice(0, lignes.length > 10 ? 10 : lignes.length), ['Code', 'Date']);
+		this.fullWidthTable(lignes.slice(0, lignes.length > 10 ? 10 : lignes.length), [
+			'Code',
+			get(t)('shared', 'date')
+		]);
 		if (lignes.length > 10) {
 			this.fullWidthTable(
 				lignes.slice(10, lignes.length > 20 ? 20 : lignes.length),
-				['Code', 'Date'],
+				['Code', get(t)('shared', 'date')],
 				{ x: this.pageWidth / 3 + this.margins.left - 12 }
 			);
 		}
 		if (lignes.length > 20) {
 			this.fullWidthTable(
 				lignes.slice(20, lignes.length > 30 ? 30 : lignes.length),
-				['Code', 'Date'],
+				['Code', get(t)('shared', 'date')],
 				{ x: (this.pageWidth / 3) * 2 + this.margins.left - 24 }
 			);
 		}
 		if (lignes.length > 30) {
 			this.doc.addPage();
 			this.yPosition.set(this.margins.top);
-			this.addParagraph('Détail des prestations (suite) :', { fontWeight: 'bold' });
+			this.addParagraph(prestaSuite, { fontWeight: 'bold' });
 			this.yPosition.update(3);
 			this.fullWidthTable(lignes.slice(30, lignes.length > 50 ? 50 : lignes.length), [
 				'Code',
@@ -152,37 +148,37 @@ export class FacturePatient extends PDFGeneration {
 			if (lignes.length > 50) {
 				this.fullWidthTable(
 					lignes.slice(50, lignes.length > 70 ? 70 : lignes.length),
-					['Code', 'Date'],
+					['Code', get(t)('shared', 'date')],
 					{ x: this.pageWidth / 3 + this.margins.left - 12 }
 				);
 			}
 			if (lignes.length > 70) {
 				this.fullWidthTable(
 					lignes.slice(70, lignes.length > 90 ? 90 : lignes.length),
-					['Code', 'Date'],
+					['Code', get(t)('shared', 'date')],
 					{ x: (this.pageWidth / 3) * 2 + this.margins.left - 24 }
 				);
 			}
 			if (lignes.length > 90) {
 				this.doc.addPage();
 				this.yPosition.set(this.margins.top);
-				this.addParagraph('Détail des prestations (suite) :', { fontWeight: 'bold' });
+				this.addParagraph(prestaSuite, { fontWeight: 'bold' });
 				this.yPosition.update(3);
 				this.fullWidthTable(lignes.slice(90, lignes.length > 110 ? 110 : lignes.length), [
 					'Code',
-					'Date'
+					get(t)('shared', 'date')
 				]);
 				if (lignes.length > 110) {
 					this.fullWidthTable(
 						lignes.slice(110, lignes.length > 130 ? 130 : lignes.length),
-						['Code', 'Date'],
+						['Code', get(t)('shared', 'date')],
 						{ x: this.pageWidth / 3 + this.margins.left - 12 }
 					);
 				}
 				if (lignes.length > 130) {
 					this.fullWidthTable(
 						lignes.slice(130, lignes.length > 150 ? 150 : lignes.length),
-						['Code', 'Date'],
+						['Code', get(t)('shared', 'date')],
 						{ x: (this.pageWidth / 3) * 2 + this.margins.left - 24 }
 					);
 				}

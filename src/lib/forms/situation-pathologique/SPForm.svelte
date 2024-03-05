@@ -18,7 +18,7 @@
 	let patient_id = situation_pathologique?.patient_id ?? patient.patient_id;
 	let sp_id = situation_pathologique?.sp_id ?? crypto.randomUUID();
 	let created_at = situation_pathologique?.created_at ?? dayjs().format('YYYY-MM-DD');
-	let numero_etablissement = situation_pathologique?.numero_etablissment;
+	let numero_etablissement = situation_pathologique?.numero_etablissement;
 	let service = situation_pathologique?.service;
 	let motif = situation_pathologique?.motif;
 	let plan_du_ttt = situation_pathologique?.plan_du_ttt;

@@ -85,6 +85,12 @@ pub fn run() {
                             sql: include_str!("migrations/20240220193637_docType.up.sql"),
                             kind: MigrationKind::Up,
                         },
+                        Migration {
+                            version: 3,
+                            description: "Typo sur la table patients",
+                            sql: include_str!("migrations/20240305190432_renamepatient.up.sql"),
+                            kind: MigrationKind::Up,
+                        },
                     ],
                 )
                 .build(),

@@ -2,6 +2,7 @@ import { PDFGeneration } from './kineHelperPdfs';
 import { get } from 'svelte/store';
 import { user } from '../stores/UserStore';
 import dayjs from 'dayjs';
+import { t } from '../i18n';
 
 export class FactureMutuelle extends PDFGeneration {
 	constructor(formData, patient, sp, obj) {
@@ -20,27 +21,24 @@ export class FactureMutuelle extends PDFGeneration {
 	buildPdf() {
 		this.header(dayjs(this.formData.date).format('DD/MM/YYYY'));
 		this.yPosition.update(10);
-		this.addCenteredText('Facture', { fontSize: this.headingFontSize });
+		this.addCenteredText(get(t)('otherModal', 'facture'), { fontSize: this.headingFontSize });
 		this.yPosition.update(10);
-		this.addParagraph('Madame, Monsieur,');
+		this.addParagraph(get(t)('shared', 'greet'));
 		this.yPosition.update(3);
 		this.addParagraph(
-			`Pouvez-vous verser la somme de ${
-				this.formData.tableRows[0]['total'] ?? '0'
-			} € sur le compte ${
-				get(user).profil.iban
-			} pour les prestations de kinésithérapie dispensées à vos affiliés ?`
+			get(t)('pdfs', 'facture.body', {
+				total: this.formData.tableRows[0]['total'] ?? '0',
+				iban: get(user).profil.iban
+			})
 		);
 		if (!this.patient.ticket_moderateur) {
 			this.yPosition.update(3);
-			this.addParagraph(
-				"Le patient s'est déclaré dans l'impossibilité de payer le ticket modérateur."
-			);
+			this.addParagraph(get(t)('pdfs', 'facture.noticket'));
 		}
 		this.yPosition.update(3);
-		this.addParagraph('Vous trouverez ci-dessous le tableau récapitulatif de ce montant.');
+		this.addParagraph(get(t)('pdfs', 'facture.recap'));
 		this.yPosition.update(7);
-		this.addParagraph('Recevez, Madame, Monsieur, mes meilleures salutations.');
+		this.addParagraph(get(t)('pdfs', 'greetings'));
 		this.yPosition.update(5);
 		for (const row of this.formData.tableRows) {
 			for (const [k, v] of Object.entries(row)) {

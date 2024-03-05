@@ -68,7 +68,7 @@ impl Kine {
 
 #[derive(Debug, serde::Deserialize, serde::Serialize)]
 pub struct SituationPathologique {
-    pub numero_etablissment: String,
+    pub numero_etablissement: String,
     pub service: String,
 }
 

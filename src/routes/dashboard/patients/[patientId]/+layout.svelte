@@ -26,6 +26,7 @@
 				const spBeforeCheck = patient.situations_pathologiques.find(
 					(sp) => sp.sp_id === p.params.spId
 				);
+				console.log('spBeforeCheck', spBeforeCheck);
 				if (spBeforeCheck?.upToDate === false) {
 					let db = new DBAdapter();
 					let completedSp = await db.retrieve_sp(spBeforeCheck.sp_id);

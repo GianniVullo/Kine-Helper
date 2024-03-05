@@ -293,7 +293,7 @@ function buildAttestationState(
 		//! Le problème c'est qu'on en a besoin tout de suite pour calculer le nombre de lignes autorisées sur l'attestation.
 		date: null,
 		porte_prescr,
-		numero_etablissment: sp.numero_etablissment,
+		numero_etablissement: sp.numero_etablissement,
 		service: sp.service,
 		has_been_printed,
 		total_recu: 0.0,

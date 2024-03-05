@@ -24,7 +24,7 @@ export class Patient {
 		ticket_moderateur,
 		bim,
 		actif,
-		numero_etablissment,
+		numero_etablissement,
 		service
 	}) {
 		this.patient_id = patient_id;
@@ -46,7 +46,7 @@ export class Patient {
 		this.ticket_moderateur = JSON.parse(ticket_moderateur);
 		this.bim = JSON.parse(bim);
 		this.actif = JSON.parse(actif ?? null);
-		this.numero_etablissment = numero_etablissment;
+		this.numero_etablissement = numero_etablissement;
 		this.service = service;
 		this.situations_pathologiques = [];
 	}
@@ -162,7 +162,7 @@ function createPatientStore() {
 		let db = new DBAdapter();
 		const { data, error } = await db.list('patients', [['kinesitherapeute_id', modifiedUser.id]], {
 			selectStatement:
-				'patient_id, created_at, nom, prenom, niss, adresse, cp, localite, date_naissance, tel, gsm, email, sexe, mutualite, num_affilie, tiers_payant, ticket_moderateur, bim, actif, numero_etablissment, service'
+				'patient_id, created_at, nom, prenom, niss, adresse, cp, localite, date_naissance, tel, gsm, email, sexe, mutualite, num_affilie, tiers_payant, ticket_moderateur, bim, actif, numero_etablissement, service'
 			// orderBy: 'nom' Not needed I think
 		});
 		console.log('Les patients queried', data);
@@ -294,7 +294,7 @@ function createPatientStore() {
 			niss: '12345612312',
 			nom: 'Test',
 			num_affilie: null,
-			numero_etablissment: null,
+			numero_etablissement: null,
 			patient_id: 'test-patient',
 			prenom: 'patient',
 			service: null,
@@ -307,7 +307,7 @@ function createPatientStore() {
 							created_at: '2023-08-25T17:50:11.753503+00:00',
 							date: '2022-12-23',
 							has_been_printed: true,
-							numero_etablissment: null,
+							numero_etablissement: null,
 							patient_id: 'test-patient',
 							porte_prescr: true,
 							prescription_id: '14a74ea8-9fb6-4f5b-acee-7bf09bed5285',
@@ -322,7 +322,7 @@ function createPatientStore() {
 					created_at: '2023-08-25T17:50:11.555401+00:00',
 					generateurs_de_seances: [](0),
 					motif: 'Accident de moto',
-					numero_etablissment: null,
+					numero_etablissement: null,
 					patient_id: 'test-patient',
 					plan_du_ttt: 'Rééducation de la hanche',
 					prescriptions: [

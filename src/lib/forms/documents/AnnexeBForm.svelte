@@ -48,11 +48,15 @@
 				return ps;
 			});
 			let annexeB = new AnnexeB(formObj, patient, sp, doc);
+			console.log('saving file');
 			await annexeB.save_file();
+			console.log('file saved');
 			await annexeB.open();
 		} else {
 			let annexeB = new AnnexeB(formObj, patient, sp);
 			await annexeB.save();
+			console.log('file saved');
+			await annexeB.open();
 		}
 		goto('/dashboard/patients/' + patient.patient_id + '/situation-pathologique/' + sp.sp_id);
 		submitter.disabled = false;
