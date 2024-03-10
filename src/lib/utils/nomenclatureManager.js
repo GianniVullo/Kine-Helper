@@ -71,20 +71,16 @@ export function fetchCodeDesSeances(loading, seances, sp) {
 	}
 	return new Promise(async (resolve, reject) => {
 		let db = await guesseur.database.openDBConnection();
-		await guesseur
-			.bulkGuess(seances, async (seances) => {
-				for (const seance of seances) {
-					await guesseur.getCode(seance, db);
-				}
-				if (sp.with_indemnity || sp.with_rapport || sp.with_intake) {
-					await guesseur.collectIndemnitIntakeeEtRapporEcrit();
-				}
-			})
-			.then(async () => {
-				// console.log("guesseur's cache", guesseur.cache);
-				await db.close();
-				resolve(guesseur.cache);
-			});
+		await guesseur.bulkGuess(seances, async (seances) => {
+			for (const seance of seances) {
+				await guesseur.getCode(seance, db);
+			}
+			if (sp.with_indemnity || sp.with_rapport || sp.with_intake) {
+				await guesseur.collectIndemnitIntakeeEtRapporEcrit();
+			}
+		});
+		await db.close();
+		resolve(guesseur.cache);
 	});
 }
 

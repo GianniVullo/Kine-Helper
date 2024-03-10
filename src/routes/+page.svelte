@@ -30,8 +30,9 @@
 		{:else if selectedForm == 'signup'}
 			<SignUpForm
 				on:onSignupSuccess={(msg) => {
+					console.log(msg);
 					selectedForm = 'login';
-					message = msg;
+					message = msg.detail.message;
 				}} />
 		{:else}
 			<PasswordResetForm />

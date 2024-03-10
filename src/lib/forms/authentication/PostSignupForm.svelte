@@ -10,7 +10,9 @@
 	import { get } from 'svelte/store';
 
 	let message = '';
-
+	let clazz = '';
+	export { clazz as class };
+	export let column = false;
 	let formSchema = {
 		isValid: isValid
 	};
@@ -19,17 +21,68 @@
 		console.log('in isValid with', formData);
 		submitter.innerHTML = get(t)('shared', 'loading');
 		formData.conventionne ??= false;
-		let { data, error } = await supabase.from('kinesitherapeutes').upsert(formData).select();
+		let dict = {
+			nom: formData.nom,
+			prenom: formData.prenom,
+			email: $user.user.email,
+			id: $user.user.id
+		};
+		let { data, error } = await supabase.from('kinesitherapeutes').upsert(dict);
 		submitter.innerHTML = 'OK';
-		$user.profil = data[0];
+		console.log(data, error);
+		user.update((u) => {
+			u.profil = {
+				nom: formData.nom,
+				prenom: formData.prenom,
+				inami: formData.inami,
+				bce: formData.bce,
+				iban: formData.iban,
+				adresse: formData.adresse,
+				cp: formData.cp,
+				localite: formData.localite,
+				conventionne: formData.conventionne
+			};
+			return u;
+		});
 		if (error) {
 			message = error.message;
 			throw new Error(error);
 		}
 		// si il n'y a pas d'objet settings ou que l'objet settings ne contient pas de raw printer alors on redirige vers la page de configuration
 		let db = new DBAdapter();
+		try {
+			await db.save('kines', {
+				user_id: $user.user.id,
+				nom: formData.nom,
+				prenom: formData.prenom,
+				inami: formData.inami,
+				bce: formData.bce,
+				iban: formData.iban,
+				adresse: formData.adresse,
+				cp: formData.cp,
+				localite: formData.localite,
+				conventionne: formData.conventionne
+			});
+		} catch (error) {
+			await db.update('kines', [['user_id', $user.user.id]], {
+				nom: formData.nom,
+				prenom: formData.prenom,
+				inami: formData.inami,
+				bce: formData.bce,
+				iban: formData.iban,
+				adresse: formData.adresse,
+				cp: formData.cp,
+				localite: formData.localite,
+				conventionne: formData.conventionne
+			});
+		}
 		let userSettings = await db.retrieve('settings', '*', ['user_id', $user.user.id]);
-		if (userSettings) {
+		console.log('userSettings', userSettings);
+		if (userSettings.data.length > 0) {
+			user.update((u) => {
+				u.settings = userSettings.data[0];
+				return u;
+			});
 			userSettings.data[0].raw_printer
 				? goto('/dashboard')
 				: goto('/post-signup-forms/printer-setup');
@@ -47,13 +100,13 @@
 	}
 </script>
 
-<FormWrapper {formSchema}>
-	<span slot="title">{$t('form.postSignup', 'title')}</span>
-	<p class="m-8 text-surface-600">
+<FormWrapper class={'group/form flex flex-col space-y-2 px-4' + clazz} {formSchema}>
+	<h1 class="text-surface-600">{$t('form.postSignup', 'title')}</h1>
+	<p class="text-surface-500 dark:text-surface-400">
 		{$t('form.postSignup', 'description')}
 	</p>
-	<div class="flex flex-col md:flex-row">
-		<div class="w-full p-2 md:w-1/3 md:p-4 lg:p-8">
+	<div class:md:flex-row={!column} class="flex flex-col">
+		<div class="w-full p-2 md:p-4 lg:p-8">
 			<SectionCard>
 				<input type="hidden" name="id" value={$user.user.id} />
 				<TextField
@@ -79,24 +132,24 @@
 					value={$user.profil?.cp ?? undefined}
 					type="number"
 					pattern={/^[0-9]{4}$/}
-					patternMessage={$t('form.post.code', 'validation.postCode')}
+					patternMessage={$t('form.postSignup', 'validation.postCode')}
 					required
-					placeholder={$t('form.post.code', 'label.postCode')}
-					label={$t('form.post.code', 'label.postCode')} />
+					placeholder={$t('form.postSignup', 'label.postCode')}
+					label={$t('form.postSignup', 'label.postCode')} />
 				<TextField
 					name="localite"
 					value={$user.profil?.localite ?? undefined}
 					required
-					placeholder={$t('form.post.code', 'label.city')}
-					label={$t('form.post.code', 'label.city')} />
+					placeholder={$t('form.postSignup', 'label.city')}
+					label={$t('form.postSignup', 'label.city')} />
 				<TextField
 					name="gsm"
 					value={$user.profil?.gsm ?? undefined}
-					placeholder={$t('form.post.code', 'label.cellPhone')}
-					label={$t('form.post.code', 'label.cellPhone')} />
+					placeholder={$t('form.postSignup', 'label.cellPhone')}
+					label={$t('form.postSignup', 'label.cellPhone')} />
 			</SectionCard>
 		</div>
-		<div class="w-full p-2 md:w-1/3 md:p-4 lg:p-8">
+		<div class="w-full p-2 md:p-4 lg:p-8">
 			<SectionCard>
 				<TextField
 					name="inami"
@@ -113,13 +166,13 @@
 					required
 					pattern={/^\d{10}$/}
 					patternMessage={$t('form.postSignup', 'validation.bce')}
-					label={$t('form.post.code', 'label.bce')}
-					placeholder={$t('form.post.code', 'label.bce')} />
+					label={$t('form.postSignup', 'label.bce')}
+					placeholder={$t('form.postSignup', 'label.bce')} />
 				<CheckboxField
 					name="conventionne"
 					value={$user.profil?.conventionne ?? undefined ?? true}
 					checked={$user.profil?.conventionne ?? undefined ?? true}
-					label={$t('form.post.code', 'label.convention')} />
+					label={$t('form.postSignup', 'label.convention')} />
 			</SectionCard>
 			<SubmitButton class="m-4 md:m-8" />
 		</div>

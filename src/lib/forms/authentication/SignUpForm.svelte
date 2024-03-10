@@ -42,7 +42,7 @@
 				session: data.session
 			});
 			dispatch('onSignupSuccess', {
-				message: get(t)('signup', 'success')
+				message: get(t)('signup', 'emailConfirmation')
 			});
 			submitter.disabled = false;
 		}
@@ -54,5 +54,5 @@
 	<PasswordField />
 	<PasswordField name="password2" />
 	<div class="font-semibold">{message}</div>
-	<SubmitButton>{$t('login', 'treeStructure')}</SubmitButton>
+	<SubmitButton>{$t('login', 'controls.signup')}</SubmitButton>
 </FormWrapper>

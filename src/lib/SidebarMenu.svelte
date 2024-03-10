@@ -1,7 +1,7 @@
 <script>
 	import logo from '$lib/assets/logo.png';
 	import { SignOutIcon, ChevronRightIcon, ChevronLeftIcon } from './ui/svgs/index';
-	import { LightSwitch, getModalStore } from '@skeletonlabs/skeleton';
+	import { getModalStore } from '@skeletonlabs/skeleton';
 	import { supabase } from '../lib/stores/supabaseClient';
 	import { goto } from '$app/navigation';
 	import { t } from '../lib/i18n/index';
@@ -60,7 +60,7 @@
 <!-- Sidebar Navigation -->
 <aside
 	data-minimized={isMinimized}
-	class="isMinimized group fixed left-0 top-0 z-10 h-96 w-screen overflow-clip border-b border-surface-400 bg-gradient-to-br from-surface-200 to-surface-100 p-6 text-white shadow-lg duration-200 ease-in-out data-[minimized=true]:h-16 data-[minimized=true]:from-surface-300 data-[minimized=true]:to-surface-200 data-[minimized=true]:p-0 dark:border-surface-800 dark:from-surface-700 dark:to-surface-800 dark:data-[minimized=true]:from-surface-700 dark:data-[minimized=true]:to-surface-800 md:h-screen md:w-64 md:border-r data-[minimized=true]:md:h-screen data-[minimized=true]:md:w-12">
+	class="isMinimized relative overflow-clip group left-0 top-0 z-10 h-24 border-b border-surface-400 bg-gradient-to-br from-surface-200 to-surface-100 p-6 text-white shadow-lg duration-200 ease-in-out data-[minimized=true]:from-surface-300 data-[minimized=true]:to-surface-200 data-[minimized=true]:p-0 dark:border-surface-800 dark:from-surface-700 dark:to-surface-800 dark:data-[minimized=true]:from-surface-700 dark:data-[minimized=true]:to-surface-800 md:h-screen md:w-64 md:border-r data-[minimized=true]:md:h-screen data-[minimized=true]:md:w-12">
 	<h2 class:mb-6={!isMinimized} class="text-xl font-medium text-primary-600 dark:text-primary-400">
 		{isMinimized ? '' : 'Kiné Helper'}
 	</h2>
@@ -81,7 +81,7 @@
 				class="absolute left-0 mt-0 flex items-center justify-center px-2 py-2 md:static md:mt-2 md:px-0 md:py-0">
 				<img
 					src={logo}
-					class="hidden w-[60%] group-data-[minimized=false]:hidden sm:block md:w-auto md:px-2 md:py-2"
+					class="hidden w-[60%] group-data-[minimized=false]:hidden md:block md:w-auto md:px-2 md:py-2"
 					alt="" />
 			</li>
 			{#each menuItems as item}
@@ -173,9 +173,6 @@
 			<div
 				class="absolute -bottom-8 -left-10 h-14 w-14 rounded-full bg-primary-600 opacity-25 duration-200 group-data-[minimized=false]:-left-44 group-data-[minimized=true]:hidden group-data-[minimized=false]:h-48 group-data-[minimized=false]:w-48 dark:opacity-60 md:relative group-data-[minimized=false]:md:bottom-6">
 			</div>
-			{#if !isMinimized}
-				<LightSwitch />
-			{/if}
 		</ul>
 	</nav>
 	<!-- Minimize button -->

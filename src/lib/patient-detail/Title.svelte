@@ -33,7 +33,7 @@
 		if (confirmed) {
 			let db = new DBAdapter();
 			await db.delete('patients', ['patient_id', patient.patient_id]);
-			patients.remove(patient.patient_id);
+			patients.update((p) => p.filter((p) => p.patient_id !== patient.patient_id));
 			goto('/dashboard/patients');
 		}
 	}

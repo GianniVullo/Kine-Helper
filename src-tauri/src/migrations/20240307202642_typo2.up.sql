@@ -1,0 +1,1 @@
+ALTER TABLE attestations RENAME COLUMN numero_etablissment TO numero_etablissement;

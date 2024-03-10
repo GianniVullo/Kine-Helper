@@ -71,7 +71,9 @@
 		let delta = dayjs(event.end).diff(dayjs(event.start), 'minute');
 		event.start = newDate;
 		event.end = dayjs(newDate).add(delta, 'minute').format('YYYY-MM-DD HH:mm');
-		$modalStore[0].meta.component.updateEvent(event);
+		if ($modalStore[0].meta.component) {
+			$modalStore[0].meta.component.updateEvent(event);			
+		}
 		patients.update((p) => {
 			let patient = p.find((p) => p.patient_id === event.extendedProps.seance.patient_id);
 			let sp = patient.situations_pathologiques.find(
@@ -87,7 +89,9 @@
 			let db = new DBAdapter();
 			let result = await db.delete('seances', ['seance_id', event.extendedProps.seance.seance_id]);
 			console.log('result from deleteIfHasBeenAttested', result);
-			$modalStore[0].meta.component.removeEventById(event.extendedProps.seance.seance_id);
+			if ($modalStore[0].meta.component) {
+				$modalStore[0].meta.component.removeEventById(event.extendedProps.seance.seance_id);
+			}
 			patients.update((p) => {
 				let patient = p.find((p) => p.patient_id === event.extendedProps.seance.patient_id);
 				let sp = patient.situations_pathologiques.find(
@@ -154,7 +158,7 @@
 		<!--? Permet d'interagir avec l'objet Séance -->
 
 		<article class="mb-4">
-			{#if !event.extendedProps.seance.has_been_attested}
+			{#if !event.extendedProps.seance.has_been_attested || !event.extendedProps.seance.attestation_id}
 				<button
 					on:click={() => {
 						report = true;
@@ -172,6 +176,8 @@
 						);
 					}}
 					class="variant-filled-secondary btn btn-sm">{$t('otherModal', 'calendarcontrols.bill')}</button>
+					{:else}
+						<h3></h3>
 			{/if}
 			{#if !event.extendedProps.seance.has_been_attested}
 				<button

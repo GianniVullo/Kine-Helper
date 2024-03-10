@@ -5,7 +5,7 @@
 	import { patholourdeTypes } from '../../../stores/codeDetails';
 	import { t } from '../../../i18n';
 
-	let options = patholourdeTypes.map((value, index) => ({ label: value, value: index }));
+	let options = patholourdeTypes().map((value, index) => ({ label: value, value: index }));
 
 	export let pathologieLourde = undefined;
 	export let GMFCSScore;

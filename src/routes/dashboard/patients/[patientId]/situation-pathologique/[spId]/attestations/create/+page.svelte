@@ -76,7 +76,10 @@
 				rsp.seances = rsp.seances.map((seance) => {
 					let rseance = this.seances.find((s) => s.seance_id === seance.seance_id);
 					if (rseance) {
-						return rseance;
+						seance.has_been_attested = true;
+						seance.attestation_id = attestation.attestation_id;
+						seance.code_id = rseance.code_id;
+						seance.date = rseance.date;
 					}
 					return seance;
 				});

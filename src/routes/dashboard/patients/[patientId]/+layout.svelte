@@ -71,7 +71,7 @@
 	{#await spPromied}
 		{$t('shared', 'loading')}
 	{:then value}
-		<div class="flex h-full w-full flex-col items-start justify-start">
+		<div class="flex h-screen w-full flex-col items-start justify-start">
 			<Title {patient} />
 			{#key loading}
 				{#await loading}
@@ -81,9 +81,9 @@
 						class="h-5 w-5 animate-spin rounded-full border-2 border-secondary-500 border-b-primary-500 text-4xl">
 					</div>
 				{:then _}
-					<div class="flex h-full w-full flex-col md:flex-row">
+					<div class="flex w-full flex-col md:flex-row">
 						<Arborescence {patient} />
-						<slot />
+						<div class="overflow-y-scroll w-full h-[95vh]"><slot /></div>
 					</div>
 				{/await}
 			{/key}

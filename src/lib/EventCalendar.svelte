@@ -6,14 +6,15 @@
 	import { t } from './i18n';
 	import { get } from 'svelte/store';
 
+
 	const modalStore = getModalStore();
 
 	export let events;
 	export let options = {};
 	export let ec;
-	let plugins = [TimeGrid];
+	let plugins = [TimeGrid, DayGrid];
 	let base_options = {
-		view: 'timeGridWeek',
+		view: 'dayGridMonth',
 		buttonText: {
 			close: get(t)('shared', 'close'),
 			dayGridMonth: get(t)('shared', 'month'),

@@ -231,7 +231,7 @@ export function durees() {
 	];
 }
 export function types() {
-	[
+	return [
 		get(t)('stores', 'code.t1'),
 		get(t)('stores', 'code.t2'),
 		get(t)('stores', 'code.t3'),
@@ -243,7 +243,7 @@ export function types() {
 }
 
 export function patholourdeTypes() {
-	[
+	return [
 		get(t)('stores', 'code.plt1'),
 		get(t)('stores', 'code.plt2'),
 		get(t)('stores', 'code.plt3'),

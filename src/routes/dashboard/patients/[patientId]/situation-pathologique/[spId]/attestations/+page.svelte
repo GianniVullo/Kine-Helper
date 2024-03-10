@@ -56,12 +56,13 @@
 									})}
 								</h5>
 								<div class="flex space-x-2">
-									<button class="variant-outline-warning btn-icon btn-icon-sm"
-										><UpdateIcon
-											class="h-5 w-5 stroke-surface-600 dark:stroke-surface-200" /></button>
-									<button class="variant-outline-error btn-icon btn-icon-sm"
+									<a
+										href={`/dashboard/patients/${patient.patient_id}/situation-pathologique/${sp.sp_id}/attestations/${attestation.attestation_id}/update`}
+										class="variant-outline-warning btn-icon btn-icon-sm"
+										><UpdateIcon class="h-5 w-5 stroke-surface-600 dark:stroke-surface-200" /></a>
+									<!-- <button on:click={() => modalStore.trigger({type: 'confirm', title: $t('patients.detail', 'deleteModal.title')})} class="variant-outline-error btn-icon btn-icon-sm"
 										><DeleteIcon
-											class="h-5 w-5 stroke-surface-600 dark:stroke-surface-200" /></button>
+											class="h-5 w-5 stroke-surface-600 dark:stroke-surface-200" /></button> -->
 									<button
 										class="variant-filled btn-icon btn-icon-sm dark:variant-filled"
 										on:click={async () => {

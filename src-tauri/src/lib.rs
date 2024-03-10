@@ -59,8 +59,10 @@ pub fn run() {
                 .plugin(tauri_plugin_updater::Builder::new().build())?;
             Ok(())
         })
+        .plugin(tauri_plugin_os::init())
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_process::init())
+        .plugin(tauri_plugin_http::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(
             tauri_plugin_sql::Builder::default()
@@ -89,6 +91,18 @@ pub fn run() {
                             version: 3,
                             description: "Typo sur la table patients",
                             sql: include_str!("migrations/20240305190432_renamepatient.up.sql"),
+                            kind: MigrationKind::Up,
+                        },
+                        Migration {
+                            version: 4,
+                            description: "Typo sur la table attestations",
+                            sql: include_str!("migrations/20240307202642_typo2.up.sql"),
+                            kind: MigrationKind::Up,
+                        },
+                        Migration {
+                            version: 5,
+                            description: "Ajout de la table kines",
+                            sql: include_str!("migrations/20240309173246_kine.up.sql"),
                             kind: MigrationKind::Up,
                         },
                     ],

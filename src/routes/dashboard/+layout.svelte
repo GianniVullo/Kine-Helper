@@ -5,16 +5,15 @@
 	let isMinimized = true;
 </script>
 
-<AppShell>
+<div class="flex md:flex-row flex-col w-screen h-screen">
+
 	<!-- (header) -->
-
 	<SidebarMenu {isMinimized} />
-
 	<!-- Router Slot -->
-	<div class="ml-0 mt-16 flex p-4 md:ml-12 md:mt-0 flex-col w-full h-screen">
+	<div class="w-full ml-2 overflow-y-scroll">
 		<slot />
 	</div>
 	<!-- ---- / ---- -->
 	<!-- (pageFooter) -->
 	<!-- (footer) -->
-</AppShell>
+</div>

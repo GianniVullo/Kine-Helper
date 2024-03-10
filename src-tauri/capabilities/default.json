@@ -26,6 +26,15 @@
 				{ "path": "$APPLOCALDATA/**" }
 			]
 		},
+		"http:allow-fetch",
+		{
+			"identifier": "http:default",
+			"allow": [
+				{
+					"url": "https://epzrdxofotzufykimwuc.supabase.co/functions/v1/update-checker/pOwtY_2gz3GHtISkVIv6Pg"
+				}
+			]
+		},
 		"fs:allow-app-write",
 		"fs:allow-app-write-recursive",
 		"fs:allow-appcache-write",

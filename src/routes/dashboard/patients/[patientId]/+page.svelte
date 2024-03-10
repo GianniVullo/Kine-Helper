@@ -19,7 +19,7 @@
 </script>
 
 {#if !sps}
-	<div class="mt-12 flex flex-col items-start justify-start">
+	<div class="mt-12 ml-2 flex flex-col items-start justify-start">
 		<h1 class="mb-3 text-lg">{$t('patients.detail', 'start')}</h1>
 		<div>
 			<a

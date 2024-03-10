@@ -6,7 +6,7 @@ import { DBInitializer } from '../../stores/databaseInitializer';
 export default class DBAdapter {
 	constructor() {
 		//? Le type de l'adapter est soit true (Remote (Supabase) soit false (Local (SQLite)).
-		this.offre = get(user).profil.offre;
+		this.offre = get(user)?.profil?.offre ?? 'free';
 		//? Le dossier racine de l'application où devrait se trouver le stockage de tous les fichiers binaires.
 		this.baseAppDirectory;
 		//? Dossier par défault où l'utilisateur souhaite sauvergarder ses fichiers
@@ -125,6 +125,7 @@ export default class DBAdapter {
 	async retrieve(table, selectStatement, [filterName, filterValue]) {
 		switch (this.offre) {
 			case 'free':
+				console.log('in DBAdapter.retrieve() with', table, selectStatement, filterName, filterValue);
 				let db = await new DBInitializer().openDBConnection();
 
 				const stmt = await db.select(
@@ -196,7 +197,11 @@ export default class DBAdapter {
 		}
 	}
 
-	async list(table, filters, { selectStatement, limit, orderBy, ascending = true }) {
+	async list(
+		table,
+		filters,
+		{ selectStatement, limit, orderBy, ascending = true } = { selectStatement: '*' }
+	) {
 		console.log('in DBAdapter.list() with', table, selectStatement, orderBy, ascending);
 		switch (this.offre) {
 			case 'free':
@@ -226,12 +231,12 @@ export default class DBAdapter {
 					'in DBAdapter.list() Before query',
 					liteQuery,
 					'with args',
-					filters.map(([_, filterValue]) => filterValue)
+					filters?.map(([_, filterValue]) => filterValue)
 				);
 				// Prepare and execute the query
 				const stmt = await db.select(
 					liteQuery,
-					filters.map(([_, filterValue]) => filterValue)
+					filters?.map(([_, filterValue]) => filterValue)
 				);
 				console.log('in DBAdapter.list() After query', stmt);
 				await db.close();
@@ -340,6 +345,23 @@ export default class DBAdapter {
 				});
 			default:
 				console.log(`in DBAdapter.update_seances(${seances_array})`);
+				return;
+		}
+	}
+
+	async delete_all_patient() {
+		switch (this.offre) {
+			case 'free':
+				let db = await new DBInitializer().openDBConnection();
+				await db.execute('DELETE FROM patients WHERE kinesitherapeute_id = $1', [
+					get(user).user.id
+				]);
+				await db.close();
+				break;
+			case 'cloud':
+				return await supabase.rpc('delete_all_patient');
+			default:
+				console.log(`in DBAdapter.delete_all_patient()`);
 				return;
 		}
 	}
