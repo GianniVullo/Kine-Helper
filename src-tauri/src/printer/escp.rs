@@ -1,5 +1,4 @@
 use crate::printer::form_data_modeling::{Attestation, DocumentFormData, Seance};
-
 use unidecode::unidecode;
 
 struct ESCP {

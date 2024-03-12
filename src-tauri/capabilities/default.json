@@ -18,6 +18,7 @@
 		"sql:allow-execute",
 		"shell:allow-open",
 		"dialog:allow-open",
+		"os:allow-platform",
 		{
 			"identifier": "fs:scope",
 			"allow": [

@@ -5,7 +5,7 @@ use std::path::Path;
 use std::process::Command;
 
 #[tauri::command]
-pub fn print_attestation(printer_name: String, form_data: DocumentFormData) {
+pub fn print_attestation(printer_name: String, form_data: DocumentFormData) -> String {
     // Create a file with raw ESC/P commands
     let file_path = Path::new("temp_print_file.prn");
     let mut file = File::create(&file_path).expect("Failed to create file");
@@ -30,4 +30,5 @@ pub fn print_attestation(printer_name: String, form_data: DocumentFormData) {
 
     // Clean up
     std::fs::remove_file(file_path).expect("Failed to remove temporary file");
+    "true".into()
 }

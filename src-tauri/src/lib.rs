@@ -5,12 +5,32 @@ use nomenclature::convention_decompression;
 use printer::raw_printer::unix::print_attestation;
 #[cfg(target_os = "windows")]
 use printer::raw_printer::windows::print_attestation;
+use printers::{get_printers, printer::Printer};
 use std::{
     fs::{self, File},
     io::{self, Read, Write},
     path::Path,
 };
 use tauri_plugin_sql::{Migration, MigrationKind};
+
+#[derive(Debug, serde::Deserialize, serde::Serialize)]
+struct LocalPrinter {
+    pub name: String,
+    pub uri: String,
+    pub system_name: String,
+    pub driver_name: String,
+}
+
+impl From<Printer> for LocalPrinter {
+    fn from(external: Printer) -> Self {
+        LocalPrinter {
+            name: external.name,
+            uri: external.uri,
+            system_name: external.system_name,
+            driver_name: external.driver_name,
+        }
+    }
+}
 
 #[tauri::command]
 fn setup_path(dir_path: String, file_name: String, file_content: Vec<u8>) {
@@ -19,6 +39,14 @@ fn setup_path(dir_path: String, file_name: String, file_content: Vec<u8>) {
     let file_path = format!("{}/{}", dir_path, file_name);
     let mut file = File::create(file_path).unwrap();
     file.write_all(&file_content).unwrap();
+}
+
+#[tauri::command]
+async fn get_printer() -> Vec<LocalPrinter> {
+    let printers = get_printers();
+    let local_printers = printers.into_iter().map(|p| p.into()).collect();
+    println!("{:?}", local_printers);
+    local_printers
 }
 
 #[tauri::command]
@@ -117,7 +145,8 @@ pub fn run() {
             setup_path,
             file_exists,
             delete_file,
-            retrieve_file
+            retrieve_file,
+            get_printer
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

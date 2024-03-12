@@ -105,11 +105,11 @@
 			class="input"
 			type="text"
 			name="printer"
-			on:change={() => (modified = true)}
+			on:input={() => (modified = true)}
 			bind:value={imprimanteMatricielle} />
 		{#if modified}
 			<button on:click={changePrinter} class="variant-outline-primary btn btn-sm"
-				>{$t('settings', 'save')}</button>
+				>{$t('shared', 'save')}</button>
 		{/if}
 	</section>
 	<section class="flex flex-col items-start space-y-2">
