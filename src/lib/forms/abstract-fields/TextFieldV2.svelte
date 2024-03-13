@@ -15,6 +15,7 @@
 	export let pattern = undefined;
 	export let patternMessage = undefined;
 	export let value;
+	export let maxlength = undefined;
 </script>
 
 <DefaultFieldWrapper class={parentClass}>
@@ -28,6 +29,7 @@
 		{autocomplete}
 		bind:value={value}
 		class="input group-[.has-error]/field:border-error-500 {clazz}"
+		{maxlength}
 		{pattern}
 		data-pristine-pattern-message={patternMessage}
 		data-pristine-required-message={required ? requiredMessage : undefined}

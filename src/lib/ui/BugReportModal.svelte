@@ -61,7 +61,7 @@
 					readonly
 					bind:value={request.email}
 					name="email" /></label>
-			<TextFieldV2 bind:value={request.titre} label={$t('bugModal', 'title')} name="titre" />
+			<TextFieldV2 maxlength="200" bind:value={request.titre} label={$t('bugModal', 'title')} name="titre" />
 			<DefaultFieldWrapper>
 				<label for="mess" class="select-none space-y-2 text-surface-500 dark:text-surface-300"
 					><h5>{$t('bugModal', 'label.message')}</h5>
@@ -70,6 +70,7 @@
 						name="message"
 						required
 						bind:value={request.message}
+						maxlength="2000"
 						id="mess"
 						cols="30"
 						rows="10"></textarea

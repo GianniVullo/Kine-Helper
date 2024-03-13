@@ -12,9 +12,6 @@
 	import DBAdapter from '../../../lib/forms/actions/dbAdapter';
 	import { patients } from '../../../lib/stores/PatientStore';
 	import PostSignupForm from '../../../lib/forms/authentication/PostSignupForm.svelte';
-	import { invoke } from '@tauri-apps/api/core';
-
-	console.log(invoke("get_printer"))
 
 	const modalStore = getModalStore();
 	console.log('user', get(user));

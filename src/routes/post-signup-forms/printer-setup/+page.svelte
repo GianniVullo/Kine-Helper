@@ -31,16 +31,10 @@
 		let printers = await invoke('get_printer');
 		resolve({ platformName, printers });
 	});
-	async function gotoKineHelperbeWindows() {
-		await open('https://kine-helper.be');
-	}
 	async function gotoKineHelperbeMacOs() {
-		await open('https://kine-helper.be');
+		await open('https://kine-helper.be/raw-printer-setup');
 	}
-	async function gotoKineHelperbeLinux() {
-		await open('https://kine-helper.be');
-	}
-	let printer;
+
 	const formSchema = {
 		isValid
 	};
@@ -129,6 +123,10 @@
 						class="variant-outline-secondary btn">{$t('printerSetup', 'ignore')}</button>
 				</div>
 			</FormWrapper>
+		</div>
+		<div class="flex flex-col mt-14">
+			<h3 class="text-primary-600 dark:text-primary-500 text-2xl mb-4">Communication importante</h3>
+			<p>Kiné Helper ne prend pour l'instant en charge que les imprimantes matricielles à 9 aiguilles. <br> Les fonctionnalités pour les imprimantes à 12 et 24 aiguilles arriveront avec les prochaines mises à jour de Kiné Helper. </p>
 		</div>
 	</main>
 {/await}

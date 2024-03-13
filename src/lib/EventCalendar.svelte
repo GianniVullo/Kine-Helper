@@ -3,7 +3,7 @@
 	import TimeGrid from '@event-calendar/time-grid';
 	import DayGrid from '@event-calendar/day-grid';
 	import { getModalStore } from '@skeletonlabs/skeleton';
-	import { t } from './i18n';
+	import { locale, t } from './i18n';
 	import { get } from 'svelte/store';
 
 
@@ -45,6 +45,7 @@
 		},
 		events: events,
 		// eventSource: events,
+		locale: get(locale),
 		eventClick: handleClickOnEvent,
 		scrollTime: '08:00:00',
 		views: {

@@ -7,7 +7,7 @@
 	import TimeGrid from '@event-calendar/time-grid';
 	import DayGrid from '@event-calendar/day-grid';
 	import { getModalStore } from '@skeletonlabs/skeleton';
-	import { t } from '../../../lib/i18n';
+	import { locale, t } from '../../../lib/i18n';
 	import { get } from 'svelte/store';
 	import { NomenclatureManager } from '../../../lib/utils/nomenclatureManager';
 	import { patients } from '../../../lib/stores/PatientStore';
@@ -108,6 +108,7 @@
 		],
 		eventClick: handleClickOnEvent,
 		scrollTime: '08:00:00',
+		locale: get(locale),
 		views: {
 			timeGridWeek: { pointer: true }
 		}
