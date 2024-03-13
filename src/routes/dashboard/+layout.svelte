@@ -10,7 +10,7 @@
 	<!-- (header) -->
 	<SidebarMenu {isMinimized} />
 	<!-- Router Slot -->
-	<div class="w-full ml-2 overflow-y-scroll">
+	<div class="w-full ml-2">
 		<slot />
 	</div>
 	<!-- ---- / ---- -->

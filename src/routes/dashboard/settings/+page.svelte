@@ -12,6 +12,9 @@
 	import DBAdapter from '../../../lib/forms/actions/dbAdapter';
 	import { patients } from '../../../lib/stores/PatientStore';
 	import PostSignupForm from '../../../lib/forms/authentication/PostSignupForm.svelte';
+	import { invoke } from '@tauri-apps/api/core';
+
+	console.log(invoke("get_printer"))
 
 	const modalStore = getModalStore();
 	console.log('user', get(user));
@@ -94,7 +97,7 @@
 	let modified = false;
 </script>
 
-<main class="flex w-full flex-col items-start space-y-4">
+<main class="flex w-full h-full flex-col items-start space-y-4 overflow-y-scroll">
 	<div>
 		<h1 class="text-lg text-surface-600 dark:text-surface-300">{$t('sidebar', 'settings')}</h1>
 		<p class="text-surface-400">{$t('settings', 'description')}</p>

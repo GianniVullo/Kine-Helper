@@ -62,6 +62,9 @@ pub fn build_document(form_data: DocumentFormData) -> Vec<u8> {
     let section_identification_patient = vec![
         escp_cmds.format_to_12_inch.clone(),
         escp_cmds.vertical_spacing(7.05),
+        #[cfg(any(target_os = "macos", target_os = "linux"))]
+        format!("\t\t     {}", unidecode(&patient.full_name())).into_bytes(),
+        #[cfg(target_os = "windows")]
         format!("\t\t     {}", unidecode(&patient.full_name())).into_bytes(),
         escp_cmds.vertical_spacing(13.7),
         format!("\r\t\t   {}", patient.mutualite).into_bytes(),
@@ -80,7 +83,10 @@ pub fn build_document(form_data: DocumentFormData) -> Vec<u8> {
         escp_cmds.vertical_spacing(10.0),
         escp_cmds.vertical_spacing(10.0),
         escp_cmds.vertical_spacing(10.0),
+        #[cfg(any(target_os = "macos", target_os = "linux"))]
         escp_cmds.vertical_spacing(10.52),
+        #[cfg(target_os = "windows")]
+        escp_cmds.vertical_spacing(10.0),
         escp_cmds.set_to_12_cpi.clone(),
     ]
     .into_iter()
@@ -89,7 +95,12 @@ pub fn build_document(form_data: DocumentFormData) -> Vec<u8> {
 
     let section_prescription_hospitalisation = vec![
         escp_cmds.set_to_10_cpi.clone(),
+        #[cfg(any(target_os = "macos", target_os = "linux"))]
         escp_cmds.vertical_spacing(4.7),
+
+        #[cfg(target_os = "windows")]
+        escp_cmds.vertical_spacing(6.0),
+
         format!(
             "\r\t       {}",
             unidecode(&prescription.prescripteur.full_name())

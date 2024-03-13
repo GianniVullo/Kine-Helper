@@ -36,7 +36,7 @@
 	// console.log($user);
 </script>
 
-<main class="flex flex-col items-center justify-start" style="scrollbar-gutter: stable;">
+<main class="flex flex-col items-center justify-start h-full" style="scrollbar-gutter: stable;">
 	<div
 		data-has-input={searchQuery.length !== 0}
 		class="md:justify group z-0 flex w-full flex-col items-center justify-center p-4 pb-6 duration-200 ease-out md:flex-row md:items-start">
@@ -64,7 +64,7 @@
 		</div>
 		<div class="w-1/3"></div>
 	</div>
-	<section class="mt-6 w-full px-12 py-6 opacity-100 duration-300 md:mt-0">
+	<section class="mt-6 w-full px-12 py-6 opacity-100 duration-300 md:mt-0 overflow-y-scroll">
 		<h1 class="mb-2 text-lg text-surface-500 dark:text-surface-400">
 			{$t('patients.list', 'results')}
 		</h1>

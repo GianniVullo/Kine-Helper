@@ -44,8 +44,8 @@ fn setup_path(dir_path: String, file_name: String, file_content: Vec<u8>) {
 #[tauri::command]
 async fn get_printer() -> Vec<LocalPrinter> {
     let printers = get_printers();
+    println!("{:?}", &printers);
     let local_printers = printers.into_iter().map(|p| p.into()).collect();
-    println!("{:?}", local_printers);
     local_printers
 }
 
