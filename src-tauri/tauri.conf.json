@@ -30,7 +30,6 @@
 				"resizable": true,
 				"title": "Kiné Helper",
 				"maximized": true,
-				"contentProtected": true,
 				"url": "/splashscreen"
 			}
 		]

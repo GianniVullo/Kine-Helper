@@ -133,6 +133,12 @@ pub fn run() {
                             sql: include_str!("migrations/20240309173246_kine.up.sql"),
                             kind: MigrationKind::Up,
                         },
+                        Migration {
+                            version: 6,
+                            description: "Ajout de la column 9 pin à la table settings",
+                            sql: include_str!("migrations/20240318145714_9pin.up.sql"),
+                            kind: MigrationKind::Up,
+                        },
                     ],
                 )
                 .build(),

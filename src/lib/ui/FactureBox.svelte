@@ -12,6 +12,7 @@
 	export let sp;
 	let clazz = '';
 	export { clazz as class };
+	console.log('facture', facture);
 
 	function attestationIdsArrayMapper(attestationsIds) {
 		return attestationsIds.map((attId) => {
@@ -21,9 +22,9 @@
 
 	function isntantiateFacture(facture) {
 		if (facture.docType === 8) {
-			return new FacturePatient(facture.form_data, patient, sp);
+			return new FacturePatient(facture.form_data, patient, sp, facture);
 		} else {
-			return new FactureMutuelle(facture.form_data, patient, sp);
+			return new FactureMutuelle(facture.form_data, patient, sp, facture);
 		}
 	}
 </script>
@@ -78,7 +79,7 @@
 		<h5 class="">
 			<span class="text-surface-400">{$t('sp.detail', 'attestations')} :</span>
 		</h5>
-		<ul class="mb-4">
+		<ul class="mb-4 h-12 overflow-y-scroll">
 			{#each attestationIdsArrayMapper(facture.form_data.attestationsIds) as att}
 				<li>
 					&nbsp;&nbsp;&nbsp;&nbsp;
@@ -91,7 +92,7 @@
 		</ul>
 		<h5>
 			<span class="text-surface-400">{$t('otherModal', 'total')}:</span>
-			{facture.form_data.tableRows[0].total}€
+			{facture.form_data.tableRows ? facture.form_data.tableRows[0].total : facture.form_data.total}€
 		</h5>
 	</div>
 </div>

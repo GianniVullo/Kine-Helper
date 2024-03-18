@@ -90,7 +90,7 @@
 			let fMut = new FactureMutuelle(form_data, patient, sp);
 			await fMut.save();
 		}
-		if (factureType == 0) {
+		if (factureType === 0) {
 			let form_data = {
 				total: $modalStore[0].meta?.sp.attestations
 					.filter((att) => attestationsIds.includes(att.attestation_id))
@@ -161,7 +161,6 @@
 		return { withRapport, withIndemnity, withIntake };
 	}
 
-	console.log(parent);
 	// Base Classes
 	const cBase = 'card p-4 w-modal shadow-xl space-y-4';
 	const cHeader = 'text-2xl font-bold';

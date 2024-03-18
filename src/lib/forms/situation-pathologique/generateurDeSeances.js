@@ -22,7 +22,7 @@ export class GenerateurDeSeances {
 		examen_consultatif,
 		examen_ecrit_date,
 		rapport_ecrit,
-		deja_faites,
+		deja_faites = 0,
 		rapport_ecrit_date,
 		rapport_ecrit_custom_date,
 		volet_j,
@@ -176,18 +176,21 @@ export class GenerateurDeSeances {
 
 		//* Création des séances de kinésithérapie
 		for (const date of dateList) {
-			if (this.seancesGeneree.length < this.seances_normales_executables) {
+			if (this.seancesGeneree.length < this.seances_normales_executables - this.deja_faites) {
 				await this.createAddSeance(date, SEANCE_NORMALE, {});
 			} else if (
 				this.seancesGeneree.length <
-				this.seances_en_depassement_executables + this.seances_normales_executables
+				this.seances_en_depassement_executables +
+					this.seances_normales_executables -
+					this.deja_faites
 			) {
 				await this.createAddSeance(date, DEPASSEMENT, {});
 			} else if (
 				this.seancesGeneree.length <
 				this.seances_normales_executables +
 					this.seances_en_depassement_executables +
-					this.seances_en_surdepassement_executables
+					this.seances_en_surdepassement_executables -
+					this.deja_faites
 			) {
 				await this.createAddSeance(date, DEPASSEMENT2, {});
 			}

@@ -81,6 +81,12 @@
 			meta: {}
 		},
 		{
+			label: '317 - Mutualité Solidaris Charleroi',
+			value: 317,
+			keywords: 'wallonie, socialiste, solidaris, 319',
+			meta: {}
+		},
+		{
 			label: '319 - Mutualité Solidaris Wallonie',
 			value: 319,
 			keywords: 'wallonie, socialiste, solidaris, 319',

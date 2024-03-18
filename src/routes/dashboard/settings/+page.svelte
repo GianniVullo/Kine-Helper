@@ -12,11 +12,12 @@
 	import DBAdapter from '../../../lib/forms/actions/dbAdapter';
 	import { patients } from '../../../lib/stores/PatientStore';
 	import PostSignupForm from '../../../lib/forms/authentication/PostSignupForm.svelte';
+	import RadioFieldV2 from '../../../lib/forms/abstract-fields/RadioFieldV2.svelte';
 
 	const modalStore = getModalStore();
 	console.log('user', get(user));
 	let imprimanteMatricielle = get(user).settings.raw_printer;
-
+	let is_nine_pin = get(user).settings.is_nine_pin ?? true;
 	async function changingLanguage(event) {
 		const lang = event.target.value;
 		if (lang === $locale) return;
@@ -28,7 +29,7 @@
 			const { data } = await supabase.from('translations').select('version').eq('code', lang);
 			//Si le dictionnaire n'a pas de version, on le télécharge directement
 			if ($dictionnary[lang].version) {
-				if ((data[0].version === $dictionnary[lang].version)) {
+				if (data[0].version === $dictionnary[lang].version) {
 					locale.set(lang);
 					goto('/dashboard/settings');
 					return;
@@ -94,7 +95,7 @@
 	let modified = false;
 </script>
 
-<main class="flex w-full h-full flex-col items-start space-y-4 overflow-y-scroll">
+<main class="flex h-full w-full flex-col items-start space-y-4 overflow-y-scroll">
 	<div>
 		<h1 class="text-lg text-surface-600 dark:text-surface-300">{$t('sidebar', 'settings')}</h1>
 		<p class="text-surface-400">{$t('settings', 'description')}</p>
@@ -111,6 +112,15 @@
 			<button on:click={changePrinter} class="variant-outline-primary btn btn-sm"
 				>{$t('shared', 'save')}</button>
 		{/if}
+		<RadioFieldV2
+			name="is_nine_pin"
+			value={true}
+			inline
+			label={$t('printerSetup', 'pins.label')}
+			options={[
+				{ value: true, label: '9' },
+				{ value: false, label: '12/24' }
+			]} />
 	</section>
 	<section class="flex flex-col items-start space-y-2">
 		<h2 class="text-secondary-500 dark:text-secondary-300">{$t('settings', 'lang')}</h2>

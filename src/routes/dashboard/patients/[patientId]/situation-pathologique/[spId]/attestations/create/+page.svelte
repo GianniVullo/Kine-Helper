@@ -68,7 +68,7 @@
 			console.log('attestation', attestation, 'seances', this.seances);
 			attestation = attestation.data[0];
 			// attestation.seances = seances;
-			sp.attestations.push(attestation);
+			// sp.attestations.push(attestation);
 			patients.update((p) => {
 				let rpatient = p.find((p) => p.patient_id === patient.patient_id);
 				let rsp = rpatient.situations_pathologiques.find((tsp) => tsp.sp_id === sp.sp_id);

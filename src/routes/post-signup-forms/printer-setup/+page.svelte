@@ -1,7 +1,7 @@
 <script>
 	import { getModalStore } from '@skeletonlabs/skeleton';
 	import { open } from '@tauri-apps/plugin-shell';
-	import { FormWrapper, SubmitButton, DefaultFieldWrapper } from '../../../lib/forms/index';
+	import { FormWrapper, SubmitButton } from '../../../lib/forms/index';
 	import { goto } from '$app/navigation';
 	import DBAdapter from '../../../lib/forms/actions/dbAdapter';
 	import { user } from '../../../lib/index';
@@ -11,6 +11,7 @@
 	import { invoke } from '@tauri-apps/api/core';
 	import { PrinterIcon } from '../../../lib/ui/svgs';
 	import TextFieldV2 from '../../../lib/forms/abstract-fields/TextFieldV2.svelte';
+	import RadioFieldV2 from '../../../lib/forms/abstract-fields/RadioFieldV2.svelte';
 
 	const modalStore = getModalStore();
 	const modal = {
@@ -25,6 +26,7 @@
 			}
 		}
 	};
+	let printerField;
 
 	let initPrintersAndPlatform = new Promise(async (resolve) => {
 		let platformName = await platform();
@@ -32,7 +34,7 @@
 		resolve({ platformName, printers });
 	});
 	async function gotoKineHelperbeMacOs() {
-		await open('https://kine-helper.be/raw-printer-setup');
+		await open('https://kine-helper.be/tutoriels');
 	}
 
 	const formSchema = {
@@ -41,13 +43,17 @@
 
 	async function isValid({ formData, submitter }) {
 		console.log('in isValid with', formData);
-		setPrinter(formData.printer);
+		setPrinter(formData.printer, formData.is_nine_pin);
 	}
-	async function setPrinter(printerName) {
+	async function setPrinter(printerName, is_nine_pin) {
 		let db = new DBAdapter();
-		await db.update('settings', [['user_id', $user.user.id]], { raw_printer: printerName });
+		await db.update('settings', [['user_id', $user.user.id]], {
+			raw_printer: printerName,
+			is_nine_pin: JSON.parse(is_nine_pin)
+		});
 		user.update((u) => {
 			u.settings.raw_printer = printerName;
+			u.settings.is_nine_pin = JSON.parse(is_nine_pin);
 			return u;
 		});
 		goto('/dashboard');
@@ -94,14 +100,17 @@
 			<div class="flex flex-wrap overflow-x-scroll">
 				{#each printers as printer}
 					<button
-						on:click={async () => {
-							await setPrinter(printer.system_name);
+						on:click={() => {
+							printerField = printer.system_name;
 						}}
 						class="mb-2 mr-2 flex items-center space-x-2 rounded-lg bg-slate-100 px-4 py-2 duration-200 hover:bg-surface-200 dark:bg-surface-800 hover:dark:bg-surface-700">
 						<PrinterIcon class="size-5" />
 						<div class="flex flex-col items-start">
 							<h1 class="select-none text-surface-800 dark:text-surface-100">{printer.name}</h1>
 						</div>
+						{#if printerField === printer.system_name}
+							<div class="ml-1">&#10003;</div>
+						{/if}
 					</button>
 				{/each}
 			</div>
@@ -113,20 +122,31 @@
 				<TextFieldV2
 					class="input min-w-[24rem] max-w-sm {platformName === 'windows' ? '!hidden' : ''}"
 					labelClass={platformName === 'windows' ? '!hidden' : ''}
+					value={printerField}
 					label={$t('printerSetup', 'label.printer')}
-					type="text"
 					name="printer" />
+				<RadioFieldV2
+					name="is_nine_pin"
+					value={true}
+					inline
+					label={$t('printerSetup', 'pins.label')}
+					options={[
+						{ value: true, label: '9' },
+						{ value: false, label: '12/24' }
+					]} />
 				<div class="flex w-full justify-between">
-					<SubmitButton class="!self-start {platformName === 'windows' ? '!hidden' : ''}" />
+					<SubmitButton class="!self-start" />
 					<button
 						on:click|preventDefault={() => modalStore.trigger(modal)}
 						class="variant-outline-secondary btn">{$t('printerSetup', 'ignore')}</button>
 				</div>
 			</FormWrapper>
 		</div>
-		<div class="flex flex-col mt-14">
-			<h3 class="text-primary-600 dark:text-primary-500 text-2xl mb-4">Communication importante</h3>
-			<p>Kiné Helper ne prend pour l'instant en charge que les imprimantes matricielles à 9 aiguilles. <br> Les fonctionnalités pour les imprimantes à 12 et 24 aiguilles arriveront avec les prochaines mises à jour de Kiné Helper. </p>
+		<div class="mt-14 flex flex-col">
+			<h3 class="mb-4 text-2xl text-primary-600 dark:text-primary-500">{$t('printerSetup', 'important')}</h3>
+			<p>
+				{$t('printerSetup', 'important.description')}
+			</p>
 		</div>
 	</main>
 {/await}

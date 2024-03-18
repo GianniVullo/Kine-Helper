@@ -20,18 +20,10 @@
                 min="0"
                 max="365"
                 bind:value={dejaFaites}
-                class="input group-[.has-error]/field:border-error-500"
-                on:change={(event) => {
-                    if (dejaFaites < 0) {
-                        dejaFaites = 0;
-                    } else {
-                        nombreSeances = nombreSeances - (dejaFaites - previousDejaFaite);
-                        previousDejaFaite = dejaFaites;
-                    }
-                }} />
+                class="input group-[.has-error]/field:border-error-500" />
         </div>
         <p class="dark:text-surface-100 text-surface-800">
-            {$t('form.generateur', 'alredaydone.help')}
+            {@html $t('form.generateur', 'alredaydone.help')}
         </p>
     </DefaultFieldWrapper>
     

@@ -3,10 +3,6 @@
 	import { RadioGroup, RadioItem } from '@skeletonlabs/skeleton';
 	export let options;
 	export let name;
-	// export let required = undefined;
-	// let clazz = '';
-	// export { clazz as class };
-	let labelClass = 'text-surface-500 dark:text-surface-300';
 	export let required = undefined;
 	export let label;
 	export let inline = false;

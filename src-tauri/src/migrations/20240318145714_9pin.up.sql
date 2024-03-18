@@ -1,0 +1,1 @@
+alter table settings add column is_nine_pin BOOLEAN DEFAULT TRUE;

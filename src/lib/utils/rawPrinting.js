@@ -48,7 +48,7 @@ export async function printAttestation(
 		return new Date(a.date) - new Date(b.date);
 	});
 	let formData = {
-		is_nine_pin: true,
+		is_nine_pin: get(user).settings.is_nine_pin,
 		patient: {
 			nom: patient.nom,
 			prenom: patient.prenom,
