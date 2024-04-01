@@ -15,6 +15,7 @@
 	export let pattern = undefined;
 	export let patternMessage = undefined;
 	export let value;
+	export let readOnly = false;
 </script>
 
 <DefaultFieldWrapper class={parentClass}>
@@ -22,6 +23,7 @@
 	<input
 		id={id ?? name}
 		type="date"
+		readonly={readOnly}
 		{required}
 		{name}
 		{placeholder}

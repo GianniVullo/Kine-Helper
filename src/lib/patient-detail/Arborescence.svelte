@@ -85,11 +85,12 @@
 							<ChevronRightIcon class="h-5 w-5" />
 							<h5>{$t('sp.detail', 'documents')}</h5>
 						</a>
-						<div
+						<a
+							href={`/dashboard/patients/${patient.patient_id}/situation-pathologique/${sp.sp_id}/seances`}
 							class="flex cursor-pointer items-center duration-200 hover:translate-x-2 hover:text-surface-800 hover:dark:text-surface-200">
 							<ChevronRightIcon class="h-5 w-5" />
 							<h5>{$t('patients.detail', 'prestations')}</h5>
-						</div>
+						</a>
 					</div>
 				{/if}
 			</div>

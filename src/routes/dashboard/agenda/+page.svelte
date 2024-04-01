@@ -61,6 +61,7 @@
 		return events;
 	}
 	let base_options = {
+		allDaySlot: false,
 		view: 'dayGridMonth',
 		buttonText: {
 			close: get(t)('shared', 'close'),

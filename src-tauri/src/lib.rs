@@ -139,6 +139,12 @@ pub fn run() {
                             sql: include_str!("migrations/20240318145714_9pin.up.sql"),
                             kind: MigrationKind::Up,
                         },
+                        Migration {
+                            version: 7,
+                            description: "Ajout des dernières histoires à la table SP",
+                            sql: include_str!("migrations/20240321080003_sp_with_group.up.sql"),
+                            kind: MigrationKind::Up,
+                        },
                     ],
                 )
                 .build(),

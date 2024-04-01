@@ -72,6 +72,18 @@ export class SituationPathologique {
 		rapport_ecrit_date,
 		rapport_ecrit_custom_date,
 		with_indemnity,
+		groupe_id,
+		patho_lourde_type,
+		lieu_id,
+		duree,
+		volet_j,
+		volet_h,
+		gmfcs,
+		seconde_seance_fa,
+		seconde_seance_e,
+		duree_seconde_seance_fa,
+		deja_faites,
+		date_presta_chir_fa,
 		generateurs_de_seances = [],
 		prescriptions = [],
 		attestations = [],
@@ -97,6 +109,18 @@ export class SituationPathologique {
 		this.rapport_ecrit_date = rapport_ecrit_date;
 		this.rapport_ecrit_custom_date = rapport_ecrit_custom_date;
 		this.with_indemnity = JSON.parse(with_indemnity ?? null);
+		this.groupe_id = groupe_id;
+		this.lieu_id = lieu_id;
+		this.duree = duree;
+		this.volet_j = JSON.parse(volet_j ?? null);
+		this.volet_h = JSON.parse(volet_h ?? null);
+		this.gmfcs = gmfcs;
+		this.seconde_seance_fa = seconde_seance_fa;
+		this.duree_seconde_seance_fa = duree_seconde_seance_fa;
+		this.date_presta_chir_fa = date_presta_chir_fa;
+		this.seconde_seance_e = seconde_seance_e;
+		this.deja_faites = deja_faites;
+		this.patho_lourde_type = patho_lourde_type;
 		if (attestations) {
 			for (const attestation of attestations) {
 				attestation.with_indemnity = JSON.parse(attestation.with_indemnity);
@@ -249,7 +273,7 @@ function createPatientStore() {
 			],
 			{
 				selectStatement:
-					'sp_id, created_at, patient_id, numero_etablissement, service, motif, plan_du_ttt',
+					'sp_id, created_at, patient_id, numero_etablissement, service, motif, plan_du_ttt, groupe_id patho_lourde_type, lieu_id, duree, volet_j, volet_h, gmfcs, seconde_seance_fa, seconde_seance_e, duree_seconde_seance_fa, deja_faites, date_presta_chir_fa',
 				orderBy: 'created_at'
 			}
 		);

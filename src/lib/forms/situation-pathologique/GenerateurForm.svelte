@@ -83,7 +83,9 @@
 
 		let conn = await Database.load('sqlite:kinehelper.db');
 		generateurDeSeance.db = conn;
+		console.log('generateurDeSeance', generateurDeSeance);
 		let seances = await generateurDeSeance.seances();
+		console.log('seances', seances);
 		await conn.close();
 		await db.save('seances', seances);
 
@@ -102,7 +104,24 @@
 			rapport_ecrit,
 			rapport_ecrit_date,
 			rapport_ecrit_custom_date: dateDeduite,
-			with_indemnity
+			with_indemnity,
+			groupe_id,
+			lieu_id,
+			patho_lourde_type:
+				groupe_id === 1
+					? patho_lourde_type > 2
+						? patho_lourde_type - 1
+						: patho_lourde_type
+					: null,
+			duree,
+			volet_j,
+			volet_h,
+			gmfcs,
+			seconde_seance_fa,
+			seconde_seance_e,
+			duree_seconde_seance_fa,
+			deja_faites,
+			date_presta_chir_fa
 		});
 
 		// Etape 8 garder le store patients à jour
@@ -119,6 +138,23 @@
 			situationPathologique.rapport_ecrit_custom_date = dateDeduite;
 			situationPathologique.with_indemnity = with_indemnity;
 			situationPathologique.generateurs_de_seances.push(generateurDeSeance.toDB);
+			situationPathologique.groupe_id = groupe_id;
+			situationPathologique.lieu_id = lieu_id;
+			situationPathologique.patho_lourde_type =
+				groupe_id === 1
+					? patho_lourde_type > 2
+						? patho_lourde_type - 1
+						: patho_lourde_type
+					: null;
+			situationPathologique.duree = duree;
+			situationPathologique.volet_j = volet_j;
+			situationPathologique.volet_h = volet_h;
+			situationPathologique.gmfcs = gmfcs;
+			situationPathologique.seconde_seance_fa = seconde_seance_fa;
+			situationPathologique.seconde_seance_e = seconde_seance_e;
+			situationPathologique.duree_seconde_seance_fa = duree_seconde_seance_fa;
+			situationPathologique.deja_faites = deja_faites;
+			situationPathologique.date_presta_chir_fa = date_presta_chir_fa;
 			return p;
 		});
 
@@ -134,7 +170,7 @@
 			seconde_seance_palliatif,
 			// Le champ auto sert à déterminer si les codes sont attribués par le générateur ou si l'utilisateur souhaite surclassé le générateur pour le forcer à travailler comme cela lui semble être le mieux (comme l'ancien Kiné Helper le faisait)
 			auto: true,
-			groupe_id,
+			groupe_id: parseInt(groupe_id),
 			lieu_id,
 			amb_hos,
 			duree,
@@ -169,14 +205,14 @@
 	}, null);
 	// D'abord trouver le CODE de NOMENCLATURE
 	// À la base de tout il y a le groupe pathologique
-	let groupe_id;
+	let groupe_id = sp.group_id;
 	// Ensuite il y a le lieu
-	let lieu_id;
+	let lieu_id = sp.lieu_id;
 	// ensuite il y a divers champs qui vont nous mener au code final
 	// pour le lieu 5 uniquement il faut définir si le patient est ambulatoire (AMB) ou hospitalisé (HOS)
 	let amb_hos = 'AMB';
 	// Pour les groupes 0 et 1 et le lieux 4 (Hopital) uniquement
-	let duree;
+	let duree = sp.duree ?? 0;
 	let with_indemnity = true;
 	// Il faudrait pouvoir déterminer si il s'agit de la première situation pathologique du patient avec ce kiné
 	let intake = false;
@@ -188,7 +224,7 @@
 	let rapport_ecrit_date;
 	let rapport_ecrit_custom_date;
 	// Le volet J pour la patho Fa (120 séances)
-	let volet_j = false;
+	let volet_j = sp.volet_j ?? false;
 	// Sous spécifiques conditions une seconde séance par jour peut être octroyée pour les patients du volet c
 	let seconde_seance_fa = false;
 	let duree_seconde_seance_fa = 0; // 15 ou 30 min
@@ -196,10 +232,10 @@
 	// Tarification Fa, spécifier si des codes pathologies courantes ont été attestés
 	let nombre_code_courant_fa = 0;
 	// volet H - Lymphoedème
-	let volet_h = false;
+	let volet_h = sp.volet_h ?? false;
 	// Patho lourde
-	let patho_lourde_type = 0;
-	let gmfcs;
+	let patho_lourde_type = sp.patho_lourde_type ?? 0;
+	let gmfcs = sp.gmfcs ?? 0;
 	let seconde_seance_e = false;
 	let seconde_seance_palliatif = false;
 	// TROUVER LA DATE
@@ -235,7 +271,12 @@
 				return { label: value, value: `${index}`, id: `group${index}` };
 			}
 		})
-		.filter((value) => value);
+		.filter((value) => {
+			if (sp.group_id) {
+				return value.value === sp.group_id;
+			}
+			return value;
+		});
 
 	let lieuOptions;
 	// Ici il est nécessaire de filtrer les lieux en fonction du groupe sélectionné ici ça peut être un computed pour pouvoir tenir la variation de groupe
@@ -250,7 +291,12 @@
 					return { label: val, value: index, id: `lieu${index}` };
 				}
 			})
-			.filter((val) => val);
+			.filter((val) => {
+				if (sp.lieu_id) {
+					return val.value === sp.lieu_id;
+				}
+				return val;
+			});
 		// Remettre le champ à zéro pour éviter les input invisibles ou sur l'unique valeure
 		let groupCasted = parseInt(groupe_id);
 		if (groupCasted == 6) {
@@ -547,8 +593,11 @@
 	<SectionCard label={$t('form.generateur', 'card.title4')}>
 		<!--? Trouver le nombre -->
 		<div class="space-y-4">
+			<!--? Si ce n'est plus le premier générateur et que des séances ont bien été générée alors le champ déjà faite devraient être en readOnly avec sa valeur bloquée sur Zéro -->
+			<!--! à cause de la confusion que cela pourrait apporter d'avoir un champ déjà_faite bloqué sur zéro, le mieux c'est qu'il ne s'affiche simplement plus -->
 			<NombreAGenererField
 				{defaultSeanceNumber}
+				hideDejaFaites={sp.deja_faites ?? false}
 				bind:dejaFaites={deja_faites}
 				bind:nombreSeances={nombre_seances} />
 			<h1 class="text-error-500">{numberGenMessage}</h1>

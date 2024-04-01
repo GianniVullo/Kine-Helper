@@ -20,4 +20,4 @@
 
 <!--* Super simple : un select field avec les prescriptions disponibles sur la situation pathologique -->
 
-<SelectFieldV2 name="prescriptionId" required bind:value={value} {options} />
+<SelectFieldV2 name="prescriptionId" label={$t('patients.detail', 'prescription')} required bind:value={value} {options} />

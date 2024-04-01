@@ -7,6 +7,7 @@
 	import DBAdapter from '../forms/actions/dbAdapter';
 	import { tick } from 'svelte';
 	import { t } from '../i18n';
+	import { ManipulateurDeSeances } from '../utils/manipulateurDeSeances';
 
 	const modalStore = getModalStore();
 	// <!--*--> IDÉE GÉNÉRALE
@@ -57,49 +58,39 @@
 		});
 	}
 	async function performDateTimeUpdate() {
-		let db = new DBAdapter();
 		let newDate = dayjs(`${date} ${heure}`).format('YYYY-MM-DD HH:mm');
-		let result = await db.update('seances', [['seance_id', event.extendedProps.seance.seance_id]], {
-			date: newDate
-		});
-		console.log('result from performDateTimeUpdate', result, $modalStore[0].meta);
-		// Il faut, bien sûr, mettre à jour l'objet séance...
-		event.extendedProps.seance.date = newDate;
-
-		// ... mais aussi le composant Calendrier au travers des attributs, start et end
+		const sp = patient.situations_pathologiques.find(
+			(sp) => sp.sp_id === event.extendedProps.seance.sp_id
+		);
+		// On ajoute le manipulateur de séances ici
+		let mPSs = new ManipulateurDeSeances(patient, sp);
+		// on effectue la mise à jour
+		mPSs.reporter(event.extendedProps.seance, newDate);
+		// mettre à jour le composant Calendrier au travers des attributs, start et end
 		// pour ça, il faut d'abord trouver la durée en soustrayant la date de fin à la date de début.
 		let delta = dayjs(event.end).diff(dayjs(event.start), 'minute');
 		event.start = newDate;
 		event.end = dayjs(newDate).add(delta, 'minute').format('YYYY-MM-DD HH:mm');
 		if ($modalStore[0].meta.component) {
-			$modalStore[0].meta.component.updateEvent(event);			
+			$modalStore[0].meta.component.updateEvent(event);
 		}
-		patients.update((p) => {
-			let patient = p.find((p) => p.patient_id === event.extendedProps.seance.patient_id);
-			let sp = patient.situations_pathologiques.find(
-				(sp) => sp.sp_id === event.extendedProps.seance.sp_id
-			);
-			let seance = sp.seances.find((s) => s.seance_id === event.extendedProps.seance.seance_id);
-			seance.date = newDate;
-			return p;
-		});
+		//? Une Mise à jour du patients store est inutile ici car le store est mis à jour dans le manipulateur de séances
+		modalStore.clear();
 	}
 	async function deleteIfHasntBeenAttested() {
 		if (!event.extendedProps.seance.has_been_attested) {
-			let db = new DBAdapter();
-			let result = await db.delete('seances', ['seance_id', event.extendedProps.seance.seance_id]);
-			console.log('result from deleteIfHasBeenAttested', result);
+			const sp = patient.situations_pathologiques.find(
+				(sp) => sp.sp_id === event.extendedProps.seance.sp_id
+			);
+			const seanceToDelete = event.extendedProps.seance;
+			// On supprime l'événement du calendrier
 			if ($modalStore[0].meta.component) {
 				$modalStore[0].meta.component.removeEventById(event.extendedProps.seance.seance_id);
 			}
-			patients.update((p) => {
-				let patient = p.find((p) => p.patient_id === event.extendedProps.seance.patient_id);
-				let sp = patient.situations_pathologiques.find(
-					(sp) => sp.sp_id === event.extendedProps.seance.sp_id
-				);
-				sp.seances = sp.seances.filter((s) => s.seance_id !== event.extendedProps.seance.seance_id);
-				return p;
-			});
+			// On ajoute le manipulateur de séances
+			let mPSs = new ManipulateurDeSeances(patient, sp);
+			// on effectue la suppression
+			mPSs.supprimer(seanceToDelete);
 			modalStore.clear();
 		}
 	}
@@ -114,7 +105,9 @@
 			<div class="flex w-full items-baseline justify-between">
 				<div class="flex items-center justify-start">
 					<h1 class="mr-4 text-2xl">
-						{$t('otherModal', 'calendar.title', { patientFullName: `${patient.nom} ${patient.prenom}` })}
+						{$t('otherModal', 'calendar.title', {
+							patientFullName: `${patient.nom} ${patient.prenom}`
+						})}
 					</h1>
 					<!--? Informations supplémentaires -->
 					<div use:popup={attestedPopup}>
@@ -175,9 +168,8 @@
 							`/dashboard/patients/${event.extendedProps.seance.patient_id}/situation-pathologique/${event.extendedProps.seance.sp_id}/attestations/create?untill=${event.extendedProps.seance.date}`
 						);
 					}}
-					class="variant-filled-secondary btn btn-sm">{$t('otherModal', 'calendarcontrols.bill')}</button>
-					{:else}
-						<h3></h3>
+					class="variant-filled-secondary btn btn-sm"
+					>{$t('otherModal', 'calendarcontrols.bill')}</button>
 			{/if}
 			{#if !event.extendedProps.seance.has_been_attested}
 				<button
@@ -186,7 +178,8 @@
 						modification = false;
 						deletion = true;
 					}}
-					class="variant-filled-error btn btn-sm">{$t('patients.detail', 'deleteModal.confirm')}</button>
+					class="variant-filled-error btn btn-sm"
+					>{$t('patients.detail', 'deleteModal.confirm')}</button>
 			{/if}
 		</article>
 
@@ -228,7 +221,9 @@
 		{:else if modification}
 			<!--? Changement de la description de la séance -->
 			<article class="relative mb-4 flex rounded-xl bg-surface-200 p-6 dark:bg-surface-700">
-				<h5 class="absolute left-1 top-1 text-xs text-surface-400">{$t('otherModal', 'calendar.description')}</h5>
+				<h5 class="absolute left-1 top-1 text-xs text-surface-400">
+					{$t('otherModal', 'calendar.description')}
+				</h5>
 				<div class:hidden={!modification} class="flex flex-col space-y-2">
 					<textarea
 						bind:this={textarea}
@@ -271,8 +266,12 @@
 			</div>
 		{:else}
 			<article class="relative mb-4 flex rounded-xl bg-surface-200 p-6 dark:bg-surface-700">
-				<h5 class="absolute left-1 top-1 text-xs text-surface-400">{$t('otherModal', 'calendar.description')}</h5>
-				<p>{event.extendedProps.seance.description ?? $t('otherModal', 'calendar.description.empty')}</p>
+				<h5 class="absolute left-1 top-1 text-xs text-surface-400">
+					{$t('otherModal', 'calendar.description')}
+				</h5>
+				<p>
+					{event.extendedProps.seance.description ?? $t('otherModal', 'calendar.description.empty')}
+				</p>
 				<button
 					on:click={async () => {
 						description = event.extendedProps.seance.description;
@@ -287,7 +286,8 @@
 		{/if}
 
 		<footer class="modal-footer {parent.regionFooter}">
-			<button class="btn {parent.buttonNeutral}" on:click={parent.onClose}>{$t('shared', 'close')}</button>
+			<button class="btn {parent.buttonNeutral}" on:click={parent.onClose}
+				>{$t('shared', 'close')}</button>
 		</footer>
 	</div>
 {/if}

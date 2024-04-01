@@ -15,6 +15,7 @@
 		{ value: 5, label: get(t)('form.generateur', 'gmfcs5') }
 	];
 	export let value;
+	export let readOnly = false;
 </script>
 
-<RadioFieldV2 bind:value name="gmfcs" {options} label={$t('form.generateur', 'gmfcsScore')} />
+<RadioFieldV2 {readOnly} bind:value name="gmfcs" {options} label={$t('form.generateur', 'gmfcsScore')} />

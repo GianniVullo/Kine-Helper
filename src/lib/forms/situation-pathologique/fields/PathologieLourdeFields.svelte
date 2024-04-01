@@ -10,10 +10,12 @@
 	export let pathologieLourde = undefined;
 	export let GMFCSScore;
 	export let secondeSeance = false;
+	export let readOnly = false;
 </script>
 
 <div class="max-w-sm">
 	<RadioFieldV2
+		{readOnly}
 		{options}
 		bind:value={pathologieLourde}
 		name="pathologieLourdeCode"
@@ -21,7 +23,7 @@
 </div>
 
 {#if pathologieLourde == '1'}
-	<GMFCSScoreField bind:value={GMFCSScore} />
+	<GMFCSScoreField {readOnly} bind:value={GMFCSScore} />
 	<WarningDisplayer
 		descriptionLines={[
 			$t('form.generateur', 'warning1'),
@@ -46,6 +48,7 @@
 
 {#if pathologieLourde == '0'}
 	<CheckboxFieldV2
+		{readOnly}
 		bind:value={secondeSeance}
 		name="secondeSeance"
 		label={$t('form.generateur', 'second.label')} />

@@ -84,6 +84,348 @@ export function fetchCodeDesSeances(loading, seances, sp) {
 	});
 }
 
+export class NomenclatureArchitecture {
+	constructor(patient, sp) {
+		console.log('in NomenclatureArchitecture.constructor() with', patient, 'AND', sp);
+		this.groupe_id = sp.groupe_id;
+		this.lieu_id = sp.lieu_id;
+		this.duree = sp.duree;
+		this.patient = patient;
+		this.patho_lourde_type = sp.patho_lourde_type;
+		this.gmfcs = sp.gmfcs;
+		this.volet_j = sp.volet_j;
+		this.volet_h = sp.volet_h;
+		this.deja_faites = sp.deja_faites;
+	}
+
+	get seances_normales_executables() {
+		switch (this.groupe_id) {
+			// Pathologie courante
+			case 0:
+				if ([4, 5, 8].includes(this.lieu_id)) {
+					// 20min
+					return 18;
+				} else if ([0, 1, 2, 3, 7].includes(this.lieu_id) || parseInt(this.duree) == 2) {
+					// 30min
+					return 9;
+				} else {
+					return 365; // 15 min et c'est en Hopital donc illimité
+				}
+			// Pathologie Lourde
+			case 1:
+				if (this.patho_lourde_type == 1) {
+					// Si le patient est dans son 21ième anniversaire
+					if (new Date().getFullYear() - new Date(this.patient.date_naissance).getFullYear() > 21) {
+						if (this.gmfcs > 3) {
+							return 200;
+						} else if (this.gmfcs > 1) {
+							return 150;
+						} else {
+							return 100;
+						}
+					}
+				} else if ([2, 3].includes(this.patho_lourde_type)) {
+					//? drainage
+					// Que ce soit 60 ou 120 min c'est 120 séances/an autorisées
+					return 120;
+				} else if (this.patho_lourde_type == 4) {
+					// 45 min, doi être explicitement mentionnée sur la prescription
+					return 50;
+				} else if (this.patho_lourde_type == 5) {
+					// si il s'agit des séances de 60 minutes au global pour les pathos du volet J)
+					return 30; // /!\ il s'agit de 10/prescriptions
+				}
+				return 365;
+			// Grossesse et Post-partum
+			case 3:
+				return 9;
+			// FA
+			case 4:
+				if ([4, 5, 8].includes(this.lieu_id)) {
+					// Pour les séance de 20 minutes au MR psycho etc...
+					if (this.volet_j) {
+						// pour le cas des polytraumatisés (Onglet J)
+						return 120;
+					}
+					return 60;
+				} else if ([0, 1, 2, 3, 7].includes(this.lieu_id)) {
+					// 30min
+					return 20;
+				}
+				return 0;
+			// FB
+			case 5:
+				return 60;
+			// Palliatif à domicile
+			case 6:
+				return 365; // Jusqu'à la fin
+			// Hopital
+			case 7:
+				return 365;
+		}
+	}
+
+	get seances_en_depassement_executables() {
+		switch (this.groupe_id) {
+			// Pathologie courante
+			case 0:
+				if ([4, 5, 8].includes(this.lieu_id)) {
+					// 20min
+					return 54;
+				} else if ([0, 1, 2, 3, 7].includes(this.lieu_id) || parseInt(this.duree) == 2) {
+					// 30min
+					return 9;
+				} else {
+					return 0;
+				}
+			// Pathologie Lourde
+			case 1:
+				return 0;
+			// Grossesse et Post-partum
+			case 3:
+				return 0;
+			// FA
+			case 4:
+				if ([4, 5, 8].includes(this.lieu_id)) {
+					// Pour les séances de 20 minutes au MR psycho etc...
+					return 365;
+				} else if ([0, 1, 2, 3, 7].includes(this.lieu_id)) {
+					// 30min
+					if (this.volet_j) {
+						return 100;
+					}
+					return 40;
+				}
+			// FB
+			case 5:
+				// Ici il y a une variante : les drainages lymphatiques n'ont pas de dépassement. Le kiné effectue 60 drainages de 45 minutes puis il y a les codes normaux de 30 minutes.
+				if (this.volet_h) {
+					return 0;
+				}
+				return 20;
+			// Palliatif à domicile
+			case 6:
+				return 0;
+			// Hopital
+			case 7:
+				return 0;
+		}
+	}
+
+	get seances_en_surdepassement_executables() {
+		switch (this.groupe_id) {
+			// Pathologie courante
+			case 0:
+				if ([4, 5, 8].includes(this.lieu_id)) {
+					// 20min
+					return 0; // (Il n'y a pas de surchargement)
+				} else if ([0, 1, 2, 3, 7].includes(this.lieu_id) || parseInt(this.duree) == 2) {
+					return 54;
+				} else {
+					return 0;
+				}
+			// Pathologie Lourde
+			case 1:
+				return 0;
+			// Grossesse et Post-partum
+			case 3:
+				return 0;
+			// FA
+			case 4:
+				if ([4, 5, 8].includes(this.lieu_id)) {
+					// Pour les séance de 20 minutes au MR psycho etc...
+					return 0;
+				} else if ([0, 1, 2, 3, 7].includes(this.lieu_id)) {
+					// 30min
+					return 365;
+				}
+			// FB
+			case 5:
+				if (this.volet_h) {
+					// :/!\ le dépassement pour les
+					// drainage est en faite le dépassement pour les 30 minutes.
+					return 0;
+				}
+				return 365;
+			// Palliatif à domicile
+			case 6:
+				return 0;
+			// Hopital
+			case 7:
+				return 0;
+		}
+	}
+
+	architecture(codes) {
+		console.log('in NomenclatureArchitecture.architecture() with', codes, 'AND', this);
+		let normales = this.seances_normales_executables - this.deja_faites;
+		let depassements = this.seances_en_depassement_executables;
+		let surdepassements = this.seances_en_surdepassement_executables;
+		if (normales < 0) {
+			normales = 0;
+			depassements -= this.deja_faites - this.seances_normales_executables;
+		}
+		if (depassements < 0) {
+			depassements = 0;
+			surdepassements -= this.deja_faites - this.seances_en_depassement_executables;
+		}
+		switch (this.groupe_id) {
+			// Pathologie courante
+			case 0:
+				codes = codes.filter((code) => code.groupe === 0);
+				//? Ici on pourrait croire qu'il faut s'amuser à faire varier la liste en fonctoin de la durée mais en fait ce n'est pas nécessaire car cette variation se retrouve dans le this.seances_x_executables
+				return [
+					[...Array(normales)].map((idx) =>
+						codes.find((code) => code.lieu == this.lieu_id && code.type === 0)
+					),
+					[...Array(depassements)].map((idx) =>
+						codes.find((code) => code.lieu == this.lieu_id && code.type === 1)
+					),
+					[...Array(surdepassements)].map((idx) =>
+						codes.find((code) => code.lieu == this.lieu_id && code.type === 2)
+					)
+				];
+			// Pathologie Lourde
+			case 1:
+				codes = codes.filter((code) => code.groupe === 1);
+				function defaultCase(number, lieu_id) {
+					console.log('in defaultCase() with', number, 'and', codes);
+					return [...Array(number)].map((idx) =>
+						codes.find(
+							(code) =>
+								code.lieu === lieu_id &&
+								code.type === 0 &&
+								([4, 5, 8].includes(lieu_id) ? code.duree === 1 : code.duree === 2)
+						)
+					);
+				}
+				switch (this.patho_lourde_type) {
+					//séances normales 20 ou 30 min
+					case 0:
+						console.log('in case 0 with ', defaultCase(normales, this.lieu_id));
+						return [...defaultCase(normales, this.lieu_id)];
+					// IMC
+					case 1:
+						// Si le patient est dans son 21ième anniversaire
+						let allowedNumber;
+						if (
+							new Date().getFullYear() - new Date(this.patient.date_naissance).getFullYear() >
+							21
+						) {
+							if (this.gmfcs > 3) {
+								allowedNumber = 200;
+							} else if (this.gmfcs > 1) {
+								allowedNumber = 150;
+							} else {
+								allowedNumber = 100;
+							}
+						} else {
+							allowedNumber = 365;
+						}
+						return [
+							[...Array(normales)].map((idx) =>
+								codes.find(
+									(code) =>
+										code.lieu === this.lieu_id &&
+										code.type === 0 &&
+										code.duree === 4 &&
+										!code.drainage &&
+										code.lourde_type === 1
+								)
+							),
+							...defaultCase(365 - allowedNumber, this.lieu_id)
+						];
+					// Drainage
+					case 2:
+						return [
+							[...Array(normales)].map((idx) =>
+								codes.find(
+									(code) =>
+										code.lieu === this.lieu_id &&
+										code.type === 0 &&
+										code.duree === this.duree &&
+										code.drainage
+								)
+							),
+							...defaultCase(365 - normales, this.lieu_id)
+						];
+					case 3:
+						return [
+							[...Array(normales)].map((idx) =>
+								codes.find(
+									(code) => code.lieu === this.lieu_id && code.type === 0 && code.duree === 3
+								)
+							),
+							...defaultCase(365 - normales, this.lieu_id)
+						];
+					case 4:
+						return [
+							[...Array(normales)].map((idx) =>
+								codes.find(
+									(code) =>
+										code.lieu === this.lieu_id &&
+										code.type === 1 &&
+										code.duree === 4 &&
+										code.lourde_type === 4
+								)
+							),
+							...defaultCase(365 - normales, this.lieu_id)
+						];
+				}
+			// Grossesse et Post-partum
+			case 3:
+				codes = codes.filter((code) => code.groupe === 3);
+				return [
+					[...Array(normales)].map((idx) =>
+						codes.find((code) => code.lieu == this.lieu_id && code.type === 0)
+					)
+				];
+			// FA
+			case 4:
+				codes = codes.filter((code) => code.groupe === 4);
+				return [
+					[...Array(normales)].map((idx) =>
+						codes.find((code) => code.lieu == this.lieu_id && code.type === 0)
+					),
+					[...Array(depassements)].map((idx) =>
+						codes.find((code) => code.lieu == this.lieu_id && code.type === 1)
+					),
+					[...Array(surdepassements)].map((idx) =>
+						codes.find((code) => code.lieu == this.lieu_id && code.type === 2)
+					)
+				];
+			// FB
+			case 5:
+				codes = codes.filter((code) => code.groupe === 5);
+				return [
+					[...Array(normales)].map((idx) =>
+						codes.find((code) => code.lieu == this.lieu_id && code.type === 0)
+					),
+					[...Array(depassements)].map((idx) =>
+						codes.find((code) => code.lieu == this.lieu_id && code.type === 1)
+					),
+					[...Array(surdepassements)].map((idx) =>
+						codes.find((code) => code.lieu == this.lieu_id && code.type === 2)
+					)
+				];
+			// Palliatif à domicile
+			case 6:
+				codes = codes.filter((code) => code.groupe === 6);
+				return [[...Array(normales)].map((idx) => codes.find((code) => code.duree === 2))];
+			// Hopital
+			case 7:
+				codes = codes.filter((code) => code.groupe === 7);
+				return [
+					[...Array(normales)].map(
+						(idx) => codes[0] // y'en a qu'un seul
+					)
+				];
+			default:
+				return [];
+		}
+	}
+}
+
 export class NomenclatureManager {
 	constructor() {
 		this.database = new DBInitializer();

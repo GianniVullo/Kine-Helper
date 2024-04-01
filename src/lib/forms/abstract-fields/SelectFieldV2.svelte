@@ -18,7 +18,6 @@
 <DefaultFieldWrapper class={parentClass}>
 	<p class={labelClass}>{label}</p>
 	{#if multiple}
-		 <!-- content here -->
 		 <select
 			 id={id ?? name}
 			 {required}

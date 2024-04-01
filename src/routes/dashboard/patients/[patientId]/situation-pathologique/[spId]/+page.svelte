@@ -3,7 +3,7 @@
 	import { PlusIcon, UpdateIcon, DeleteIcon } from '$lib/ui/svgs/index';
 	import dayjs from 'dayjs';
 	import EventCalendar from '../../../../../../lib/EventCalendar.svelte';
-	import { patients, SituationPathologique } from '../../../../../../lib/stores/PatientStore';
+	import { patients } from '../../../../../../lib/stores/PatientStore';
 	import { getEvents } from './eventFigureOuter';
 	import { getModalStore } from '@skeletonlabs/skeleton';
 	import DBAdapter from '../../../../../../lib/forms/actions/dbAdapter';
@@ -84,7 +84,7 @@
 	console.log(sp);
 </script>
 
-<div class="mx-4 flex w-full flex-col">
+<div class="px-4 flex w-full flex-col">
 	<!--* Titre -->
 	<div class="flex flex-col">
 		<div class="flex items-center space-x-4">
@@ -165,7 +165,7 @@
 				{$t('patients.detail', 'prestations')}
 			</h5>
 			{#await eventsPromise}
-				{$t('shared', 'loading')}
+				{$t('shared', 'loading')} (if you see this message for more than 2 seconds, please re-enter the page through the patient list page) (It is a well known race condition bug I'm working on. Sorry about that )
 			{:then events}
 				<EventCalendar bind:this={ec} {events} options={{}} />
 			{/await}

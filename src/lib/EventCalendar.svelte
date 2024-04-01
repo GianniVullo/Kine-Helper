@@ -2,6 +2,7 @@
 	import Calendar from '@event-calendar/core';
 	import TimeGrid from '@event-calendar/time-grid';
 	import DayGrid from '@event-calendar/day-grid';
+	import index from '@event-calendar/interaction';
 	import { getModalStore } from '@skeletonlabs/skeleton';
 	import { locale, t } from './i18n';
 	import { get } from 'svelte/store';
@@ -12,9 +13,20 @@
 	export let events;
 	export let options = {};
 	export let ec;
-	let plugins = [TimeGrid, DayGrid];
+	let plugins = [TimeGrid, DayGrid, index];
 	let base_options = {
+		allDaySlot: false,
 		view: 'dayGridMonth',
+		dateClick: (event) => {
+			modalStore.trigger({
+				type: 'component',
+				component: 'seanceCreationModal',
+				meta: {
+					event: event,
+					component: ec
+				}
+			})
+		},
 		buttonText: {
 			close: get(t)('shared', 'close'),
 			dayGridMonth: get(t)('shared', 'month'),

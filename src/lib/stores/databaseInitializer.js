@@ -60,7 +60,6 @@ export class DBInitializer {
 		);
 		// Ensuite insérer les codes avec l'ID de convention en FK
 		for (const code of convention.codes) {
-			console.log(code);
 			await db.execute(
 				'INSERT INTO codes (code_id, code_reference, groupe, type, duree, lieu, amb_hos, lourde_type, drainage, honoraire, coefficient, remboursement, valeur, convention_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)',
 				[

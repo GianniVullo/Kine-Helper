@@ -13,6 +13,7 @@ export { default as TextFieldV2 } from './abstract-fields/TextFieldV2.svelte';
 export { default as RadioFieldV2 } from './abstract-fields/RadioFieldV2.svelte';
 export { default as CheckboxFieldV2 } from './abstract-fields/CheckboxFieldV2.svelte';
 export { default as DateField } from './abstract-fields/DateField.svelte';
+export { default as TimeField } from './situation-pathologique/fields/TimeField.svelte';
 export { default as EmailField } from './abstract-fields/EmailField.svelte';
 
 // UI

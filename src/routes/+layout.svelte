@@ -10,7 +10,8 @@
 	import BugReportModal from '../lib/ui/BugReportModal.svelte';
 	import FactureCreationModal from '../lib/ui/FactureCreationModal.svelte';
 	import { onMount } from 'svelte';
-	import {appDataDir} from '@tauri-apps/api/path'
+	import {appDataDir} from '@tauri-apps/api/path';
+	import SeanceCreationModal from '../lib/ui/SeanceCreationModal.svelte';
 	console.log('page', $page);
 	initializeStores();
 
@@ -21,6 +22,7 @@
 		factureCreation: { ref: FactureCreationModal },
 		documentSelection: { ref: DocumentSelectionModal },
 		calendarEvent: { ref: CalendarEventModal },
+		seanceCreationModal: { ref: SeanceCreationModal },
 		// ...
 	};
 	onMount(() => {

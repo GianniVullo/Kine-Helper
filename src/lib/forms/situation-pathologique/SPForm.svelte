@@ -50,7 +50,7 @@
 			numero_etablissement
 		});
 		situation_pathologique.upToDate = true;
-		let dbStatus = await db.save('situations_pathologiques', situation_pathologique.toDB);
+		await db.save('situations_pathologiques', situation_pathologique.toDB);
 		patients.update((patients) => {
 			let rpatient = patients.find((p) => p.patient_id == patient.patient_id);
 			rpatient.situations_pathologiques.push(situation_pathologique);
