@@ -156,19 +156,19 @@ export default class DBAdapter {
 				}
 
 				// Fetch related data for each table
-				let seances = await db.select(`SELECT * FROM seances WHERE sp_id = $1`, [sp_id]);
+				let seances = await db.select(`SELECT * FROM seances WHERE sp_id = $1 ORDER BY date ASC`, [sp_id]);
 				console.log('in DBAdapter.retrieve_sp() with', seances);
-				let prescriptions = await db.select(`SELECT * FROM prescriptions WHERE sp_id = $1`, [
+				let prescriptions = await db.select(`SELECT * FROM prescriptions WHERE sp_id = $1 ORDER BY created_at ASC`, [
 					sp_id
 				]);
 				console.log('in DBAdapter.retrieve_sp() with', prescriptions);
-				let attestations = await db.select(`SELECT * FROM attestations WHERE sp_id = $1`, [sp_id]);
+				let attestations = await db.select(`SELECT * FROM attestations WHERE sp_id = $1 ORDER BY created_at ASC`, [sp_id]);
 				console.log('in DBAdapter.retrieve_sp() with', attestations);
 				let generateurs = await db.select(`SELECT * FROM generateurs_de_seances WHERE sp_id = $1`, [
 					sp_id
 				]);
 				console.log('in DBAdapter.retrieve_sp() with', generateurs);
-				let documents = await db.select(`SELECT * FROM documents WHERE sp_id = $1`, [sp_id]);
+				let documents = await db.select(`SELECT * FROM documents WHERE sp_id = $1 ORDER BY created_at ASC`, [sp_id]);
 				console.log('in DBAdapter.retrieve_sp() with', documents);
 				// Aggregate the data in JavaScript
 				let result = {
@@ -283,15 +283,15 @@ export default class DBAdapter {
 				let sp_id = latestPs[0].sp_id;
 
 				// Fetch related data for each table
-				let seances = await db.select(`SELECT * FROM seances WHERE sp_id = $1`, [sp_id]);
-				let prescriptions = await db.select(`SELECT * FROM prescriptions WHERE sp_id = $1`, [
+				let seances = await db.select(`SELECT * FROM seances WHERE sp_id = $1 ORDER BY date ASC`, [sp_id]);
+				let prescriptions = await db.select(`SELECT * FROM prescriptions WHERE sp_id = $1 ORDER BY created_at ASC`, [
 					sp_id
 				]);
-				let attestations = await db.select(`SELECT * FROM attestations WHERE sp_id = $1`, [sp_id]);
+				let attestations = await db.select(`SELECT * FROM attestations WHERE sp_id = $1 ORDER BY created_at ASC`, [sp_id]);
 				let generateurs = await db.select(`SELECT * FROM generateurs_de_seances WHERE sp_id = $1`, [
 					sp_id
 				]);
-				let documents = await db.select(`SELECT * FROM documents WHERE sp_id = $1`, [sp_id]);
+				let documents = await db.select(`SELECT * FROM documents WHERE sp_id = $1 ORDER BY created_at ASC`, [sp_id]);
 
 				// Aggregate the data in JavaScript
 				let result = {

@@ -4,7 +4,7 @@
 	import { getModalStore } from '@skeletonlabs/skeleton';
 	import { supabase } from '../lib/stores/supabaseClient';
 	import { goto } from '$app/navigation';
-	import { t } from '../lib/i18n/index';
+	import { t, locale } from '../lib/i18n/index';
 	import { get } from 'svelte/store';
 	import { open } from '@tauri-apps/plugin-shell';
 
@@ -135,7 +135,8 @@
 							buttonTextConfirm: $t('shared', 'confirm'),
 							response: async (r) => {
 								if (r) {
-									await open('https://kine-helper.be');
+									
+									await open($locale === 'FR' ?'https://kine-helper.be/tutoriels':'https://kine-helper.be/nl/tutorials');
 								}
 							}
 						})}>
