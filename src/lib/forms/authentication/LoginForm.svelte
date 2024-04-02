@@ -92,6 +92,7 @@
 			userSettings.data[0] = { raw_printer: null };
 		}
 		userSettings = userSettings.data[0];
+		userSettings.is_nine_pin = userSettings.is_nine_pin === null ? false : JSON.parse(userSettings.is_nine_pin);
 		// <!--* STEP 8 : Sauvegarder les données dans le store -->
 		user.update((u) => {
 			u.settings = userSettings;
