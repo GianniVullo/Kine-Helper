@@ -291,7 +291,7 @@ export class GenerateurDeSeances {
 		let sqlStatement = `SELECT * from codes WHERE groupe = $1 AND type = $2 AND lieu = $3 AND convention_id = '${convention.convention_id}'`;
 		switch (this.groupe_id) {
 			case 1:
-				function defaultCase() {
+				const defaultCase = () => {
 					if ([4, 5, 8].includes(this.lieu_id)) {
 						// 20min
 						sqlStatementArgs.push(1);

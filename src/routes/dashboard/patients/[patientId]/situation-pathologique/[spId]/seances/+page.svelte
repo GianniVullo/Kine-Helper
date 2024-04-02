@@ -27,7 +27,7 @@
 		</h1>
 		<div class="flex flex-col">
 			<div class="flex items-center justify-start">
-				{#each [...nomenclature.architecture(value.data)[0], ...nomenclature.architecture(value.data)[1], ...nomenclature.architecture(value.data)[2]] as code, idx}
+				{#each [...nomenclature.architecture(value.data)[0], ...nomenclature.architecture(value.data)[1],] as code, idx}
 					<div
 						class="relative flex min-h-20 min-w-60 flex-col border border-rose-50 bg-secondary-500 py-3">
 						<p class="absolute right-1 top-1">{idx + 1}</p>

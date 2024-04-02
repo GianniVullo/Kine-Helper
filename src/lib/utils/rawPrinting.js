@@ -25,18 +25,6 @@ export async function printAttestation(
 			code_reference: codemap.get(seance.code_id).code_reference,
 			date: dayjs(seance.date).format('DD/MM/YY')
 		});
-		if (attestation.has_intake) {
-			lignes.push({
-				code_reference: codemap.get('intake')[0].code_reference,
-				date: dayjs(seance.date).format('DD/MM/YY')
-			});
-		}
-		if (seance.has_rapport) {
-			lignes.push({
-				code_reference: codemap.get('rapports')[0].code_reference,
-				date: dayjs(seance.date).format('DD/MM/YY')
-			});
-		}
 		if (attestation.with_indemnity) {
 			lignes.push({
 				code_reference: codemap.get('indemnites')[0].code_reference,
@@ -44,8 +32,20 @@ export async function printAttestation(
 			});
 		}
 	}
+	if (attestation.with_intake) {
+		lignes.push({
+			code_reference: codemap.get('intake')[0].code_reference,
+			date: dayjs(seance.date).format('DD/MM/YY')
+		});
+	}
+	if (attestation.with_rapport) {
+		lignes.push({
+			code_reference: codemap.get('rapports')[0].code_reference,
+			date: dayjs(situation_pathologique.rapport_ecrit_custom_date).format('DD/MM/YY')
+		});
+	}
 	lignes.sort((a, b) => {
-		return new Date(a.date) - new Date(b.date);
+		return dayjs(a.date).diff(dayjs(b.date));
 	});
 	let formData = {
 		is_nine_pin: get(user).settings.is_nine_pin,

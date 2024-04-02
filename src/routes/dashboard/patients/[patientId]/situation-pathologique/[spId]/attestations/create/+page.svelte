@@ -66,13 +66,18 @@
 			let dbAdapter = new DBAdapter();
 			let attestation = await dbAdapter.save('attestations', this.attestation);
 			attestation = attestation.data[0];
+			attestation.porte_prescr = JSON.parse(attestation.porte_prescr);
+			attestation.with_indemnity = JSON.parse(attestation.with_indemnity);
+			attestation.with_intake = JSON.parse(attestation.with_intake);
+			attestation.with_rapport = JSON.parse(attestation.with_rapport);
+			attestation.has_been_printed = JSON.parse(attestation.has_been_printed);
 			await dbAdapter.update_seances(this.seances);
 			console.log('attestation', attestation, 'seances', this.seances);
 			let jointe_a =
 				typeof this.attestation.date === 'string'
 					? this.attestation.date
 					: dayjs(this.attestation.date).format('YYYY-MM-DD');
-			if (attestation.porte_prescr) {
+			if (this.attestation.porte_prescr) {
 				await dbAdapter.update(
 					'prescriptions',
 					[['prescription_id', attestation.prescription_id]],

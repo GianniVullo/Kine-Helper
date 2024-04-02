@@ -293,7 +293,7 @@
 			})
 			.filter((val) => {
 				if (sp.lieu_id) {
-					return val.value === sp.lieu_id;
+					return val?.value === sp.lieu_id;
 				}
 				return val;
 			});

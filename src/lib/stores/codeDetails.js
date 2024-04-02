@@ -86,7 +86,7 @@ export async function figuringConventionOut(date, db) {
 	);
 	// Trouver une convention dans les années précédentes
 	while (conventionsThatYear.length == 0) {
-		conventionsThatYear = await lastConventionFromLastYear(conventionsThatYear, date);
+		conventionsThatYear = await lastConventionFromLastYear(conventionsThatYear, date, db);
 	}
 	if (conventionsThatYear.length == 1) {
 		//! À la base, je pensais devoir faire une enclave ici pour les cas où le gouvernement ne sort pas la dernière version le 1er Janvier de l'année courante. Mais en fait je pense que cela n'est pas nécessaire comme de toute façon la sortie d'une mise à jout en cours d'année fera un trigger sur les séances en cours...
@@ -102,7 +102,7 @@ export async function figuringConventionOut(date, db) {
 		let check = convDate.isAfter(date);
 		console.log(check);
 		if (check) {
-			return (await lastConventionFromLastYear(conventionsThatYear, date))[0];
+			return (await lastConventionFromLastYear(conventionsThatYear, date, db))[0];
 		}
 		return conventionsThatYear[0];
 	} else if (conventionsThatYear.length > 1) {
@@ -122,14 +122,14 @@ export async function figuringConventionOut(date, db) {
 		}, null);
 		//? Donc ici, si il ne trouve pas de convention dans l'année courante parce que le gov a tardé, alors figuringConv..() choisira la dernière convention de l'année précédente
 		if (!conv) {
-			return (await lastConventionFromLastYear(conventionsThatYear, date))[0];
+			return (await lastConventionFromLastYear(conventionsThatYear, date, db))[0];
 		}
 	}
 }
 
-async function lastConventionFromLastYear(conventionsThatYear, date) {
+async function lastConventionFromLastYear(conventionsThatYear, date, db) {
 	console.log('in lastConventionFromLastYear() with', conventionsThatYear, date);
-	conventionsThatYear = await this.db.select(
+	conventionsThatYear = await db.select(
 		'SELECT convention_id, year, month, day FROM conventions WHERE year = $1;',
 		[date.year() - 1]
 	);

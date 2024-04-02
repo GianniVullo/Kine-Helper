@@ -58,6 +58,7 @@ export function pristine(form_element, { isValid, isValidSync, validators }) {
 					})
 					.catch((err) => {
 						console.log('after isNotValid', err);
+						submitter.disabled = false;
 						form_element.classList.remove('isLoading');
 					});
 			}
