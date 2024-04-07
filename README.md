@@ -1,8 +1,10 @@
 # Kiné Helper
 
-Le projet Kiné Helper est un projet personnel que je tennais secret depuis presque 2 ans. J'ai commencé à le construire avec Flutter mais je me suis lassé de Dart et ai eu envie de découvrir pourquoi tant de développeurs ne juraient que par JavaScript. 
+Lors de la crise Covid, j'ai réalisé que mon rêve d'enfance de devenir ingénieur n'avait jamais pu s'exprimer. J'ai donc décidé de me lancer dans l'étude de la programmation.
 
-## Recommended IDE Setup
+Deux ans plus tard, j'ai décidé de mettre mes nouvelles compétences au service de ma profession. J'ai toujours souffert de phobie administrative, ce qui m'a inspiré à créer une expérience utilisateur de gestion qui soit réconfortante, simple et qui m'aide à mieux m'organiser.
+C'est ainsi qu'est né Kiné Helper.
 
-[VS Code](https://code.visualstudio.com/) + [Svelte](https://marketplace.visualstudio.com/items?itemName=svelte.svelte-vscode) + [Tauri](https://marketplace.visualstudio.com/items?itemName=tauri-apps.tauri-vscode) + [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer).
+## Démarrer Kiné Helper
 
+Informations à venir...
