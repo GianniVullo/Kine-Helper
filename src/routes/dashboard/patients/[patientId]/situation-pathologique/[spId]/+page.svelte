@@ -8,7 +8,7 @@
 	import { getModalStore } from '@skeletonlabs/skeleton';
 	import DBAdapter from '../../../../../../lib/forms/actions/dbAdapter';
 	import { t } from '../../../../../../lib/i18n';
-	import { tick } from 'svelte';
+	import { onMount, tick } from 'svelte';
 	import { get } from 'svelte/store';
 	import { goto } from '$app/navigation';
 
@@ -66,25 +66,39 @@
 		}
 	];
 	let eventsAreLoading = false;
-	let eventsPromise = new Promise(async (resolve) => {
-		console.log('sp', sp);
-		if (!eventsAreLoading) {
-			await tick();
-			eventsAreLoading = true;
-			getEvents(patient, sp).then((events) => {
-				eventsAreLoading = false;
-				resolve(events);
+	onMount(() => {
+		tick().then(() => {
+			eventsPromise = new Promise(async (resolve) => {
+				console.log('sp', sp);
+				if (!eventsAreLoading) {
+					await tick();
+					eventsAreLoading = true;
+					//! temporary solution as It seems that whatever I try it keeps on failing from time to time
+					try {
+						let events = await getEvents(patient, sp);
+						eventsAreLoading = false;
+						resolve(events);
+					} catch (error) {
+						console.error(error);
+						let events = await getEvents(patient, sp);
+						eventsAreLoading = false;
+						resolve(events);
+					}
+				} else {
+					eventsAreLoading = false;
+					resolve();
+				}
 			});
-		} else {
-			eventsAreLoading = false;
-			resolve();
-		}
+		});
+	});
+	let eventsPromise = new Promise((resolve) => {
+		resolve();
 	});
 	let ec;
 	console.log(sp);
 </script>
 
-<div class="px-4 flex w-full flex-col">
+<div class="flex w-full flex-col px-4">
 	<!--* Titre -->
 	<div class="flex flex-col">
 		<div class="flex items-center space-x-4">
@@ -164,11 +178,19 @@
 			<h5 class="mb-2 text-lg text-surface-500 dark:text-surface-400">
 				{$t('patients.detail', 'prestations')}
 			</h5>
-			{#await eventsPromise}
-				{$t('shared', 'loading')} (if you see this message for more than 2 seconds, please re-enter the page through the patient list page) (It is a well known race condition bug I'm working on. Sorry about that )
-			{:then events}
-				<EventCalendar bind:this={ec} {events} options={{}} />
-			{/await}
+			{#key eventsPromise}
+				{#await eventsPromise}
+					{$t('shared', 'loading')} (if you see this message for more than 2 seconds, please re-enter
+					the page through the patient list page) (It is a well known race condition bug I'm working
+					on. Sorry about that )
+				{:then events}
+					{#if events}
+						<EventCalendar bind:this={ec} {events} options={{}} />
+					{:else}
+						{$t('shared', 'loading')}
+					{/if}
+				{/await}
+			{/key}
 		</div>
 	{/if}
 </div>
