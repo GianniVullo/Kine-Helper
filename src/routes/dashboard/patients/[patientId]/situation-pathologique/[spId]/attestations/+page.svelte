@@ -76,6 +76,7 @@
 												type: 'confirm',
 												response: async (response) => {
 													if (response) {
+														console.log('sp', sp);
 														await printAttestation(
 															patient,
 															prescription(attestation.prescription_id),

@@ -1,4 +1,3 @@
-import Database from '@tauri-apps/plugin-sql';
 import { DBInitializer } from '../stores/databaseInitializer';
 import { Code, indmeniteCategory } from '../stores/codeDetails';
 import { get, writable } from 'svelte/store';

@@ -35,7 +35,7 @@ export async function printAttestation(
 	if (attestation.with_intake) {
 		lignes.push({
 			code_reference: codemap.get('intake')[0].code_reference,
-			date: dayjs(seance.date).format('DD/MM/YY')
+			date: dayjs(seances[0].date).format('DD/MM/YY')
 		});
 	}
 	if (attestation.with_rapport) {

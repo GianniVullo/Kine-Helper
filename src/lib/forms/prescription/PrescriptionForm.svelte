@@ -35,7 +35,9 @@
 	async function isValid({ formData, submitter }) {
 		let db = new DBAdapter();
 		let { fileResponse, buffer } = fileField.getBufferAndResponse();
+		console.log('fileField', fileField);
 		let filExt = fileResponse?.path.split('.').pop();
+		console.log('fileResponse', fileResponse);
 		if (prescription) {
 			let updatedPrescription = {
 				prescription_id,
@@ -55,19 +57,33 @@
 				[['prescription_id', prescription.prescription_id]],
 				updatedPrescription
 			);
-			await saveFile(filExt, buffer);
-			patients.update((p) => {
-				let rprescription = p
-					.find((p) => p.patient_id === patient.patient_id)
-					.situations_pathologiques.find((sp) => sp.sp_id === sp.sp_id)
-					.prescriptions.find((p) => p.prescription_id === prescription.prescription_id);
-				rprescription.date = date;
-				rprescription.jointe_a = jointe_a;
-				rprescription.nombre_seance = nombre_seance;
-				rprescription.seance_par_semaine = seance_par_semaine;
-				rprescription.prescripteur = JSON.parse(updatedPrescription.prescripteur);
-				rprescription.file_name = filExt;
-				return p;
+			if (fileResponse) {
+				await saveFile(filExt, buffer);
+				patients.update((p) => {
+					let rprescription = p
+						.find((p) => p.patient_id === patient.patient_id)
+						.situations_pathologiques.find((sp) => sp.sp_id === sp.sp_id)
+						.prescriptions.find((p) => p.prescription_id === prescription.prescription_id);
+					rprescription.date = date;
+					rprescription.jointe_a = jointe_a;
+					rprescription.nombre_seance = nombre_seance;
+					rprescription.seance_par_semaine = seance_par_semaine;
+					rprescription.prescripteur = JSON.parse(updatedPrescription.prescripteur);
+					rprescription.file_name = filExt;
+					return p;
+				});
+			}
+			patients.update((patients) => {
+				let rpatient = patients.find((p) => p.patient_id == patient.patient_id);
+				let tsp = rpatient.situations_pathologiques.find((bsp) => bsp.sp_id == sp.sp_id);
+				let pres = tsp.prescriptions.find((p) => p.prescription_id === updatedPrescription.prescription_id);
+				pres.date = updatedPrescription.date;
+				pres.jointe_a = updatedPrescription.jointe_a;
+				pres.nombre_seance = updatedPrescription.nombre_seance;
+				pres.seance_par_semaine = updatedPrescription.seance_par_semaine;
+				pres.prescripteur = JSON.parse(updatedPrescription.prescripteur);
+				pres.file_name = updatedPrescription.file_name;
+				return patients;
 			});
 			goto('/dashboard/patients/' + patient.patient_id + '/situation-pathologique/' + sp.sp_id);
 			return;
