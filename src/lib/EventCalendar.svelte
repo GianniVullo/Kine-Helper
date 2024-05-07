@@ -56,6 +56,10 @@
 			end: 'dayGridMonth,timeGridWeek,timeGridDay'
 		},
 		events: events,
+		selectable: true,
+		select(info) {
+			console.log(info);
+		},
 		// eventSource: events,
 		locale: get(locale),
 		eventClick: handleClickOnEvent,

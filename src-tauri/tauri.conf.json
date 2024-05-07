@@ -5,11 +5,12 @@
 		"devUrl": "http://localhost:1420",
 		"frontendDist": "../build"
 	},
-	"productName": "Kiné Helper",
+	"productName": "Kine Helper",
 	"version": "0.0.0",
 	"identifier": "be.kinehelper.prod",
 	"bundle": {
 		"active": true,
+		"licenseFile": "../LICENSE",
 		"targets": "all",
 		"icon": [
 			"icons/32x32.png",
@@ -22,7 +23,7 @@
 	"app": {
 		"withGlobalTauri": false,
 		"security": {
-			"csp": null
+			"csp": "default-src 'self'; img-src 'self' asset: *; script-src 'self' asset: https://asset.localhost; style-src 'unsafe-inline'  asset: *; media-src *;"
 		},
 		"windows": [
 			{
