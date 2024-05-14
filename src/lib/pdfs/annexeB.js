@@ -72,15 +72,63 @@ export class AnnexeB extends PDFGeneration {
 			]
 		};
 		const points = {
-			NL: {},
+			NL: {
+				a: {
+					title:
+						'a) Situaties die een gangrevalidatie noodzakelijk maken voor rechthebbenden vanaf hun 65ste verjaardag, die al eens gevallen zijn met risico op herhaling, te objectiveren door de behandelend geneesheer en kinesitherapeut aan de hand van :',
+					0: '1) de “Timed up & go” test, met een score hoger dan 20 seconden;',
+					1: 'en',
+					2: '2) een positief resultaat op ten minste één van twee volgende testen, die allebei moeten worden verricht:',
+					3: '    (01) de “Tinetti” test, met een score kleiner dan 20/28;',
+					4: '    (02) de “Timed chair stands” test, met een score hoger dan 14 seconden.'
+				},
+				b: {
+					title: 'b)	Psychomotorische ontwikkelingsstoornissen',
+					0: 'Bij kinderen onder 16 jaar, na advies en behandelingsvoorstel door een van ondervermelde geneesheren-specialisten en met een significant zwakkere score op een gestandaardiseerde test;',
+					1: '    Geneesheer-specialist voor :',
+					2: '    - (neuro)pediatrie',
+					3: '    - (neuro)pediatrie en F en P (*)',
+					4: '    - neuropsychiatrie en F en P (*)',
+					5: '    - neurologie',
+					6: '    - neurologie en F en P (*)',
+					7: '    - psychiatrie',
+					8: '    - psychiatrie en F en P (*)',
+					9: '    (*) F en P = specialist voor functionele en professionele revalidatie voor gehandicapten.',
+					10: 'Bij kinderen onder 19 maanden kan bovenvermeld advies, behandelingsvoorstel en significant zwakkere score vervangen worden door de vaststelling van klinisch duidelijke ontwikkelingsstoornissen op basis van een evaluatie in een gespecialiseerde multidisciplinaire equipe, waar ten minste een (neuro)pediater deel van uitmaakt.'
+				},
+				c: {
+					title:
+						'c)	Ademhalingsinsufficiëntie bij rechthebbenden die opgevolgd worden in het kader van de typerevalidatie-overeenkomst inzake langdurige zuurstoftherapie thuis of bij thuisbeademing.'
+				},
+				d: {
+					title: 'd)	Chronische motorische of gemengde polyneuropathie.'
+				},
+				e: {
+					title: 'e)	Chronisch vermoeidheidssyndroom.',
+					0: 'die voldoen aan de voorwaarden beschreven in de nomenclatuur'
+				},
+				f: {
+					title: 'f)	Fibromyalgiesyndroom',
+					0: 'die voldoen aan de voorwaarden beschreven in de nomenclatuur'
+				},
+				g: {
+					title: 'g)	Primaire cervicale dystonie',
+					0: 'aangetoond met een diagnostisch verslag opgesteld door een geneesheer-specialist voor neurologie'
+				},
+				h: {
+					title: 'h)	Lymfoedeem',
+					0: 'die voldoen aan de voorwaarden beschreven in de nomenclatuur'
+				}
+			},
 			FR: {
 				a: {
 					title:
 						'a) Situations qui nécessitent une rééducation fonctionnelle de la marche pour les bénéficiaires à partir leur 65ème anniversaire ayant déjà été victime d’une chute et présentant un risque de récidive, à objectiver par le médecin traitant et le kinésithérapeute au moyen :',
 					0: '1) du test « Timed up & go », avec un score supérieur à 20 secondes ;',
-					1: '2) du résultat positif à au moins un des deux tests suivants, ceux-ci devant tous deux être effectués:',
-					2: '    (01) - le test « Tinetti », avec un score inférieur à 20/28 ;',
-					3: '    (02) - le test « Timed chair stands », avec un score supérieur à 14 secondes.'
+					1: 'et',
+					2: '2) du résultat positif à au moins un des deux tests suivants, ceux-ci devant tous deux être effectués:',
+					3: '    (01) - le test « Tinetti », avec un score inférieur à 20/28 ;',
+					4: '    (02) - le test « Timed chair stands », avec un score supérieur à 14 secondes.'
 				},
 				b: {
 					title: 'b)	Troubles du développement psychomoteur',
@@ -104,20 +152,23 @@ export class AnnexeB extends PDFGeneration {
 					title: 'd)	Polyneuropathie chronique motrice ou mixte .'
 				},
 				e: {
-					title:
-						'e)	Syndrome de fatigue chronique répondant aux conditions prévues dans la nomenclature.'
+					title: 'e)	Syndrome de fatigue chronique',
+					0: 'répondant aux conditions prévues dans la nomenclature.'
 				},
 				f: {
 					title: 'f)	Syndrome fibromyalgique',
-					0: 'Le diagnostic doit être confirmé par un médecin spécialiste en rhumatologie ou en médecine physique et réadaptation sur base d’un examen clinique comprenant les critères de diagnostic de l’ACR (American College of Rheumatology). Cette confirmation signée par le médecin spécialiste doit figurer dans le dossier individuel kinésithérapeutique et préciser que les critères de diagnostic utilisés sont bien ceux de l’ACR.',
-					1: 'Avant la fin de chaque année civile qui suit l’année au cours de laquelle la 1ère prestation du traitement a eu lieu, le médecin spécialiste susmentionné réévaluera l’évolution de la symptomatologie du patient afin de confirmer la nécessité de poursuivre le traitement dans le cadre du §14. Cette confirmation signée par le médecin spécialiste doit figurer dans le dossier individuel kinésithérapeutique.'
+					0: 'répondant aux conditions prévues dans la nomenclature.'
+					// deprecated : new doc issued by INAMI on sept 23
+					// 0: 'Le diagnostic doit être confirmé par un médecin spécialiste en rhumatologie ou en médecine physique et réadaptation sur base d’un examen clinique comprenant les critères de diagnostic de l’ACR (American College of Rheumatology). Cette confirmation signée par le médecin spécialiste doit figurer dans le dossier individuel kinésithérapeutique et préciser que les critères de diagnostic utilisés sont bien ceux de l’ACR.',
+					// 1: 'Avant la fin de chaque année civile qui suit l’année au cours de laquelle la 1ère prestation du traitement a eu lieu, le médecin spécialiste susmentionné réévaluera l’évolution de la symptomatologie du patient afin de confirmer la nécessité de poursuivre le traitement dans le cadre du §14. Cette confirmation signée par le médecin spécialiste doit figurer dans le dossier individuel kinésithérapeutique.'
 				},
 				g: {
-					title:
-						'g)	Dystonie cervicale primaire démontrée par un rapport diagnostique établi par un médecin-spécialiste en neurologie'
+					title: 'g)	Dystonie cervicale primaire',
+					0: 'démontrée par un rapport diagnostique établi par un médecin-spécialiste en neurologie'
 				},
 				h: {
-					title: 'h)	lymphoedème répondant aux conditions prévues dans la nomenclature.'
+					title: 'h)	lymphoedème',
+					0: 'répondant aux conditions prévues dans la nomenclature.'
 				}
 			}
 		};
@@ -199,7 +250,7 @@ export class AnnexeB extends PDFGeneration {
 			}
 		);
 		this.yPosition.update(3);
-		this.addParagraph("Fait le : " + dayjs(this.formData.date).format('DD/MM/YYYY'));
+		this.addParagraph('Fait le : ' + dayjs(this.formData.date).format('DD/MM/YYYY'));
 	}
 
 	async save_file() {
