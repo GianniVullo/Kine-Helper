@@ -22,9 +22,36 @@
 		}
 	</style>
 	<script>
+		if (!window.matchMedia("(prefers-reduce-motion: reduce)").addEventListener) {
+			function polyfillAddEventListener(mediaQueryList, eventName, listener) {
+				if (mediaQueryList.addListener) {
+					mediaQueryList.addListener(listener);
+				}
+			}
+			var matchMediaInstance = window.matchMedia("(prefers-reduce-motion: reduce)");
+			matchMediaInstance.constructor.prototype.addEventListener = function (eventName, listener) {
+				polyfillAddEventListener(this, eventName, listener);
+			}
+		}
+		if (!window.matchMedia("(prefers-reduce-motion: reduce)").removeEventListener) {
+			function polyfillremoveEventListener(mediaQueryList, eventName, listener) {
+				if (mediaQueryList.addListener) {
+					mediaQueryList.addListener(listener);
+				}
+			}
+			var matchMediaInstance = window.matchMedia("(prefers-reduce-motion: reduce)");
+			matchMediaInstance.constructor.prototype.removeEventListener = function (eventName, listener) {
+				polyfillremoveEventListener(this, eventName, listener);
+			}
+		}
+
 		document.addEventListener("svelteLoaded", (event) => {
 			console.log("DOM fully loaded and parsed");
-			document.getElementById("loader").classList+= ' fade-out'
+			document.getElementById("loader").classList += ' fade-out'
+		});
+		document.addEventListener("svelteLoaded", (event) => {
+			console.log("DOM fully loaded and parsed");
+			document.getElementById("loader").classList += ' fade-out'
 		});
 	</script>
 </head>

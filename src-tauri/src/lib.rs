@@ -5,10 +5,13 @@ use nomenclature::convention_decompression;
 use printer::raw_printer::unix::print_attestation;
 #[cfg(target_os = "windows")]
 use printer::raw_printer::windows::print_attestation;
+
+#[cfg(any(target_os = "macos", target_os = "linux", target_os = "windows"))]
 use printers::{get_printers, printer::Printer};
+
 use std::{
     fs::{self, File},
-    io::{self, Read, Write},
+    io::{Read, Write},
     path::Path,
 };
 use tauri_plugin_sql::{Migration, MigrationKind};
@@ -21,6 +24,7 @@ struct LocalPrinter {
     pub driver_name: String,
 }
 
+#[cfg(any(target_os = "macos", target_os = "linux", target_os = "windows"))]
 impl From<Printer> for LocalPrinter {
     fn from(external: Printer) -> Self {
         LocalPrinter {
@@ -41,6 +45,7 @@ fn setup_path(dir_path: String, file_name: String, file_content: Vec<u8>) {
     file.write_all(&file_content).unwrap();
 }
 
+#[cfg(any(target_os = "macos", target_os = "linux", target_os = "windows"))]
 #[tauri::command]
 async fn get_printer() -> Vec<LocalPrinter> {
     let printers = get_printers();
@@ -153,11 +158,13 @@ pub fn run() {
         // .plugin(sentry_tauri::plugin())
         .invoke_handler(tauri::generate_handler![
             convention_decompression,
+            #[cfg(any(target_os = "macos", target_os = "linux", target_os = "windows"))]
             print_attestation,
             setup_path,
             file_exists,
             delete_file,
             retrieve_file,
+            #[cfg(any(target_os = "macos", target_os = "linux", target_os = "windows"))]
             get_printer
         ])
         .run(tauri::generate_context!())

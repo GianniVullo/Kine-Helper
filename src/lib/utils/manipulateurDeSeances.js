@@ -88,8 +88,12 @@ export class ManipulateurDeSeances {
 	async realign(db, arch) {
 		console.log('realigning');
 		let mergedArch = [];
-		for (const archType of arch) {
-			mergedArch = [...mergedArch, ...archType];
+		if (Array.isArray(arch[0])) {
+			for (const archType of arch) {
+				mergedArch = [...mergedArch, ...archType];
+			}
+		} else {
+			mergedArch = arch;
 		}
 		for (let idx = 0; idx < this.seances.length; idx++) {
 			const seance = this.seances[idx];
@@ -111,7 +115,10 @@ export class ManipulateurDeSeances {
 				RETURNING *;`,
 				[seance.date, code_ref, seance.date, seance.seance_id]
 			);
-			seance.code_id = updatedSeance[0].code_id;
+			console.log('la séance updatée', updatedSeance);
+			if (updatedSeance.length > 0) {
+				seance.code_id = updatedSeance[0].code_id;
+			}
 		}
 	}
 
