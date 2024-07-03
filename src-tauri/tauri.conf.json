@@ -22,9 +22,6 @@
 	},
 	"app": {
 		"withGlobalTauri": false,
-		"security": {
-			"csp": "default-src 'self'; img-src 'self' asset: *; script-src 'self' asset: https://asset.localhost; style-src 'unsafe-inline'  asset: *; media-src *;"
-		},
 		"windows": [
 			{
 				"fullscreen": false,

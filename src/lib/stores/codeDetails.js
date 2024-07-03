@@ -247,12 +247,12 @@ export function types() {
 
 export function patholourdeTypes() {
 	return [
-		get(t)('stores', 'code.plt1'),
-		get(t)('stores', 'code.plt2'),
-		get(t)('stores', 'code.plt3'),
-		get(t)('stores', 'code.plt4'),
-		get(t)('stores', 'code.plt5'),
-		get(t)('stores', 'code.plt6')
+		get(t)('stores', 'code.plt1'), // "Séance normale (20 ou 30 minutes)",
+		get(t)('stores', 'code.plt2'), // "Patient IMC (60 min)",
+		get(t)('stores', 'code.plt3'), // "Drainage 60 min",
+		get(t)('stores', 'code.plt4'), // "Drainage 120 min",
+		get(t)('stores', 'code.plt5'), // "Séance de 45 min après le séjour du bénéficiaire en hôpital ou en centre de revalidation (phase subaiguë). Pour les volets a), c) ou d) uniquement",
+		get(t)('stores', 'code.plt6') // "Séance de 60 min au global avec minimum 2 périodes distinctes<br>Pour le volet j) uniquement"
 	];
 }
 

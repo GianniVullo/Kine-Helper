@@ -86,7 +86,7 @@ export function fetchCodeDesSeances(loading, seances, sp) {
 export class NomenclatureArchitecture {
 	constructor(patient, sp) {
 		console.log('in NomenclatureArchitecture.constructor() with', patient, 'AND', sp);
-		this.groupe_id = sp.groupe_id;
+		this.groupe_id = parseInt(sp.groupe_id);
 		this.lieu_id = sp.lieu_id;
 		this.duree = sp.duree;
 		this.patient = patient;

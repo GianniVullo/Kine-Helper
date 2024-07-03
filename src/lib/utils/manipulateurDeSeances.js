@@ -80,6 +80,7 @@ export class ManipulateurDeSeances {
 		patients.update((ps) => {
 			const p = ps.find((p) => p.patient_id === this.seances[0].patient_id);
 			const sp = p.situations_pathologiques.find((sp) => sp.sp_id === this.seances[0].sp_id);
+			sp.seances = [];
 			sp.seances = this.seances;
 			return ps;
 		});
@@ -89,6 +90,7 @@ export class ManipulateurDeSeances {
 		console.log('realigning');
 		let mergedArch = [];
 		if (Array.isArray(arch[0])) {
+			console.log;
 			for (const archType of arch) {
 				mergedArch = [...mergedArch, ...archType];
 			}
@@ -115,7 +117,7 @@ export class ManipulateurDeSeances {
 				RETURNING *;`,
 				[seance.date, code_ref, seance.date, seance.seance_id]
 			);
-			console.log('la séance updatée', updatedSeance);
+			// console.log('la séance updatée', updatedSeance);
 			if (updatedSeance.length > 0) {
 				seance.code_id = updatedSeance[0].code_id;
 			}
@@ -132,10 +134,26 @@ export class ManipulateurDeSeances {
 
 	async supprimer(seance) {
 		await this.template(async (db) => {
-			// First removing the seance from the list
-			this.seances = this.seances.filter((s) => s.seance_id !== seance.seance_id);
-			// Then deleting the seance from the db
-			await db.execute('DELETE FROM seances WHERE seance_id = $1;', [seance.seance_id]);
+			if (Array.isArray(seance)) {
+				console.log('the seance obj is a list :', seance);
+				// First removing the seance from the list
+				this.seances = this.seances.filter((s) => s.seance_id !== seance.seance_id);
+				console.log(this.seances);
+				const sqlSttmt = `DELETE FROM seances WHERE ${seance
+					.map((s, idx) => `${idx === 0 ? '' : 'OR'} seance_id = $${idx + 1}`)
+					.reduce((a, b) => `${a} ${b}`)};`;
+				console.log(sqlSttmt);
+				// Then deleting the seance from the db
+				await db.execute(
+					sqlSttmt,
+					seance.map((s) => s.seance_id)
+				);
+			} else {
+				// First removing the seance from the list
+				this.seances = this.seances.filter((s) => s.seance_id !== seance.seance_id);
+				// Then deleting the seance from the db
+				await db.execute('DELETE FROM seances WHERE seance_id = $1;', [seance.seance_id]);
+			}
 		});
 	}
 

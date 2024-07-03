@@ -86,23 +86,26 @@
 								href={`/dashboard/patients/${patient.patient_id}/situation-pathologique/${sp.sp_id}/prescriptions/${prescription.prescription_id}/update`}
 								class="variant-outline-warning btn-icon btn-icon-sm"
 								><UpdateIcon class="h-5 w-5 stroke-surface-600 dark:stroke-surface-200" /></a>
-							<button
-								on:click={async () => {
-									modalStore.trigger({
-										title: $t('prescription.list', 'deleteModal.title'),
-										body: $t('prescription.list', 'deleteModal.body'),
-										buttonTextConfirm: $t('shared', 'confirm'),
-										buttonTextCancel: $t('shared', 'cancel'),
-										type: 'confirm',
-										response: async (response) => {
-											if (response) {
-												await deletePrescription(prescription);
+							{#if sp.seances.filter((s) => s.prescription_id === prescription.prescription_id).length === 0}
+								<button
+									on:click={async () => {
+										modalStore.trigger({
+											title: $t('prescription.list', 'deleteModal.title'),
+											body: $t('prescription.list', 'deleteModal.body'),
+											buttonTextConfirm: $t('shared', 'confirm'),
+											buttonTextCancel: $t('shared', 'cancel'),
+											type: 'confirm',
+											response: async (response) => {
+												if (response) {
+													await deletePrescription(prescription);
+												}
 											}
-										}
-									});
-								}}
-								class="variant-outline-error btn-icon btn-icon-sm"
-								><DeleteIcon class="h-5 w-5 stroke-surface-600 dark:stroke-surface-200" /></button>
+										});
+									}}
+									class="variant-outline-error btn-icon btn-icon-sm"
+									><DeleteIcon
+										class="h-5 w-5 stroke-surface-600 dark:stroke-surface-200" /></button>
+							{/if}
 							<button
 								on:click={async () => {
 									console.log('open prescription');
@@ -124,15 +127,15 @@
 					<!--* Body -->
 					<div class="flex flex-col text-surface-800 dark:text-surface-100">
 						<h5 class="text-secondary-500">
-								{@html $t('prescription.list', 'card.subtitle', {
-									prescripteurFullName: `${prescription.prescripteur.nom} ${prescription.prescripteur.prenom}`
-								})} <br />
+							{@html $t('prescription.list', 'card.subtitle', {
+								prescripteurFullName: `${prescription.prescripteur.nom} ${prescription.prescripteur.prenom}`
+							})} <br />
 						</h5>
 						<p class="mb-1 text-surface-400">{prescription.prescripteur.inami}</p>
 						<h5 class="text-surface-700 dark:text-surface-300">
 							<span class="font-medium text-surface-800 dark:text-surface-200"
 								>{prescription.nombre_seance}</span>
-								{$t('patients.detail', 'prestations')}
+							{$t('patients.detail', 'prestations')}
 							<br />
 							<span class="font-medium text-surface-800 dark:text-surface-200"
 								>{prescription.seance_par_semaine}</span>

@@ -162,8 +162,8 @@ export class GenerateurDeSeances {
 		// Si l'utilisateur a spécifié une heure de début de séance
 		if (this.premiere_seance_heure) {
 			return this.premiere_seance
-				.set('hour', parseInt(premiere_seance_heure.split(':')[0]))
-				.set('minute', parseInt(premiere_seance_heure.split(':')[1]))
+				.set('hour', parseInt(this.premiere_seance_heure.split(':')[0]))
+				.set('minute', parseInt(this.premiere_seance_heure.split(':')[1]))
 				.set('second', 0);
 		}
 		// Sinon on prend l'heure de début de séance par défaut le jour de la première séance

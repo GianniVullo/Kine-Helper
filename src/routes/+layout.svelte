@@ -9,20 +9,22 @@
 	import CalendarEventModal from '../lib/ui/CalendarEventModal.svelte';
 	import BugReportModal from '../lib/ui/BugReportModal.svelte';
 	import FactureCreationModal from '../lib/ui/FactureCreationModal.svelte';
+	import MultipleEventSelectionModal from '../lib/ui/MultipleEventSelectionModal.svelte';
 	import { onMount } from 'svelte';
-	import {appDataDir} from '@tauri-apps/api/path';
+	import { appDataDir } from '@tauri-apps/api/path';
 	import SeanceCreationModal from '../lib/ui/SeanceCreationModal.svelte';
 	console.log('page', $page);
 	initializeStores();
 
-	console.log('appdir', appDataDir())
+	console.log('appdir', appDataDir());
 	const modalRegistry = {
 		// Set a unique modal ID, then pass the component reference
 		bugReport: { ref: BugReportModal },
 		factureCreation: { ref: FactureCreationModal },
 		documentSelection: { ref: DocumentSelectionModal },
 		calendarEvent: { ref: CalendarEventModal },
-		seanceCreationModal: { ref: SeanceCreationModal },
+		multipleEventSelection: { ref: MultipleEventSelectionModal },
+		seanceCreationModal: { ref: SeanceCreationModal }
 		// ...
 	};
 	onMount(() => {
@@ -30,7 +32,7 @@
 			detail: { key: 'value' }
 		});
 		document.dispatchEvent(myEvent);
-	})
+	});
 	storePopup.set({ computePosition, autoUpdate, offset, shift, flip, arrow });
 	console.log($page);
 </script>

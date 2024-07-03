@@ -7,7 +7,6 @@
 	import { locale, t } from './i18n';
 	import { get } from 'svelte/store';
 
-
 	const modalStore = getModalStore();
 
 	export let events;
@@ -25,7 +24,7 @@
 					event: event,
 					component: ec
 				}
-			})
+			});
 		},
 		buttonText: {
 			close: get(t)('shared', 'close'),
@@ -38,7 +37,7 @@
 			resourceTimeGridWeek: get(t)('shared', 'week'),
 			timeGridDay: get(t)('shared', 'day'),
 			timeGridWeek: get(t)('shared', 'week'),
-			today: get(t)('shared', 'today'),
+			today: get(t)('shared', 'today')
 		},
 		theme: (theme) => ({
 			...theme,
@@ -59,6 +58,16 @@
 		selectable: true,
 		select(info) {
 			console.log(info);
+			// NOT READY TO GO TO PRODUCTION
+			// const modal = {
+			// 	type: 'component',
+			// 	component: 'multipleEventSelection',
+			// 	meta: {
+			// 		info: info,
+			// 		component: ec
+			// 	}
+			// };
+			// modalStore.trigger(modal)
 		},
 		// eventSource: events,
 		locale: get(locale),

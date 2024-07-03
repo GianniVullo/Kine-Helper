@@ -371,10 +371,11 @@ export class AnnexeB extends PDFGeneration {
 		this.voletAvecSituationUnique(this.points.d.title, '55.');
 	}
 	e() {
-		this.voletAvecSituationUnique(this.points.e.title, '56.');
+		let sousSituations = [...Array(1).keys()].map((i) => this.points.e[i]);
+		this.voletAvecSituationsMultiples(this.points.e.title, sousSituations, '56.');
 	}
 	f() {
-		let sousSituations = [...Array(2).keys()].map((i) => this.points.f[i]);
+		let sousSituations = [...Array(1).keys()].map((i) => this.points.f[i]);
 		this.voletAvecSituationsMultiples(this.points.f.title, sousSituations, '57.');
 	}
 	g() {
