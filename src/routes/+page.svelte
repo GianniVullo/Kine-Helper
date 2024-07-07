@@ -19,7 +19,7 @@
 		</div>
 		<div class="card-header">
 			<h2 class="mb-2 text-center text-2xl font-bold text-purple-600 dark:text-purple-400">
-				Kiné Helper
+				Kiné Helper v0.0.2
 			</h2>
 			<p class=" text-center text-sm text-gray-600 dark:text-gray-300">
 				{$t('login', 'subtitle')}

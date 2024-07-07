@@ -16,7 +16,6 @@
 	// Ensuite, il faut vérifier si une mise à jour est disponible.
 	// Si une mise à jour est disponible, il faut télécharger et installer.
 	// Ensuite, il faut relancer l'application Ou poursuivre vers l'écran de login.
-	console.log('in the splashscreen');
 
 	let loadingStatus = writable([]);
 	function pushToStatus(newStatus) {
