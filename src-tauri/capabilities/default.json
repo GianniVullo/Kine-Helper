@@ -33,6 +33,9 @@
 			"allow": [
 				{
 					"url": "https://epzrdxofotzufykimwuc.supabase.co/functions/v1/update-checker/pOwtY_2gz3GHtISkVIv6Pg"
+				},
+				{
+					"url": "https://admin-console.kine-helper.be/api/*"
 				}
 			]
 		},
