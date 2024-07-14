@@ -10,6 +10,7 @@
 	import { blur } from 'svelte/transition';
 	import { cubicOut } from 'svelte/easing';
 	import { supabase } from '../../lib';
+	import { fetch } from '@tauri-apps/plugin-http';
 
 	// <!--* Idée de ce composant -->
 	// Ici il faut attendre que le Dom soit complètement chargé pour éviter tout flickering.
@@ -40,6 +41,7 @@
 	// <!--* Initialization et mise-à-jour de l'application -->
 	function lookingForUpdateAndInstallOrContinue() {
 		return new Promise((resolve, reject) => {
+			console.log('initializing check');
 			check()
 				.then((update) => {
 					console.log('update', update);
@@ -69,6 +71,7 @@
 					}
 				})
 				.catch((e) => {
+					console.error(e);
 					// <!--? Si aucune MAJ n'est trouvée -->
 					pushToStatus(`${get(t)('splash', 'error', null, 'Error encountered, Retry later.')}`);
 				});
@@ -220,10 +223,12 @@
 					{/key}
 				</div>
 				<div class="flex flex-col">
-					<h5 class="dark:text-surface-200 text-surface-600 mb-1">{$t('splash', 'status', null, 'Status')}</h5>
-					<ul class="flex flex-col text-sm dark:text-surface-300 text-surface-700 ml-2">
+					<h5 class="mb-1 text-surface-600 dark:text-surface-200">
+						{$t('splash', 'status', null, 'Status')}
+					</h5>
+					<ul class="ml-2 flex flex-col text-sm text-surface-700 dark:text-surface-300">
 						{#each $loadingStatus as status, idx (idx)}
-							<li transition:blur={{duration: 500, easing: cubicOut}}>{status}</li>
+							<li transition:blur={{ duration: 500, easing: cubicOut }}>{status}</li>
 						{/each}
 					</ul>
 				</div>
