@@ -51,6 +51,7 @@
 		"fs:allow-appconfig-read",
 		"updater:allow-check",
 		"updater:default",
-		"dialog:allow-save"
+		"dialog:allow-save",
+		"process:allow-restart"
 	]
 }

@@ -10,7 +10,6 @@
 	import { blur } from 'svelte/transition';
 	import { cubicOut } from 'svelte/easing';
 	import { supabase } from '../../lib';
-	import { fetch } from '@tauri-apps/plugin-http';
 
 	// <!--* Idée de ce composant -->
 	// Ici il faut attendre que le Dom soit complètement chargé pour éviter tout flickering.
@@ -28,6 +27,8 @@
 	let domLoaded = false;
 	let updatePromise;
 	let langPromise;
+	let contentSize;
+	let indexOfContentDownload;
 	onMount(() => {
 		const myEvent = new CustomEvent('svelteLoaded', {
 			detail: { key: 'value' }
@@ -57,12 +58,29 @@
 							)}`
 						);
 						// <!--? ETAPE 2 : télécharger et installer -->
-						update.downloadAndInstall().then(() => {
-							pushToStatus(`${get(t)('splash', 'done', null, 'Download done, restarting ...')}`);
-							// <!--? ETAPE 3 : relancer l'application -->
-							relaunch();
-							resolve();
-						});
+						update
+							.downloadAndInstall((progress) => {
+								if (progress.event === 'Started') {
+									contentSize = progress.data.contentLength;
+									pushToStatus('0 %');
+									indexOfContentDownload = $loadingStatus.indexOf('0 %')
+								}
+								if (progress.event === "Progress") {
+									$loadingStatus[indexOfContentDownload] = `${(progress.data.chunkLength / contentSize) * 100} %`
+								}
+								if (progress.event === 'Finished') {
+									$loadingStatus[indexOfContentDownload] = 'DOWNLOAD COMPLETED !'
+								}
+							})
+							.then(() => {
+								pushToStatus(`${get(t)('splash', 'done', null, 'Download done, restarting ...')}`);
+								// <!--? ETAPE 3 : relancer l'application -->
+								relaunch();
+								resolve();
+							})
+							.catch((e) => {
+								console.log('erreur dans le downloadAndInstall', e);
+							});
 					} else {
 						// <!--? Si aucune MAJ n'est trouvée -->
 						pushToStatus(`${get(t)('splash', 'uptodate', null, "App's up to date.")}`);
