@@ -31,3 +31,5 @@ dist-ssr
 *.sw?
 .env
 oldIdeas
+
+src-tauri/.cargo
