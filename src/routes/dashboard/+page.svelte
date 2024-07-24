@@ -52,7 +52,7 @@
 					<h3 class="absolute left-1 top-1 text-sm text-surface-400">
 						{$t('dashboard', 'todaysAppointment')}
 					</h3>
-					<div class="mt-4 flex flex-col">
+					<!-- <div class="mt-4 flex flex-col">
 						{#await getTodaysAppointments()}
 							{$t('shared', 'loading')}
 						{:then seances}
@@ -81,7 +81,7 @@
 								</div>
 							{/if}
 						{/await}
-					</div>
+					</div> -->
 				</div>
 				<div class="flex basis-3/4">
 					<div

@@ -176,7 +176,7 @@
 		<!--* Séances Agenda -->
 		<div class="mt-4 flex w-[90%] flex-col">
 			<h5 class="mb-2 text-lg text-surface-500 dark:text-surface-400">
-				{$t('patients.detail', 'prestations')}
+				{$t('patients.detail', 'prestations')} ({sp.seances.length})
 			</h5>
 			{#key eventsPromise}
 				{#await eventsPromise}
