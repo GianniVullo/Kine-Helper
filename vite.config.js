@@ -3,7 +3,7 @@ import { internalIpV4 } from 'internal-ip';
 import { sveltekit } from '@sveltejs/kit/vite';
 import { purgeCss } from 'vite-plugin-tailwind-purgecss';
 // @ts-expect-error process is a nodejs global
-const mobile = !!/android|ios/.exec(process.env.TAURI_PLATFORM);
+const mobile = !!/android|ios/.exec(process.env.TAURI_ENV_PLATFORM);
 
 // https://vitejs.dev/config/
 export default defineConfig(async () => ({
@@ -27,9 +27,10 @@ export default defineConfig(async () => ({
 					port: 1421
 			  }
 			: undefined,
-		strictPort: true
+		strictPort: true,
+		watch: {ignored: ["/src-tauri/"]}
 	},
 	// 3. to make use of `TAURI_DEBUG` and other env variables
 	// https://tauri.app/v1/api/config#buildconfig.beforedevcommand
-	envPrefix: ['VITE_', 'TAURI_']
+	envPrefix: ['VITE_', 'TAURI_'],
 }));

@@ -24,13 +24,16 @@
 	const formSchema = {
 		isValid
 	};
-	// We've created a custom submit function to pass the response and close the modal.
+
 	async function isValid({ formData, submitter }) {
 		let { data, error } = await supabase.from('user_messages').insert({
 			titre: request.titre,
-			message: request.message,
+			message: `from <${get(user).profil.nom + ' ' + get(user).profil.prenom}> ${
+				get(user).user.email
+			} : \n ${request.message}`,
 			user_id: $user.user.id
 		});
+
 		console.log('data', data);
 		console.log('error', error);
 		console.log('formData', formData);
@@ -51,9 +54,14 @@
 		<header class={cHeader}>{$t('sidebar', 'bugReport')}</header>
 		<article>{$t('bugModal', 'description')}</article>
 		<FormWrapper {formSchema}>
-			<TextFieldV2 bind:value={request.fullName} label={$t('bugModal', 'label.name')} name="fullName" />
+			<TextFieldV2
+				bind:value={request.fullName}
+				label={$t('bugModal', 'label.name')}
+				name="fullName" />
 			<label for="email"
-				><h5 class="text-surface-50 dark:text-surface-300">{$t('form.patient', 'cardLabel.contact')}</h5>
+				><h5 class="text-surface-50 dark:text-surface-300">
+					{$t('form.patient', 'cardLabel.contact')}
+				</h5>
 				<input
 					id="email"
 					type="email"
@@ -61,7 +69,11 @@
 					readonly
 					bind:value={request.email}
 					name="email" /></label>
-			<TextFieldV2 maxlength="200" bind:value={request.titre} label={$t('bugModal', 'title')} name="titre" />
+			<TextFieldV2
+				maxlength="200"
+				bind:value={request.titre}
+				label={$t('bugModal', 'title')}
+				name="titre" />
 			<DefaultFieldWrapper>
 				<label for="mess" class="select-none space-y-2 text-surface-500 dark:text-surface-300"
 					><h5>{$t('bugModal', 'label.message')}</h5>

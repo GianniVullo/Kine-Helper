@@ -42,7 +42,7 @@
 				session: data.session
 			});
 			dispatch('onSignupSuccess', {
-				message: get(t)('signup', 'emailConfirmation')
+				message
 			});
 			submitter.disabled = false;
 		}

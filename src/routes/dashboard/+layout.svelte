@@ -1,16 +1,14 @@
 <script>
 	import SidebarMenu from '$lib/SidebarMenu.svelte';
-	import { AppShell } from '@skeletonlabs/skeleton';
-	import { user } from '../../lib/stores/UserStore';
+
 	let isMinimized = true;
 </script>
 
-<div class="flex md:flex-row flex-col w-screen h-screen">
-
+<div class="flex h-screen w-screen flex-col md:flex-row">
 	<!-- (header) -->
 	<SidebarMenu {isMinimized} />
 	<!-- Router Slot -->
-	<div class="w-full ml-2">
+	<div class="ml-2 w-full">
 		<slot />
 	</div>
 	<!-- ---- / ---- -->

@@ -13,6 +13,7 @@
 	import { onMount } from 'svelte';
 	import { appDataDir } from '@tauri-apps/api/path';
 	import SeanceCreationModal from '../lib/ui/SeanceCreationModal.svelte';
+	import MarketingModal from '../lib/ui/MarketingModal.svelte';
 	console.log('page', $page);
 	initializeStores();
 
@@ -24,7 +25,8 @@
 		documentSelection: { ref: DocumentSelectionModal },
 		calendarEvent: { ref: CalendarEventModal },
 		multipleEventSelection: { ref: MultipleEventSelectionModal },
-		seanceCreationModal: { ref: SeanceCreationModal }
+		seanceCreationModal: { ref: SeanceCreationModal },
+		marketingModal: { ref: MarketingModal }
 		// ...
 	};
 	onMount(() => {

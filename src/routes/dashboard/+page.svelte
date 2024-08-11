@@ -1,12 +1,18 @@
 <script>
-	import { t } from '../../lib/i18n';
+	import { locale, t } from '../../lib/i18n';
 	import { DBInitializer } from '../../lib/stores/databaseInitializer';
 	import { user } from '../../lib/stores/UserStore';
 	import { goto } from '$app/navigation';
+	import { page } from '$app/stores';
 	import { patients } from '../../lib/stores/PatientStore';
-	import { get } from 'svelte/store';
+	import { get, writable } from 'svelte/store';
 	import dayjs from 'dayjs';
 	import { getModalStore } from '@skeletonlabs/skeleton';
+	import { fade } from 'svelte/transition';
+	import { onMount } from 'svelte';
+	import { fetch } from '@tauri-apps/plugin-http';
+	import { parse } from 'svelte/compiler';
+	import { open } from "@tauri-apps/plugin-shell";
 
 	const modalStore = getModalStore();
 
@@ -32,6 +38,32 @@
 			);
 		});
 	}
+	let marketingPromise;
+	let interval;
+	let currentIndex = writable(0);
+	let urlSource;
+	function rotatingAds(node) {
+		marketingPromise = new Promise(async (resolve, reject) => {
+			let response = await fetch('https://admin-console.kine-helper.be/api/get-ads?lang=fr');
+			response = await response.json();
+			interval = setInterval(() => {
+				if ($currentIndex === response.length - 1) {
+					currentIndex.set(0);
+				} else {
+					currentIndex.update((n) => {
+						return n + 1;
+					});
+				}
+			}, 12000);
+			console.log('THE RESPONSE', response);
+			return resolve(response);
+		});
+		return {
+			destroy() {
+				clearInterval(interval);
+			}
+		};
+	}
 </script>
 
 <main class="flex h-[80vh] w-full flex-col">
@@ -41,6 +73,7 @@
 			{$t('dashboard', 'description')}
 		</p>
 	</header>
+	<img id="another" src={urlSource} alt="" />
 	<article class="flex h-full w-full">
 		<section class="relative my-4 flex basis-10/12 flex-col rounded-xl p-4">
 			<h2 class="absolute left-1 top-1 text-sm text-surface-400">
@@ -50,7 +83,7 @@
 				<div
 					class="relative flex basis-1/4 overflow-y-scroll rounded-lg border border-surface-500 bg-white/50 p-2 shadow-inner dark:bg-black/20">
 					<h3 class="absolute left-1 top-1 text-sm text-surface-400">
-						{$t('dashboard', 'todaysAppointment')}
+						{$t('dashboard', 'todaysAppointment')} ({$t('dashboard', 'featureComingSoon')})
 					</h3>
 					<!-- <div class="mt-4 flex flex-col">
 						{#await getTodaysAppointments()}
@@ -90,27 +123,7 @@
 							{$t('dashboard', 'unpaidAttest')}
 							({$t('dashboard', 'featureComingSoon')})
 						</h3>
-						<div class="mt-4 flex w-full flex-col items-start space-y-1 p-2">
-							{#each Array(15) as item}
-								<div
-									class="flex rounded-lg border border-surface-900 bg-secondary-500/10 px-2 py-1 shadow-lg dark:bg-secondary-900/50">
-									<!-- content here -->
-									<div class="flex flex-col justify-between dark:text-surface-200">
-										<h5>Fake du 18/5</h5>
-										<p>100€</p>
-									</div>
-									<div class="ml-4 flex flex-col">
-										<button
-											class="variant-outline-error btn btn-sm mb-2 text-error-600 dark:text-error-400">
-											{$t('dashboard', 'intervention')} {$t('dashboard', 'unpaid')}
-										</button>
-										<button class="variant-outline-success btn btn-sm text-success-500">
-											{$t('dashboard', 'partPersonnel')} {$t('dashboard', 'paid')}
-										</button>
-									</div>
-								</div>
-							{/each}
-						</div>
+						<div class="mt-4 flex w-full flex-col items-start space-y-1 p-2"></div>
 					</div>
 					<div
 						class="relative mx-1 flex w-full basis-1/2 overflow-y-scroll rounded-lg border border-surface-500 bg-white/50 p-2 shadow-inner dark:bg-black/20">
@@ -126,12 +139,35 @@
 			<div
 				class="relative mt-2 flex h-[30%] basis-1/2 flex-col rounded-lg border border-surface-500 bg-white/50 px-2 pb-2 pt-6 shadow-inner dark:bg-black/20">
 				<h3 class="absolute left-1 top-1 text-sm text-surface-400">
-					{$t('dashboard', 'ads')} ({$t('dashboard', 'projectComingSoon')})
+					{$t('dashboard', 'ads')}
 				</h3>
-				<div class="mt-4 flex flex-col space-y-4">
-					<p class="">
-						{$t('dashboard', 'adsDescription')}						
-					</p>
+				<div class="relative mt-4 flex w-full snap-x overflow-x-scroll" use:rotatingAds>
+					{#await marketingPromise then ads}
+						{#if ads}
+							<div class="">
+								<img
+									class="h-auto max-w-[600px]"
+									src={`https://admin-console.kine-helper.be/api/get-img?id=${
+										ads[$currentIndex]?.id
+									}&lang=${$locale.toLowerCase()}`}
+									alt="" />
+								<button
+									on:click={() => {
+										modalStore.trigger({
+											type: 'component',
+											component: 'marketingModal',
+											meta: { pub: ads[$currentIndex] }
+										});
+									}}
+									class="variant-filled-primary btn btn-sm bottom-0 left-0 mt-2"
+									>{$t('otherModal', 'more', null, 'En savoir plus')}</button>
+								<button on:click={async () => {
+									await open(ads[$currentIndex]?.landing_page_url);
+								}} class="variant-filled-primary btn btn-sm bottom-0 left-0 mt-2"
+									>{$t('otherModal', 'ourOffer', null, 'Consulter nos offres')}</button>
+							</div>
+						{/if}
+					{/await}
 				</div>
 			</div>
 		</section>

@@ -1,7 +1,9 @@
 <script>
 	import { SignUpForm, LoginForm, PasswordResetForm } from '../lib/index';
 	import { t } from '../lib/i18n';
+	import { getToastStore } from '@skeletonlabs/skeleton';
 
+	const toastStore = getToastStore();
 	let selectedForm = 'login';
 	let message = '';
 </script>
@@ -32,7 +34,11 @@
 				on:onSignupSuccess={(msg) => {
 					console.log(msg);
 					selectedForm = 'login';
-					message = msg.detail.message;
+					toastStore.trigger({
+						autohide: false,
+						background: 'variant-filled',
+						message: msg.detail.message
+					});
 				}} />
 		{:else}
 			<PasswordResetForm />

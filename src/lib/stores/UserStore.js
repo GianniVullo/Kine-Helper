@@ -7,3 +7,5 @@ export const user = persisted(
 		storage: 'session'
 	}
 );
+
+export const miscelaneous = persisted('misc', {}, { storage: 'local' });

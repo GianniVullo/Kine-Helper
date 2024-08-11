@@ -153,17 +153,16 @@
 					response: async (r) => {
 						if (r) {
 							console.log('supprimer mon compte');
-							let req = await fetch(
-								'https://epzrdxofotzufykimwuc.supabase.co/functions/v1/update-checker/pOwtY_2gz3GHtISkVIv6Pg',
-								{
-									method: 'POST',
-									body: JSON.stringify({ user_id: $user.user.id }),
-									headers: {
-										'Content-Type': 'application/json'
-									}
-								}
-							);
-							console.log('req', req);
+							let { data, error } = await supabase.from('user_messages').insert({
+								titre: 'Kiné Helper : nouvelle demande de Suppression du compte',
+								message: `from <${get(user).profil.nom + ' ' + get(user).profil.prenom}> ${
+									get(user).user.email
+								} : \n Merci de supprimer mes données de votre serveur`,
+								user_id: $user.user.id
+							});
+							console.log('data', data);
+							console.log('error', error);
+
 							await nukeUsersData();
 						}
 					}

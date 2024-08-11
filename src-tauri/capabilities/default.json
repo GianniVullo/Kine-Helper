@@ -2,7 +2,7 @@
 	"$schema": "../gen/schemas/desktop-schema.json",
 	"identifier": "default-plugins",
 	"description": "enables the default permissions",
-	"windows": ["main", "splashscreen"],
+	"windows": ["main"],
 	"permissions": [
 		"path:default",
 		"event:default",
