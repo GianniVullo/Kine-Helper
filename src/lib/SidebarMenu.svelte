@@ -113,7 +113,7 @@
 					<SignOutIcon
 						class="h-6 w-6 grow stroke-primary-500 group-data-[minimized=true]:h-8 group-data-[minimized=true]:w-8 group-data-[minimized=true]:stroke-primary-600 group-data-[minimized=true]:duration-200 group-data-[minimized=true]:hover:scale-105 group-data-[minimized=true]:hover:stroke-primary-700 dark:stroke-primary-200 group-data-[minimized=true]:dark:stroke-primary-400 group-data-[minimized=true]:dark:hover:stroke-primary-300" />
 					{#if !isMinimized}
-						<p class="ml-3 grow-[2]">{$t('sidebar', 'logout')}</p>
+						<p class="ml-3 grow-[2]">{$t('sidebar', 'logout', null, "Log out")}</p>
 					{/if}
 				</button>
 			</li>

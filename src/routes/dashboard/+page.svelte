@@ -11,7 +11,6 @@
 	import { fade } from 'svelte/transition';
 	import { onMount } from 'svelte';
 	import { fetch } from '@tauri-apps/plugin-http';
-	import { parse } from 'svelte/compiler';
 	import { open } from "@tauri-apps/plugin-shell";
 
 	const modalStore = getModalStore();
@@ -44,7 +43,7 @@
 	let urlSource;
 	function rotatingAds(node) {
 		marketingPromise = new Promise(async (resolve, reject) => {
-			let response = await fetch('https://admin-console.kine-helper.be/api/get-ads?lang=fr');
+			let response = await fetch(`https://admin-console.kine-helper.be/api/get-ads?lang=${get(locale).toLowerCase()}`);
 			response = await response.json();
 			interval = setInterval(() => {
 				if ($currentIndex === response.length - 1) {

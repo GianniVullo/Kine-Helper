@@ -29,6 +29,7 @@
 	let printerField;
 
 	let initPrintersAndPlatform = new Promise(async (resolve) => {
+		console.log('THE PLATFORM', platform)
 		let platformName = await platform();
 		let printers = await invoke('get_printer');
 		resolve({ platformName, printers });
