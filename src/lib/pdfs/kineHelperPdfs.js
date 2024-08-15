@@ -7,6 +7,7 @@ import { open } from '@tauri-apps/plugin-shell';
 import { patients } from '../stores/PatientStore';
 import { appLocalDataDir } from '@tauri-apps/api/path';
 import { invoke } from '@tauri-apps/api/core';
+import { platform } from '@tauri-apps/plugin-os';
 
 function yPositionStore(initialValue) {
 	const yStore = writable(initialValue);
@@ -46,20 +47,23 @@ export class PDFGeneration {
 		this.docType = docType;
 		this.dirPath = dirPath;
 		this.data = obj;
+		this.platform = platform();
 	}
 	buildPdf() {}
 
 	buildDirPath() {
-		return `${get(user).user.id}/${this.patient.nom}-${this.patient.prenom}(${
-			this.patient.patient_id
-		})/situation-pathologique-${this.sp.created_at}(${this.sp.sp_id})${
-			this.dirPath.length > 0 ? '/' + this.dirPath : ''
+		return `${get(user).user.id}${this.platform === 'windows' ? '\\' : '/'}${this.patient.nom}-${
+			this.patient.prenom
+		}(${this.patient.patient_id})${
+			this.platform === 'windows' ? '\\' : '/'
+		}situation-pathologique-${this.sp.created_at}(${this.sp.sp_id})${
+			this.dirPath.length > 0 ? (this.platform === 'windows' ? '\\' : '/') + this.dirPath : ''
 		}`;
 	}
 
 	async buildPath() {
 		let dataPath = await appLocalDataDir();
-		let dirPath = `${dataPath}/${this.buildDirPath()}`;
+		let dirPath = `${dataPath}${this.platform === 'windows' ? '\\' : '/'}${this.buildDirPath()}`;
 		return dirPath;
 	}
 	async save_file() {
@@ -106,7 +110,7 @@ export class PDFGeneration {
 		let db = new DBAdapter();
 		await db.delete('documents', ['document_id', this.data.document_id]);
 		let dirpath = await this.buildPath();
-		let path = dirpath + '/' + this.documentName + '.pdf';
+		let path = dirpath + (this.platform === 'windows' ? '\\' : '/') + this.documentName + '.pdf';
 		if (await invoke('file_exists', { path })) {
 			await invoke('delete_file', { path });
 		}
@@ -120,16 +124,27 @@ export class PDFGeneration {
 
 	async open() {
 		let dirpath = await this.buildPath();
-		let path = dirpath + '/' + this.documentName + '.pdf';
+		let path = dirpath + (this.platform === 'windows' ? '\\' : '/') + this.documentName + '.pdf';
 		console.log('path', path);
+		/** 
+		 *! Pour l'instant j'ai eu recours à des fonctions écrites en Rust pour
+		 *! manipuler le filesystem mais il serait préférable d'utiliser le plugin
+		 *! Tauri-fs à la place
+		*/ 
 		let exists = await invoke('file_exists', { path });
 		console.log('exists', exists);
-		if (exists) {
-			console.log('try open facture');
-			await open(path);
-		} else {
+		if (!exists) {
+			//* Si le pdf n'existe pas dans le filesystem on le crée
 			await this.save_file();
+		}
+		console.log('try open facture');
+		try {
+			//* On essaye d'ouvrir le pdf (fonctionne parfaitement sous macOS)
 			await open(path);
+		} catch (error) {
+			//* Malheureusement les tests sont inconsistent sur Windows.
+			//* Dès lors on ouvre le dossier et on laisse l'utilisateurs s'occuper de l'ouverture lui-même
+			await open(dirpath)
 		}
 	}
 
