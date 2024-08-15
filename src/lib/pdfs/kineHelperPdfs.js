@@ -140,7 +140,14 @@ export class PDFGeneration {
 		console.log('try open facture');
 		try {
 			//* On essaye d'ouvrir le pdf (fonctionne parfaitement sous macOS)
-			await open(path);
+			if (this.platform === 'windows') {
+				//* Finalement le problème vient de acrobat reader qui ne veut
+				//* pas lire les fichiers se trouvant dans un dossier caché
+				await open(path, 'chromium');
+				
+			} else {
+				await open(path)
+			}
 		} catch (error) {
 			//* Malheureusement les tests sont inconsistent sur Windows.
 			//* Dès lors on ouvre le dossier et on laisse l'utilisateurs s'occuper de l'ouverture lui-même
