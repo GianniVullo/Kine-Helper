@@ -3,11 +3,8 @@ import { jsPDF } from 'jspdf';
 import { user } from '../stores/UserStore';
 import dayjs from 'dayjs';
 import DBAdapter from '../forms/actions/dbAdapter';
-import { open } from '@tauri-apps/plugin-shell';
 import { patients } from '../stores/PatientStore';
-import { appLocalDataDir } from '@tauri-apps/api/path';
-import { invoke } from '@tauri-apps/api/core';
-import { platform } from '@tauri-apps/plugin-os';
+import { file_exists, open_file, read_file, remove_file, save_to_disk } from '../utils/fsAccessor';
 
 function yPositionStore(initialValue) {
 	const yStore = writable(initialValue);
@@ -47,23 +44,19 @@ export class PDFGeneration {
 		this.docType = docType;
 		this.dirPath = dirPath;
 		this.data = obj;
-		this.platform = platform();
 	}
 	buildPdf() {}
 
 	buildDirPath() {
-		return `${get(user).user.id}${this.platform === 'windows' ? '\\' : '/'}${this.patient.nom}-${
-			this.patient.prenom
-		}(${this.patient.patient_id})${
-			this.platform === 'windows' ? '\\' : '/'
-		}situation-pathologique-${this.sp.created_at}(${this.sp.sp_id})${
-			this.dirPath.length > 0 ? (this.platform === 'windows' ? '\\' : '/') + this.dirPath : ''
+		return `${get(user).user.id}/${this.patient.nom}-${this.patient.prenom}(${
+			this.patient.patient_id
+		})/situation-pathologique-${this.sp.created_at}(${this.sp.sp_id})${
+			this.dirPath.length > 0 ? '/' + this.dirPath : ''
 		}`;
 	}
 
 	async buildPath() {
-		let dataPath = await appLocalDataDir();
-		let dirPath = `${dataPath}${this.platform === 'windows' ? '\\' : '/'}${this.buildDirPath()}`;
+		let dirPath = this.buildDirPath();
 		return dirPath;
 	}
 	async save_file() {
@@ -71,16 +64,11 @@ export class PDFGeneration {
 		console.log('in save_file, pdf built');
 		let docOutput = this.doc.output('arraybuffer');
 		let dirPath = await this.buildPath();
-		await invoke('setup_path', {
-			dirPath,
-			fileName: this.documentName + '.pdf',
-			fileContent: Array.from(new Uint8Array(docOutput))
-		});
+		await save_to_disk(dirPath, this.documentName + '.pdf', new Uint8Array(docOutput));
 		console.log('in save_file, pdf sent');
 		return { dirPath };
 	}
 	async save() {
-		//! Finalement, comme l'API ne retourne pas le filePath je choisis d'émettre le pdf dans le dossier utilisateur et de l'ouvrir à partir du dossier utilisateur.
 		let { dirPath } = await this.save_file();
 		let db = new DBAdapter();
 		let document = {
@@ -107,12 +95,15 @@ export class PDFGeneration {
 	}
 
 	async delete() {
+		console.log('arrived in delete');
 		let db = new DBAdapter();
 		await db.delete('documents', ['document_id', this.data.document_id]);
 		let dirpath = await this.buildPath();
 		let path = dirpath + (this.platform === 'windows' ? '\\' : '/') + this.documentName + '.pdf';
-		if (await invoke('file_exists', { path })) {
-			await invoke('delete_file', { path });
+		if (await file_exists(path)) {
+			console.log('the file exists');
+			await remove_file(path, {recursive: false});
+			console.log('the file is removed');
 		}
 		patients.update((ps) => {
 			let p = ps.find((p) => p.patient_id === this.patient.patient_id);
@@ -126,32 +117,21 @@ export class PDFGeneration {
 		let dirpath = await this.buildPath();
 		let path = dirpath + (this.platform === 'windows' ? '\\' : '/') + this.documentName + '.pdf';
 		console.log('path', path);
-		/** 
+		/**
 		 *! Pour l'instant j'ai eu recours à des fonctions écrites en Rust pour
 		 *! manipuler le filesystem mais il serait préférable d'utiliser le plugin
 		 *! Tauri-fs à la place
-		*/ 
-		let exists = await invoke('file_exists', { path });
-		console.log('exists', exists);
-		if (!exists) {
+		 */
+		if (!(await file_exists(path))) {
 			//* Si le pdf n'existe pas dans le filesystem on le crée
 			await this.save_file();
 		}
 		console.log('try open facture');
 		try {
-			//* On essaye d'ouvrir le pdf (fonctionne parfaitement sous macOS)
-			if (this.platform === 'windows') {
-				//* Finalement le problème vient de acrobat reader qui ne veut
-				//* pas lire les fichiers se trouvant dans un dossier caché
-				await open(path, 'chromium');
-				
-			} else {
-				await open(path)
-			}
+			await open_file(path);
 		} catch (error) {
-			//* Malheureusement les tests sont inconsistent sur Windows.
 			//* Dès lors on ouvre le dossier et on laisse l'utilisateurs s'occuper de l'ouverture lui-même
-			await open(dirpath)
+			await open_file(dirpath);
 		}
 	}
 
@@ -278,15 +258,13 @@ export class PDFGeneration {
 		x = this.margins.left + this.pageWidth / 2,
 		y = this.pageHeight - 60
 	} = {}) {
-		console.log('in authSignature');
-		let dirPath = await appLocalDataDir();
-		console.log('in authSignature', dirPath);
-		let path = `${dirPath}/signature.png`;
-		if (await invoke('file_exists', { path })) {
+		//* fonctionnalité bonus :
+		//* Si l'utilisateur place un png contennant sa signature sur un rectangle de 200x125 Kiné Helper signera le pdf pour lui
+		if (await file_exists('signature.png')) {
 			console.log('in authSignature the file exists');
-			let img = this.uint8ArrayToBase64(Uint8Array.from(await invoke('retrieve_file', { path })));
+			let img = this.uint8ArrayToBase64(await read_file('signature.png'));
 			let desperateAttempt65 = new Image();
-			desperateAttempt65.src = img;
+			desperateAttempt65.src = img; // lul
 			this.doc.addImage(img, 'png', x, y);
 		}
 	}

@@ -1,13 +1,11 @@
 <script>
 	import { open } from '@tauri-apps/plugin-shell';
 	import { open as dialogOpen } from '@tauri-apps/plugin-dialog';
-	import { page } from '$app/stores';
 	import { appLocalDataDir } from '@tauri-apps/api/path';
-	import { invoke } from '@tauri-apps/api/core';
 	import { readFile } from '@tauri-apps/plugin-fs';
-	import { patients } from '../../stores/PatientStore';
 	import { t } from '../../i18n';
 	import { get } from 'svelte/store';
+	import { file_exists, open_file } from '../../utils/fsAccessor';
 
 	// Lets the user open the file ine the adequate software
 	export let withOpener = false;
@@ -22,12 +20,10 @@
 		return new Promise(async (resolve, reject) => {
 			console.log(filePath);
 			if (filePath) {
-				let dirPath = await appLocalDataDir();
-				let path = `${dirPath}${filePath}`;
-				if (await invoke('file_exists', { path })) {
-					resolve(path);
+				if (await file_exists(filePath)) {
+					resolve(filePath);
 				}
-				reject(get(t)('form.prescription', 'filefield.catch', { path }));
+				reject(get(t)('form.prescription', 'filefield.catch', { filePath }));
 			}
 			resolve(null);
 		});
@@ -35,8 +31,6 @@
 	let extractedFilePath = extractFilePath();
 	async function handleDialog() {
 		loading = true;
-		let dirPath = await appLocalDataDir();
-		console.log('in handleDialog', dirPath);
 		fileResponse = await dialogOpen({
 			multiple: false,
 			filters: [
@@ -87,7 +81,7 @@
 			<button
 				on:click={async () => {
 					loading = true;
-					await open(filePath);
+					await open_file(filePath);
 					loading = false;
 				}}
 				class="variant-outline-primary btn"

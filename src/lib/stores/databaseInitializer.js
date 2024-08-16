@@ -4,13 +4,8 @@ import { invoke } from '@tauri-apps/api/core';
 
 export class DBInitializer {
 	async openDBConnection() {
-		// await invoke("sql:allow-load")
 		return await Database.load('sqlite:kinehelper.db');
 	}
-
-	// async closeDBConnection() {
-	// 	return this.db.close();
-	// }
 
 	constructor() {}
 

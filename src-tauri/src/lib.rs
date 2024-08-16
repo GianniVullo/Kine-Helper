@@ -36,13 +36,29 @@ impl From<Printer> for LocalPrinter {
     }
 }
 
+
 #[tauri::command]
-fn setup_path(dir_path: String, file_name: String, file_content: Vec<u8>) {
-    print!("{} {}", dir_path, file_name);
-    let _ = fs::create_dir_all(&dir_path);
-    let file_path = format!("{}/{}", dir_path, file_name);
-    let mut file = File::create(file_path).unwrap();
-    file.write_all(&file_content).unwrap();
+fn setup_path(dir_path: String, file_path: String, file_content: Vec<u8>) -> Result<String, String> {
+    println!("Setting up path: directory -> {}, file -> {}", dir_path, file_path);
+    
+    // Create the directory and handle potential errors
+    if let Err(e) = fs::create_dir_all(&dir_path) {
+        return Err(format!("Failed to create directory: {}. Error: {}", dir_path, e));
+    }
+    
+    // Create the file and handle potential errors
+    let mut file = match File::create(&file_path) {
+        Ok(f) => f,
+        Err(e) => return Err(format!("Failed to create file: {}. Error: {}", file_path, e)),
+    };
+    
+    // Write to the file and handle potential errors
+    if let Err(e) = file.write_all(&file_content) {
+        return Err(format!("Failed to write to file: {}. Error: {}", file_path, e));
+    }
+
+    // Return success message
+    Ok(format!("Successfully set up: {}", file_path))
 }
 
 #[cfg(any(target_os = "macos", target_os = "linux", target_os = "windows"))]
@@ -52,35 +68,6 @@ async fn get_printer() -> Vec<LocalPrinter> {
     println!("{:?}", &printers);
     let local_printers = printers.into_iter().map(|p| p.into()).collect();
     local_printers
-}
-
-#[tauri::command]
-async fn file_exists(path: String) -> bool {
-    Path::new(&path).exists()
-}
-
-#[tauri::command]
-async fn retrieve_file(path: String) -> Vec<u8> {
-    // Open the file in read-only mode.
-    let mut file = File::open(path).unwrap();
-
-    // Create a vector to hold the bytes of the file.
-    let mut buffer = Vec::new();
-
-    // Read the file's bytes into the buffer.
-    let _ = file.read_to_end(&mut buffer);
-
-    buffer
-}
-
-#[tauri::command]
-async fn delete_file(path: String) -> Result<(), String> {
-    let path = Path::new(&path);
-    if path.exists() {
-        fs::remove_file(path).map_err(|e| e.to_string())
-    } else {
-        Err("File does not exist.".into())
-    }
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -161,9 +148,6 @@ pub fn run() {
             #[cfg(any(target_os = "macos", target_os = "linux", target_os = "windows"))]
             print_attestation,
             setup_path,
-            file_exists,
-            delete_file,
-            retrieve_file,
             #[cfg(any(target_os = "macos", target_os = "linux", target_os = "windows"))]
             get_printer
         ])

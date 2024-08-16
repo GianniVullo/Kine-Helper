@@ -3,7 +3,7 @@ import { get } from 'svelte/store';
 import { user } from '../stores/UserStore';
 import dayjs from 'dayjs';
 import { locale } from '../i18n';
-import { invoke } from '@tauri-apps/api/core';
+import { save_to_disk } from '../utils/fsAccessor';
 
 export class AnnexeA extends PDFGeneration {
 	constructor(formData, patient, sp, obj) {
@@ -298,7 +298,7 @@ export class AnnexeA extends PDFGeneration {
 			}
 		);
 		this.yPosition.update(3);
-		this.addParagraph("Fait le : " + dayjs(this.formData.date).format('DD/MM/YYYY'));
+		this.addParagraph('Fait le : ' + dayjs(this.formData.date).format('DD/MM/YYYY'));
 		this.yPosition.set(this.pageHeight - this.margins.bottom);
 		this.addRow([
 			[this.addParagraph, ['¹', { fontSize: 8, dontUpdatePosition: true }]],
@@ -312,18 +312,14 @@ export class AnnexeA extends PDFGeneration {
 	async save_file() {
 		console.log('Now signing the file');
 		this.buildPdf();
-		await this.authSignature({y: this.pageHeight - 55});
+		//* Si Kiné Helper ne trouve pas signature.png, il ne se passera rien
+		await this.authSignature({ y: this.pageHeight - 55 });
 
 		let docOutput = this.doc.output('arraybuffer');
 		let dirPath = await this.buildPath();
-		await invoke('setup_path', {
-			dirPath,
-			fileName: this.documentName + '.pdf',
-			fileContent: Array.from(new Uint8Array(docOutput))
-		});
+		await save_to_disk(dirPath, this.documentName + '.pdf', new Uint8Array(docOutput));
 		return { dirPath };
 	}
-
 
 	checkbox(text, y, checked, fontSize) {
 		let xMargin = this.pageWidth - this.margins.right + 5;

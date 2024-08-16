@@ -8,9 +8,8 @@
 	import dayjs from 'dayjs';
 	import { goto } from '$app/navigation';
 	import { patients } from '../../stores/PatientStore';
-	import { appLocalDataDir } from '@tauri-apps/api/path';
-	import { invoke } from '@tauri-apps/api/core';
 	import { t } from '../../i18n';
+	import { save_to_disk } from '../../utils/fsAccessor';
 
 	export let prescription = null;
 	export let patient;
@@ -76,7 +75,9 @@
 			patients.update((patients) => {
 				let rpatient = patients.find((p) => p.patient_id == patient.patient_id);
 				let tsp = rpatient.situations_pathologiques.find((bsp) => bsp.sp_id == sp.sp_id);
-				let pres = tsp.prescriptions.find((p) => p.prescription_id === updatedPrescription.prescription_id);
+				let pres = tsp.prescriptions.find(
+					(p) => p.prescription_id === updatedPrescription.prescription_id
+				);
 				pres.date = updatedPrescription.date;
 				pres.jointe_a = updatedPrescription.jointe_a;
 				pres.nombre_seance = updatedPrescription.nombre_seance;
@@ -121,14 +122,13 @@
 		goto('/dashboard/patients/' + patient.patient_id + '/situation-pathologique/' + sp.sp_id);
 	}
 	async function saveFile(filExt, buffer) {
-		let dirPath = await appLocalDataDir();
-		await invoke('setup_path', {
-			dirPath: `${dirPath}/${get(user).user.id}/${patient.nom}-${patient.prenom}(${
+		await save_to_disk(
+			`${dirPath}/${get(user).user.id}/${patient.nom}-${patient.prenom}(${
 				patient.patient_id
 			})/situation-pathologique-${sp.created_at}(${sp.sp_id})/prescriptions`,
-			fileName: `${prescripteurNom}-${prescripteurPrenom}-${date}(${prescription_id}).${filExt}`,
-			fileContent: Array.from(buffer)
-		});
+			`${prescripteurNom}-${prescripteurPrenom}-${date}(${prescription_id}).${filExt}`,
+			Array.from(buffer)
+		);
 	}
 </script>
 
@@ -146,7 +146,7 @@
 	<FileField
 		bind:this={fileField}
 		filePath={prescription?.file_name
-			? `/${get(user).user.id}/${patient.nom}-${patient.prenom}(${
+			? `${get(user).user.id}/${patient.nom}-${patient.prenom}(${
 					patient.patient_id
 			  })/situation-pathologique-${sp.created_at}(${
 					sp.sp_id

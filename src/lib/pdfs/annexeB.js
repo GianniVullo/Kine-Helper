@@ -2,7 +2,7 @@ import { PDFGeneration } from './kineHelperPdfs';
 import { get } from 'svelte/store';
 import { user } from '../stores/UserStore';
 import dayjs from 'dayjs';
-import { invoke } from '@tauri-apps/api/core';
+import { save_to_disk } from '../utils/fsAccessor';
 import { locale } from '../i18n';
 
 export class AnnexeB extends PDFGeneration {
@@ -262,11 +262,7 @@ export class AnnexeB extends PDFGeneration {
 
 		let docOutput = this.doc.output('arraybuffer');
 		let dirPath = await this.buildPath();
-		await invoke('setup_path', {
-			dirPath,
-			fileName: this.documentName + '.pdf',
-			fileContent: Array.from(new Uint8Array(docOutput))
-		});
+		await save_to_disk(dirPath, this.documentName + '.pdf', new Uint8Array(docOutput));
 		console.log('after sendING PDF');
 		return { dirPath };
 	}

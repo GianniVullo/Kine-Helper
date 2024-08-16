@@ -10,6 +10,7 @@
 	import { user } from '$lib/stores/UserStore';
 	import { invoke } from '@tauri-apps/api/core';
 	import { t } from '../../../../../../../lib/i18n';
+	import { file_exists, open_file, remove_file } from '../../../../../../../lib/utils/fsAccessor';
 
 	const modalStore = getModalStore();
 
@@ -17,8 +18,7 @@
 	let sp = patient.situations_pathologiques.find((sp) => sp.sp_id === $page.params.spId);
 
 	async function prescriptionPath(prescription) {
-		let dirpath = await appLocalDataDir();
-		return `${dirpath}/${$user.user.id}/${patient.nom}-${patient.prenom}(${patient.patient_id})/situation-pathologique-${sp.created_at}(${sp.sp_id})/prescriptions/${prescription.prescripteur.nom}-${prescription.prescripteur.prenom}-${prescription.date}(${prescription.prescription_id}).${prescription.file_name}`;
+		return `${$user.user.id}/${patient.nom}-${patient.prenom}(${patient.patient_id})/situation-pathologique-${sp.created_at}(${sp.sp_id})/prescriptions/${prescription.prescripteur.nom}-${prescription.prescripteur.prenom}-${prescription.date}(${prescription.prescription_id}).${prescription.file_name}`;
 	}
 
 	async function deletePrescription(prescription) {
@@ -34,17 +34,17 @@
 			return ps;
 		});
 		let path = await prescriptionPath(prescription);
-		if (await invoke('file_exists', { path })) {
-			await invoke('delete_file', { path });
+		if (await file_exists(path)) {
+			await remove_file(path);
 		}
 	}
 	async function openPrescription(prescription) {
 		let path = await prescriptionPath(prescription);
 		console.log('path', path);
-		let pathExists = await invoke('file_exists', { path });
+		let pathExists = await file_exists(path);
 		console.log('pathExists', pathExists);
 		if (pathExists) {
-			await open(path);
+			await open_file(path);
 		}
 	}
 </script>

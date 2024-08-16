@@ -2,6 +2,7 @@
 	import { SignUpForm, LoginForm, PasswordResetForm } from '../lib/index';
 	import { t } from '../lib/i18n';
 	import { getToastStore } from '@skeletonlabs/skeleton';
+	import { BaseDirectory, create, exists, mkdir, remove, writeTextFile } from '@tauri-apps/plugin-fs';
 
 	const toastStore = getToastStore();
 	let selectedForm = 'login';
