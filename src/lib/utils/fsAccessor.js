@@ -37,7 +37,7 @@ async function completePath() {
 
 async function pathFormat(path) {
 	if (platform() === 'windows') {
-		return path.replace('/', '\\');
+		return `kine-helper-system\\${path.replace('/', '\\')}`;
 	}
 	return path;
 }
