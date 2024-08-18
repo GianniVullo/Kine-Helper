@@ -123,7 +123,7 @@
 	}
 	async function saveFile(filExt, buffer) {
 		await save_to_disk(
-			`${dirPath}/${get(user).user.id}/${patient.nom}-${patient.prenom}(${
+			`${get(user).user.id}/${patient.nom}-${patient.prenom}(${
 				patient.patient_id
 			})/situation-pathologique-${sp.created_at}(${sp.sp_id})/prescriptions`,
 			`${prescripteurNom}-${prescripteurPrenom}-${date}(${prescription_id}).${filExt}`,

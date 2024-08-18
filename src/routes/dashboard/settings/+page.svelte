@@ -2,17 +2,18 @@
 	import { LightSwitch, getModalStore } from '@skeletonlabs/skeleton';
 	import SelectFieldV2 from '../../../lib/forms/abstract-fields/SelectFieldV2.svelte';
 	import { user } from '../../../lib/stores/UserStore';
-	import { get } from 'svelte/store';
+	import { get, writable } from 'svelte/store';
 	import { t, locale, dictionnary } from '../../../lib/i18n';
 	import { supabase } from '../../../lib';
 	import { readTextFile, remove, writeTextFile } from '@tauri-apps/plugin-fs';
 	import { appLocalDataDir } from '@tauri-apps/api/path';
 	import { goto } from '$app/navigation';
-	import { fetch } from '@tauri-apps/plugin-http';
 	import DBAdapter from '../../../lib/forms/actions/dbAdapter';
 	import { patients } from '../../../lib/stores/PatientStore';
 	import PostSignupForm from '../../../lib/forms/authentication/PostSignupForm.svelte';
 	import RadioFieldV2 from '../../../lib/forms/abstract-fields/RadioFieldV2.svelte';
+	import { platform } from '@tauri-apps/plugin-os';
+	import WindowsPrinterSelectionField from '../../../lib/forms/settings/WindowsPrinterSelectionField.svelte';
 
 	const modalStore = getModalStore();
 	console.log('user', get(user));
@@ -91,8 +92,9 @@
 			u.settings.raw_printer = imprimanteMatricielle;
 			return u;
 		});
+		modified.set(false);
 	}
-	let modified = false;
+	let modified = writable(false);
 </script>
 
 <main class="flex h-full w-full flex-col items-start space-y-4 overflow-y-scroll">
@@ -102,16 +104,27 @@
 	</div>
 	<section class="flex flex-col items-start space-y-2">
 		<h2 class="text-secondary-500 dark:text-secondary-300">{$t('settings', 'printer')}</h2>
-		<input
-			class="input"
-			type="text"
-			name="printer"
-			on:input={() => (modified = true)}
-			bind:value={imprimanteMatricielle} />
-		{#if modified}
+		{#if platform() === 'windows'}
+			<WindowsPrinterSelectionField
+				cb={() => {
+					console.log('in cb');
+
+					modified.set(true);
+				}}
+				bind:printerField={imprimanteMatricielle} />
+		{:else}
+			<input
+				class="input"
+				type="text"
+				name="printer"
+				on:input={() => modified.set(true)}
+				bind:value={imprimanteMatricielle} />
+		{/if}
+		{#if $modified}
 			<button on:click={changePrinter} class="variant-outline-primary btn btn-sm"
 				>{$t('shared', 'save')}</button>
 		{/if}
+
 		<RadioFieldV2
 			name="is_nine_pin"
 			value={true}
