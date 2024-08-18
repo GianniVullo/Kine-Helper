@@ -19,18 +19,6 @@
 		"shell:allow-open",
 		"dialog:allow-open",
 		"os:allow-platform",
-		"fs:allow-applocaldata-read",
-		"fs:allow-applocaldata-read-recursive",
-		"fs:allow-applocaldata-write",
-		"fs:allow-applocaldata-write-recursive",
-		"fs:allow-applocaldata-meta",
-		"fs:allow-applocaldata-meta-recursive",
-
-		"fs:allow-remove",
-
-		"fs:allow-create",
-
-		"fs:allow-exists",
 		"http:allow-fetch",
 		{
 			"identifier": "http:default",
@@ -43,6 +31,15 @@
 				}
 			]
 		},
+		"fs:allow-applocaldata-read",
+		"fs:allow-applocaldata-read-recursive",
+		"fs:allow-applocaldata-write",
+		"fs:allow-applocaldata-write-recursive",
+		"fs:allow-applocaldata-meta",
+		"fs:allow-applocaldata-meta-recursive",
+		"fs:allow-remove",
+		"fs:allow-create",
+		"fs:allow-exists",
 		"fs:allow-app-write",
 		"fs:allow-app-write-recursive",
 		"fs:allow-appcache-write",

@@ -13,7 +13,7 @@
 	import PostSignupForm from '../../../lib/forms/authentication/PostSignupForm.svelte';
 	import RadioFieldV2 from '../../../lib/forms/abstract-fields/RadioFieldV2.svelte';
 	import { platform } from '@tauri-apps/plugin-os';
-	import WindowsPrinterSelectionField from '../../../lib/forms/settings/WindowsPrinterSelectionField.svelte';
+	import WindowsSelectionField from '../../../lib/forms/settings/WindowsSelectionField.svelte';
 
 	const modalStore = getModalStore();
 	console.log('user', get(user));
@@ -105,7 +105,7 @@
 	<section class="flex flex-col items-start space-y-2">
 		<h2 class="text-secondary-500 dark:text-secondary-300">{$t('settings', 'printer')}</h2>
 		{#if platform() === 'windows'}
-			<WindowsPrinterSelectionField
+			<WindowsSelectionField
 				cb={() => {
 					console.log('in cb');
 

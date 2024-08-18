@@ -1,7 +1,7 @@
 {
 	"$schema": "../gen/schemas/desktop-schema.json",
-	"identifier": "default-plugins",
-	"description": "enables the default permissions",
+	"identifier": "default-plugins-windows",
+	"description": "add the fs dir document permissions for windows",
 	"windows": ["main"],
 	"permissions": [
 		"core:path:default",
@@ -12,6 +12,7 @@
 		"core:resources:default",
 		"core:menu:default",
 		"core:tray:default",
+		"core:path:allow-resolve-directory",
 		"sql:allow-load",
 		"sql:allow-select",
 		"sql:allow-close",
@@ -48,7 +49,6 @@
 		"fs:allow-remove",
 		"fs:allow-create",
 		"fs:allow-exists",
-
 		"fs:allow-app-write",
 		"fs:allow-app-write-recursive",
 		"fs:allow-appcache-write",

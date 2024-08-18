@@ -11,13 +11,11 @@
 	import FactureCreationModal from '../lib/ui/FactureCreationModal.svelte';
 	import MultipleEventSelectionModal from '../lib/ui/MultipleEventSelectionModal.svelte';
 	import { onMount } from 'svelte';
-	import { appDataDir } from '@tauri-apps/api/path';
 	import SeanceCreationModal from '../lib/ui/SeanceCreationModal.svelte';
 	import MarketingModal from '../lib/ui/MarketingModal.svelte';
 	console.log('page', $page);
 	initializeStores();
 
-	console.log('appdir', appDataDir());
 	const modalRegistry = {
 		// Set a unique modal ID, then pass the component reference
 		bugReport: { ref: BugReportModal },

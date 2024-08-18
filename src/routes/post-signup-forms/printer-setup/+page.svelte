@@ -10,7 +10,7 @@
 	import { platform } from '@tauri-apps/plugin-os';
 	import TextFieldV2 from '../../../lib/forms/abstract-fields/TextFieldV2.svelte';
 	import RadioFieldV2 from '../../../lib/forms/abstract-fields/RadioFieldV2.svelte';
-	import WindowsPrinterSelectionField from '../../../lib/forms/settings/WindowsPrinterSelectionField.svelte';
+	import WindowsSelectionField from '../../../lib/forms/settings/WindowsSelectionField.svelte';
 
 	const modalStore = getModalStore();
 	const modal = {
@@ -87,7 +87,7 @@
 		{/if}
 	</div>
 	{#if platformName === 'windows'}
-		<WindowsPrinterSelectionField bind:printerField />
+		<WindowsSelectionField bind:printerField />
 	{/if}
 	<div class="">
 		<FormWrapper
