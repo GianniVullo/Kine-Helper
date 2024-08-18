@@ -5,7 +5,7 @@
 	import { goto } from '$app/navigation';
 	import DBAdapter from '../../../lib/forms/actions/dbAdapter';
 	import { user } from '../../../lib/index';
-	import { t } from '../../../lib/i18n';
+	import { t, locale } from '../../../lib/i18n';
 	import { get } from 'svelte/store';
 	import { platform } from '@tauri-apps/plugin-os';
 	import TextFieldV2 from '../../../lib/forms/abstract-fields/TextFieldV2.svelte';
@@ -30,7 +30,11 @@
 	const platformName = platform();
 
 	async function gotoKineHelperbeMacOs() {
-		await open('https://kine-helper.be/tutoriels');
+		if ($locale.toLowerCase() === 'fr') {
+			await open('https://kine-helper.be/tutoriels/setup-macos-raw-printer');
+		} else {
+			await open('https://kine-helper.be/nl/tutorials/matrixprinter-instellen');
+		}
 	}
 
 	const formSchema = {
