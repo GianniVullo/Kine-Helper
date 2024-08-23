@@ -17,6 +17,25 @@
 		"sql:allow-close",
 		"sql:allow-execute",
 		"shell:allow-open",
+		{
+			"identifier": "shell:allow-execute",
+			"allow": [
+				{
+					"name": "lp",
+					"cmd": "lp",
+					"args": [
+						"-d",
+						{
+							"validator": "^[a-zA-Z0-9_\\-]{3,20}$"
+						},
+						{
+							"validator": "^/.+?/temp_print_file\\.prn$"
+						}
+					],
+					"sidecar": false
+				}
+			]
+		},
 		"dialog:allow-open",
 		"os:allow-platform",
 		"http:allow-fetch",

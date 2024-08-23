@@ -10,13 +10,7 @@
  */
 
 import { platform } from '@tauri-apps/plugin-os';
-import {
-	BaseDirectory,
-	mkdir,
-	remove,
-	exists,
-	readFile
-} from '@tauri-apps/plugin-fs';
+import { BaseDirectory, mkdir, remove, exists, readFile } from '@tauri-apps/plugin-fs';
 import { open } from '@tauri-apps/plugin-shell';
 import { invoke } from '@tauri-apps/api/core';
 import { appLocalDataDir, documentDir } from '@tauri-apps/api/path';
@@ -32,10 +26,14 @@ async function completePath() {
 	if (platform() === 'windows') {
 		return await documentDir();
 	}
-	return await appLocalDataDir();
+	let localDir = await appLocalDataDir();
+	console.log('the local dir', localDir);
+	return localDir;
 }
 
 async function pathFormat(path) {
+	console.log('in pathFormat with ', path);
+	
 	if (platform() === 'windows') {
 		return `kine-helper-\\${path.replaceAll('/', '\\')}`;
 	}
@@ -51,6 +49,7 @@ export async function file_exists(path) {
 }
 
 export async function save_to_disk(path, fileName, fileContent) {
+	console.log('in save_to_disk with ', path, fileName, fileContent);
 	let formatedPath = await pathFormat(path);
 	let normalizedFileName = fileName;
 	//* We might eventually catch a (directory already exist) wich is not a problem
@@ -88,5 +87,7 @@ export async function read_file(path) {
 }
 
 export async function open_file(path) {
-	return await open((await completePath()) + (platform() === 'windows' ? '\\' : '/') + (await pathFormat(path)));
+	return await open(
+		(await completePath()) + (platform() === 'windows' ? '\\' : '/') + (await pathFormat(path))
+	);
 }
