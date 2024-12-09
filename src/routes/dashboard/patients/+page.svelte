@@ -11,7 +11,7 @@
 	import { t } from '../../../lib/i18n';
 	import { goto } from '$app/navigation';
 
-	let searchQuery = '';
+	let searchQuery = $state('');
 	let inputQuery;
 	let timeOut;
 	let loading = false;
@@ -26,14 +26,14 @@
 		}, 250); // Debounce time in milliseconds
 	}
 
-	$: filteredPatients = $patients.filter(
+	let filteredPatients = $derived($patients.filter(
 		(patient) =>
 			(searchQuery.length > 0 &&
 				(patient.nom.toLowerCase().startsWith(searchQuery.toLowerCase()) ||
 					patient.prenom.toLowerCase().startsWith(searchQuery.toLowerCase()) ||
 					patient.localite.toLowerCase().startsWith(searchQuery.toLowerCase()))) ||
 			searchQuery.length == 0
-	);
+	))
 	// console.log($patients);
 	// console.log($user);
 </script>
