@@ -1,7 +1,6 @@
 <script>
 	import { FormWrapper, SubmitButton, DateField } from '../index';
-	import DBAdapter from '../actions/dbAdapter';
-	import SituationPathologiqueSelector from './SituationPathologiqueSelector.svelte';
+	import DBAdapter from '$lib/user-ops-handlers/dbAdapter';	import SituationPathologiqueSelector from './SituationPathologiqueSelector.svelte';
 	import { goto } from '$app/navigation';
 	import { AnnexeA } from '../../pdfs/annexeA';
 	import { patients } from '../../stores/PatientStore';
@@ -33,6 +32,7 @@
 		if (doc) {
 			let db = new DBAdapter();
 			await db.update('documents', [['document_id', doc.document_id]], {
+				...doc,
 				form_data: JSON.stringify({
 					date,
 					situation_pathologique: situationPathologique

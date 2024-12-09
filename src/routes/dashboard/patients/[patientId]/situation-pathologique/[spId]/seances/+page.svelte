@@ -1,18 +1,21 @@
 <script>
 	import { NomenclatureArchitecture } from '../../../../../../../lib/utils/nomenclatureManager';
-	import DBAdapter from '../../../../../../../lib/forms/actions/dbAdapter';
-	import { patients } from '../../../../../../../lib/stores/PatientStore';
+	import DBAdapter from '$lib/user-ops-handlers/dbAdapter';	import { patients } from '../../../../../../../lib/stores/PatientStore';
 	import { page } from '$app/stores';
 	import dayjs from 'dayjs';
-	import { DBInitializer } from '../../../../../../../lib/stores/databaseInitializer';
+	import { LocalDatabase } from '../../../../../../../lib/stores/databaseInitializer';
 
 	const patient = $patients.find((p) => p.patient_id === $page.params.patientId);
 	const sp = patient.situations_pathologiques.find((sp) => sp.sp_id === $page.params.spId);
 	const nomenclature = new NomenclatureArchitecture(patient, sp);
 	console.log('nomenclature', nomenclature);
-	const codes = new DBAdapter().list('codes', [
-		['convention_id', '3ba16c31-d8c3-4f07-a5ed-9148dfcccf8f']
-	]);
+	const codes = new Promise(async (resolve, reject) => {
+		let db = new LocalDatabase();
+		let codes = await db.select('SELECT * FROM codes WHERE convention_id = $1', [
+			'3ba16c31-d8c3-4f07-a5ed-9148dfcccf8f'
+		]);
+		return codes;
+	});
 	console.log('codes', codes);
 </script>
 
@@ -44,7 +47,7 @@
 						<!--* bloc -->
 						<h5>{dayjs(seance.date).format('DD/MM/YYYY')}</h5>
 						{#await new Promise(async (resolve) => {
-							let db = await new DBInitializer().openDBConnection();
+							let db = new LocalDatabase();
 							let code = await db.select( 'SELECT * FROM codes WHERE code_id = $1', [seance.code_id] );
 							console.log(code);
 							resolve(code[0]);

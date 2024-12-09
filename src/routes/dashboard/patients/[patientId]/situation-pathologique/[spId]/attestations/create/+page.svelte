@@ -2,8 +2,7 @@
 	import AttestationForm from '$lib/forms/attestation/AttestationForm.svelte';
 	import { printAttestation } from '$lib/utils/rawPrinting';
 	import { FormWrapper, SubmitButton } from '$lib/forms/index';
-	import DBAdapter from '$lib/forms/actions/dbAdapter';
-	import dayjs from 'dayjs';
+	import DBAdapter from '$lib/user-ops-handlers/dbAdapter';	import dayjs from 'dayjs';
 	import { page } from '$app/stores';
 	import { get } from 'svelte/store';
 	import { setContext } from 'svelte';
@@ -15,6 +14,7 @@
 	import { patients } from '$lib/stores/PatientStore';
 	import { goto } from '$app/navigation';
 	import { t } from '../../../../../../../../lib/i18n';
+	import { getMainKey } from '../../../../../../../../lib/stores/strongHold';
 
 	let patient = $patients.find((p) => p.patient_id === $page.params.patientId);
 	let sp = patient.situations_pathologiques.find((sp) => sp.sp_id === $page.params.spId);
@@ -63,15 +63,16 @@
 		async save() {
 			if (!this.toBeProduced) return;
 
+			const key = await getMainKey();
 			let dbAdapter = new DBAdapter();
-			let attestation = await dbAdapter.save('attestations', this.attestation);
+			let attestation = await dbAdapter.save('attestations', this.attestation, key);
 			attestation = attestation.data[0];
 			attestation.porte_prescr = JSON.parse(attestation.porte_prescr);
 			attestation.with_indemnity = JSON.parse(attestation.with_indemnity);
 			attestation.with_intake = JSON.parse(attestation.with_intake);
 			attestation.with_rapport = JSON.parse(attestation.with_rapport);
 			attestation.has_been_printed = JSON.parse(attestation.has_been_printed);
-			await dbAdapter.update_seances(this.seances);
+			await dbAdapter.update_seances(this.seances, key);
 			console.log('attestation', attestation, 'seances', this.seances);
 			let jointe_a =
 				typeof this.attestation.date === 'string'
@@ -80,10 +81,12 @@
 			if (this.attestation.porte_prescr) {
 				await dbAdapter.update(
 					'prescriptions',
-					[['prescription_id', attestation.prescription_id]],
+					[['prescription_id', attestation.prescription_id], 'user_id', get(user).user.id],
 					{
+						...this.prescr,
 						jointe_a
-					}
+					},
+					key
 				);
 				this.prescr.jointe_a = jointe_a;
 			}

@@ -2,14 +2,13 @@
 	import { FormWrapper, NumberField, DateField, SubmitButton } from '../index';
 	import PrescripteurField from './PrescripteurField.svelte';
 	import FileField from './FileField.svelte';
-	import DBAdapter from '../actions/dbAdapter';
 	import { user } from '$lib/index';
 	import { get } from 'svelte/store';
-	import dayjs from 'dayjs';
 	import { goto } from '$app/navigation';
-	import { patients } from '../../stores/PatientStore';
+	import dayjs from 'dayjs';
 	import { t } from '../../i18n';
 	import { save_to_disk } from '../../utils/fsAccessor';
+	import { createPrescription, updatePrescription } from '../../user-ops-handlers/prescriptions';
 
 	export let prescription = null;
 	export let patient;
@@ -23,6 +22,7 @@
 	let prescripteurPrenom = prescription?.prescripteur?.prenom;
 	let prescripteurInami = prescription?.prescripteur?.inami;
 	let fileField;
+	let files;
 
 	let message = '';
 
@@ -32,68 +32,13 @@
 	};
 
 	async function isValid({ formData, submitter }) {
-		let db = new DBAdapter();
 		let { fileResponse, buffer } = fileField.getBufferAndResponse();
 		console.log('fileField', fileField);
 		let filExt = fileResponse?.path.split('.').pop();
 		console.log('fileResponse', fileResponse);
-		if (prescription) {
-			let updatedPrescription = {
-				prescription_id,
-				date,
-				jointe_a,
-				nombre_seance,
-				seance_par_semaine,
-				prescripteur: JSON.stringify({
-					nom: prescripteurNom,
-					prenom: prescripteurPrenom,
-					inami: prescripteurInami
-				}),
-				file_name: filExt
-			};
-			await db.update(
-				'prescriptions',
-				[['prescription_id', prescription.prescription_id]],
-				updatedPrescription
-			);
-			if (fileResponse) {
-				await saveFile(filExt, buffer);
-				patients.update((p) => {
-					let rprescription = p
-						.find((p) => p.patient_id === patient.patient_id)
-						.situations_pathologiques.find((sp) => sp.sp_id === sp.sp_id)
-						.prescriptions.find((p) => p.prescription_id === prescription.prescription_id);
-					rprescription.date = date;
-					rprescription.jointe_a = jointe_a;
-					rprescription.nombre_seance = nombre_seance;
-					rprescription.seance_par_semaine = seance_par_semaine;
-					rprescription.prescripteur = JSON.parse(updatedPrescription.prescripteur);
-					rprescription.file_name = filExt;
-					return p;
-				});
-			}
-			patients.update((patients) => {
-				let rpatient = patients.find((p) => p.patient_id == patient.patient_id);
-				let tsp = rpatient.situations_pathologiques.find((bsp) => bsp.sp_id == sp.sp_id);
-				let pres = tsp.prescriptions.find(
-					(p) => p.prescription_id === updatedPrescription.prescription_id
-				);
-				pres.date = updatedPrescription.date;
-				pres.jointe_a = updatedPrescription.jointe_a;
-				pres.nombre_seance = updatedPrescription.nombre_seance;
-				pres.seance_par_semaine = updatedPrescription.seance_par_semaine;
-				pres.prescripteur = JSON.parse(updatedPrescription.prescripteur);
-				pres.file_name = updatedPrescription.file_name;
-				return patients;
-			});
-			goto('/dashboard/patients/' + patient.patient_id + '/situation-pathologique/' + sp.sp_id);
-			return;
-		}
-
-		let newPrescription = {
+		let compiledFormData = {
 			user_id: get(user).user.id,
 			prescription_id,
-			created_at: dayjs().format('YYYY-MM-DD'),
 			patient_id: patient.patient_id,
 			sp_id: sp.sp_id,
 			active: true,
@@ -108,27 +53,23 @@
 			}),
 			file_name: filExt
 		};
-		await db.save('prescriptions', newPrescription);
-		newPrescription.prescripteur = JSON.parse(newPrescription.prescripteur);
-		patients.update((patients) => {
-			let rpatient = patients.find((p) => p.patient_id == patient.patient_id);
-			let tsp = rpatient.situations_pathologiques.find((bsp) => bsp.sp_id == sp.sp_id);
-			tsp.prescriptions.push(newPrescription);
-			return patients;
-		});
-		if (filExt && buffer) {
-			await saveFile(filExt, buffer);
-		}
-		goto('/dashboard/patients/' + patient.patient_id + '/situation-pathologique/' + sp.sp_id);
-	}
-	async function saveFile(filExt, buffer) {
-		await save_to_disk(
-			`${get(user).user.id}/${patient.nom}-${patient.prenom}(${
+		let data = {
+			prescription: compiledFormData,
+			fileResponse,
+			buffer,
+			filePath: `${get(user).user.id}/${patient.nom}-${patient.prenom}(${
 				patient.patient_id
 			})/situation-pathologique-${sp.created_at}(${sp.sp_id})/prescriptions`,
-			`${prescripteurNom}-${prescripteurPrenom}-${date}(${prescription_id}).${filExt}`,
-			Array.from(buffer)
-		);
+			fileName: `${prescripteurNom}-${prescripteurPrenom}-${date}(${prescription_id}).${filExt}`
+		};
+		if (prescription) {
+			await updatePrescription(data);
+			goto('/dashboard/patients/' + patient.patient_id + '/situation-pathologique/' + sp.sp_id);
+			return;
+		}
+		data.prescription.created_at = dayjs().format('YYYY-MM-DD');
+		await createPrescription(data);
+		goto('/dashboard/patients/' + patient.patient_id + '/situation-pathologique/' + sp.sp_id);
 	}
 </script>
 

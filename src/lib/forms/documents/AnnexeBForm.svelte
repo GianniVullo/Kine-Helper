@@ -3,8 +3,7 @@
 	import SituationPathologiqueSelector from './SituationPathologiqueSelector.svelte';
 	import { AnnexeB } from '../../pdfs/annexeB';
 	import { goto } from '$app/navigation';
-	import DBAdapter from '../actions/dbAdapter';
-	import { patients } from '../../stores/PatientStore';
+	import DBAdapter from '$lib/user-ops-handlers/dbAdapter';	import { patients } from '../../stores/PatientStore';
 	import { t } from '../../i18n';
 	import { get } from 'svelte/store';
 
@@ -30,6 +29,7 @@
 		if (doc) {
 			let db = new DBAdapter();
 			await db.update('documents', [['document_id', doc.document_id]], {
+				...doc,
 				form_data: JSON.stringify({
 					date,
 					notification,

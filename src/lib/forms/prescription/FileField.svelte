@@ -11,8 +11,8 @@
 	export let withOpener = false;
 	export let label = 'Fichier';
 	let hoveredByFile = false;
-	let loading = false;
 	export let filePath = null;
+	let loading = false;
 	let buffer;
 	let fileResponse;
 

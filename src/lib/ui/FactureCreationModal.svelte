@@ -42,6 +42,7 @@
 			label: get(t)('attestation.detail', 'title', { date: dayjs(att.date).format('DD/MM/YYYY') })
 		};
 	});
+
 	async function isValid({ formData, submitter }) {
 		console.log(attestationsIds);
 		let valeurTotale = 0.0;
@@ -96,7 +97,6 @@
 					.filter((att) => attestationsIds.includes(att.attestation_id))
 					.reduce((acc, att) => acc + att.total_recu, 0.0)
 					.toFixed(2),
-				codes,
 				attestationsIds,
 				with_details: true
 			};
@@ -105,6 +105,7 @@
 			}
 			console.log(form_data);
 			let fPat = new FacturePatient(form_data, patient, sp);
+			fPat.codes = codes;
 			await fPat.save();
 			// imprimer une facture patient
 		}

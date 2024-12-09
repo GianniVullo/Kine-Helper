@@ -12,6 +12,7 @@
 		36069C21CE8F02ADF56CCC73 /* libkine_helper_lib.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1FE6F5EE5E344197399227D5 /* libkine_helper_lib.a */; };
 		495EB8699D1C8960181333F2 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 537203427C5E1849C9B7853F /* Security.framework */; };
 		53837F5B066BC0637A8371AF /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BFE645D5988918BC2B7AB937 /* QuartzCore.framework */; };
+		998F5D115DABFD2CB118530C /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = A93A63AAAF34F5DDE8280F5D /* LaunchScreen.storyboard */; };
 		A08DD32417616C3231902D2F /* assets in Resources */ = {isa = PBXBuildFile; fileRef = A2E152A9D8E3DCC31410F3C4 /* assets */; };
 		A9E2BFC5AFA03B31F6DDAF4F /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F1BB105DBF10495F3A5F5071 /* WebKit.framework */; };
 		C15AF906E3DE51ED0ADFA74D /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 015A1050644ECC1156071757 /* CoreGraphics.framework */; };
@@ -43,10 +44,13 @@
 		640D0387C42C9FFDC8E4504E /* 20240307202642_typo2.down.sql */ = {isa = PBXFileReference; path = 20240307202642_typo2.down.sql; sourceTree = "<group>"; };
 		66FA5483EBFB54D055F5BFD6 /* lib.rs */ = {isa = PBXFileReference; path = lib.rs; sourceTree = "<group>"; };
 		76D6298416DB233F52C83F11 /* escp.rs */ = {isa = PBXFileReference; path = escp.rs; sourceTree = "<group>"; };
+		8827991054070C271902F34B /* 20240906062350_rename_patients_kine_id.up.sql */ = {isa = PBXFileReference; path = 20240906062350_rename_patients_kine_id.up.sql; sourceTree = "<group>"; };
 		994EE6C3BBB362EF30A00FFD /* 20231204175351_conventions.down.sql */ = {isa = PBXFileReference; path = 20231204175351_conventions.down.sql; sourceTree = "<group>"; };
 		9D58B76F52AA723806D787CD /* kine-helper_iOS.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = "kine-helper_iOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		A2E152A9D8E3DCC31410F3C4 /* assets */ = {isa = PBXFileReference; lastKnownFileType = folder; path = assets; sourceTree = SOURCE_ROOT; };
+		A93A63AAAF34F5DDE8280F5D /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
 		AF350B8D67CC8B241B74ECF0 /* 20240220173643_mutuelle_paid_attestation.down.sql */ = {isa = PBXFileReference; path = 20240220173643_mutuelle_paid_attestation.down.sql; sourceTree = "<group>"; };
+		B2D0390B2EEBDE88C8481B9B /* 20240906062350_rename_patients_kine_id.down.sql */ = {isa = PBXFileReference; path = 20240906062350_rename_patients_kine_id.down.sql; sourceTree = "<group>"; };
 		B8B5B643CB892DA7278A07E0 /* 20231204175351_conventions.up.sql */ = {isa = PBXFileReference; path = 20231204175351_conventions.up.sql; sourceTree = "<group>"; };
 		BBE5B71708D40C9AF3A98BEC /* bindings.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = bindings.h; sourceTree = "<group>"; };
 		BC8BEF0F3A3CAAFDB34823FE /* 20240220193637_docType.down.sql */ = {isa = PBXFileReference; path = 20240220193637_docType.down.sql; sourceTree = "<group>"; };
@@ -87,6 +91,7 @@
 			children = (
 				A2E152A9D8E3DCC31410F3C4 /* assets */,
 				383B1F1BC2AD2D7BEF655430 /* Assets.xcassets */,
+				A93A63AAAF34F5DDE8280F5D /* LaunchScreen.storyboard */,
 				4C38385DBDC78E0E5AEE55D4 /* Externals */,
 				66252B881F9FBBFBFD04F1F3 /* kine-helper_iOS */,
 				73D029FA0B7FB13A7D20D75A /* Sources */,
@@ -204,6 +209,8 @@
 				535ECF83C13499D83C604338 /* 20240318145714_9pin.up.sql */,
 				21CBBF6BA6FA4E1F87169EEE /* 20240321080003_sp_with_group.down.sql */,
 				232F8EC1B80B7EFE6CF027D8 /* 20240321080003_sp_with_group.up.sql */,
+				B2D0390B2EEBDE88C8481B9B /* 20240906062350_rename_patients_kine_id.down.sql */,
+				8827991054070C271902F34B /* 20240906062350_rename_patients_kine_id.up.sql */,
 			);
 			path = migrations;
 			sourceTree = "<group>";
@@ -249,6 +256,7 @@
 				TargetAttributes = {
 					E263DC95B5248DCC86ACC474 = {
 						DevelopmentTeam = HWRM7F8NC6;
+						ProvisioningStyle = Automatic;
 					};
 				};
 			};
@@ -275,6 +283,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				CF1EB00843F9FE86B15A1EEA /* Assets.xcassets in Resources */,
+				998F5D115DABFD2CB118530C /* LaunchScreen.storyboard in Resources */,
 				A08DD32417616C3231902D2F /* assets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -296,12 +305,13 @@
 			outputFileListPaths = (
 			);
 			outputPaths = (
-				"$(SRCROOT)/target/aarch64-apple-ios/${CONFIGURATION}/deps/libkine_helper_lib.a",
-				"$(SRCROOT)/target/x86_64-apple-ios/${CONFIGURATION}/deps/libkine_helper_lib.a",
+				"$(SRCROOT)/Externals/x86_64/${CONFIGURATION}/libkine_helper_lib.a",
+				"$(SRCROOT)/Externals/arm64/${CONFIGURATION}/libkine_helper_lib.a",
+				"$(SRCROOT)/Externals/arm64-sim/${CONFIGURATION}/libkine_helper_lib.a",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "npm run -- tauri ios xcode-script -v --platform ${PLATFORM_DISPLAY_NAME:?} --sdk-root ${SDKROOT:?} --framework-search-paths \"${FRAMEWORK_SEARCH_PATHS:?}\" --header-search-paths \"${HEADER_SEARCH_PATHS:?}\" --gcc-preprocessor-definitions \"${GCC_PREPROCESSOR_DEFINITIONS:-}\" --configuration ${CONFIGURATION:?} ${FORCE_COLOR} ${ARCHS:?}";
+			shellScript = "cargo tauri ios xcode-script -v --platform ${PLATFORM_DISPLAY_NAME:?} --sdk-root ${SDKROOT:?} --framework-search-paths \"${FRAMEWORK_SEARCH_PATHS:?}\" --header-search-paths \"${HEADER_SEARCH_PATHS:?}\" --gcc-preprocessor-definitions \"${GCC_PREPROCESSOR_DEFINITIONS:-}\" --configuration ${CONFIGURATION:?} ${FORCE_COLOR} ${ARCHS:?}";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -447,6 +457,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = "kine-helper_iOS/kine-helper_iOS.entitlements";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = HWRM7F8NC6;
 				ENABLE_BITCODE = NO;
 				"EXCLUDED_ARCHS[sdk=iphoneos*]" = "arm64-sim x86_64";
@@ -463,7 +474,7 @@
 				"LIBRARY_SEARCH_PATHS[arch=arm64-sim]" = "$(inherited) $(PROJECT_DIR)/Externals/arm64-sim/$(CONFIGURATION) $(SDKROOT)/usr/lib/swift $(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME) $(TOOLCHAIN_DIR)/usr/lib/swift-5.0/$(PLATFORM_NAME)";
 				"LIBRARY_SEARCH_PATHS[arch=arm64]" = "$(inherited) $(PROJECT_DIR)/Externals/arm64/$(CONFIGURATION) $(SDKROOT)/usr/lib/swift $(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME) $(TOOLCHAIN_DIR)/usr/lib/swift-5.0/$(PLATFORM_NAME)";
 				"LIBRARY_SEARCH_PATHS[arch=x86_64]" = "$(inherited) $(PROJECT_DIR)/Externals/x86_64/$(CONFIGURATION) $(SDKROOT)/usr/lib/swift $(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME) $(TOOLCHAIN_DIR)/usr/lib/swift-5.0/$(PLATFORM_NAME)";
-				PRODUCT_BUNDLE_IDENTIFIER = "be.kinehelper.kine-helper";
+				PRODUCT_BUNDLE_IDENTIFIER = be.kinehelper.prod;
 				PRODUCT_NAME = "Kine Helper";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -482,6 +493,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = "kine-helper_iOS/kine-helper_iOS.entitlements";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = HWRM7F8NC6;
 				ENABLE_BITCODE = NO;
 				"EXCLUDED_ARCHS[sdk=iphoneos*]" = "arm64-sim x86_64";
@@ -498,7 +510,7 @@
 				"LIBRARY_SEARCH_PATHS[arch=arm64-sim]" = "$(inherited) $(PROJECT_DIR)/Externals/arm64-sim/$(CONFIGURATION) $(SDKROOT)/usr/lib/swift $(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME) $(TOOLCHAIN_DIR)/usr/lib/swift-5.0/$(PLATFORM_NAME)";
 				"LIBRARY_SEARCH_PATHS[arch=arm64]" = "$(inherited) $(PROJECT_DIR)/Externals/arm64/$(CONFIGURATION) $(SDKROOT)/usr/lib/swift $(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME) $(TOOLCHAIN_DIR)/usr/lib/swift-5.0/$(PLATFORM_NAME)";
 				"LIBRARY_SEARCH_PATHS[arch=x86_64]" = "$(inherited) $(PROJECT_DIR)/Externals/x86_64/$(CONFIGURATION) $(SDKROOT)/usr/lib/swift $(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME) $(TOOLCHAIN_DIR)/usr/lib/swift-5.0/$(PLATFORM_NAME)";
-				PRODUCT_BUNDLE_IDENTIFIER = "be.kinehelper.kine-helper";
+				PRODUCT_BUNDLE_IDENTIFIER = be.kinehelper.prod;
 				PRODUCT_NAME = "Kine Helper";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";

@@ -9,7 +9,7 @@
 	import PrescriptionField from '../forms/situation-pathologique/fields/PrescriptionField.svelte';
 	import { user } from '../stores/UserStore';
 	import { get } from 'svelte/store';
-	import { DBInitializer } from '../stores/databaseInitializer';
+	import { LocalDatabase } from '../stores/databaseInitializer';
 
 	const modalStore = getModalStore();
 	export let parent;
@@ -41,7 +41,7 @@
 		// Ajouter la séance au composant calendrier
 		if ($modalStore[0]?.meta.component) {
 			// Fetch le code
-			let db = await new DBInitializer().openDBConnection();
+			let db = new LocalDatabase();
 			let duree = await db.select(
 				'SELECT duree from codes WHERE code_id = (SELECT code_id from seances WHERE seance_id = $1)',
 				[seance_id]
@@ -64,7 +64,6 @@
 			};
 			console.log('evenement', evennement);
 			$modalStore[0]?.meta.component.addEvent(evennement);
-			await db.close();
 		}
 		parent.onClose();
 	}

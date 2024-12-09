@@ -1,15 +1,8 @@
 <script>
 	import dayjs from 'dayjs';
 	import { goto } from '$app/navigation';
-	import {
-		FormWrapper,
-		SubmitButton,
-		DefaultFieldWrapper,
-		TextFieldV2,
-	} from '../index';
-	import DBAdapter from '../actions/dbAdapter';
-	import { SituationPathologique } from '../../stores/PatientStore';
-	import { patients } from '../../stores/PatientStore';
+	import { FormWrapper, SubmitButton, DefaultFieldWrapper, TextFieldV2 } from '../index';
+	import { createSituationPathologique } from '../../user-ops-handlers/situations_pathologiques';
 	import { t } from '../../i18n';
 
 	export let patient;
@@ -29,13 +22,12 @@
 	let rapport_ecrit_date = situation_pathologique?.rapport_ecrit_date;
 
 	let formSchema = {
-		isValid: isValid,
+		isValid,
 		validators: {}
 	};
 
 	async function isValid({ formData, submitter }) {
-		let db = new DBAdapter();
-		let situation_pathologique = new SituationPathologique({
+		let data = {
 			sp_id,
 			created_at,
 			patient_id,
@@ -48,18 +40,9 @@
 			with_indemnity: with_indemnity ?? null,
 			service,
 			numero_etablissement
-		});
-		situation_pathologique.upToDate = true;
-		await db.save('situations_pathologiques', situation_pathologique.toDB);
-		patients.update((patients) => {
-			let rpatient = patients.find((p) => p.patient_id == patient.patient_id);
-			rpatient.situations_pathologiques.push(situation_pathologique);
-			return patients;
-		});
-		goto(
-			`/dashboard/patients/${patient.patient_id}/situation-pathologique/${situation_pathologique.sp_id}`
-		);
-
+		};
+		await createSituationPathologique(data);
+		goto(`/dashboard/patients/${patient.patient_id}/situation-pathologique/${sp_id}`);
 		submitter.disabled = false;
 	}
 </script>
@@ -95,7 +78,11 @@
 	<h4 class="text-surface-800 dark:text-surface-300">
 		{$t('sp.detail', 'nonRequired.help')}
 	</h4>
-	<TextFieldV2 name="service" bind:value={service} placeholder={$t('sp.update', 'label.service')} label={$t('sp.update', 'label.service')} />
+	<TextFieldV2
+		name="service"
+		bind:value={service}
+		placeholder={$t('sp.update', 'label.service')}
+		label={$t('sp.update', 'label.service')} />
 	<TextFieldV2
 		name="numero_etablissement"
 		bind:value={numero_etablissement}

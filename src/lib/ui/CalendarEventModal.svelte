@@ -4,8 +4,7 @@
 	import { EuroIcon, TableCellIcon, UpdateIcon } from '../ui/svgs/index';
 	import { goto } from '$app/navigation';
 	import { patients } from '../stores/PatientStore';
-	import DBAdapter from '../forms/actions/dbAdapter';
-	import { tick } from 'svelte';
+	import DBAdapter from '$lib/user-ops-handlers/dbAdapter';	import { tick } from 'svelte';
 	import { t } from '../i18n';
 	import { ManipulateurDeSeances } from '../utils/manipulateurDeSeances';
 
@@ -43,6 +42,7 @@
 	async function performDescriptionUpdate() {
 		let db = new DBAdapter();
 		let result = await db.update('seances', [['seance_id', event.extendedProps.seance.seance_id]], {
+			...event.extendedProps.seance,
 			description
 		});
 		console.log('result from performDescriptionUpdate', result);

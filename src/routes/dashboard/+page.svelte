@@ -1,6 +1,7 @@
 <script>
 	import { locale, t } from '../../lib/i18n';
-	import { DBInitializer } from '../../lib/stores/databaseInitializer';
+	import { LocalDatabase } from '../../lib/stores/databaseInitializer';
+	import { dev } from '$app/environment';
 	import { user } from '../../lib/stores/UserStore';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
@@ -11,15 +12,17 @@
 	import { fade } from 'svelte/transition';
 	import { onMount } from 'svelte';
 	import { fetch } from '@tauri-apps/plugin-http';
-	import { open } from "@tauri-apps/plugin-shell";
-
+	import { open } from '@tauri-apps/plugin-shell';
+	import { invoke } from '@tauri-apps/api/core';
+	import { getMainKey } from '../../lib/stores/strongHold';
 	const modalStore = getModalStore();
+
 
 	function getTodaysAppointments() {
 		// let today = "date('now')";
 		let today = `date('${dayjs().add(1, 'day').format('YYYY-MM-DD')}')`;
 		return new Promise(async (resolve) => {
-			let db = await new DBInitializer().openDBConnection();
+			let db = new LocalDatabase();
 			console.log('today', today);
 			const data = await db.select(
 				`SELECT * FROM seances WHERE date(date) = ${today} AND user_id = $1`,
@@ -37,32 +40,34 @@
 			);
 		});
 	}
-	let marketingPromise;
-	let interval;
-	let currentIndex = writable(0);
-	let urlSource;
-	function rotatingAds(node) {
-		marketingPromise = new Promise(async (resolve, reject) => {
-			let response = await fetch(`https://admin-console.kine-helper.be/api/get-ads?lang=${get(locale).toLowerCase()}`);
-			response = await response.json();
-			interval = setInterval(() => {
-				if ($currentIndex === response.length - 1) {
-					currentIndex.set(0);
-				} else {
-					currentIndex.update((n) => {
-						return n + 1;
-					});
-				}
-			}, 12000);
-			console.log('THE RESPONSE', response);
-			return resolve(response);
-		});
-		return {
-			destroy() {
-				clearInterval(interval);
-			}
-		};
-	}
+	// let marketingPromise;
+	// let interval;
+	// let currentIndex = writable(0);
+	// let urlSource;
+	// function rotatingAds(node) {
+	// 	marketingPromise = new Promise(async (resolve, reject) => {
+	// 		let response = await fetch(
+	// 			`https://admin-console.kine-helper.be/api/get-ads?lang=${get(locale).toLowerCase()}`
+	// 		);
+	// 		response = await response.json();
+	// 		interval = setInterval(() => {
+	// 			if ($currentIndex === response.length - 1) {
+	// 				currentIndex.set(0);
+	// 			} else {
+	// 				currentIndex.update((n) => {
+	// 					return n + 1;
+	// 				});
+	// 			}
+	// 		}, 12000);
+	// 		console.log('THE RESPONSE', response);
+	// 		return resolve(response);
+	// 	});
+	// 	return {
+	// 		destroy() {
+	// 			clearInterval(interval);
+	// 		}
+	// 	};
+	// }
 </script>
 
 <main class="flex h-[80vh] w-full flex-col">
@@ -72,7 +77,9 @@
 			{$t('dashboard', 'description')}
 		</p>
 	</header>
-	<img id="another" src={urlSource} alt="" />
+	{#if dev}
+		<div class=""><a class="variant-filled btn" href="/dashboard/debug">DEBUG</a></div>
+	{/if}
 	<article class="flex h-full w-full">
 		<section class="relative my-4 flex basis-10/12 flex-col rounded-xl p-4">
 			<h2 class="absolute left-1 top-1 text-sm text-surface-400">
@@ -84,8 +91,8 @@
 					<h3 class="absolute left-1 top-1 text-sm text-surface-400">
 						{$t('dashboard', 'todaysAppointment')} ({$t('dashboard', 'featureComingSoon')})
 					</h3>
-					<!-- <div class="mt-4 flex flex-col">
-						{#await getTodaysAppointments()}
+					<div class="mt-4 flex flex-col">
+						<!-- {#await getTodaysAppointments()}
 							{$t('shared', 'loading')}
 						{:then seances}
 							{#if seances.length === 0}
@@ -112,8 +119,8 @@
 									{/each}
 								</div>
 							{/if}
-						{/await}
-					</div> -->
+						{/await} -->
+					</div>
 				</div>
 				<div class="flex basis-3/4">
 					<div
@@ -140,8 +147,13 @@
 				<h3 class="absolute left-1 top-1 text-sm text-surface-400">
 					{$t('dashboard', 'ads')}
 				</h3>
-				<div class="relative mt-4 flex w-full snap-x overflow-x-scroll" use:rotatingAds>
-					{#await marketingPromise then ads}
+				<div class="relative mt-4 flex w-full snap-x overflow-x-scroll">
+					<div class="mt-4 flex flex-col space-y-4">
+						<p class="">
+							{$t('dashboard', 'adsDescription')}
+						</p>
+
+						<!-- {#await marketingPromise then ads}
 						{#if ads}
 							<div class="">
 								<img
@@ -160,13 +172,16 @@
 									}}
 									class="variant-filled-primary btn btn-sm bottom-0 left-0 mt-2"
 									>{$t('otherModal', 'more', null, 'En savoir plus')}</button>
-								<button on:click={async () => {
-									await open(ads[$currentIndex]?.landing_page_url);
-								}} class="variant-filled-primary btn btn-sm bottom-0 left-0 mt-2"
+								<button
+									on:click={async () => {
+										await open(ads[$currentIndex]?.landing_page_url);
+									}}
+									class="variant-filled-primary btn btn-sm bottom-0 left-0 mt-2"
 									>{$t('otherModal', 'ourOffer', null, 'Consulter nos offres')}</button>
 							</div>
 						{/if}
-					{/await}
+					{/await} -->
+					</div>
 				</div>
 			</div>
 		</section>

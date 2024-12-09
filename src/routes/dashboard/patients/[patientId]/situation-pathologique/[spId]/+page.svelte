@@ -6,11 +6,11 @@
 	import { patients } from '../../../../../../lib/stores/PatientStore';
 	import { getEvents } from './eventFigureOuter';
 	import { getModalStore } from '@skeletonlabs/skeleton';
-	import DBAdapter from '../../../../../../lib/forms/actions/dbAdapter';
 	import { t } from '../../../../../../lib/i18n';
-	import { onMount, tick } from 'svelte';
+	import { onMount } from 'svelte';
 	import { get } from 'svelte/store';
 	import { goto } from '$app/navigation';
+	import { deleteSituationPathologique } from '../../../../../../lib/user-ops-handlers/situations_pathologiques';
 
 	const modalStore = getModalStore();
 	const modal = {
@@ -23,14 +23,9 @@
 		buttonPositive: 'variant-filled-error',
 		response: async (r) => {
 			if (r) {
-				let db = new DBAdapter();
-				await db.delete('situations_pathologiques', ['sp_id', $page.params.spId]);
-				patients.update((p) => {
-					let patient = p.find((p) => p.patient_id === $page.params.patientId);
-					patient.situations_pathologiques = patient.situations_pathologiques.filter(
-						(sp) => sp.sp_id !== $page.params.spId
-					);
-					return p;
+				await deleteSituationPathologique({
+					sp_id: $page.params.spId,
+					patient_id: $page.params.patientId
 				});
 				goto('/dashboard/patients/' + $page.params.patientId);
 			}
@@ -66,33 +61,25 @@
 		}
 	];
 	let eventsAreLoading = false;
-	onMount(() => {
-		tick().then(() => {
-			eventsPromise = new Promise(async (resolve) => {
-				console.log('sp', sp);
-				if (!eventsAreLoading) {
-					await tick();
-					eventsAreLoading = true;
-					//! temporary solution as It seems that whatever I try it keeps on failing from time to time
-					try {
-						let events = await getEvents(patient, sp);
-						eventsAreLoading = false;
-						resolve(events);
-					} catch (error) {
-						console.error(error);
-						let events = await getEvents(patient, sp);
-						eventsAreLoading = false;
-						resolve(events);
-					}
-				} else {
-					eventsAreLoading = false;
-					resolve();
-				}
-			});
-		});
-	});
-	let eventsPromise = new Promise((resolve) => {
-		resolve();
+	let eventsPromise = new Promise(async (resolve) => {
+		console.log('sp', sp);
+		if (!eventsAreLoading) {
+			eventsAreLoading = true;
+			//! temporary solution as It seems that whatever I try it keeps on failing from time to time
+			try {
+				let events = await getEvents(patient, sp);
+				eventsAreLoading = false;
+				resolve(events);
+			} catch (error) {
+				console.error(error);
+				let events = await getEvents(patient, sp);
+				eventsAreLoading = false;
+				resolve(events);
+			}
+		} else {
+			eventsAreLoading = false;
+			resolve();
+		}
 	});
 	let ec;
 	console.log(sp);
@@ -112,7 +99,7 @@
 					<UpdateIcon class="h-4 w-4 stroke-warning-800 dark:stroke-warning-300" />
 				</a>
 				<button
-					on:click={() => modalStore.trigger(modal)}
+					onclick={() => modalStore.trigger(modal)}
 					class="variant-outline btn-icon btn-icon-sm">
 					<DeleteIcon class="h-4 w-4 stroke-error-800 dark:stroke-error-300" />
 				</button>
@@ -127,7 +114,7 @@
 				{/if}
 			{/each}
 			<button
-				on:click={() => modalStore.trigger(documentSelectionModal)}
+				onclick={() => modalStore.trigger(documentSelectionModal)}
 				class="variant-outline-secondary btn btn-sm my-2 flex">
 				<PlusIcon class="h-4 w-4 stroke-surface-600 dark:stroke-surface-300" />
 				<span class="text-sm text-surface-500 dark:text-surface-400"
@@ -159,13 +146,13 @@
 	<!--* Motif et plan de la situation pathologique -->
 	<div class="flex flex-col space-y-2">
 		<div class="relative flex rounded-xl bg-surface-100 px-4 pb-4 pt-8 dark:bg-surface-800">
-			<p class="absolute left-4 top-1 text-sm text-surface-700 dark:text-surface-400">
+			<p class="absolute left-4 top-1 text-sm text-surface-400">
 				{$t('sp.detail', 'reason')}
 			</p>
 			<p class="text-base text-surface-700 dark:text-surface-300">{sp.motif}</p>
 		</div>
 		<div class="relative flex rounded-xl bg-surface-100 px-4 pb-4 pt-8 dark:bg-surface-800">
-			<p class="absolute left-4 top-1 text-sm text-surface-700 dark:text-surface-400">
+			<p class="absolute left-4 top-1 text-sm text-surface-400">
 				{$t('sp.detail', 'plan')}
 			</p>
 			<p class="text-base text-surface-700 dark:text-surface-300">{sp.plan_du_ttt}</p>

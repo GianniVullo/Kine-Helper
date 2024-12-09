@@ -1,10 +1,12 @@
 import { NomenclatureArchitecture } from './nomenclatureManager';
-import { DBInitializer } from '../stores/databaseInitializer';
-import DBAdapter from '../forms/actions/dbAdapter';
-import dayjs from 'dayjs';
+import { LocalDatabase } from '../stores/databaseInitializer';
+import DBAdapter from '$lib/user-ops-handlers/dbAdapter';import dayjs from 'dayjs';
 import { get } from 'svelte/store';
 import { user } from '../stores/UserStore';
 import { patients } from '../stores/PatientStore';
+import { encryptTable } from '../stores/encryption';
+import { getMainKey } from '../stores/strongHold';
+import { supabase } from '../stores/supabaseClient';
 
 /** Pour manipuler une séances :
  *!	- L'opération adéquate en fonction de la manipulation :
@@ -52,30 +54,29 @@ export class ManipulateurDeSeances {
 		this.architecture = new NomenclatureArchitecture(patient, sp);
 	}
 
-	async prepareArchitecture() {
+	async prepareArchitecture(db) {
 		return this.architecture.architecture(
 			(
-				await new DBAdapter().list('codes', [
-					['convention_id', '3ba16c31-d8c3-4f07-a5ed-9148dfcccf8f']
+				await db.select('SELECT * from codes WHERE convention_id = $1', [
+					'3ba16c31-d8c3-4f07-a5ed-9148dfcccf8f'
 				])
-			).data
+			)
 		);
 	}
 
 	async template(manipulation) {
 		console.log('in the template method');
-		// prepare architecture
-		let arch = await this.prepareArchitecture();
-		console.log('architecture prepared', arch);
 		// open a db connection
-		let db = await new DBInitializer().openDBConnection();
+		let db = new LocalDatabase();
+		// prepare architecture
+		let arch = await this.prepareArchitecture(db);
+		console.log('architecture prepared', arch);
 		// perform the manipulation
 		await manipulation(db);
 		// Then reordering the list
 		this.seances.sort((a, b) => dayjs(a.date).diff(dayjs(b.date)));
 		// realign the séances
 		await this.realign(db, arch);
-		await db.close();
 		console.log('template method done');
 		patients.update((ps) => {
 			const p = ps.find((p) => p.patient_id === this.seances[0].patient_id);
@@ -97,29 +98,66 @@ export class ManipulateurDeSeances {
 		} else {
 			mergedArch = arch;
 		}
-		for (let idx = 0; idx < this.seances.length; idx++) {
-			const seance = this.seances[idx];
-			const code_ref = mergedArch[idx].code_reference;
-			// Update the seance with the correct code_id based on the most recent convention and the specific code_reference
-			const updatedSeance = await db.select(
-				`
-				UPDATE seances
-				SET code_id = (
-					SELECT c.code_id
-					FROM codes AS c
-					INNER JOIN conventions AS con ON c.convention_id = con.convention_id
-					WHERE con.created_at <= date($1)
-						AND c.code_reference = $2
-					ORDER BY con.created_at DESC
-					LIMIT 1
-				), date = $3
-				WHERE seance_id = $4
-				RETURNING *;`,
-				[seance.date, code_ref, seance.date, seance.seance_id]
-			);
-			// console.log('la séance updatée', updatedSeance);
+		if (get(user).profil.offre === 'cloud') {
+			//* We need to build a list of encrypted and adjusted seance
+			let seances_data = [];
+			const key = await getMainKey();
+			for (let idx = 0; idx < this.seances.length; idx++) {
+				
+				const seance = this.seances[idx];
+				const code_ref = mergedArch[idx].code_reference;
+				console.log('code_ref', code_ref);
+				let updated_code_id = await db.select(
+					`SELECT c.code_id
+						FROM codes AS c
+						INNER JOIN conventions AS con ON c.convention_id = con.convention_id
+						WHERE con.created_at <= date($1)
+							AND c.code_reference = $2
+						ORDER BY con.created_at DESC
+						LIMIT 1`,
+					[seance.date, code_ref]
+				);
+				seances_data.push(
+					await encryptTable(
+						'seances',
+						{
+							...seance,
+							code_id: updated_code_id
+						},
+						key
+					)
+				);
+			}
+			await supabase.rpc('bulk_update_seances', { seances_data });
+			//! le if statment ici vient prévenir un bug où certaines fois la query SQL ne retournait rien car, comme j'avais delete une row, il y avait un null dans this.seances. je ne me rapelle plus pourquoi...
 			if (updatedSeance.length > 0) {
 				seance.code_id = updatedSeance[0].code_id;
+			}
+		} else {
+			for (let idx = 0; idx < this.seances.length; idx++) {
+				const seance = this.seances[idx];
+				const code_ref = mergedArch[idx].code_reference;
+				// Update the seance with the correct code_id based on the most recent convention and the specific code_reference
+				const updatedSeance = await db.select(
+					`
+					UPDATE seances
+					SET code_id = (
+						SELECT c.code_id
+						FROM codes AS c
+						INNER JOIN conventions AS con ON c.convention_id = con.convention_id
+						WHERE con.created_at <= date($1)
+							AND c.code_reference = $2
+						ORDER BY con.created_at DESC
+						LIMIT 1
+					), date = $3
+					WHERE seance_id = $4
+					RETURNING *;`,
+					[seance.date, code_ref, seance.date, seance.seance_id]
+				);
+				//! le if statment ici vient prévenir un bug où certaines fois la query SQL ne retournait rien car, comme j'avais delete une row, il y avait un null dans this.seances. je ne me rapelle plus pourquoi...
+				if (updatedSeance.length > 0) {
+					seance.code_id = updatedSeance[0].code_id;
+				}
 			}
 		}
 	}
@@ -144,34 +182,71 @@ export class ManipulateurDeSeances {
 					.reduce((a, b) => `${a} ${b}`)};`;
 				console.log(sqlSttmt);
 				// Then deleting the seance from the db
-				await db.execute(
-					sqlSttmt,
-					seance.map((s) => s.seance_id)
-				);
+				if (get(user).profil.offre === 'cloud') {
+					//TODO handle ERROR
+					let { data, error } = await supabase
+						.from('seances')
+						.delete()
+						.in(
+							'seance_id',
+							seance.map((s) => s.seance_id)
+						);
+					console.log(data, error);
+				} else {
+					await db.execute(
+						sqlSttmt,
+						seance.map((s) => s.seance_id)
+					);
+				}
 			} else {
 				// First removing the seance from the list
 				this.seances = this.seances.filter((s) => s.seance_id !== seance.seance_id);
 				// Then deleting the seance from the db
-				await db.execute('DELETE FROM seances WHERE seance_id = $1;', [seance.seance_id]);
+				if (get(user).profil.offre === 'cloud') {
+					//TODO handle Error
+					const { data, error } = await supabase
+						.from('seances')
+						.delete()
+						.eq('seance_id', seance.seance_id);
+					console.log(data, error);
+				} else {
+					await db.execute('DELETE FROM seances WHERE seance_id = $1;', [seance.seance_id]);
+				}
 			}
 		});
 	}
 
 	async ajouter(seance) {
 		await this.template(async (db) => {
-			await db.execute(
-				'INSERT INTO seances (seance_id, sp_id, date, created_at, description, prescription_id, user_id, patient_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8);',
-				[
-					seance.seance_id,
-					seance.sp_id,
-					seance.date,
-					seance.created_at,
-					seance.description,
-					seance.prescription_id,
-					get(user).user.id,
-					seance.patient_id
-				]
-			);
+			if (get(user).profil.offre === 'cloud') {
+				//TODO handle ERROR
+				const { data, error } = await supabase.from('seances').insert(
+					await encryptTable('seances', {
+						seance_id: seance.seance_id,
+						sp_id: seance.sp_id,
+						date: seance.date,
+						created_at: seance.created_at,
+						description: seance.description,
+						prescription_id: seance.prescription_id,
+						user_id: get(user).user.id,
+						patient_id: seance.patient_id
+					})
+				);
+			} else {
+				await db.execute(
+					'INSERT INTO seances (seance_id, sp_id, date, created_at, description, prescription_id, user_id, patient_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8);',
+					[
+						seance.seance_id,
+						seance.sp_id,
+						seance.date,
+						seance.created_at,
+						seance.description,
+						seance.prescription_id,
+						get(user).user.id,
+						seance.patient_id
+					]
+				);
+			}
 			this.seances.push(seance);
 		});
 	}

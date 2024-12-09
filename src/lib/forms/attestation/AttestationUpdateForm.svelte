@@ -5,7 +5,7 @@
 	import CheckboxFieldV2 from '../abstract-fields/CheckboxFieldV2.svelte';
 	import { patients } from '$lib/stores/PatientStore';
 	import { t } from '../../i18n';
-	import DBAdapter from '../actions/dbAdapter';
+	import DBAdapter from '$lib/user-ops-handlers/dbAdapter';
 	import { goto } from '$app/navigation';
 
 	export let attestation;

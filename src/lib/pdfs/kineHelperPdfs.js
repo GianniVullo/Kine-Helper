@@ -2,8 +2,7 @@ import { get, writable } from 'svelte/store';
 import { jsPDF } from 'jspdf';
 import { user } from '../stores/UserStore';
 import dayjs from 'dayjs';
-import DBAdapter from '../forms/actions/dbAdapter';
-import { patients } from '../stores/PatientStore';
+import DBAdapter from '$lib/user-ops-handlers/dbAdapter';import { patients } from '../stores/PatientStore';
 import { file_exists, open_file, read_file, remove_file, save_to_disk } from '../utils/fsAccessor';
 
 function yPositionStore(initialValue) {
@@ -97,12 +96,15 @@ export class PDFGeneration {
 	async delete() {
 		console.log('arrived in delete');
 		let db = new DBAdapter();
-		await db.delete('documents', ['document_id', this.data.document_id]);
+		await db.delete('documents', [
+			['document_id', this.data.document_id],
+			[('user_id', get(user).user.id)]
+		]);
 		let dirpath = await this.buildPath();
 		let path = dirpath + (this.platform === 'windows' ? '\\' : '/') + this.documentName + '.pdf';
 		if (await file_exists(path)) {
 			console.log('the file exists');
-			await remove_file(path, {recursive: false});
+			await remove_file(path, { recursive: false });
 			console.log('the file is removed');
 		}
 		patients.update((ps) => {

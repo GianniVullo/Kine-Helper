@@ -14,6 +14,9 @@ import { BaseDirectory, mkdir, remove, exists, readFile } from '@tauri-apps/plug
 import { open } from '@tauri-apps/plugin-shell';
 import { invoke } from '@tauri-apps/api/core';
 import { appLocalDataDir, documentDir } from '@tauri-apps/api/path';
+import { supabase } from '../stores/supabaseClient';
+import { user } from '../stores/UserStore';
+import { get } from 'svelte/store';
 
 function srcDir() {
 	if (platform() === 'windows') {
@@ -33,7 +36,7 @@ async function completePath() {
 
 async function pathFormat(path) {
 	console.log('in pathFormat with ', path);
-	
+
 	if (platform() === 'windows') {
 		return `kine-helper-\\${path.replaceAll('/', '\\')}`;
 	}
@@ -45,6 +48,8 @@ export async function create_directories(path) {
 }
 
 export async function file_exists(path) {
+	console.log('in file_exists with ', path);
+
 	return await exists(await pathFormat(path), { baseDir: srcDir() });
 }
 
@@ -90,4 +95,88 @@ export async function open_file(path) {
 	return await open(
 		(await completePath()) + (platform() === 'windows' ? '\\' : '/') + (await pathFormat(path))
 	);
+}
+
+export async function save_user_file(filePath, fileName, fileContent) {
+	switch (get(user)?.profil?.offre) {
+		case 'free':
+			return await save_to_disk(filePath, fileName, fileContent);
+
+		case 'cloud':
+			//! Encryption du fichier
+			let base64ConvertedFile = await invoke('from_bytes_to_base64', fileContent);
+			let encryptedBase64 = await invoke('encrypt_string', {
+				input: base64ConvertedFile,
+				key: await invoke('get_main_key', { userId: get(user).user.id })
+			});
+			let encryptedBase64ToBytes = await invoke('from_base64_to_bytes', { key: encryptedBase64 });
+			return supabase.storage
+				.from('users')
+				.upload(`${filePath}/${fileName}`, Uint8Array.from(encryptedBase64ToBytes).buffer);
+
+		default:
+			console.log("Could not infer user's offre. Ouille aïe ouille.");
+			break;
+	}
+}
+
+export async function delete_user_file(filePath, fileName) {
+	switch (get(user)?.profil?.offre) {
+		case 'free':
+			try {
+				return await remove_file(`${filePath}/${fileName}`);
+			} catch (error) {
+				console.log('Error deleting local file: ', error);
+			}
+			break;
+
+		case 'cloud':
+			try {
+				const { error } = await supabase.storage.from('users').remove([`${filePath}/${fileName}`]);
+				if (error) {
+					throw error;
+				}
+				console.log('File deleted from cloud storage');
+			} catch (error) {
+				console.log('Error deleting cloud file: ', error);
+			}
+			break;
+
+		default:
+			console.log("Could not infer user's offer. Ouille aïe ouille.");
+			break;
+	}
+}
+
+export async function retrieve_user_file(filePath, fileName) {
+	switch (get(user)?.profil?.offre) {
+		case 'free':
+			try {
+				// Retrieve the file from local disk
+				return await read_file(`${filePath}/${fileName}`);
+			} catch (error) {
+				console.log('Error retrieving local file: ', error);
+			}
+			break;
+
+		case 'cloud':
+			try {
+				// Retrieve the file from cloud storage
+				let { data, error } = await supabase.storage
+					.from('users')
+					.download(`${filePath}/${fileName}`);
+				if (error) {
+					throw error;
+				}
+				console.log('File retrieved from cloud storage');
+				return data;
+			} catch (error) {
+				console.log('Error retrieving cloud file: ', error);
+			}
+			break;
+
+		default:
+			console.log("Could not infer user's offer. Ouille aïe ouille.");
+			break;
+	}
 }

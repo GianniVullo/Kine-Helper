@@ -1,7 +1,7 @@
 <script>
-	import EventCalendar from '$lib/EventCalendar.svelte';
+	// import EventCalendar from '$lib/EventCalendar.svelte';
 	import dayjs from 'dayjs';
-	import { DBInitializer } from '../../../lib/stores/databaseInitializer';
+	import { LocalDatabase } from '../../../lib/stores/databaseInitializer';
 	import { user } from '../../../lib/stores/UserStore';
 	import Calendar from '@event-calendar/core';
 	import TimeGrid from '@event-calendar/time-grid';
@@ -30,8 +30,14 @@
 	}
 
 	let ec;
+	$effect(() => {
+		if (ec) {
+			console.log('the ec', ec);
+		}
+	});
+
 	async function queryMonthEvents(start, end) {
-		let db = await new DBInitializer().openDBConnection();
+		let db = new LocalDatabase();
 		let seances = await db.select(
 			'SELECT * from seances WHERE date BETWEEN date($1) AND date($2) AND user_id = $3',
 			[dayjs(start).format('YYYY-MM-DD'), dayjs(end).format('YYYY-MM-DD'), $user.user.id]
@@ -116,7 +122,7 @@
 	};
 </script>
 
-<div class="p-4 h-full">
+<div class="h-full p-4">
 	<h1 class="mb-4 text-lg text-surface-400">Agenda</h1>
 	<Calendar bind:this={ec} {plugins} options={base_options} />
 </div>

@@ -303,5 +303,4 @@
 	bind:query={query}
 	name="mutualite"
 	{onOptionSelection}
-	options={mutualite}
-	required />
+	options={mutualite} />

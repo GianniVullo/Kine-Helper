@@ -1,0 +1,1 @@
+ALTER TABLE patients RENAME COLUMN kinesitherapeute_id TO user_id;

@@ -3,20 +3,20 @@
 		TextFieldV2,
 		CheckboxFieldV2,
 		FormWrapper,
-		RadioFieldV2,
-		SelectFieldV2,
+		// RadioFieldV2,
+		// SelectFieldV2,
 		DateField,
 		SubmitButton
 	} from '../../../../../../../lib/forms/index';
-	import PathologieLourdeFields from '../../../../../../../lib/forms/situation-pathologique/fields/PathologieLourdeFields.svelte';
-	import { groupes, lieux, lieuxParGroupe } from '../../../../../../../lib/stores/codeDetails';
+	// import PathologieLourdeFields from '../../../../../../../lib/forms/situation-pathologique/fields/PathologieLourdeFields.svelte';
+	// import { groupes, lieux, lieuxParGroupe } from '../../../../../../../lib/stores/codeDetails';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
-	import DBAdapter from '../../../../../../../lib/forms/actions/dbAdapter';
 	import dayjs from 'dayjs';
 	import { patients } from '../../../../../../../lib/stores/PatientStore';
 	import { tick } from 'svelte';
 	import { t } from '../../../../../../../lib/i18n';
+	import { editSituationPathologique } from '../../../../../../../lib/user-ops-handlers/situations_pathologiques';
 
 	let formSchema = {
 		isValid
@@ -33,53 +33,53 @@
 	let rapport_ecrit = sp.rapport_ecrit;
 	let rapport_ecrit_custom_date = sp.rapport_ecrit_custom_date;
 	let groupe_id = sp.groupe_id;
-	let patho_lourde_type = sp.patho_lourde_type;
+	// let patho_lourde_type = sp.patho_lourde_type;
 	let lieu_id = sp.lieu_id;
-	let duree = sp.duree;
-	let volet_j = sp.volet_j;
-	let volet_h = sp.volet_h;
-	let gmfcs = sp.gmfcs;
-	let seconde_seance_fa = sp.seconde_seance_fa;
-	let seconde_seance_e = sp.seconde_seance_e;
-	let duree_seconde_seance_fa = sp.duree_seconde_seance_fa;
-	let deja_faites = sp.deja_faites;
-	let date_presta_chir_fa = sp.date_presta_chir_fa;
+	// let duree = sp.duree;
+	// let volet_j = sp.volet_j;
+	// let volet_h = sp.volet_h;
+	// let gmfcs = sp.gmfcs;
+	// let seconde_seance_fa = sp.seconde_seance_fa;
+	// let seconde_seance_e = sp.seconde_seance_e;
+	// let duree_seconde_seance_fa = sp.duree_seconde_seance_fa;
+	// let deja_faites = sp.deja_faites;
+	// let date_presta_chir_fa = sp.date_presta_chir_fa;
 
-	let groupOptions = groupes()
-		.map((value, index) => {
-			if ([0, 1, 3, 4, 5, 6, 7].includes(index)) {
-				return { label: value, value: index, id: `group${index}` };
-			}
-		})
-		.filter((value) => {
-			console.log('here we are with', value, 'and', groupe_id);
-			if (!value) {
-				return false;
-			}
-			return parseInt(value.value) === groupe_id;
-		});
+	// let groupOptions = groupes()
+	// 	.map((value, index) => {
+	// 		if ([0, 1, 3, 4, 5, 6, 7].includes(index)) {
+	// 			return { label: value, value: index, id: `group${index}` };
+	// 		}
+	// 	})
+	// 	.filter((value) => {
+	// 		console.log('here we are with', value, 'and', groupe_id);
+	// 		if (!value) {
+	// 			return false;
+	// 		}
+	// 		return parseInt(value.value) === groupe_id;
+	// 	});
 
-	let lieuOptions = lieux()
-		.map((val, index) => {
-			if (groupe_id === 'undefined' || groupe_id == undefined) {
-				return undefined;
-			}
-			let groupSchema = lieuxParGroupe[parseInt(groupe_id)];
-			if (groupSchema[0] === '*' || groupSchema.includes(index)) {
-				return { label: val, value: index, id: `lieu${index}` };
-			}
-		})
-		.filter((val) => {
-			console.log('here we are with', val, 'and', lieu_id);
-			if (!val) {
-				return false;
-			}
-			return val.value === sp.lieu_id});
+	// let lieuOptions = lieux()
+	// 	.map((val, index) => {
+	// 		if (groupe_id === 'undefined' || groupe_id == undefined) {
+	// 			return undefined;
+	// 		}
+	// 		let groupSchema = lieuxParGroupe[parseInt(groupe_id)];
+	// 		if (groupSchema[0] === '*' || groupSchema.includes(index)) {
+	// 			return { label: val, value: index, id: `lieu${index}` };
+	// 		}
+	// 	})
+	// 	.filter((val) => {
+	// 		console.log('here we are with', val, 'and', lieu_id);
+	// 		if (!val) {
+	// 			return false;
+	// 		}
+	// 		return val.value === sp.lieu_id});
 
 	async function isValid() {
 		console.log('isValid updating sp');
-		let db = new DBAdapter();
-		await db.update('situations_pathologiques', [['sp_id', sp.sp_id]], {
+		let data = {
+			...sp,
 			motif,
 			plan_du_ttt,
 			service,
@@ -88,25 +88,8 @@
 			with_indemnity,
 			rapport_ecrit,
 			rapport_ecrit_custom_date
-		});
-		patients.update((ps) => {
-			let patient = ps.find((p) => p.patient_id === $page.params.patientId);
-			let spIndex = patient.situations_pathologiques.findIndex(
-				(sp) => sp.sp_id === $page.params.spId
-			);
-			patient.situations_pathologiques[spIndex] = {
-				...patient.situations_pathologiques[spIndex],
-				motif,
-				plan_du_ttt,
-				service,
-				numero_etablissement,
-				intake,
-				with_indemnity,
-				rapport_ecrit,
-				rapport_ecrit_custom_date
-			};
-			return ps;
-		});
+		};
+		await editSituationPathologique(data);
 		await tick();
 		goto(`/dashboard/patients/${$page.params.patientId}/situation-pathologique/${sp.sp_id}`);
 	}
@@ -140,7 +123,7 @@
 				bind:value={rapport_ecrit_custom_date}
 				label={$t('sp.update', 'label.rapport_ecrit_custom_date')} />
 		{/if}
-		<SelectFieldV2
+		<!-- <SelectFieldV2
 			name="groupe"
 			bind:value={groupe_id}
 			options={groupOptions}
@@ -221,7 +204,7 @@
 				{@html $t('form.generateur', 'alredaydone.help')}
 			</p>
 		</label>
-
+ -->
 		<SubmitButton />
 	</FormWrapper>
 </div>

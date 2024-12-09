@@ -4,6 +4,7 @@
 	import dayjs from 'dayjs';
 	import { FacturePatient } from '$lib/pdfs/facturePatient';
 	import { FactureMutuelle } from '$lib/pdfs/factureMutuelle';
+	import { fetchCodeDesSeances } from '../utils/nomenclatureManager';
 	import { t } from '../i18n';
 
 	const modalStore = getModalStore();
@@ -20,9 +21,12 @@
 		});
 	}
 
-	function isntantiateFacture(facture) {
+	async function isntantiateFacture(facture) {
 		if (facture.docType === 8) {
-			return new FacturePatient(facture.form_data, patient, sp, facture);
+			let codes = await fetchCodeDesSeances(null, sp?.seances, sp);
+			let fP = new FacturePatient(facture.form_data, patient, sp, facture);
+			fP.codes = codes;
+			return fP
 		} else {
 			return new FactureMutuelle(facture.form_data, patient, sp, facture);
 		}
@@ -57,7 +61,7 @@
 						type: 'confirm',
 						response: async (response) => {
 							if (response) {
-								let f = isntantiateFacture(facture);
+								let f = await isntantiateFacture(facture);
 								await f.delete();
 							}
 						}
@@ -68,8 +72,8 @@
 			<button
 				on:click={async () => {
 					console.log('open facture');
-					let f = isntantiateFacture(facture);
-					f.open();
+					let f = await isntantiateFacture(facture);
+					await f.open();
 				}}
 				class="variant-filled btn-icon btn-icon-sm dark:variant-filled"
 				><OpenIcon class="h-5 w-5" /></button>
@@ -83,7 +87,7 @@
 			{#each attestationIdsArrayMapper(facture.form_data.attestationsIds) as att}
 				<li>
 					&nbsp;&nbsp;&nbsp;&nbsp;
-					{dayjs(att.date).format('DD/MM/YYYY') +
+					{dayjs(att?.date).format('DD/MM/YYYY') +
 						` - ${
 							sp.seances.filter((s) => s.attestation_id === att.attestation_id).length
 						} prestations,`}
@@ -92,7 +96,9 @@
 		</ul>
 		<h5>
 			<span class="text-surface-400">{$t('otherModal', 'total')}:</span>
-			{facture.form_data.tableRows ? facture.form_data.tableRows[0].total : facture.form_data.total}€
+			{facture.form_data.tableRows
+				? facture.form_data.tableRows[0].total
+				: facture.form_data.total}€
 		</h5>
 	</div>
 </div>

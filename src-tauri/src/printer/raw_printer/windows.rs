@@ -1,11 +1,11 @@
 use crate::printer::{escp::build_document, form_data_modeling::DocumentFormData};
-use std::ptr;
 use std::ffi::CString;
+use std::ptr;
 use windows::core::{PCSTR, PSTR};
 use windows::Win32::Foundation::{GetLastError, HANDLE};
 use windows::Win32::Graphics::Printing::{
-    ClosePrinter, EndDocPrinter, EndPagePrinter, OpenPrinterA, StartDocPrinterA,
-    StartPagePrinter, WritePrinter, DOC_INFO_1A, PRINTER_ALL_ACCESS, PRINTER_DEFAULTSA,
+    ClosePrinter, EndDocPrinter, EndPagePrinter, OpenPrinterA, StartDocPrinterA, StartPagePrinter,
+    WritePrinter, DOC_INFO_1A, PRINTER_ALL_ACCESS, PRINTER_DEFAULTSA,
 };
 
 #[tauri::command]
@@ -29,7 +29,10 @@ pub fn print_attestation(printer_name: &str, form_data: DocumentFormData) {
         )
         .is_ok()
         {
-            println!("now the handle is populated here it is : {:#?}", printer_handle);
+            println!(
+                "now the handle is populated here it is : {:#?}",
+                printer_handle
+            );
             let doc_info = DOC_INFO_1A {
                 pDocName: PSTR("My Document\0".as_ptr() as *mut u8),
                 pOutputFile: PSTR::null(),

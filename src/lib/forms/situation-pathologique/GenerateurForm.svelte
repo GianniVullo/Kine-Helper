@@ -20,14 +20,16 @@
 	import TimeField from './fields/TimeField.svelte';
 	import WarningDisplayer from './ui/WarningDisplayer.svelte';
 	import PrescriptionField from './fields/PrescriptionField.svelte';
-	import DBAdapter from '../actions/dbAdapter';
-	import Database from '@tauri-apps/plugin-sql';
+	import DBAdapter from '../../user-ops-handlers/dbAdapter';
 	import dayjs from 'dayjs';
 	import NombreAGenererField from './fields/NombreAGenererField.svelte';
 	import PathologieLourdeFields from './fields/PathologieLourdeFields.svelte';
 	import { GenerateurDeSeances } from './generateurDeSeances';
 	import { t } from '../../i18n';
 	import { get } from 'svelte/store';
+	import { invoke } from '@tauri-apps/api/core';
+	import { user } from '../../stores/UserStore';
+	import { editSituationPathologique } from '../../user-ops-handlers/situations_pathologiques';
 
 	let numberGenMessage = '';
 
@@ -77,17 +79,16 @@
 			prescription_id,
 			jour_seance_semaine_heures_filtre
 		);
-		await db.save('generateurs_de_seances', generateurDeSeance.toDB);
+		//! Farewell generateur de séance T.T
+		// await db.save('generateurs_de_seances', generateurDeSeance.toDB);
 
 		// ETAPE 6 : Génération des séances
 
-		let conn = await Database.load('sqlite:kinehelper.db');
-		generateurDeSeance.db = conn;
 		console.log('generateurDeSeance', generateurDeSeance);
 		let seances = await generateurDeSeance.seances();
 		console.log('seances', seances);
-		await conn.close();
-		await db.save('seances', seances);
+		let key = await invoke('get_main_key', { userId: get(user).user.id });
+		await db.save('seances', seances, key);
 
 		// ETAPE 7 : Mise à jour de la situation pathologique
 		let dateDeduite;
@@ -99,65 +100,41 @@
 		} else {
 			dateDeduite = rapport_ecrit_custom_date;
 		}
-		await db.update('situations_pathologiques', [['sp_id', sp.sp_id]], {
-			intake,
-			rapport_ecrit,
-			rapport_ecrit_date,
-			rapport_ecrit_custom_date: dateDeduite,
-			with_indemnity,
-			groupe_id,
-			lieu_id,
-			patho_lourde_type:
-				groupe_id === 1
-					? patho_lourde_type > 2
-						? patho_lourde_type - 1
-						: patho_lourde_type
-					: null,
-			duree,
-			volet_j,
-			volet_h,
-			gmfcs,
-			seconde_seance_fa,
-			seconde_seance_e,
-			duree_seconde_seance_fa,
-			deja_faites,
-			date_presta_chir_fa
-		});
-
-		// Etape 8 garder le store patients à jour
-		patients.update((p) => {
-			let rpatient = p.find((p) => p.patient_id == patient.patient_id);
-			let situationPathologique = rpatient.situations_pathologiques.find(
-				(sp) => sp.sp_id == $page.params.spId
-			);
-
-			situationPathologique.seances = [...situationPathologique.seances, ...seances];
-			situationPathologique.intake = intake;
-			situationPathologique.rapport_ecrit = rapport_ecrit;
-			situationPathologique.rapport_ecrit_date = rapport_ecrit_date;
-			situationPathologique.rapport_ecrit_custom_date = dateDeduite;
-			situationPathologique.with_indemnity = with_indemnity;
-			situationPathologique.generateurs_de_seances.push(generateurDeSeance.toDB);
-			situationPathologique.groupe_id = groupe_id;
-			situationPathologique.lieu_id = lieu_id;
-			situationPathologique.patho_lourde_type =
-				groupe_id === 1
-					? patho_lourde_type > 2
-						? patho_lourde_type - 1
-						: patho_lourde_type
-					: null;
-			situationPathologique.duree = duree;
-			situationPathologique.volet_j = volet_j;
-			situationPathologique.volet_h = volet_h;
-			situationPathologique.gmfcs = gmfcs;
-			situationPathologique.seconde_seance_fa = seconde_seance_fa;
-			situationPathologique.seconde_seance_e = seconde_seance_e;
-			situationPathologique.duree_seconde_seance_fa = duree_seconde_seance_fa;
-			situationPathologique.deja_faites = deja_faites;
-			situationPathologique.date_presta_chir_fa = date_presta_chir_fa;
-			return p;
-		});
-
+		groupe_id = parseInt(groupe_id);
+		await editSituationPathologique(
+			{
+				user_id: sp.user_id,
+				sp_id: sp.sp_id,
+				created_at: sp.created_at,
+				patient_id: sp.patient_id,
+				numero_etablissement: sp.numero_etablissement,
+				service: sp.service,
+				motif: sp.motif,
+				intake,
+				rapport_ecrit,
+				rapport_ecrit_date,
+				rapport_ecrit_custom_date: dateDeduite,
+				with_indemnity,
+				groupe_id,
+				lieu_id,
+				patho_lourde_type:
+					groupe_id === 1
+						? patho_lourde_type > 2
+							? patho_lourde_type - 1
+							: patho_lourde_type
+						: null,
+				duree,
+				volet_j,
+				volet_h,
+				gmfcs,
+				seconde_seance_fa,
+				seconde_seance_e,
+				duree_seconde_seance_fa,
+				deja_faites,
+				date_presta_chir_fa
+			},
+			seances
+		);
 		goto(`/dashboard/patients/${patient.patient_id}/situation-pathologique/${sp.sp_id}`);
 		submitter.disabled = false;
 	}

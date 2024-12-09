@@ -91,32 +91,32 @@ export async function printAttestation(
 		}
 	};
 	console.log('formData in RawPrinter ==', formData);
-	if (platform() === 'macos') {
-		//* Build the command's bytes
-		const attestationBytes = await await invoke('print_attestation', {
-			printerName: settingsDetails.raw_printer,
-			formData
-		});
-		const fileName = 'temp_print_file.prn'
-		//* Create a temporary file in wich to store these bytes
-		//* AND Store the bytes in it
-		let setupPathResponse = await save_to_disk(
-			'', //? Dans le dossier appDataLocal racin c'est ok
-			fileName,
-			attestationBytes
-		);
-		let localDir = await appLocalDataDir();
-		const filePath = `${localDir}/${fileName}`;
-		console.log(attestationBytes, setupPathResponse, filePath);
+	// if (platform() === 'macos') {
+	// 	//* Build the command's bytes
+	// 	const attestationBytes = await invoke('print_attestation', {
+	// 		printerName: settingsDetails.raw_printer,
+	// 		formData
+	// 	});
+	// 	const fileName = 'temp_print_file.prn'
+	// 	//* Create a temporary file in wich to store these bytes
+	// 	//* AND Store the bytes in it
+	// 	let setupPathResponse = await save_to_disk(
+	// 		'', //? Dans le dossier appDataLocal racin c'est ok
+	// 		fileName,
+	// 		attestationBytes
+	// 	);
+	// 	let localDir = await appLocalDataDir();
+	// 	const filePath = `${localDir}/${fileName}`;
+	// 	console.log(attestationBytes, setupPathResponse, filePath);
 		
-		//* Create the print command
-		let printCommand = Command.create('lp', ['-d', settingsDetails.raw_printer, filePath]);
-		//* Send the print commands to the printer
-		await printCommand.execute();
+	// 	//* Create the print command
+	// 	let printCommand = Command.create('lp', ['-d', settingsDetails.raw_printer, filePath]);
+	// 	//* Send the print commands to the printer
+	// 	await printCommand.execute();
 
-		//* remove the temporary file
-		await remove_file(fileName, {})
-		return
-	}
+	// 	//* remove the temporary file
+	// 	await remove_file(fileName, {})
+	// 	return
+	// }
 	return await invoke('print_attestation', { printerName: settingsDetails.raw_printer, formData });
 }

@@ -38,14 +38,12 @@
 		"fs:allow-applocaldata-write-recursive",
 		"fs:allow-applocaldata-meta",
 		"fs:allow-applocaldata-meta-recursive",
-
 		"fs:allow-document-read",
 		"fs:allow-document-read-recursive",
 		"fs:allow-document-write",
 		"fs:allow-document-write-recursive",
 		"fs:allow-document-meta",
 		"fs:allow-document-meta-recursive",
-
 		"fs:allow-remove",
 		"fs:allow-create",
 		"fs:allow-exists",
@@ -62,7 +60,8 @@
 		"updater:allow-check",
 		"updater:default",
 		"dialog:allow-save",
-		"process:allow-restart"
+		"process:allow-restart",
+		"clipboard-manager:allow-write-text"
 	],
 	"platforms": ["windows"]
 }

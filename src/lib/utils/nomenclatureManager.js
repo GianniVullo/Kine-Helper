@@ -1,4 +1,4 @@
-import { DBInitializer } from '../stores/databaseInitializer';
+import { LocalDatabase } from '../stores/databaseInitializer';
 import { Code, indmeniteCategory } from '../stores/codeDetails';
 import { get, writable } from 'svelte/store';
 
@@ -69,7 +69,7 @@ export function fetchCodeDesSeances(loading, seances, sp) {
 		loading.update((n) => true);
 	}
 	return new Promise(async (resolve, reject) => {
-		let db = await guesseur.database.openDBConnection();
+		let db = guesseur.database;
 		await guesseur.bulkGuess(seances, async (seances) => {
 			for (const seance of seances) {
 				await guesseur.getCode(seance, db);
@@ -78,7 +78,6 @@ export function fetchCodeDesSeances(loading, seances, sp) {
 				await guesseur.collectIndemnitIntakeeEtRapporEcrit();
 			}
 		});
-		await db.close();
 		resolve(guesseur.cache);
 	});
 }
@@ -427,7 +426,7 @@ export class NomenclatureArchitecture {
 
 export class NomenclatureManager {
 	constructor() {
-		this.database = new DBInitializer();
+		this.database = new LocalDatabase();
 		this.cache = new Map();
 	}
 
@@ -440,7 +439,7 @@ export class NomenclatureManager {
 
 	async collectIndemnitIntakeeEtRapporEcrit() {
 		console.log('in NomenclatureManager.collectIndemnitIntakeeEtRapporEcrit() with', this.cache);
-		let db = await this.database.openDBConnection();
+		let db = this.database;
 		let rapportEcrits = [];
 		let indemnites = [];
 		let intake = [];
@@ -468,23 +467,20 @@ export class NomenclatureManager {
 		if (rapportEcritsQuery.length > 0) {
 			rapportEcrits.push(new Code(rapportEcritsQuery[0]));
 		}
-		await db.close();
 		this.cache.set('indemnites', indemnites);
 		this.cache.set('rapports', rapportEcrits);
 		this.cache.set('intake', intake);
 	}
 
 	async durationGuesser(seances) {
-		let db = await this.database.openDBConnection();
+		let db = this.database;
 		let guess = await this.durationPlugin(seances, db);
-		await db.close();
 		return guess;
 	}
 
 	async lieu_idAggregator(seances) {
-		let db = await this.database.openDBConnection();
+		let db = this.database;
 		let guess = await this.lieu_idPlugin(seances, db);
-		await db.close();
 		return guess;
 	}
 

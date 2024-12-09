@@ -8,12 +8,13 @@
 	import { readTextFile, remove, writeTextFile } from '@tauri-apps/plugin-fs';
 	import { appLocalDataDir } from '@tauri-apps/api/path';
 	import { goto } from '$app/navigation';
-	import DBAdapter from '../../../lib/forms/actions/dbAdapter';
+	import DBAdapter from '$lib/user-ops-handlers/dbAdapter';
 	import { patients } from '../../../lib/stores/PatientStore';
 	import PostSignupForm from '../../../lib/forms/authentication/PostSignupForm.svelte';
 	import RadioFieldV2 from '../../../lib/forms/abstract-fields/RadioFieldV2.svelte';
 	import { platform } from '@tauri-apps/plugin-os';
 	import WindowsSelectionField from '../../../lib/forms/settings/WindowsSelectionField.svelte';
+	import { LocalDatabase } from '../../../lib/stores/databaseInitializer';
 
 	const modalStore = getModalStore();
 	console.log('user', get(user));
@@ -62,9 +63,15 @@
 
 	async function nukeUsersData() {
 		let db = new DBAdapter();
-		await db.list('patients', [['kinesitherapeute_id', $user.user.id]], {
-			selectStatement: 'patient_id'
-		});
+		if (get(user).profil.offre !== 'cloud') {
+			await db.list('patients', [['user_id', $user.user.id]], {
+				selectStatement: 'patient_id'
+			});
+		}
+		/*? Pour les utilisateurs du cloud il n'est pas nécessaire
+		 * ? de "Nuke" les données puisque en supprimant l'utilisateur
+		 * ? ON DELETE CASCADE va s'occuper de tout nuker tout seul.
+		 */
 		patients.set([]);
 		let path = await appLocalDataDir();
 		try {
@@ -84,10 +91,12 @@
 	async function changePrinter() {
 		console.log($user);
 		if (get(user).settings.raw_printer === imprimanteMatricielle) return;
-		let db = new DBAdapter();
-		await db.update('settings', [['user_id', $user.user.id]], {
-			raw_printer: imprimanteMatricielle
-		});
+		let db = new LocalDatabase();
+
+		await db.execute('UPDATE settings SET raw_printer = $1 WHERE uesr_id = $2', [
+			imprimanteMatricielle,
+			$user.user.id
+		]);
 		user.update((u) => {
 			u.settings.raw_printer = imprimanteMatricielle;
 			return u;

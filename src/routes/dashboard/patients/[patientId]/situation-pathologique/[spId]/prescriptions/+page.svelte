@@ -4,13 +4,10 @@
 	import dayjs from 'dayjs';
 	import { OpenIcon, DeleteIcon, UpdateIcon, PlusIcon } from '$lib/ui/svgs/index';
 	import { getModalStore } from '@skeletonlabs/skeleton';
-	import DBAdapter from '$lib/forms/actions/dbAdapter';
-	import { appLocalDataDir } from '@tauri-apps/api/path';
-	import { open } from '@tauri-apps/plugin-shell';
 	import { user } from '$lib/stores/UserStore';
-	import { invoke } from '@tauri-apps/api/core';
 	import { t } from '../../../../../../../lib/i18n';
-	import { file_exists, open_file, remove_file } from '../../../../../../../lib/utils/fsAccessor';
+	import { file_exists, open_file } from '../../../../../../../lib/utils/fsAccessor';
+	import { deletePrescription } from '../../../../../../../lib/user-ops-handlers/prescriptions';
 
 	const modalStore = getModalStore();
 
@@ -21,23 +18,6 @@
 		return `${$user.user.id}/${patient.nom}-${patient.prenom}(${patient.patient_id})/situation-pathologique-${sp.created_at}(${sp.sp_id})/prescriptions/${prescription.prescripteur.nom}-${prescription.prescripteur.prenom}-${prescription.date}(${prescription.prescription_id}).${prescription.file_name}`;
 	}
 
-	async function deletePrescription(prescription) {
-		// First delete with the DBAdapter
-		let db = new DBAdapter();
-		await db.delete('prescriptions', ['prescription_id', prescription.prescription_id]);
-		patients.update((ps) => {
-			let p = ps.find((p) => p.patient_id === patient.patient_id);
-			let sp = p.situations_pathologiques.find((sp) => sp.sp_id === $page.params.spId);
-			sp.prescriptions = sp.prescriptions.filter(
-				(p) => p.prescription_id !== prescription.prescription_id
-			);
-			return ps;
-		});
-		let path = await prescriptionPath(prescription);
-		if (await file_exists(path)) {
-			await remove_file(path);
-		}
-	}
 	async function openPrescription(prescription) {
 		let path = await prescriptionPath(prescription);
 		console.log('path', path);

@@ -60,7 +60,7 @@
 <!-- Sidebar Navigation -->
 <aside
 	data-minimized={isMinimized}
-	class="isMinimized relative overflow-clip group left-0 top-0 z-10 h-24 border-b border-surface-400 bg-gradient-to-br from-surface-200 to-surface-100 p-6 text-white shadow-lg duration-200 ease-in-out data-[minimized=true]:from-surface-300 data-[minimized=true]:to-surface-200 data-[minimized=true]:p-0 dark:border-surface-800 dark:from-surface-700 dark:to-surface-800 dark:data-[minimized=true]:from-surface-700 dark:data-[minimized=true]:to-surface-800 md:h-screen md:w-64 md:border-r data-[minimized=true]:md:h-screen data-[minimized=true]:md:w-12">
+	class="isMinimized relative overflow-clip group left-0 top-0 z-10 h-24 border-b border-surface-400 bg-gradient-to-br from-surface-200 to-surface-100 p-6 text-white shadow-lg duration-200 ease-in-out data-[minimized=true]:from-surface-300 data-[minimized=true]:to-surface-200 data-[minimized=true]:p-0 dark:border-surface-800 dark:from-surface-700 dark:to-surface-800 dark:data-[minimized=true]:from-surface-700 dark:data-[minimized=true]:to-surface-800 md:h-full md:w-64 md:border-r data-[minimized=true]:md:h-full data-[minimized=true]:md:w-12">
 	<h2 class:mb-6={!isMinimized} class="text-xl font-medium text-primary-600 dark:text-primary-400">
 		{isMinimized ? '' : 'Kiné Helper'}
 	</h2>

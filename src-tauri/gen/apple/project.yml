@@ -1,6 +1,6 @@
 name: kine-helper
 options:
-  bundleIdPrefix: be.kinehelper
+  bundleIdPrefix: be.kinehelper.prod
   deploymentTarget:
     iOS: 13.0
 fileGroups: [../../src]
@@ -11,8 +11,9 @@ settingGroups:
   app:
     base:
       PRODUCT_NAME: Kine Helper
-      PRODUCT_BUNDLE_IDENTIFIER: be.kinehelper.kine-helper
+      PRODUCT_BUNDLE_IDENTIFIER: be.kinehelper.prod
       DEVELOPMENT_TEAM: HWRM7F8NC6
+      CODE_SIGN_STYLE: Automatic
 targetTemplates:
   app:
     type: application
@@ -36,6 +37,7 @@ targets:
       - path: assets
         buildPhase: resources
         type: folder
+      - path: LaunchScreen.storyboard
     info:
       path: kine-helper_iOS/Info.plist
       properties:
@@ -51,8 +53,8 @@ targets:
           - UIInterfaceOrientationPortraitUpsideDown
           - UIInterfaceOrientationLandscapeLeft
           - UIInterfaceOrientationLandscapeRight
-        CFBundleShortVersionString: 0.0.1
-        CFBundleVersion: 0.0.1
+        CFBundleShortVersionString: 0.0.57
+        CFBundleVersion: 0.0.57
     entitlements:
       path: kine-helper_iOS/kine-helper_iOS.entitlements
     scheme:
@@ -82,9 +84,10 @@ targets:
       - sdk: UIKit.framework
       - sdk: WebKit.framework
     preBuildScripts:
-      - script: npm run -- tauri ios xcode-script -v --platform ${PLATFORM_DISPLAY_NAME:?} --sdk-root ${SDKROOT:?} --framework-search-paths "${FRAMEWORK_SEARCH_PATHS:?}" --header-search-paths "${HEADER_SEARCH_PATHS:?}" --gcc-preprocessor-definitions "${GCC_PREPROCESSOR_DEFINITIONS:-}" --configuration ${CONFIGURATION:?} ${FORCE_COLOR} ${ARCHS:?}
+      - script: cargo tauri ios xcode-script -v --platform ${PLATFORM_DISPLAY_NAME:?} --sdk-root ${SDKROOT:?} --framework-search-paths "${FRAMEWORK_SEARCH_PATHS:?}" --header-search-paths "${HEADER_SEARCH_PATHS:?}" --gcc-preprocessor-definitions "${GCC_PREPROCESSOR_DEFINITIONS:-}" --configuration ${CONFIGURATION:?} ${FORCE_COLOR} ${ARCHS:?}
         name: Build Rust Code
         basedOnDependencyAnalysis: false
         outputFiles:
-          - $(SRCROOT)/target/aarch64-apple-ios/${CONFIGURATION}/deps/libkine_helper_lib.a
-          - $(SRCROOT)/target/x86_64-apple-ios/${CONFIGURATION}/deps/libkine_helper_lib.a
+          - $(SRCROOT)/Externals/x86_64/${CONFIGURATION}/libkine_helper_lib.a
+          - $(SRCROOT)/Externals/arm64/${CONFIGURATION}/libkine_helper_lib.a
+          - $(SRCROOT)/Externals/arm64-sim/${CONFIGURATION}/libkine_helper_lib.a

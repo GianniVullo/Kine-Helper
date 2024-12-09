@@ -13,7 +13,7 @@
 		CheckboxFieldV2
 	} from '../index';
 	import dayjs from 'dayjs';
-	import DBAdapter from '../actions/dbAdapter';
+	import { createPatient, updatePatient } from '../../user-ops-handlers/patients';
 	import DateField from '../abstract-fields/DateField.svelte';
 	import NumberField from '../abstract-fields/NumberField.svelte';
 	import { tick } from 'svelte';
@@ -60,91 +60,40 @@
 	};
 
 	async function isValid({ formData, submitter }) {
-		let data;
-		let db = new DBAdapter();
-		// <!--* CREATE PROCEDURE -->
+		let data = {
+			patient_id,
+			nom,
+			prenom,
+			niss,
+			date_naissance,
+			sexe,
+			adresse,
+			cp,
+			localite,
+			num_affilie,
+			tiers_payant,
+			ticket_moderateur,
+			bim,
+			mutualite,
+			numero_etablissement,
+			service,
+			tel,
+			gsm,
+			email
+		};
 		if (!patient) {
-			let newPatientObj = {
-				kinesitherapeute_id: get(user).user.id,
-				patient_id,
-				created_at: dayjs().format('YYYY-MM-DD'),
-				nom,
-				prenom,
-				niss,
-				date_naissance,
-				sexe,
-				adresse,
-				cp,
-				localite,
-				num_affilie,
-				tiers_payant,
-				ticket_moderateur,
-				bim,
-				mutualite,
-				numero_etablissement,
-				service,
-				tel,
-				gsm,
-				email
-			};
-			let newPatient = await db.save('patients', newPatientObj);
-			data = new Patient(newPatient.data[0]);
-			patients.update((ps) => {
-				ps.push(data);
-				return ps;
-			});
+			// <!--* CREATE PROCEDURE -->
+			await createPatient(data);
 		} else {
 			// <!--* UPDATE PROCEDURE -->
-			let updatedPatient = {
-				nom,
-				prenom,
-				niss,
-				date_naissance,
-				sexe,
-				adresse,
-				cp,
-				localite,
-				num_affilie,
-				tiers_payant,
-				ticket_moderateur,
-				bim,
-				mutualite,
-				numero_etablissement,
-				service,
-				tel,
-				gsm,
-				email
-			};
-			await db.update('patients', [['patient_id', patient.patient_id]], updatedPatient);
-			patients.update((ps) => {
-				let rpatient = ps.find((p) => p.patient_id === patient.patient_id);
-				rpatient.nom = nom;
-				rpatient.prenom = prenom;
-				rpatient.niss = niss;
-				rpatient.date_naissance = date_naissance;
-				rpatient.sexe = sexe;
-				rpatient.adresse = adresse;
-				rpatient.cp = cp;
-				rpatient.localite = localite;
-				rpatient.num_affilie = num_affilie;
-				rpatient.tiers_payant = tiers_payant;
-				rpatient.ticket_moderateur = ticket_moderateur;
-				rpatient.bim = bim;
-				rpatient.mutualite = mutualite;
-				rpatient.numero_etablissement = numero_etablissement;
-				rpatient.service = service;
-				rpatient.tel = tel;
-				rpatient.gsm = gsm;
-				rpatient.email = email;
-				return ps;
-			});
+			await updatePatient(data);
 		}
 		patients.sortPatient();
 		await tick();
 		goto(`/dashboard/patients/${patient?.patient_id ?? data.patient_id}`);
-		// I think it might be counter productive as the button will anyway be destroyed
 		submitter.disabled = false;
 	}
+
 	$: {
 		let date = niss ?? '';
 		if (date.length > 5) {
@@ -185,21 +134,18 @@
 				<TextFieldV2
 					name="prenom"
 					bind:value={prenom}
-					required
 					placeholder={$t('shared', 'surname')}
 					label={$t('shared', 'surname')} />
 				<TextFieldV2
 					name="niss"
 					bind:value={niss}
-					required
 					placeholder={$t('form.patient', 'label.niss')}
 					label={$t('form.patient', 'label.niss')}
-					pattern={/^[0-9]{11}$/}
+					pattern={/^([0-9]{11})?$/}
 					patternMessage={$t('form.patient', 'validation.niss')} />
 				<DateField
 					name="date_naissance"
 					bind:value={date_naissance}
-					required
 					placeholder={$t('form.patient', 'label.birthDate')}
 					label={$t('form.patient', 'label.birthDate')} />
 				<RadioFieldV2
@@ -214,7 +160,6 @@
 				<TextFieldV2
 					name="adresse"
 					bind:value={adresse}
-					required
 					placeholder={$t('shared', 'address')}
 					label={$t('shared', 'address')} />
 				<NumberField
@@ -222,13 +167,11 @@
 					bind:value={cp}
 					pattern={/^[0-9]{4}$/}
 					patternMessage={$t('form.postSignup', 'validation.postCode')}
-					required
 					placeholder={$t('form.postSignup', 'label.postCode')}
 					label={$t('form.postSignup', 'label.postCode')} />
 				<TextFieldV2
 					name="localite"
 					bind:value={localite}
-					required
 					placeholder={$t('form.postSignup', 'label.city')}
 					label={$t('form.postSignup', 'label.city')} />
 			</SectionCard>

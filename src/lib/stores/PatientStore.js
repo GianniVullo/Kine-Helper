@@ -1,6 +1,5 @@
 import { get, writable } from 'svelte/store';
 import { persisted } from 'svelte-persisted-store';
-import DBAdapter from '../forms/actions/dbAdapter';
 import { user } from './UserStore';
 
 export class Patient {
@@ -180,30 +179,6 @@ function createPatientStore() {
 
 	const loading = writable(false);
 
-	async function fetchPatient(modifiedUser) {
-		console.log('In fetchPatients from $patients');
-		loading.set(true);
-		let db = new DBAdapter();
-		const { data, error } = await db.list('patients', [['kinesitherapeute_id', modifiedUser.id]], {
-			selectStatement:
-				'patient_id, created_at, nom, prenom, niss, adresse, cp, localite, date_naissance, tel, gsm, email, sexe, mutualite, num_affilie, tiers_payant, ticket_moderateur, bim, actif, numero_etablissement, service'
-			// orderBy: 'nom' Not needed I think
-		});
-		console.log('Les patients queried', data);
-		if (error) throw error;
-		data.sort((a, b) => {
-			if (a.nom > b.nom) {
-				return 1;
-			} else {
-				return -1;
-			}
-		});
-		loading.set(false);
-		let transformed = data.map((p) => new Patient(p));
-		console.log('Les patients transformed', transformed);
-		set(transformed);
-	}
-
 	function sortPatient() {
 		update((ps) => {
 			ps.sort((a, b) => {
@@ -228,71 +203,6 @@ function createPatientStore() {
 			console.log('in patients.remove(id)>update with ps length AFTER', ps.length);
 			return ps;
 		});
-	}
-
-	async function getLastSpAndOthers(patient_id) {
-		console.log('in getLastSp() with', patient_id);
-		let db = new DBAdapter();
-		const { data, error } = await db.get_last_sp(patient_id, get(user).user.id);
-		console.log('La SP queried', data);
-		if (error) throw error;
-		if (data.ps.length === 0) return;
-		let sp = new SituationPathologique({
-			...data.ps[0],
-			prescriptions: data.prescriptions.map((p) => {
-				p.prescripteur = JSON.parse(p.prescripteur);
-				return p;
-			}),
-			seances: data.seances,
-			attestations: data.attestations,
-			documents: data.documents
-		});
-		sp.upToDate = true;
-		console.log('La dernière situation pathologique', sp);
-		let others = await getOtherSps(patient_id, sp.sp_id);
-
-		console.log('in getLastSp().getOtherSps() with', others);
-		update((ps) => {
-			let patient = ps.find((p) => p.patient_id === patient_id);
-			patient.situations_pathologiques.push(sp);
-			for (const dlSp of others) {
-				patient.situations_pathologiques.push(dlSp);
-			}
-			return ps;
-		});
-	}
-
-	async function getOtherSps(patient_id, sp_id) {
-		console.log('in getLastSp() with', patient_id);
-		let db = new DBAdapter();
-		const { data, error } = await db.list(
-			'situations_pathologiques',
-			[
-				['patient_id', patient_id],
-				['!sp_id', sp_id]
-			],
-			{
-				selectStatement:
-					'sp_id, created_at, patient_id, numero_etablissement, service, motif, plan_du_ttt, groupe_id patho_lourde_type, lieu_id, duree, volet_j, volet_h, gmfcs, seconde_seance_fa, seconde_seance_e, duree_seconde_seance_fa, deja_faites, date_presta_chir_fa',
-				orderBy: 'created_at'
-			}
-		);
-		if (error) throw error;
-		let sps = data.map((sp) => new SituationPathologique(sp));
-		console.log('Les SP mapped', sps);
-		return sps;
-	}
-
-	async function insertPatient(data) {
-		console.log('in insertPatient() with', data);
-		loading.set(true);
-		let newPatient = await supabase.from('patients').insert(data).select();
-		if (newPatient.error) return;
-		console.log('Response from Supabase client', newPatient);
-		update((n) => n.push(newPatient.data[0]));
-		patients.value.push(newPatient.data[0]);
-		loading.set(false);
-		return newPatient.data[0];
 	}
 
 	function getPatient(patient_id) {
@@ -393,11 +303,8 @@ function createPatientStore() {
 		set,
 		loading,
 		sortPatient,
-		fetchPatient,
 		remove,
-		getPatient,
-		getLastSpAndOthers,
-		getOtherSps
+		getPatient
 	};
 }
 

@@ -19,7 +19,7 @@
 
 <div
 	data-open={open}
-	class="group hide-scrollbar relative -ml-2 mb-4 overflow-x-hidden overflow-y-scroll rounded-r-[40px] border-r border-surface-200 p-2 shadow duration-200 data-[open=false]:min-h-[40px] data-[open=true]:min-h-[70%] data-[open=false]:bg-surface-200 data-[open=true]:bg-surface-300 data-[open=false]:dark:bg-surface-800 data-[open=true]:dark:bg-surface-700 md:mb-0 data-[open=false]:md:min-h-[100%] data-[open=true]:md:min-h-[100%] data-[open=false]:md:min-w-[2.5rem] data-[open=true]:md:min-w-[25%] data-[open=true]:xl:min-w-[16.666667%]">
+	class="group hide-scrollbar relative -ml-2 mb-4 overflow-x-hidden overflow-y-scroll rounded-r-[40px] border-r-2 border-surface-200 p-2 shadow duration-200 data-[open=false]:min-h-[40px] data-[open=true]:min-h-[70%] data-[open=false]:bg-surface-200 data-[open=true]:bg-surface-300 data-[open=false]:dark:bg-surface-800 data-[open=true]:dark:bg-surface-700 md:mb-0 data-[open=false]:md:min-h-[100%] data-[open=true]:md:min-h-[100%] data-[open=false]:md:min-w-[2.5rem] data-[open=true]:md:min-w-[25%] data-[open=true]:xl:min-w-[16.666667%]">
 	<button
 		class="btn absolute group-data-[open=false]:left-auto group-data-[open=false]:right-0 group-data-[open=false]:top-0 group-data-[open=true]:left-auto group-data-[open=true]:right-0 group-data-[open=false]:md:-left-2 group-data-[open=true]:md:right-0"
 		on:click={() => (open = !open)}>

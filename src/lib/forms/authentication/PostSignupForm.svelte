@@ -4,11 +4,13 @@
 	import { user } from '$lib/index';
 	import { supabase } from '../../stores/supabaseClient';
 	import { goto } from '$app/navigation';
-	import DBAdapter from '../actions/dbAdapter';
-	import dayjs from 'dayjs';
+	import DBAdapter from '$lib/user-ops-handlers/dbAdapter';
 	import { t } from '../../i18n';
 	import { get } from 'svelte/store';
-
+	import { LocalDatabase } from '../../stores/databaseInitializer';
+	import { invoke } from '@tauri-apps/api/core';
+	import { createUser } from '../../user-ops-handlers/users';
+	import { retrieveSettings } from '../../user-ops-handlers/settings';
 	let message = '';
 	let clazz = '';
 	export { clazz as class };
@@ -21,82 +23,10 @@
 		console.log('in isValid with', formData);
 		submitter.innerHTML = get(t)('shared', 'loading');
 		formData.conventionne ??= false;
-		let dict = {
-			nom: formData.nom,
-			prenom: formData.prenom,
-			email: $user.user.email,
-			id: $user.user.id
-		};
-		let { data, error } = await supabase.from('kinesitherapeutes').upsert(dict);
+		await createUser(formData);
+		await retrieveSettings({ user_id: get(user).user.id });
 		submitter.innerHTML = 'OK';
-		console.log(data, error);
-		user.update((u) => {
-			u.profil = {
-				nom: formData.nom,
-				prenom: formData.prenom,
-				inami: formData.inami,
-				bce: formData.bce,
-				iban: formData.iban,
-				adresse: formData.adresse,
-				cp: formData.cp,
-				localite: formData.localite,
-				conventionne: formData.conventionne
-			};
-			return u;
-		});
-		if (error) {
-			message = error.message;
-			throw new Error(error);
-		}
-		// si il n'y a pas d'objet settings ou que l'objet settings ne contient pas de raw printer alors on redirige vers la page de configuration
-		let db = new DBAdapter();
-		try {
-			await db.save('kines', {
-				user_id: $user.user.id,
-				nom: formData.nom,
-				prenom: formData.prenom,
-				inami: formData.inami,
-				bce: formData.bce,
-				iban: formData.iban,
-				adresse: formData.adresse,
-				cp: formData.cp,
-				localite: formData.localite,
-				conventionne: formData.conventionne
-			});
-		} catch (error) {
-			await db.update('kines', [['user_id', $user.user.id]], {
-				nom: formData.nom,
-				prenom: formData.prenom,
-				inami: formData.inami,
-				bce: formData.bce,
-				iban: formData.iban,
-				adresse: formData.adresse,
-				cp: formData.cp,
-				localite: formData.localite,
-				conventionne: formData.conventionne
-			});
-		}
-		let userSettings = await db.retrieve('settings', '*', ['user_id', $user.user.id]);
-		console.log('userSettings', userSettings);
-		if (userSettings.data.length > 0) {
-			user.update((u) => {
-				u.settings = userSettings.data[0];
-				return u;
-			});
-			userSettings.data[0].raw_printer
-				? goto('/dashboard')
-				: goto('/post-signup-forms/printer-setup');
-		} else {
-			await db.save('settings', {
-				user_id: $user.user.id,
-				created_at: dayjs().format('YYYY-MM-DD HH:mm:ss')
-			});
-			user.update((u) => {
-				u.settings = { raw_printer: null };
-				return u;
-			});
-			goto('/post-signup-forms/printer-setup');
-		}
+		$user.settings.raw_printer ? goto('/dashboard') : goto('/post-signup-forms/printer-setup');
 	}
 </script>
 

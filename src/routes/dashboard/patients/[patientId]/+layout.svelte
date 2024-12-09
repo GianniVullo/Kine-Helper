@@ -1,93 +1,110 @@
 <script>
 	import { t } from '../../../../lib/i18n';
 	import Title from '$lib/patient-detail/Title.svelte';
-	import Arborescence from '../../../../lib/patient-detail/Arborescence.svelte';
-	import { patients, SituationPathologique } from '../../../../lib/stores/PatientStore';
+	// import Arborescence from '../../../../lib/patient-detail/Arborescence.svelte';
+	import { patients } from '../../../../lib/stores/PatientStore';
 	import { page } from '$app/stores';
-	import DBAdapter from '$lib/forms/actions/dbAdapter';
-	import { tick } from 'svelte';
+	import {
+		retrieveLastSPWithRelatedObjectsPlusOlderSPWithoutRelatedObjects,
+		retrieveSituationPathologique
+	} from '../../../../lib/user-ops-handlers/situations_pathologiques';
 
-	const patient = $patients.find((p) => p.patient_id === $page.params.patientId);
-	let loading = makeSpGreatAgain($page);
+	/**
+	 ** Ici, comme nous entrons dans une page de détails d'un patient il est nécessaire de récupérer la première situation pathologique en entier + un descriptif succinct de toutes les autres.
+	 ** Ce morcellement est important car une sp peut contenir vrmt BCP d'informations.
+	 *
+	 *
+	 ** Il y a 3 cas de figures :
+	 *
+	 **		- Le patient n'a pas encore été exploré par l'utilisasteur et il n'a donc pas du tout de SP disponible à l'analyse => getLastSpAndOthers
+	 *
+	 **		- Le patient a été exploré et l'on accède à une sp qui n'est pas uptodate => On doit télécharger la sp
+	 *
+	 **		- Le patient a été exploré et l'on accède à une sp uptodate => On ne fait rien
+	 *
+	 *
+	 ** Nous regrouperons tous ces cas de figure dans une promesse qui évaluera et effectuera les opérations nécessaires lorsque la page de détails du patient est demandée par l'utilisateur
+	 */
+	let { children } = $props();
+	const patient = $derived($patients.find((p) => p.patient_id === $page.params.patientId));
+	let currentSp = $state();
+	// loadingInProgress est là pour s'assurer qu'on empêche jamais isUptoDate de terminer son action
 	let loadingInProgress = false;
-	page.subscribe((p) => {
-		// On check ici parce que sinon il run page.subscribe même lorsque l'on quitte la page
-		if (p.params.patientId && p.params.spId && !loadingInProgress) {
-			loading = makeSpGreatAgain(p);
-		}
-	});
+	let isSpUpToDate = $state(new Promise(evaluerEtEffectuerLesOperationsNecessaires));
 
-	function makeSpGreatAgain(p) {
-		return new Promise(async (resolve) => {
-			await tick();
-			loadingInProgress = true;
-			// console.log('in makeSpGreatAgain with', p);
-			if (p.params.spId) {
-				const spBeforeCheck = patient.situations_pathologiques.find(
-					(sp) => sp.sp_id === p.params.spId
-				);
-				console.log('spBeforeCheck', spBeforeCheck);
-				if (spBeforeCheck?.upToDate === false) {
-					let db = new DBAdapter();
-					let completedSp = await db.retrieve_sp(spBeforeCheck.sp_id);
-					// console.log('completedSp', completedSp);
-					completedSp = new SituationPathologique(completedSp.data);
-					completedSp.upToDate = true;
-					patients.update((p) => {
-						let patientIndex = p.findIndex((p) => p.patient_id === patient.patient_id);
-						let spIndex = p[patientIndex].situations_pathologiques.findIndex(
-							(sp) => sp.sp_id === completedSp.sp_id
-						);
-						p[patientIndex].situations_pathologiques[spIndex] = completedSp;
-						return p;
-					});
-					loadingInProgress = false;
-					resolve();
-				} else {
-					loadingInProgress = false;
-					resolve();
-				}
-			} else {
-				loadingInProgress = false;
-				resolve();
-			}
-		});
-	}
-
-	let spPromied = new Promise((resolve) => {
+	async function evaluerEtEffectuerLesOperationsNecessaires(resolve, reject) {
+		loadingInProgress = true;
+		/**
+		 * Voilà la promesse qui évalue les actions nécessaire au bon affichage des données patients et les effectues
+		 *
+		 ** Cas numéro 1 : Le patient est exploré pour la première fois
+		 * TODO Attention que dans ce cas ci il y a un cas embêtants où un patient n'a pas de SP créée encore et risque de déclencher à chaque fois getLastSpAndOthers. Pour l'instant je choisi d'ignorer le problème car à priori un patient n'est pas fait pour rester sans situations pathologiques ET en plus le coût pour le serveur est faible
+		 */
 		if (patient.situations_pathologiques.length == 0) {
-			patients.getLastSpAndOthers(patient.patient_id).then(() => {
-				resolve();
+			await retrieveLastSPWithRelatedObjectsPlusOlderSPWithoutRelatedObjects({
+				patient_id: patient.patient_id
 			});
-		} else {
+			loadingInProgress = false;
+			resolve(); // resolve(void) parce qu'on utilise des stores et pas les données directement (à la fois pour la réactivité et la mise en cache offerte)
+		}
+		// cette variable sp permet à la promesse de déterminer si c'est un cas 2 ou 3
+		let sp = patient.situations_pathologiques[0];
+		console.log('THE SP : ', sp);
+
+		/**
+		 ** Cas numéro 2 : Le patient a été exploré et l'on accède à une sp qui n'est pas uptodate
+		 */
+		if (sp?.upToDate === false) {
+			await retrieveSituationPathologique({
+				sp_id: sp.sp_id,
+				patient_id: patient.patient_id
+			});
+			loadingInProgress = false;
 			resolve();
 		}
+		/**
+		 ** Cas numéro 3 : Le patient a été exploré et l'on accède à une sp uptodate
+		 */
+		if (sp?.upToDate) {
+			loadingInProgress = false;
+			resolve();
+		}
+		loadingInProgress = false;
+		reject('La situation pathologique est introuvable.');
+	}
+
+	$effect(() => {
+		console.log('in the $effet', patient);
+		if ($page.params.patientId && $page.params.spId && !loadingInProgress) {
+			isSpUpToDate = new Promise(evaluerEtEffectuerLesOperationsNecessaires);
+			currentSp = patient.situations_pathologiques.find((s) => s.sp_id === $page.params.spId);
+		} else {
+			currentSp = undefined;
+		}
 	});
 
-	console.log(patient);
+	// page.subscribe((p) => {
+	// 	console.log('Réévaluation de la situation pathologique suite à une navigation');
+	// 	if (p.params.patientId && p.params.spId && !loadingInProgress) {
+	// 		isSpUpToDate = new Promise(evaluerEtEffectuerLesOperationsNecessaires);
+	// 	}
+	// });
 </script>
 
 {#if patient}
-	{#await spPromied}
+	{#await isSpUpToDate}
 		{$t('shared', 'loading')}
-	{:then value}
-		<div class="flex h-screen w-full flex-col items-start justify-start">
-			<Title {patient} />
-			{#key loading}
-				{#await loading}
-					{$t('shared', 'loading')}
-					<div
-						style="margin: 4px;"
-						class="h-5 w-5 animate-spin rounded-full border-2 border-secondary-500 border-b-primary-500 text-4xl">
-					</div>
-				{:then _}
-					<div class="flex w-full flex-col md:flex-row">
-						<Arborescence {patient} />
-						<div class="overflow-y-scroll w-full h-[95vh]"><slot /></div>
-					</div>
-				{/await}
-			{/key}
+	{:then _}
+		<div class="flex h-full w-full flex-col items-start justify-start">
+			<Title {patient} {currentSp} />
+			{@render children()}
+			<!-- <div class="flex h-full w-full flex-col md:flex-row">
+					<Arborescence {patient} />
+					<div class="w-full overflow-y-scroll"><slot /></div>
+				</div> -->
 		</div>
+	{:catch error}
+		Erreur : {error}
 	{/await}
 {:else}
 	{$t('patients.detail', '404')}

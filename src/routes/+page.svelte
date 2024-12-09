@@ -2,6 +2,29 @@
 	import { SignUpForm, LoginForm, PasswordResetForm } from '../lib/index';
 	import { t } from '../lib/i18n';
 	import { getToastStore } from '@skeletonlabs/skeleton';
+	import { goto } from '$app/navigation';
+	import { onDestroy } from 'svelte';
+	import { platform } from '@tauri-apps/plugin-os';
+
+	function registerShortcut(callback) {
+		window.addEventListener('keydown', function (event) {
+			const isMac = platform() === 'macos';
+			
+			if ((isMac ? event.metaKey : event.ctrlKey) && event.shiftKey && event.key === 'C') {
+				console.log(isMac);
+				event.preventDefault();
+				callback();
+			}
+		});
+	}
+
+	const shortcutHandler = registerShortcut(() => {
+		goto('debug')
+	});
+
+	onDestroy(() => {
+		window.removeEventListener('keydown', shortcutHandler);
+	});
 
 	const toastStore = getToastStore();
 	let selectedForm = 'login';

@@ -88,9 +88,8 @@
 				component: ec
 			}
 		};
-
 		modalStore.trigger(modal);
 	}
 </script>
 
-<Calendar bind:this={ec} {plugins} options={base_options} />
+<Calendar {plugins} {options} />

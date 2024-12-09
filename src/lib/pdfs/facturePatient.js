@@ -36,6 +36,7 @@ export class FacturePatient extends PDFGeneration {
 		if (formData.attestations) {
 			delete this.formData.attestations;
 		}
+		this.codes;
 	}
 
 	buildPdf() {
@@ -59,32 +60,32 @@ export class FacturePatient extends PDFGeneration {
 		}
 		this.yPosition.update(5);
 		this.addParagraph(get(t)('pdfs', 'greetings'));
-		if (this.formData.with_details && this.formData.codes && this.attestations) {
+		if (this.formData.with_details && this.codes && this.attestations) {
 			this.yPosition.update(10);
 			this.addParagraph('', { fontWeight: 'bold' });
 			this.yPosition.update(1);
 			if (this.attestations.reduce((acc, att) => acc || att.with_indemnity, false)) {
 				this.addParagraph(
 					`(I) = ${get(t)('pdfs', 'facture.ind')} (code ${
-						this.formData.codes.get('indemnites')[0].code_reference
+						this.codes.get('indemnites')[0].code_reference
 					})`,
 					{ fontSize: 8 }
 				);
 			}
 			if (
 				this.attestations.reduce((acc, att) => acc || att.with_rapport, false) &&
-				this.formData.codes.get('rapports').length > 0
+				this.codes.get('rapports').length > 0
 			) {
 				this.addParagraph(
 					`(R) = ${get(t)('sp.update', 'label.rapport_ecrit')} (code ${
-						this.formData.codes.get('rapports')[0].code_reference
+						this.codes.get('rapports')[0].code_reference
 					})`,
 					{ fontSize: 8 }
 				);
 			}
 			if (this.attestations.reduce((acc, att) => acc || att.with_intake, false)) {
 				this.addParagraph(
-					`(Intake) - (code ${this.formData.codes.get('intake')[0].code_reference})`,
+					`(Intake) - (code ${this.codes.get('intake')[0].code_reference})`,
 					{ fontSize: 8 }
 				);
 			}
@@ -108,7 +109,7 @@ export class FacturePatient extends PDFGeneration {
 				let seance = protoSeance.obj ?? protoSeance;
 				let seance_ref = '';
 				let seance_date = dayjs(seance.date).format('DD-MM-YYYY');
-				seance_ref += this.formData.codes.get(seance.code_id).code_reference;
+				seance_ref += this.codes.get(seance.code_id).code_reference;
 				if (attestation.with_rapport) {
 					seance_ref += ' (R)';
 				}

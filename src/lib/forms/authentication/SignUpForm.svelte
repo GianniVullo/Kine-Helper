@@ -7,7 +7,7 @@
 	import { createEventDispatcher } from 'svelte';
 	import { get } from 'svelte/store';
 	import { t } from '../../i18n';
-
+	import { createUser } from '../../user-ops-handlers/users';
 	let message = '';
 
 	const dispatch = createEventDispatcher();
@@ -27,25 +27,12 @@
 	};
 
 	async function signUp({ formData, submitter }) {
-		const { data, error } = await supabase.auth.signUp({
-			email: formData.email.toLowerCase(),
-			password: formData.password
+		await createUser(formData);
+		message = get(t)('signup', 'emailConfirmation', { email: formData.email.toLowerCase() });
+		dispatch('onSignupSuccess', {
+			message
 		});
-		if (error) {
-			message = error.message;
-			submitter.disabled = false;
-			throw new Error(error);
-		} else {
-			message = get(t)('signup', 'emailConfirmation', { email: formData.email.toLowerCase() });
-			user.set({
-				user: data.user,
-				session: data.session
-			});
-			dispatch('onSignupSuccess', {
-				message
-			});
-			submitter.disabled = false;
-		}
+		submitter.disabled = false;
 	}
 </script>
 

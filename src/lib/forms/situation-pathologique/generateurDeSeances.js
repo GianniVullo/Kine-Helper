@@ -1,4 +1,3 @@
-import Database from '@tauri-apps/plugin-sql';
 import dayjs from 'dayjs';
 import { user } from '../../index';
 import { get } from 'svelte/store';
@@ -12,7 +11,10 @@ import {
 	figuringConventionOut
 } from '../../stores/codeDetails';
 import { NomenclatureArchitecture } from '../../utils/nomenclatureManager';
+import Database from '@tauri-apps/plugin-sql';
+import { LocalDatabase } from '../../stores/databaseInitializer';
 
+const DUREE_LIST = [15, 20, 30, 45, 60, 120];
 export class GenerateurDeSeances {
 	constructor({
 		auto = true,
@@ -175,17 +177,11 @@ export class GenerateurDeSeances {
 			.set('second', 0);
 	}
 
-	/**
-	 * @param {Database} conn
-	 */
-	setdb(conn) {
-		this.db = conn;
-	}
-
 	async seances() {
 		// console.log('In seanceRepartitionLogic()');
 		let dateList = this.dates;
-
+		// Ici Il est préférable de réinstantier une Connection à la base de donnée pour éviter d'ouvrir et de refermer x fois la base de données. Sur des petits nombre de query on ne voit pas la différence mais lorque le nombre de query avanca à 150 avec LocalDatabase les opérations prennait 700ms contre 200ms avec Database
+		this.db = await Database.load('sqlite:kinehelper.db');
 		//* Création des séances de kinésithérapie
 		for (const date of dateList) {
 			if (
@@ -248,6 +244,7 @@ export class GenerateurDeSeances {
 			// console.log('WITH EXAMEN consultatif');
 			await this.createAddSeance(dayjs(this.examen_ecrit_date), EXAMEN_A_TITRE_CONSULTATIF, {});
 		}
+		this.db.close();
 		return this.seancesGeneree;
 	}
 
@@ -255,7 +252,17 @@ export class GenerateurDeSeances {
 		console.log('in createAddSeance() for date :', date);
 		//* Définir les arguments permettant la recherche du code dans la DB
 		//? D'abord la convention
-		let convention = await figuringConventionOut(date, this.db);
+		const conventionDate = date.format('YYYY-MM-DD');
+		let convention = (
+			await this.db.select(
+				`
+				SELECT MAX(DATE(con2.created_at)), convention_id
+				FROM conventions AS con2
+				WHERE DATE(con2.created_at) <= DATE($1);`,
+				[conventionDate]
+			)
+		)[0];
+		console.log('The convention is ', convention);
 
 		//? "Compiler" la requête SQL
 		let sqlStatement = this.sqlQueryCompiler(convention, { groupe, codeType, duree });
@@ -265,20 +272,21 @@ export class GenerateurDeSeances {
 		//? attendre la requête SQL
 		let code = await this.db.select(sqlStatement[0], sqlStatement[1]);
 		console.log('the code found in the db', code);
-		//! Ici il y avait des attributs spécifiant l'heure de début et de fin du rdv ( start & end ). Je fais, pour l'instant, le choix de ne plus utiliser ces attributs, de transformer le datatype de seance.date en timestamps et de rendre la durée du rdv implicite ( définie par le code )
+		// // Ici il y avait des attributs spécifiant l'heure de début et de fin du rdv ( start & end ). Je fais, pour l'instant, le choix de ne plus utiliser ces attributs, de transformer le datatype de seance.date en timestamps et de rendre la durée du rdv implicite ( définie par le code )
+		//? Je rerajoute l'attribut end pour pouvoir implémenter la fonctionnalité agenda sur les sites web de mes clients
 		let seance = {
 			user_id: get(user).user.id,
 			patient_id: this.patient.patient_id,
 			sp_id: this.sp_id,
 			prescription_id: this.prescription_id,
-			gen_id: this.gen_id,
+			//! gen_id: this.gen_id à partir de mtn on fonctionne sans gen_id
 			seance_id: crypto.randomUUID(),
 			created_at: dayjs().format('YYYY-MM-DDTHH:mm:00'),
 			code_id: code[0].code_id,
 			date: date.format('YYYY-MM-DDTHH:mm:00'),
+			end: date.add(DUREE_LIST[code[0].duree], 'minutes').format('YYYY-MM-DDTHH:mm:00'),
 			description: this.default_seance_description
 			//// start: rendezVousStart.toDate(),
-			//// end: rendezVousEnd.toDate()
 		};
 		console.log(seance);
 		//*Ajout de la séance créée à la list de séances générées
@@ -300,7 +308,7 @@ export class GenerateurDeSeances {
 						sqlStatementArgs.push(2);
 					}
 					return [`${sqlStatement} AND duree = $4;`, sqlStatementArgs];
-				}
+				};
 				switch (this.patho_lourde_type) {
 					case 0:
 						// 20 ou 30 min
@@ -316,7 +324,10 @@ export class GenerateurDeSeances {
 									sqlStatementArgs.push(4);
 									sqlStatementArgs.push(false);
 									sqlStatementArgs.push(1);
-									return [`${sqlStatement} AND duree = $4 AND drainage = $5 AND lourde_type = $6;`, sqlStatementArgs];
+									return [
+										`${sqlStatement} AND duree = $4 AND drainage = $5 AND lourde_type = $6;`,
+										sqlStatementArgs
+									];
 								} else {
 									return defaultCase();
 								}
@@ -325,7 +336,10 @@ export class GenerateurDeSeances {
 									sqlStatementArgs.push(4);
 									sqlStatementArgs.push(false);
 									sqlStatementArgs.push(1);
-									return [`${sqlStatement} AND duree = $4 AND drainage = $5 AND lourde_type = $6;`, sqlStatementArgs];
+									return [
+										`${sqlStatement} AND duree = $4 AND drainage = $5 AND lourde_type = $6;`,
+										sqlStatementArgs
+									];
 								} else {
 									return defaultCase();
 								}
@@ -334,7 +348,10 @@ export class GenerateurDeSeances {
 									sqlStatementArgs.push(4);
 									sqlStatementArgs.push(false);
 									sqlStatementArgs.push(1);
-									return [`${sqlStatement} AND duree = $4 AND drainage = $5 AND lourde_type = $6;`, sqlStatementArgs];
+									return [
+										`${sqlStatement} AND duree = $4 AND drainage = $5 AND lourde_type = $6;`,
+										sqlStatementArgs
+									];
 								} else {
 									return defaultCase();
 								}
@@ -343,7 +360,10 @@ export class GenerateurDeSeances {
 							sqlStatementArgs.push(4);
 							sqlStatementArgs.push(false);
 							sqlStatementArgs.push(1);
-							return [`${sqlStatement} AND duree = $4 AND drainage = $5 AND lourde_type = $6;`, sqlStatementArgs];
+							return [
+								`${sqlStatement} AND duree = $4 AND drainage = $5 AND lourde_type = $6;`,
+								sqlStatementArgs
+							];
 						}
 					case 2:
 						// 60 min

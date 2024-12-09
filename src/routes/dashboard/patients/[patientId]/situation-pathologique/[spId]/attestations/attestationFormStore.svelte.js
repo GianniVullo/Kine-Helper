@@ -166,7 +166,10 @@ function constructionEtMiseAJourDeAttestationFormState(
 	}
 
 	function getPrescr(p_id) {
-		return futureStateArray.find((s) => s.obj.prescription_id === p_id);
+		return futureStateArray.find((s) => {
+			console.log('IN THE GETPRESCR futureStateArray.find with', s);
+			return s.obj.prescription_id === p_id;
+		});
 	}
 }
 function getUnitRecu(code, patient) {
@@ -269,12 +272,16 @@ function champsManquantsEtLignesImplicites(futureStateArray, codes, patient, sp)
 }
 
 function buildPrescriptionState(sp, seance) {
+	const prescription = sp.prescriptions.find((prescription) => {
+		console.log('IN buildPrescriptionState with', prescription);
+		return prescription.prescription_id === seance.prescription_id;
+	});
+	console.log('THE FOUND PRESCRIPTION IS', prescription);
+
 	return {
 		toBeProduced: true,
 		attestations: [],
-		obj: sp.prescriptions.find(
-			(prescription) => prescription.prescription_id === seance.prescription_id
-		)
+		obj: prescription
 	};
 }
 

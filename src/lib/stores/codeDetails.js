@@ -75,77 +75,20 @@ export class Code {
  *!  Par chance, une réécriture bcp plus simple de figuringConventionsOut est possible.
  ** La complexité de la précédente écriture provient du fait que j'ignorais l'existence de la fonction date() de SQLite.
  ** Cette réécriture tient dans une seule query :
- * SELECT c.code_id, c.code_reference, c.honoraire, c.coefficient, c.remboursement, c.valeur FROM codes AS c INNER JOIN conventions AS con ON c.convention_id = con.convention_id WHERE con.created_at <= '2023-07-15' ORDER BY con.created_at DESC LIMIT 1; */
-
+*/
 export async function figuringConventionOut(date, db) {
-	//* D'abord il faut pouvoir obtenir toutes les conventions de l'année de la séance en cours :
-	console.log('in figuringConventionOut() with', date.toDate());
-	let conventionsThatYear = await db.select(
-		'SELECT convention_id, year, month, day FROM conventions WHERE year = $1;',
-		[date.year()]
+	return await db.select(
+		`SELECT c.*
+		FROM codes AS c
+		INNER JOIN conventions AS con ON c.convention_id = con.convention_id
+		WHERE DATE(con.created_at) = (
+			SELECT MAX(DATE(con2.created_at))
+			FROM conventions AS con2
+			WHERE DATE(con2.created_at) <= DATE($1)
+		);`,
+		[date]
 	);
-	// Trouver une convention dans les années précédentes
-	while (conventionsThatYear.length == 0) {
-		conventionsThatYear = await lastConventionFromLastYear(conventionsThatYear, date, db);
-	}
-	if (conventionsThatYear.length == 1) {
-		//! À la base, je pensais devoir faire une enclave ici pour les cas où le gouvernement ne sort pas la dernière version le 1er Janvier de l'année courante. Mais en fait je pense que cela n'est pas nécessaire comme de toute façon la sortie d'une mise à jout en cours d'année fera un trigger sur les séances en cours...
-		//! Allez vazy j'la fais quand même...
-		let convDate = dayjs(
-			new Date(
-				conventionsThatYear[0].year,
-				conventionsThatYear[0].month - 1,
-				conventionsThatYear[0].day
-			)
-		);
-		console.log('convDate', convDate.toDate());
-		let check = convDate.isAfter(date);
-		console.log(check);
-		if (check) {
-			return (await lastConventionFromLastYear(conventionsThatYear, date, db))[0];
-		}
-		return conventionsThatYear[0];
-	} else if (conventionsThatYear.length > 1) {
-		//! Ici, je vais quand même faire une enclave pour les années où le gouvernement ne sort pas la dernière version le 1er Janvier au cas où le kiné souhaite produire des séances TRES rétrospectivement (honnêtement je ne suis vrmt pas sûr ue ce soit nécessaire)
-
-		let conv = conventionsThatYear.reduce((applicableConvention, convention) => {
-			let conventionDate = dayjs(new Date(convention.year, convention.month - 1, convention.day));
-
-			// Check if the convention date is before or on the infraction date
-			if (conventionDate.isBefore(date) || conventionDate.isSame(date)) {
-				// Update the applicable convention if it's more recent or if it's the first one found
-				if (conventionDate.isAfter(applicableConvention)) {
-					return convention;
-				}
-			}
-			return applicableConvention;
-		}, null);
-		//? Donc ici, si il ne trouve pas de convention dans l'année courante parce que le gov a tardé, alors figuringConv..() choisira la dernière convention de l'année précédente
-		if (!conv) {
-			return (await lastConventionFromLastYear(conventionsThatYear, date, db))[0];
-		}
-	}
 }
-
-async function lastConventionFromLastYear(conventionsThatYear, date, db) {
-	console.log('in lastConventionFromLastYear() with', conventionsThatYear, date);
-	conventionsThatYear = await db.select(
-		'SELECT convention_id, year, month, day FROM conventions WHERE year = $1;',
-		[date.year() - 1]
-	);
-	// Trouver la dernière convention de cette année là
-	if (conventionsThatYear.length > 1) {
-		conventionsThatYear.sort(
-			(a, b) =>
-				new Date(`${b.year}-${b.month - 1}-${b.day}`) -
-				new Date(`${a.year}-${a.month - 1}-${a.day}`)
-		);
-		return (conventionsThatYear = [conventionsThatYear[0]]);
-	}
-	// ou retourner la seule convention découverte
-	return conventionsThatYear;
-}
-
 export function groupes() {
 	return [
 		get(t)('stores', 'code.grp1'),
