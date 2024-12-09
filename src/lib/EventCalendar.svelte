@@ -9,9 +9,8 @@
 
 	const modalStore = getModalStore();
 
-	export let events;
-	export let options = {};
-	export let ec;
+	let { events = undefined, eventSource = undefined, options, ec } = $props();
+
 	let plugins = [TimeGrid, DayGrid, index];
 	let base_options = {
 		allDaySlot: false,
@@ -21,11 +20,13 @@
 				type: 'component',
 				component: 'seanceCreationModal',
 				meta: {
-					event: event,
+					event,
 					component: ec
 				}
 			});
 		},
+		firstDay: 1,
+		slotHeight: 50,
 		buttonText: {
 			close: get(t)('shared', 'close'),
 			dayGridMonth: get(t)('shared', 'month'),
@@ -39,15 +40,20 @@
 			timeGridWeek: get(t)('shared', 'week'),
 			today: get(t)('shared', 'today')
 		},
+		// Decided that it was ugly like this
 		theme: (theme) => ({
 			...theme,
-			day: 'ec-day !bg-surface-100 dark:!bg-surface-800',
-			body: 'ec-body h-96',
-			button: 'btn btn-sm variant-filled-primary',
-			buttonGroup: 'btn-group variant-filled-primary [&>*+*]:border-white',
-			event: 'ec-event text-success-400 bg-surface-100 dark:border-white border-black border',
-			title: 'ec-title md:py-0 py-2',
-			toolbar: 'ec-toolbar flex-wrap'
+			// day: 'ec-day !bg-surface-100 dark:!bg-surface-800',
+			// body: 'ec-body h-96',
+			// button: 'btn btn-sm variant-filled-primary',
+			// buttonGroup: 'btn-group variant-filled-primary [&>*+*]:border-white',
+			event: 'ec-event text-primary-500 bg-primary-50 hover:bg-primary-100 hover:text-primary-700',
+			eventTitle: 'font-semibold text-primary-700',
+			// timeGrid: 'ec-time-grid !h-20',
+			// time: 'ec-time !h-20',
+			// line: 'ec-line'
+			// title: 'ec-title md:py-0 py-2',
+			// toolbar: 'ec-toolbar flex-wrap'
 		}),
 		headerToolbar: {
 			start: 'prev,next today',
@@ -69,7 +75,7 @@
 			// };
 			// modalStore.trigger(modal)
 		},
-		// eventSource: events,
+		eventSource: eventSource,
 		locale: get(locale),
 		eventClick: handleClickOnEvent,
 		scrollTime: '08:00:00',
@@ -92,4 +98,4 @@
 	}
 </script>
 
-<Calendar {plugins} {options} />
+<Calendar {plugins} options={base_options} />

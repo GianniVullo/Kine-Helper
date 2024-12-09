@@ -11,3 +11,7 @@
 	--ec-today-bg-color: #af2a2a;
 	--ec-list-day-bg-color: #af2a2a;
 } */
+
+.ec-time-grid .ec-time, .ec-time-grid .ec-line {
+	height: 50px;  /* override this value */
+  }

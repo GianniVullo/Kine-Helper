@@ -24,8 +24,6 @@ export async function getEvents(patient, sp) {
 			editable: false,
 			startEditable: false,
 			durationEditable: false,
-			backgroundColor: 'rgb(168,85,247)',
-			textColor: '#dbdee9',
 			extendedProps: {
 				seance: seance
 			}

@@ -60,29 +60,19 @@
 			condition: true
 		}
 	];
-	let eventsAreLoading = false;
-	let eventsPromise = new Promise(async (resolve) => {
+	let eventsSource = new Promise(async (resolve) => {
 		console.log('sp', sp);
-		if (!eventsAreLoading) {
-			eventsAreLoading = true;
-			//! temporary solution as It seems that whatever I try it keeps on failing from time to time
-			try {
-				let events = await getEvents(patient, sp);
-				eventsAreLoading = false;
-				resolve(events);
-			} catch (error) {
-				console.error(error);
-				let events = await getEvents(patient, sp);
-				eventsAreLoading = false;
-				resolve(events);
-			}
-		} else {
-			eventsAreLoading = false;
-			resolve();
+		//! temporary solution as It seems that whatever I try it keeps on failing from time to time
+		try {
+			let events = await getEvents(patient, sp);
+			resolve(events);
+		} catch (error) {
+			console.error(error);
+			let events = await getEvents(patient, sp);
+			resolve(events);
 		}
 	});
 	let ec;
-	console.log(sp);
 </script>
 
 <div class="flex w-full flex-col px-4">
@@ -165,19 +155,19 @@
 			<h5 class="mb-2 text-lg text-surface-500 dark:text-surface-400">
 				{$t('patients.detail', 'prestations')} ({sp.seances.length})
 			</h5>
-			{#key eventsPromise}
-				{#await eventsPromise}
-					{$t('shared', 'loading')} (if you see this message for more than 2 seconds, please re-enter
-					the page through the patient list page) (It is a well known race condition bug I'm working
-					on. Sorry about that )
+			{#key eventsSource}
+				{#await eventsSource}
+					{$t('shared', 'loading')}
 				{:then events}
-					{#if events}
-						<EventCalendar bind:this={ec} {events} options={{}} />
-					{:else}
+					<EventCalendar bind:this={ec} {events} options={{}} />
+				{/await}
+			{/key}
+			<!-- {/key} -->
+			<!-- {:else}
 						{$t('shared', 'loading')}
 					{/if}
 				{/await}
-			{/key}
+			{/key} -->
 		</div>
 	{/if}
 </div>
