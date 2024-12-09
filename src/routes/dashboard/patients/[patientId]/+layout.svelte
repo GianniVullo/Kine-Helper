@@ -27,7 +27,10 @@
 	 */
 	let { children } = $props();
 	const patient = $derived($patients.find((p) => p.patient_id === $page.params.patientId));
-	let currentSp = $state();
+	//? derived is here to update the breadcrumbs of the patient title
+	let currentSp = $derived(
+		patient.situations_pathologiques.find((s) => s.sp_id === $page.params.spId)
+	);
 	// loadingInProgress est là pour s'assurer qu'on empêche jamais isUptoDate de terminer son action
 	let loadingInProgress = false;
 	let isSpUpToDate = $state(new Promise(evaluerEtEffectuerLesOperationsNecessaires));
@@ -74,12 +77,8 @@
 	}
 
 	$effect(() => {
-		console.log('in the $effet', patient);
 		if ($page.params.patientId && $page.params.spId && !loadingInProgress) {
 			isSpUpToDate = new Promise(evaluerEtEffectuerLesOperationsNecessaires);
-			currentSp = patient.situations_pathologiques.find((s) => s.sp_id === $page.params.spId);
-		} else {
-			currentSp = undefined;
 		}
 	});
 
