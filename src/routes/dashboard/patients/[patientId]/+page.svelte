@@ -5,6 +5,7 @@
 	import { t } from '../../../../lib/i18n';
 	import dayjs from 'dayjs';
 	import relativeTime from 'dayjs/plugin/relativeTime';
+	import Title from '$lib/patient-detail/Title.svelte';
 
 	dayjs.extend(relativeTime);
 	let patient = $patients.find((p) => p.patient_id === $page.params.patientId);
@@ -20,6 +21,7 @@
 	
 </script>
 
+<Title {patient} />
 {#if sps}
 	<div
 		class="mt-10 -z-50 w-full border-b border-gray-200 pb-5 sm:flex sm:items-center sm:justify-between">

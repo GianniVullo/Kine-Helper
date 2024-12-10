@@ -1,6 +1,5 @@
 <script>
 	import { t } from '../../../../lib/i18n';
-	import Title from '$lib/patient-detail/Title.svelte';
 	// import Arborescence from '../../../../lib/patient-detail/Arborescence.svelte';
 	import { patients } from '../../../../lib/stores/PatientStore';
 	import { page } from '$app/stores';
@@ -8,6 +7,7 @@
 		retrieveLastSPWithRelatedObjectsPlusOlderSPWithoutRelatedObjects,
 		retrieveSituationPathologique
 	} from '../../../../lib/user-ops-handlers/situations_pathologiques';
+	import Breadcrumbs from '../../../../lib/patient-detail/Breadcrumbs.svelte';
 
 	/**
 	 ** Ici, comme nous entrons dans une page de détails d'un patient il est nécessaire de récupérer la première situation pathologique en entier + un descriptif succinct de toutes les autres.
@@ -95,7 +95,7 @@
 		{$t('shared', 'loading')}
 	{:then _}
 		<div class="flex h-full w-full flex-col items-start justify-start">
-			<Title {patient} {currentSp} />
+			<Breadcrumbs {currentSp} {patient} />
 			{@render children()}
 			<!-- <div class="flex h-full w-full flex-col md:flex-row">
 					<Arborescence {patient} />
