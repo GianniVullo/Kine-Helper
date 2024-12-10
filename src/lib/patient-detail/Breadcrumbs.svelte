@@ -66,7 +66,7 @@
 								'/situation-pathologique/' +
 								currentSp.sp_id}
 							aria-current="page"
-							class="ml-4 max-w-24 truncate text-sm font-medium text-gray-500 hover:text-gray-700"
+							class="ml-4 max-w-44 truncate text-sm font-medium text-gray-500 hover:text-gray-700"
 							>{currentSp.motif}</a>
 					</div>
 				</li>

@@ -117,4 +117,3 @@ function createUserStore() {
 
 export const user = createUserStore();
 
-export const miscelaneous = persisted('misc', {}, { storage: 'local' });
