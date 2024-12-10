@@ -6,7 +6,7 @@
 	import { getModalStore } from '@skeletonlabs/skeleton';
 	import { t } from '../i18n';
 	import { get } from 'svelte/store';
-	import { goto } from '$app/navigation';
+	import { deletePatient } from '../../lib/user-ops-handlers/patients';
 
 	const modalStore = getModalStore();
 	const modal = () => ({
@@ -25,7 +25,7 @@
 		}
 	});
 
-	let { patient, currentSp } = $props();
+	let { patient } = $props();
 	const homeUrl = () => {
 		return `/dashboard/patients/${$page.params.patientId}`;
 	};

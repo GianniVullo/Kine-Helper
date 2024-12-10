@@ -6,25 +6,31 @@
 	import { getModalStore } from '@skeletonlabs/skeleton';
 	import { t } from '../i18n';
 	import { get } from 'svelte/store';
-	import { goto } from '$app/navigation';
+	import { deleteSituationPathologique } from '../user-ops-handlers/situations_pathologiques';
 
 	const modalStore = getModalStore();
-	const modal = () => ({
+	const modal = {
 		type: 'confirm',
-		title: get(t)('patients.detail', 'pdeleteModal.title'),
-		body: get(t)('patients.detail', 'pdeleteModal.body'),
+		// Data
+		title: get(t)('patients.detail', 'deleteModal.title'),
+		body: get(t)('patients.detail', 'deleteModal.body'),
 		buttonTextConfirm: get(t)('shared', 'confirm'),
 		buttonTextCancel: get(t)('shared', 'cancel'),
-		modalClasses: {
-			buttonPositive: 'isModal'
-		},
+		buttonPositive: 'variant-filled-error',
 		response: async (r) => {
 			if (r) {
-				await deletePatient(data);
+				await deleteSituationPathologique({
+					sp_id: $page.params.spId,
+					patient_id: $page.params.patientId
+				});
+				goto('/dashboard/patients/' + $page.params.patientId);
 			}
 		}
-	});
-
+	};
+	const documentSelectionModal = {
+		type: 'component',
+		component: 'documentSelection'
+	};
 	let { patient, currentSp } = $props();
 	const homeUrl = () => {
 		return `/dashboard/patients/${$page.params.patientId}`;
@@ -51,21 +57,21 @@
 
 <div class="max-w-sm rounded-lg bg-white">
 	<h2 class="sr-only" id="profile-overview-title">Résumé du patient</h2>
-	<div class="bg-white p-6">
+	<div class="bg-white py-6">
 		<div class="sm:flex sm:items-center sm:justify-between">
 			<div class="sm:flex sm:space-x-5">
 				<div class="mt-4 text-center sm:mt-0 sm:pt-1 sm:text-left">
-					<p
-						class="truncate text-xl font-bold text-gray-900">
-						{currentSp?.motif}
+					<p class="truncate text-xl font-bold text-gray-900">
+						{currentSp?.motif?.split(' ')?.slice(0, 3).join(' ')}
+						{currentSp?.motif?.split(' ')?.length > 2 ? '...' : ''}
 					</p>
 					<p class="text-sm font-medium text-gray-600">{patient?.nom} {patient?.nom}</p>
 				</div>
 			</div>
 			<div class="mt-5 flex justify-center sm:justify-start lg:ml-4 lg:mt-0">
-				<!-- <span class="hidden sm:block">
+				<span class="hidden sm:block">
 					<a
-						href={homeUrl() + '/update'}
+						href={`/dashboard/patients/${$page.params.patientId}/situation-pathologique/${$page.params.spId}/update`}
 						type="button"
 						class="inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
 						<svg
@@ -79,10 +85,11 @@
 						</svg>
 						Modifier
 					</a>
-				</span> -->
+				</span>
 
-				<!-- <span class="ml-3 hidden sm:block">
-					<button
+				<span class="ml-3 hidden sm:block">
+					<a
+						href={`/dashboard/patients/${$page.params.patientId}/situation-pathologique/${$page.params.spId}/details`}
 						type="button"
 						class="inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
 						<svg
@@ -97,12 +104,12 @@
 								d="M11.603 7.963a.75.75 0 0 0-.977 1.138 2.5 2.5 0 0 1 .142 3.667l-3 3a2.5 2.5 0 0 1-3.536-3.536l1.225-1.224a.75.75 0 0 0-1.061-1.06l-1.224 1.224a4 4 0 1 0 5.656 5.656l3-3a4 4 0 0 0-.225-5.865Z" />
 						</svg>
 						Détails
-					</button>
-				</span> -->
+					</a>
+				</span>
 
-				<!-- <span class="ml-3 hidden sm:block">
+				<span class="ml-3 hidden sm:block">
 					<button
-						onclick={() => modalStore.trigger(modal())}
+						onclick={() => modalStore.trigger(modal)}
 						type="button"
 						class="inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
 						<svg
@@ -114,10 +121,9 @@
 							class="-ml-0.5 mr-1.5 size-5 text-red-400">
 							<path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
 						</svg>
-
-						Supprimer
+						{$t('patients.detail', 'deleteModal.confirm')}
 					</button>
-				</span> -->
+				</span>
 
 				<span class="sm:ml-3">
 					<button
@@ -139,7 +145,7 @@
 				</span>
 
 				<!-- Dropdown -->
-				<div class="relative ml-3">
+				<div class="relative ml-3 sm:hidden">
 					<button
 						type="button"
 						onclick={() => {
@@ -189,17 +195,17 @@
 							tabindex="-1"
 							id="mobile-menu-item-0">Modifier</a>
 						<a
-							href="#"
+							href={`/dashboard/patients/${$page.params.patientId}/situation-pathologique/${$page.params.spId}/details`}
 							class="block px-4 py-2 text-sm text-gray-700"
 							role="menuitem"
 							tabindex="-1"
 							id="mobile-menu-item-1">Détails</a>
 						<button
-							onclick={() => modalStore.trigger(modal())}
+							onclick={() => modalStore.trigger(modal)}
 							class="block px-4 py-2 text-sm text-gray-700"
 							role="menuitem"
 							tabindex="-1"
-							id="mobile-menu-item-1">Supprimer</button>
+							id="mobile-menu-item-1">{$t('patients.detail', 'deleteModal.confirm')}</button>
 					</div>
 				</div>
 			</div>
