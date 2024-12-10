@@ -18,13 +18,13 @@
 	// 			patient.situations_pathologiques[0]?.sp_id
 	// 	);
 	// }
-	
+	// let Balise = Second;
 </script>
 
 <Title {patient} />
 {#if sps}
 	<div
-		class="mt-10 -z-50 w-full border-b border-gray-200 pb-5 sm:flex sm:items-center sm:justify-between">
+		class="-z-50 mt-10 w-full border-b border-gray-200 pb-5 sm:flex sm:items-center sm:justify-between">
 		<h3 class="text-base font-semibold text-gray-900">Situations pathologiques</h3>
 		<div class="mt-3 sm:ml-4 sm:mt-0">
 			<a
@@ -45,8 +45,7 @@
 						alt="" /> -->
 					<div class="min-w-0 flex-auto">
 						<p class="text-sm/6 font-semibold text-gray-900">
-							<a
-								href={`/dashboard/patients/${sp.patient_id}/situation-pathologique/${sp.sp_id}`}>
+							<a href={`/dashboard/patients/${sp.patient_id}/situation-pathologique/${sp.sp_id}`}>
 								<span class="absolute inset-x-0 -top-px bottom-0"></span>
 								{sp.motif}
 							</a>
