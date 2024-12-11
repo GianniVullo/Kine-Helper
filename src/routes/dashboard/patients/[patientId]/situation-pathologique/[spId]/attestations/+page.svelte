@@ -8,6 +8,7 @@
 	import { fetchCodeDesSeances } from '../../../../../../../lib/utils/nomenclatureManager';
 	import FactureBox from '../../../../../../../lib/ui/FactureBox.svelte';
 	import { t } from '../../../../../../../lib/i18n';
+	import CardTable from '../../../../../../../lib/components/CardTable.svelte';
 
 	let patient = $patients.find((p) => p.patient_id === $page.params.patientId);
 	let sp = patient.situations_pathologiques.find((sp) => sp.sp_id === $page.params.spId);
@@ -42,6 +43,52 @@
 		</div>
 		<div class="flex space-x-4">
 			<!--* ATTESTATIONS LIST -->
+			<CardTable>
+				{#snippet header()}
+					<th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-0"
+						>Total</th>
+					<th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Part personnelle</th>
+					<th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Date</th>
+					<th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Actions</th>
+					<!-- TODO Ici j'ai mis action parce que, en fait, il va falloir mettre Modifier, Supprimer, Imprimer, Marquer comme payée par la mutuelle, par le patient, et qui sait quoi d'autres encore -->
+					<!-- <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-0">
+						<span class="sr-only">Modifier</span>
+					</th>
+					<th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-0">
+						<span class="sr-only">Imprimer</span>
+					</th> -->
+				{/snippet}
+				{#snippet body()}
+					{#each sp.attestations as attestation}
+						<tr
+							class="cursor-pointer duration-300 ease-out hover:scale-[101%]">
+							<td class="whitespace-nowrap py-5 pl-4 pr-3 text-sm sm:pl-0">
+								<div class="flex items-center">
+									<div class="ml-4">
+										<div class="font-medium text-gray-900">{patient.nom} {patient.prenom}</div>
+										<div class="mt-1 text-gray-500">
+											{patient.tel ?? patient.email ?? "pas d'infos de contact"}
+										</div>
+									</div>
+								</div>
+							</td>
+							<td class="whitespace-nowrap px-3 py-5 text-sm text-gray-500">
+								<div class="text-gray-900">{patient.adresse}</div>
+								<div class="mt-1 text-gray-500">{patient.cp} {patient.localite}</div>
+							</td>
+							<td class="whitespace-nowrap px-3 py-5 text-sm text-gray-500">
+								{dayjs(attestation.date).format('DD/MM/YYYY')}
+							</td>
+							<td
+								class="relative whitespace-nowrap py-5 pl-3 pr-4 text-right text-sm font-medium sm:pr-0">
+								<p class="text-indigo-600 mr-4 hover:text-indigo-900"
+									>Consulter<span class="sr-only">, {patient.nom} {patient.prenom}</span></p>
+							</td>
+						</tr>
+					{/each}
+				{/snippet}
+			</CardTable>
+		
 			<div class="flex space-x-2">
 				<div class="flex flex-col space-y-2">
 					{#each sp.attestations as attestation}

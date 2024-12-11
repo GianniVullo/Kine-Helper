@@ -7,8 +7,21 @@
 	import PageTitle from '../components/PageTitle.svelte';
 	import BoutonPrincipalAvecIcone from '../components/BoutonPrincipalAvecIcone.svelte';
 	import BoutonSecondaireAvecIcone from '../components/BoutonSecondaireAvecIcone.svelte';
-	import Dropdown from '../components/Dropdown.svelte';
-	import { dropdownItem } from '../components/DropdownItem.svelte';
+	import Dropdown from '../components/dropdowns/Dropdown.svelte';
+	import {
+		dividerDropper,
+		dropdownItem,
+		dropdownItemWithIcon
+	} from '../components/dropdowns/DropdownSnippets.svelte';
+	import {
+		editIcon,
+		linkIcon,
+		deleteIcon,
+		euroIcon,
+		pagePlusIcon,
+		calendarIcon
+	} from '../ui/svgs/IconSnippets.svelte';
+	import dayjs from 'dayjs';
 
 	const modalStore = getModalStore();
 	const modal = {
@@ -34,6 +47,38 @@
 		component: 'documentSelection'
 	};
 	let { patient, currentSp } = $props();
+	let items = [
+		{
+			name: get(t)('patients.detail', 'attestation'),
+			href:
+				`/dashboard/patients/${patient.patient_id}/situation-pathologique/${currentSp.sp_id}/attestations` +
+				'/create',
+			condition:
+				currentSp?.seances.filter((seance) => {
+					return (
+						dayjs(dayjs(seance.date).format('YYYY-MM-DD')).isBefore(dayjs()) &&
+						!seance.attestation_id
+					);
+				}).length > 0,
+			icon: euroIcon
+		},
+		{
+			name: get(t)('patients.detail', 'prescription'),
+			href:
+				`/dashboard/patients/${patient.patient_id}/situation-pathologique/${currentSp.sp_id}` +
+				'/prescriptions/create',
+			condition: true,
+			icon: pagePlusIcon
+		},
+		{
+			name: get(t)('patients.detail', 'prestations'),
+			href:
+				`/dashboard/patients/${patient.patient_id}/situation-pathologique/${currentSp.sp_id}` +
+				'/generateurs/create',
+			condition: true,
+			icon: calendarIcon
+		}
+	];
 </script>
 
 <PageTitle srOnly="Résumé de la situation pathologique">
@@ -50,59 +95,40 @@
 	{/snippet}
 	{#snippet actions()}
 		<div class="mt-5 flex justify-center sm:justify-start lg:ml-4 lg:mt-0">
-			<span class="hidden sm:block">
-				<BoutonSecondaireAvecIcone
-					href={`/dashboard/patients/${$page.params.patientId}/situation-pathologique/${$page.params.spId}/update`}
-					inner="Modifier">
-					{#snippet icon(cls)}
-						<svg
-							class={cls}
-							viewBox="0 0 20 20"
-							fill="currentColor"
-							aria-hidden="true"
-							data-slot="icon">
-							<path
-								d="m2.695 14.762-1.262 3.155a.5.5 0 0 0 .65.65l3.155-1.262a4 4 0 0 0 1.343-.886L17.5 5.501a2.121 2.121 0 0 0-3-3L3.58 13.419a4 4 0 0 0-.885 1.343Z" />
-						</svg>
-					{/snippet}
-				</BoutonSecondaireAvecIcone>
-			</span>
-
-			<span class="ml-3 hidden sm:block">
-				<BoutonSecondaireAvecIcone
-					href={`/dashboard/patients/${$page.params.patientId}/situation-pathologique/${$page.params.spId}/details`}
-					inner="Détails">
-					{#snippet icon(cls)}
-						<svg
-							class={cls}
-							viewBox="0 0 20 20"
-							fill="currentColor"
-							aria-hidden="true"
-							data-slot="icon">
-							<path
-								d="M12.232 4.232a2.5 2.5 0 0 1 3.536 3.536l-1.225 1.224a.75.75 0 0 0 1.061 1.06l1.224-1.224a4 4 0 0 0-5.656-5.656l-3 3a4 4 0 0 0 .225 5.865.75.75 0 0 0 .977-1.138 2.5 2.5 0 0 1-.142-3.667l3-3Z" />
-							<path
-								d="M11.603 7.963a.75.75 0 0 0-.977 1.138 2.5 2.5 0 0 1 .142 3.667l-3 3a2.5 2.5 0 0 1-3.536-3.536l1.225-1.224a.75.75 0 0 0-1.061-1.06l-1.224 1.224a4 4 0 1 0 5.656 5.656l3-3a4 4 0 0 0-.225-5.865Z" />
-						</svg>
-					{/snippet}
-				</BoutonSecondaireAvecIcone>
-			</span>
-
-			<span class="ml-3 hidden sm:block">
-				<BoutonSecondaireAvecIcone onclick={() => modalStore.trigger(modal)} inner="Supprimer">
-					{#snippet icon(cls)}
-						<svg
-							xmlns="http://www.w3.org/2000/svg"
-							fill="none"
-							viewBox="0 0 24 24"
-							stroke-width="1.5"
-							stroke="currentColor"
-							class="-ml-0.5 mr-1.5 size-5 text-red-400">
-							<path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
-						</svg>
-					{/snippet}
-				</BoutonSecondaireAvecIcone>
-			</span>
+			<Dropdown inner="Actions" className="ml-3">
+				{#snippet dropper(menuItems, menuState)}
+					{@render dividerDropper(menuItems, menuState)}
+				{/snippet}
+				{#snippet menuItems()}
+					<div class="py-1">
+						{#each items as { href, name, condition, icon }}
+							{#if condition}
+								{@render dropdownItemWithIcon(href, null, name, icon)}
+							{/if}
+						{/each}
+					</div>
+					{@render dropdownItemWithIcon(
+						`/dashboard/patients/${$page.params.patientId}/situation-pathologique/${$page.params.spId}/details`,
+						null,
+						'Détails',
+						linkIcon
+					)}
+					<div class="py-1" role="none">
+						{@render dropdownItemWithIcon(
+							`/dashboard/patients/${$page.params.patientId}/situation-pathologique/${$page.params.spId}/update`,
+							null,
+							'Modifier',
+							editIcon
+						)}
+						{@render dropdownItemWithIcon(
+							undefined,
+							() => modalStore.trigger(modal),
+							'Supprimer',
+							deleteIcon
+						)}
+					</div>
+				{/snippet}
+			</Dropdown>
 
 			<span class="sm:ml-3">
 				<BoutonPrincipalAvecIcone
@@ -127,22 +153,6 @@
 					{/snippet}
 				</BoutonPrincipalAvecIcone>
 			</span>
-
-			<Dropdown inner="Actions">
-				{#snippet menuItems()}
-					{@render dropdownItem(
-						`/dashboard/patients/${$page.params.patientId}/situation-pathologique/${$page.params.spId}/update`,
-						null,
-						'Modifier'
-					)}
-					{@render dropdownItem(
-						`/dashboard/patients/${$page.params.patientId}/situation-pathologique/${$page.params.spId}/details`,
-						null,
-						'Détails'
-					)}
-					{@render dropdownItem(undefined, () => modalStore.trigger(modal), 'Supprimer')}
-				{/snippet}
-			</Dropdown>
 		</div>
 	{/snippet}
 </PageTitle>

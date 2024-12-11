@@ -16,6 +16,8 @@
 	const currentSp = patient.situations_pathologiques.find((sp) => sp.sp_id === $page.params.spId);
 	console.log('THE PAGE', $page);
 
+	const modalStore = getModalStore();
+
 	const tabs = [
 		{
 			href: `/dashboard/patients/${patient.patient_id}/situation-pathologique/${currentSp.sp_id}`,
@@ -70,34 +72,10 @@
 </script>
 
 <SpTitle {patient} {currentSp} />
-<div class="-mt-5 mb-5 flex w-full items-center justify-start  px-4 py-1 sm:py-1">
-	<div class="flex items-center space-x-5">
-		<h5 class="text-sm text-gray-500">Actions rapides</h5>
-		<div class="flex flex-wrap space-x-2">
-			{#each items as { href, name, condition }}
-				{#if condition}
-					<div class="flex items-center justify-center">
-						<SoftButton {href} {name}>
-							{#snippet icon()}
-								<PlusIcon class="size-3 stroke-indigo-600" />
-							{/snippet}
-						</SoftButton>
-					</div>
-				{/if}
-			{/each}
-			<div class="flex items-center justify-center">
-				<SoftButton
-					onclick={() => modalStore.trigger(documentSelectionModal)}
-					name={$t('patients.detail', 'document')}>
-					{#snippet icon()}
-						<PlusIcon class="size-3 stroke-indigo-600" />
-					{/snippet}
-				</SoftButton>
-			</div>
-		</div>
-	</div>
+<div class="-mt-5 mb-5 flex w-full items-center justify-start px-4 py-1 sm:py-1">
 </div>
 
 <!--* Tabs -->
-<Tabs className="w-full text-center flex justify-center sm:block" {tabs} />
+<Tabs className="w-full text-center flex justify-center sm:block border-b border-gray-300 shadow-sm" {tabs} />
+
 {@render children()}
