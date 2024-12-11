@@ -47,7 +47,7 @@
 			// body: 'ec-body h-96',
 			// button: 'btn btn-sm variant-filled-primary',
 			// buttonGroup: 'btn-group variant-filled-primary [&>*+*]:border-white',
-			event: 'ec-event text-primary-500 bg-primary-50 hover:bg-primary-100 hover:text-primary-700',
+			event: 'ec-event !text-primary-500 !bg-primary-50 hover:!bg-primary-100 hover:text-primary-700',
 			eventTitle: 'font-semibold text-primary-700',
 			toolbar: 'ec-toolbar flex space-y-2 sm:space-y-0 items-start sm:items-center flex-col sm:flex-row'
 			// timeGrid: 'ec-time-grid !h-20',

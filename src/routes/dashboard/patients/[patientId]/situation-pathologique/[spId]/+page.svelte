@@ -2,7 +2,8 @@
 	import { page } from '$app/stores';
 	import { PlusIcon, UpdateIcon, DeleteIcon } from '$lib/ui/svgs/index';
 	import dayjs from 'dayjs';
-	import EventCalendar from '../../../../../../lib/EventCalendar.svelte';
+	import Card from '../../../../../../lib/components/Card.svelte';
+	import SoftButton from '../../../../../../lib/components/SoftButton.svelte';
 	import { patients } from '../../../../../../lib/stores/PatientStore';
 	import { getModalStore } from '@skeletonlabs/skeleton';
 	import { t } from '../../../../../../lib/i18n';
@@ -14,51 +15,9 @@
 
 	const patient = $patients.find((p) => p.patient_id === $page.params.patientId);
 	const sp = patient.situations_pathologiques.find((sp) => sp.sp_id === $page.params.spId);
-	// let items = [
-	// 	{
-	// 		name: get(t)('patients.detail', 'attestation'),
-	// 		href: $page.url.pathname + '/attestations/create',
-	// 		condition:
-	// 			sp?.seances.filter((seance) => {
-	// 				return (
-	// 					dayjs(dayjs(seance.date).format('YYYY-MM-DD')).isBefore(dayjs()) &&
-	// 					!seance.attestation_id
-	// 				);
-	// 			}).length > 0
-	// 	},
-	// 	{
-	// 		name: get(t)('patients.detail', 'prescription'),
-	// 		href: $page.url.pathname + '/prescriptions/create',
-	// 		condition: true
-	// 	},
-	// 	{
-	// 		name: get(t)('patients.detail', 'prestations'),
-	// 		href: $page.url.pathname + '/generateurs/create',
-	// 		condition: true
-	// 	}
-	// ];
 </script>
 
 <div class="flex w-full flex-col">
-	<!-- <div class="flex flex-col">
-		<div class="flex flex-wrap space-x-2">
-			{#each items as item}
-				{#if item.condition}
-					<a href={item.href} class="variant-outline-secondary btn btn-sm my-2 flex">
-						<PlusIcon class="h-4 w-4 stroke-surface-600 dark:stroke-surface-300" />
-						<span class="text-sm text-surface-500 dark:text-surface-400">{item.name}</span></a>
-				{/if}
-			{/each}
-			<button
-				onclick={() => modalStore.trigger(documentSelectionModal)}
-				class="variant-outline-secondary btn btn-sm my-2 flex">
-				<PlusIcon class="h-4 w-4 stroke-surface-600 dark:stroke-surface-300" />
-				<span class="text-sm text-surface-500 dark:text-surface-400"
-					>{$t('patients.detail', 'document')}</span
-				></button>
-		</div>
-	</div> -->
-
 	<!--* Add the first prescription -->
 	{#if sp.prescriptions.length === 0}
 		<EmptyState
@@ -90,7 +49,9 @@
 	{#if sp.prescriptions.length > 0 && sp.seances.length === 0}
 		<EmptyState
 			className="!text-start"
-			titre={$t('sp.detail', 'content.start') + ' ' + $t('sp.detail', 'button.start2').toLowerCase()}
+			titre={$t('sp.detail', 'content.start') +
+				' ' +
+				$t('sp.detail', 'button.start2').toLowerCase()}
 			buttonText={'Generate séance'}
 			onclick={() => {
 				goto(
@@ -114,8 +75,8 @@
 		</EmptyState>
 	{/if}
 
-	Ajouter des overview de la situation pathologique : Où on en est dans le traitement, dans la facturation
-	etc (bref toutes les données que je pensais compiler dan l'object sp)
+	Ajouter des overview de la situation pathologique : Où on en est dans le traitement, dans la
+	facturation etc (bref toutes les données que je pensais compiler dan l'object sp)
 	<!--* Motif et plan de la situation pathologique -->
 	<!-- <div class="flex flex-col space-y-2">
 		<div class="relative flex rounded-xl bg-surface-100 px-4 pb-4 pt-8 dark:bg-surface-800">

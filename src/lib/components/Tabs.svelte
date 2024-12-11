@@ -1,10 +1,10 @@
 <script>
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
-	let { tabs } = $props();
+	let { tabs, className } = $props();
 </script>
 
-<div class="mb-10">
+<div class="mb-10 {className}">
 	<div class="grid grid-cols-1 sm:hidden">
 		<!-- Use an "onChange" listener to redirect the user to the selected tab URL. -->
 		<select

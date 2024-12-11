@@ -44,7 +44,7 @@
 	<div
 		class="absolute right-0 z-50 -mr-1 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black/5 transition duration-200 focus:outline-none {menuState
 			? 'scale-100 opacity-100 ease-out'
-			: 'scale-95 opacity-0 ease-in'}"
+			: 'scale-95 opacity-0 ease-in pointer-events-none'}"
 		role="menu"
 		aria-orientation="vertical"
 		aria-labelledby="mobile-menu-button"
