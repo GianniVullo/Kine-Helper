@@ -1,14 +1,14 @@
 <script>
 	import { page } from '$app/stores';
 	import { getModalStore } from '@skeletonlabs/skeleton';
-	import { dropdownItem } from '../components/DropdownItem.svelte';
+	import { dropdownItem } from '../components/dropdowns/DropdownSnippets.svelte';
 	import { t } from '../i18n';
 	import { get } from 'svelte/store';
 	import { deletePatient } from '../../lib/user-ops-handlers/patients';
 	import PageTitle from '../components/PageTitle.svelte';
 	import BoutonSecondaireAvecIcone from '../components/BoutonSecondaireAvecIcone.svelte';
 	import BoutonPrincipalAvecIcone from '../components/BoutonPrincipalAvecIcone.svelte';
-	import Dropdown from '../components/Dropdown.svelte';
+	import Dropdown from '../components/dropdowns/Dropdown.svelte';
 
 	const modalStore = getModalStore();
 	const modal = () => ({

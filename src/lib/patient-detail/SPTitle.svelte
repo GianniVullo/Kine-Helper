@@ -50,9 +50,7 @@
 	let items = [
 		{
 			name: get(t)('patients.detail', 'attestation'),
-			href:
-				`/dashboard/patients/${patient.patient_id}/situation-pathologique/${currentSp.sp_id}/attestations` +
-				'/create',
+			href: `/dashboard/patients/${patient.patient_id}/situation-pathologique/${currentSp.sp_id}/attestations/create`,
 			condition:
 				currentSp?.seances.filter((seance) => {
 					return (

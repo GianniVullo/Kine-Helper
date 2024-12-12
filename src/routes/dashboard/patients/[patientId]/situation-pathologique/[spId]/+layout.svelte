@@ -3,12 +3,7 @@
 	import { patients } from '../../../../../../lib/stores/PatientStore';
 	import { t } from '../../../../../../lib/i18n';
 	import { page } from '$app/stores';
-	import { getModalStore } from '@skeletonlabs/skeleton';
 	import Tabs from '../../../../../../lib/components/Tabs.svelte';
-	import { get } from 'svelte/store';
-	import dayjs from 'dayjs';
-	import SoftButton from '../../../../../../lib/components/SoftButton.svelte';
-	import PlusIcon from '../../../../../../lib/ui/svgs/PlusIcon.svelte';
 
 	/** @type {{ data: import('./$types').LayoutData, children: import('svelte').Snippet }} */
 	let { children } = $props();
@@ -16,66 +11,43 @@
 	const currentSp = patient.situations_pathologiques.find((sp) => sp.sp_id === $page.params.spId);
 	console.log('THE PAGE', $page);
 
-	const modalStore = getModalStore();
-
+	const homeUrl = () =>
+		`/dashboard/patients/${patient.patient_id}/situation-pathologique/${currentSp.sp_id}`;
 	const tabs = [
 		{
-			href: `/dashboard/patients/${patient.patient_id}/situation-pathologique/${currentSp.sp_id}`,
-			nom: 'Home'
+			href: homeUrl(),
+			nom: 'Home',
+			actif: $page.url.pathname === homeUrl()
 		},
 		{
-			href: `/dashboard/patients/${patient.patient_id}/situation-pathologique/${currentSp.sp_id}/prescriptions`,
-			nom: $t('sp.detail', 'prescriptions')
+			href: homeUrl() + `/prescriptions`,
+			nom: $t('sp.detail', 'prescriptions'),
+			actif: $page.url.pathname === homeUrl() + `/prescriptions`
 		},
 		{
-			href: `/dashboard/patients/${patient.patient_id}/situation-pathologique/${currentSp.sp_id}/attestations`,
-			nom: $t('sp.detail', 'attestations')
+			href: homeUrl() + `/attestations`,
+			nom: $t('form.generateur', 'tarification.title'),
+			actif: $page.url.pathname.startsWith(homeUrl() + `/attestations`)
 		},
 		{
-			href: `/dashboard/patients/${patient.patient_id}/situation-pathologique/${currentSp.sp_id}/documents`,
-			nom: $t('sp.detail', 'documents')
+			href: homeUrl() + `/documents`,
+			nom: $t('sp.detail', 'documents'),
+			actif: $page.url.pathname === homeUrl() + `/documents`
 		},
 		{
-			href: `/dashboard/patients/${patient.patient_id}/situation-pathologique/${currentSp.sp_id}/seances`,
-			nom: $t('patients.detail', 'prestations')
-		}
-	];
-	let items = [
-		{
-			name: get(t)('patients.detail', 'attestation'),
-			href:
-				`/dashboard/patients/${patient.patient_id}/situation-pathologique/${currentSp.sp_id}/attestations` +
-				'/create',
-			condition:
-				currentSp?.seances.filter((seance) => {
-					return (
-						dayjs(dayjs(seance.date).format('YYYY-MM-DD')).isBefore(dayjs()) &&
-						!seance.attestation_id
-					);
-				}).length > 0
-		},
-		{
-			name: get(t)('patients.detail', 'prescription'),
-			href:
-				`/dashboard/patients/${patient.patient_id}/situation-pathologique/${currentSp.sp_id}` +
-				'/prescriptions/create',
-			condition: true
-		},
-		{
-			name: get(t)('patients.detail', 'prestations'),
-			href:
-				`/dashboard/patients/${patient.patient_id}/situation-pathologique/${currentSp.sp_id}` +
-				'/generateurs/create',
-			condition: true
+			href: homeUrl() + `/seances`,
+			nom: $t('patients.detail', 'prestations'),
+			actif: $page.url.pathname === homeUrl() + `/seances`
 		}
 	];
 </script>
 
 <SpTitle {patient} {currentSp} />
-<div class="-mt-5 mb-5 flex w-full items-center justify-start px-4 py-1 sm:py-1">
-</div>
+<div class="-mt-5 mb-5 flex w-full items-center justify-start px-4 py-1 sm:py-1"></div>
 
 <!--* Tabs -->
-<Tabs className="w-full text-center flex justify-center sm:block border-b border-gray-300 shadow-sm" {tabs} />
+<Tabs
+	className="w-full text-center flex justify-center sm:block border-b border-gray-300 shadow-sm"
+	{tabs} />
 
 {@render children()}

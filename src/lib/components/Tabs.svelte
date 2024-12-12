@@ -1,42 +1,32 @@
 <script>
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
+	import Select from './form/Select.svelte';
 	let { tabs, className } = $props();
 </script>
 
 <div class="mb-10 {className}">
 	<div class="grid grid-cols-1 sm:hidden">
 		<!-- Use an "onChange" listener to redirect the user to the selected tab URL. -->
-		<select
-			aria-label="Select a tab"
+		<Select
+			ariaLabel="Select a tab"
 			onchange={(e) => {
 				goto(e.target.value);
-			}}
-			class="col-start-1 row-start-1 w-full appearance-none rounded-md bg-white py-2 pl-3 pr-8 text-base text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600">
-            {#each tabs as {href, nom}}
-                
-			<option value={href} selected={$page.url.pathname === href}>{nom}</option>
-            {/each}
-		</select>
-		<svg
-			class="pointer-events-none col-start-1 row-start-1 mr-2 size-5 self-center justify-self-end fill-gray-500"
-			viewBox="0 0 16 16"
-			fill="currentColor"
-			aria-hidden="true"
-			data-slot="icon">
-			<path
-				fill-rule="evenodd"
-				d="M4.22 6.22a.75.75 0 0 1 1.06 0L8 8.94l2.72-2.72a.75.75 0 1 1 1.06 1.06l-3.25 3.25a.75.75 0 0 1-1.06 0L4.22 7.28a.75.75 0 0 1 0-1.06Z"
-				clip-rule="evenodd" />
-		</svg>
+			}}>
+			{#snippet options()}
+				{#each tabs as { href, nom }}
+					<option value={href} selected={$page.url.pathname === href}>{nom}</option>
+				{/each}
+			{/snippet}
+		</Select>
 	</div>
 	<div class="hidden sm:block">
 		<nav class="flex space-x-4" aria-label="Tabs">
 			<!-- Current: "bg-indigo-100 text-indigo-700", Default: "text-gray-500 hover:text-gray-700" -->
-			{#each tabs as { href, nom }}
+			{#each tabs as { href, nom, actif }}
 				<a
 					{href}
-					class="rounded-md px-3 py-2 text-sm font-medium {$page.url.pathname === href
+					class="rounded-md px-3 py-2 text-sm font-medium {actif
 						? 'bg-indigo-100 text-indigo-700'
 						: 'text-gray-500 hover:text-gray-700'}">{nom}</a>
 			{/each}
