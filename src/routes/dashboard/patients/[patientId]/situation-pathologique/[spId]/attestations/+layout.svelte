@@ -36,13 +36,15 @@
 	{tabs}>
 	{#snippet actions()}
 		<BoutonSecondaireAvecIcone
+		size="sm"
 			onclick={() => modalStore.trigger(documentSelectionModal)}
-			className="inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
+			
 			inner={$t('attestation.detail', 'bill')}
 			icon={addIcon} />
 		<BoutonPrincipalAvecIcone
 			href={`/dashboard/patients/${patient.patient_id}/situation-pathologique/${sp.sp_id}/attestations/create`}
-			className="ml-3 inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+			size="sm"
+			className="ml-3 inline-flex items-center bg-indigo-600 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
 			inner="Attestation"
 			icon={addIcon} />
 	{/snippet}

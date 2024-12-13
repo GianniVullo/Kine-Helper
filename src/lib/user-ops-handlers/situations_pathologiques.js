@@ -106,7 +106,10 @@ async function getLastSpAndOthers(patient_id) {
 			p.prescripteur = JSON.parse(p.prescripteur);
 			return p;
 		}),
-		seances: data.seances,
+		seances: data.seances.map((s) => {
+			s.has_been_attested = JSON.parse(s.has_been_attested);
+			return s;
+		}),
 		attestations: data.attestations,
 		documents: data.documents
 	});

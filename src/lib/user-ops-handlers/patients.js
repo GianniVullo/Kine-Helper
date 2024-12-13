@@ -41,7 +41,7 @@ export async function updatePatient(data) {
 		console.log('The resulte of the update query = ', result);
 
 		patients.update((ps) => {
-			let rpatient = ps.find((p) => p.patient_id === patient.patient_id);
+			let rpatient = ps.find((p) => p.patient_id === data.patient_id);
 			rpatient.nom = nom;
 			rpatient.prenom = prenom;
 			rpatient.niss = niss;
@@ -82,7 +82,7 @@ export async function deletePatient(data) {
 export async function listPatients(data) {
 	const opsHandler = setupPatientOpsHandler();
 	await opsHandler.execute(async () => {
-		console.log('in list patient operation handler with ', data)
+		console.log('in list patient operation handler with ', data);
 		let db = new DBAdapter();
 		const { data: patientList, error } = await db.list(
 			'patients',
