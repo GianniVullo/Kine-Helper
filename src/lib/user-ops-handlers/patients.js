@@ -1,8 +1,10 @@
 import DBAdapter from '$lib/user-ops-handlers/dbAdapter';
 import { get } from 'svelte/store';
-import { patients, Patient } from '../stores/PatientStore';
+import { patients } from '../stores/PatientStore';
 import { user } from '../stores/UserStore';
 import { UserOperationsHandler } from './abstractHandler';
+import { appState } from '../managers/AppState.svelte';
+import { Patient, SituationPathologique } from './models';
 
 //* ça a l'air con mtn mais je suis sûr que ça va payer à un moment
 function setupPatientOpsHandler() {
@@ -23,6 +25,25 @@ export async function createPatient(data) {
 			ps.push(newPatient);
 			return ps;
 		});
+	});
+}
+
+export async function retrievePatient(data) {
+	const opsHandler = setupPatientOpsHandler();
+	await opsHandler.execute(async () => {
+		data.user_id = get(user).user.id;
+		let result = await appState.db.select('SELECT * from patients WHERE patient_id = $1', [data]);
+		console.log('result for dbAdatper action : ', result);
+		if (result) {
+			let p = new Patient(data);
+			p.situations_pathologiques = (
+				await appState.db.select('SELECT * from situations_pathologiques WHERE patient_id = $1', [
+					data
+				])
+			).map((sp) => new SituationPathologique(sp));
+			return p;
+		}
+		return;
 	});
 }
 

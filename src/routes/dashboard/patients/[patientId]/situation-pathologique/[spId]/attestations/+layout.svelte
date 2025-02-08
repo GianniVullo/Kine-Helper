@@ -14,6 +14,12 @@
 	let sp = patient.situations_pathologiques.find((sp) => sp.sp_id === $page.params.spId);
 
 	let { children } = $props();
+	const documentSelectionModal = {
+		type: 'component',
+		component: 'factureCreation',
+		meta: { sp: sp }
+	};
+
 	const homeUrl = () =>
 		`/dashboard/patients/${patient.patient_id}/situation-pathologique/${sp.sp_id}`;
 	let tabs = [
@@ -36,9 +42,8 @@
 	{tabs}>
 	{#snippet actions()}
 		<BoutonSecondaireAvecIcone
-		size="sm"
+			size="sm"
 			onclick={() => modalStore.trigger(documentSelectionModal)}
-			
 			inner={$t('attestation.detail', 'bill')}
 			icon={addIcon} />
 		<BoutonPrincipalAvecIcone

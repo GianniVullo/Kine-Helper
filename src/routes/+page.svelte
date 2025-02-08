@@ -1,15 +1,18 @@
 <script>
-	import { SignUpForm, LoginForm, PasswordResetForm } from '../lib/index';
+	import { PasswordResetForm } from '../lib/index';
+	import LoginForm from '../lib/cloud/components/forms/authentication/LoginForm.svelte';
+	import SignUpForm from '../lib/cloud/components/forms/authentication/SignUpForm.svelte';
 	import { t } from '../lib/i18n';
 	import { getToastStore } from '@skeletonlabs/skeleton';
 	import { goto } from '$app/navigation';
 	import { onDestroy } from 'svelte';
 	import { platform } from '@tauri-apps/plugin-os';
+	import PatientForm from '../lib/cloud/components/forms/patient/PatientForm.svelte';
 
 	function registerShortcut(callback) {
 		window.addEventListener('keydown', function (event) {
 			const isMac = platform() === 'macos';
-			
+
 			if ((isMac ? event.metaKey : event.ctrlKey) && event.shiftKey && event.key === 'C') {
 				console.log(isMac);
 				event.preventDefault();
@@ -19,7 +22,7 @@
 	}
 
 	const shortcutHandler = registerShortcut(() => {
-		goto('debug')
+		goto('debug');
 	});
 
 	onDestroy(() => {

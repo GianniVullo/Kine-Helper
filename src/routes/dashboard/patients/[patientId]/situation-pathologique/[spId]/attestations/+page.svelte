@@ -46,11 +46,6 @@
 			.situations_pathologiques.find((sp) => sp.sp_id === $page.params.spId);
 	});
 
-	const documentSelectionModal = {
-		type: 'component',
-		component: 'factureCreation',
-		meta: { sp: sp }
-	};
 	const printHandler = async (attestation) => {
 		modalStore.trigger({
 			title: $t('attestation.detail', 'printModal.title'),
