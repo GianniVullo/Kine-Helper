@@ -1,3 +1,4 @@
+#[derive(Clone, serde::Deserialize, serde::Serialize)]
 pub struct User {
     pub id: String,
     pub aud: String,
@@ -29,6 +30,7 @@ pub struct User {
     pub hold_exists: bool,
 }
 
+#[derive(Clone, serde::Deserialize, serde::Serialize)]
 pub struct Session {
     pub access_token: String,
     pub token_type: String,
@@ -37,6 +39,7 @@ pub struct Session {
     pub refresh_token: String,
 }
 
+#[derive(Clone, serde::Deserialize, serde::Serialize)]
 pub struct Identity {
     pub identity_id: String,
     pub id: String,
@@ -49,14 +52,17 @@ pub struct Identity {
     pub email: String,
 }
 
+#[derive(Clone, serde::Deserialize, serde::Serialize)]
 pub struct IdentityData {
     pub email: String,
     pub sub: String,
 }
 
+#[derive(Clone, serde::Deserialize, serde::Serialize)]
 pub struct AppMetadata {
     pub provider: String,
     pub providers: Vec<String>,
 }
 
+#[derive(Clone, serde::Deserialize, serde::Serialize)]
 pub struct UserMetadata {}

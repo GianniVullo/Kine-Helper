@@ -15,6 +15,7 @@ use printer::raw_printer::windows::print_attestation;
 #[cfg(any(target_os = "macos", target_os = "linux", target_os = "windows"))]
 use printers::{get_printers, printer::Printer};
 
+use appstate::get_app_state;
 use cryptage::{
     decrypt_string, does_private_key_exist, encrypt_string, from_base64_to_bytes,
     from_bytes_to_base64, generate_encryption_key, setup_stronghold_key,
@@ -181,6 +182,7 @@ pub fn run() {
         .plugin(tauri_plugin_fs::init())
         // .plugin(sentry_tauri::plugin())
         .invoke_handler(tauri::generate_handler![
+            get_app_state,
             generate_encryption_key,
             does_private_key_exist,
             encrypt_string,
