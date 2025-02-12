@@ -30,7 +30,15 @@ export const encryptionSchema = {
 		]
 	},
 	attestations: {
-		visibleFields: ['attestation_id', 'patient_id', 'sp_id', 'prescription_id', 'user_id', 'mutuelle_paid', 'patient_paid'],
+		visibleFields: [
+			'attestation_id',
+			'patient_id',
+			'sp_id',
+			'prescription_id',
+			'user_id',
+			'mutuelle_paid',
+			'patient_paid'
+		],
 		excluded: []
 	},
 	prescriptions: {
@@ -65,16 +73,14 @@ export async function encryptTable(table, formData, key) {
 		return unencrypted;
 	}
 	unencrypted['encrypted'] = await invoke('encrypt_string', {
-		input: JSON.stringify(formDataDeepCopy),
-		key: key ?? (await invoke('get_main_key', { userId: get(user).user.id }))
+		input: JSON.stringify(formDataDeepCopy)
 	});
-	console.log('after encryption', );
-	
+	console.log('after encryption');
+
 	return unencrypted;
 }
 
-export async function decryptTable(table, formData, key) {
-	console.log('decrypt table with ', table, formData, key);
+export async function decryptTable(table, formData) {
 
 	const unencrypted = {};
 
@@ -87,9 +93,8 @@ export async function decryptTable(table, formData, key) {
 	}
 	let decrypted = formData.encrypted
 		? await invoke('decrypt_string', {
-				encrypted: formData.encrypted,
-				key: key ?? (await invoke('get_main_key', { userId: get(user).user.id }))
-		  })
+				encrypted: formData.encrypted
+			})
 		: null;
 	if (decrypted) {
 		return {

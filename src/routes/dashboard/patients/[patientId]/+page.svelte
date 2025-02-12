@@ -7,9 +7,11 @@
 	import relativeTime from 'dayjs/plugin/relativeTime';
 	import Title from '$lib/patient-detail/Title.svelte';
 
+	let { data } = $props();
+	console.log('le data de layout', data);
+
 	dayjs.extend(relativeTime);
-	let patient = $patients.find((p) => p.patient_id === $page.params.patientId);
-	let sps = patient.situations_pathologiques.length > 0;
+	let sps = data.patient.situations_pathologiques.length > 0;
 	// if (sps) {
 	// 	goto(
 	// 		'/dashboard/patients/' +
@@ -21,14 +23,14 @@
 	// let Balise = Second;
 </script>
 
-<Title {patient} />
+<Title patient={data.patient} />
 {#if sps}
 	<div
 		class="-z-50 mt-10 w-full border-b border-gray-200 pb-5 sm:flex sm:items-center sm:justify-between">
 		<h3 class="text-base font-semibold text-gray-900">Situations pathologiques</h3>
 		<div class="mt-3 sm:ml-4 sm:mt-0">
 			<a
-				href={`/dashboard/patients/${patient.patient_id}/situation-pathologique/create`}
+				href={`/dashboard/patients/${data.patient.patient_id}/situation-pathologique/create`}
 				type="button"
 				class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
 				>Ajouter une situation pathologique</a>
@@ -36,7 +38,7 @@
 	</div>
 
 	<ul role="list" class="w-full divide-y divide-gray-100">
-		{#each patient.situations_pathologiques as sp}
+		{#each data.patient.situations_pathologiques as sp}
 			<li class="relative flex justify-between gap-x-6 py-5">
 				<div class="flex min-w-0 gap-x-4">
 					<!-- <img
@@ -101,7 +103,7 @@
 		<p class="mt-1 text-sm text-gray-500">{$t('patients.detail', 'start')}</p>
 		<div class="mt-6">
 			<a
-				href={`/dashboard/patients/${patient.patient_id}/situation-pathologique/create`}
+				href={`/dashboard/patients/${data.patient.patient_id}/situation-pathologique/create`}
 				type="button"
 				class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
 				<svg

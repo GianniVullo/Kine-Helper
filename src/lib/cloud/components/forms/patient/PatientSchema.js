@@ -3,15 +3,15 @@ import { t } from '../../../../i18n';
 import { createPatient, updatePatient } from '../../../../user-ops-handlers/patients';
 import { get } from 'svelte/store';
 import { appState } from '../../../../managers/AppState.svelte';
+import { user } from '../../../../stores/UserStore';
+import { goto } from '$app/navigation';
+
 const SEX = ['F', 'M'];
 
 export const PatientSchema = v.pipe(
 	v.object({
 		// Id
-		user_id: v.pipe(
-			v.nonNullable(v.string(), appState.user?.id),
-			v.uuid()
-		),
+		user_id: v.pipe(v.nonNullable(v.string()), v.uuid()),
 		patient_id: v.pipe(v.optional(v.string(), crypto.randomUUID()), v.uuid()),
 		nom: v.pipe(
 			v.transform((input) => (input?.length === 0 ? null : input)),
@@ -80,10 +80,21 @@ export async function onValid(data) {
 		// <!--* UPDATE PROCEDURE -->
 		await updatePatient(data);
 	}
+	goto('/dashboard/patients/' + data.patient_id);
 }
 console.log('AFTER onValid');
 
 const identificationFields = [
+	{
+		id: 'patient_id',
+		name: 'patient_id',
+		inputType: 'hidden'
+	},
+	{
+		id: 'user_id',
+		name: 'user_id',
+		inputType: 'hidden'
+	},
 	{
 		id: 'nom',
 		name: 'nom',

@@ -69,16 +69,14 @@ export default class DBAdapter {
 						stuffToSave.push(
 							await encryptTable(
 								table,
-								element,
-								key ?? (await invoke('get_main_key', { userId: get(user).user.id }))
+								element
 							)
 						);
 					}
 				} else {
 					stuffToSave = await encryptTable(
 						table,
-						formData,
-						key ?? (await invoke('get_main_key', { userId: get(user).user.id }))
+						formData
 					);
 				}
 				console.log('stuff to save = ', stuffToSave);
@@ -365,11 +363,9 @@ export default class DBAdapter {
 
 				let { data, error } = await query;
 				const returningObj = { data: [] };
-				const key = await invoke('get_main_key', { userId: get(user).user.id });
-				console.log('key and data', key, data, error);
 
 				for (const element of data) {
-					returningObj.data.push(await decryptTable(table, element, key));
+					returningObj.data.push(await decryptTable(table, element));
 				}
 				return returningObj;
 			default:

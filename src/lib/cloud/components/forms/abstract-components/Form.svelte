@@ -2,7 +2,14 @@
 	import { extractErrorForField } from '../../../libraries/formHandler.svelte';
 	import FormTitle from './FormTitle.svelte';
 
-	let { title, action = undefined, multipart, inner, validationState } = $props();
+	let {
+		id = 'default-form',
+		title,
+		action = undefined,
+		multipart,
+		inner,
+		validationState
+	} = $props();
 	console.log('End of form.svelte');
 	console.log(validationState);
 </script>
@@ -20,8 +27,8 @@
 	</p>
 {/if}
 <form
+	{id}
 	{action}
-	onsubmit={(e) => e.preventDefault()}
 	class="mt-10 flex flex-col items-start"
 	method="POST"
 	enctype={multipart ? undefined : 'multipart/form-data'}>

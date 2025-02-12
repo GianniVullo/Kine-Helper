@@ -6,17 +6,18 @@ import { supabase } from './supabaseClient';
 
 
 // Retrieve the main key from the store
-export async function getMainKey() {
-	// const { client } = await initStronghold(get(user).profil.stronghold_key);
-	// const store = client.getStore();
-	const data = await invoke('get_main_key', { userId: get(user).user.id });
-	console.log(data);
+//! ça servait méga à rien de faire ça en fait -___-
+// export async function getMainKey() {
+// 	// const { client } = await initStronghold(get(user).profil.stronghold_key);
+// 	// const store = client.getStore();
+// 	const data = await invoke('get_main_key', { userId: get(user).user.id });
+// 	console.log(data);
 	
-	if (!data) {
-		return null;
-	}
-	return data;
-}
+// 	if (!data) {
+// 		return null;
+// 	}
+// 	return data;
+// }
 
 export async function generateEncryptionKeys() {
 	//* 1. on génère un mot de passe pour vérrouiller le stronghold

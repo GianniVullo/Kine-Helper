@@ -1,22 +1,13 @@
 <script>
-	import { locale, t } from '../../lib/i18n';
+	import { t } from '../../lib/i18n';
 	import { LocalDatabase } from '../../lib/stores/databaseInitializer';
 	import { dev } from '$app/environment';
-	import { user } from '../../lib/stores/UserStore';
-	import { goto } from '$app/navigation';
-	import { page } from '$app/stores';
 	import { patients } from '../../lib/stores/PatientStore';
-	import { get, writable } from 'svelte/store';
 	import dayjs from 'dayjs';
 	import { getModalStore } from '@skeletonlabs/skeleton';
-	import { fade } from 'svelte/transition';
-	import { onMount } from 'svelte';
-	import { fetch } from '@tauri-apps/plugin-http';
-	import { open } from '@tauri-apps/plugin-shell';
-	import { invoke } from '@tauri-apps/api/core';
-	import { getMainKey } from '../../lib/stores/strongHold';
-	const modalStore = getModalStore();
+	import { appState } from '../../lib/managers/AppState.svelte';
 
+	const modalStore = getModalStore();
 
 	function getTodaysAppointments() {
 		// let today = "date('now')";
@@ -26,7 +17,7 @@
 			console.log('today', today);
 			const data = await db.select(
 				`SELECT * FROM seances WHERE date(date) = ${today} AND user_id = $1`,
-				[$user.user.id]
+				[appState.user.id]
 			);
 			console.log('data', data);
 			data.sort((a, b) => dayjs(a.date).diff(dayjs(b.date)));
@@ -40,34 +31,6 @@
 			);
 		});
 	}
-	// let marketingPromise;
-	// let interval;
-	// let currentIndex = writable(0);
-	// let urlSource;
-	// function rotatingAds(node) {
-	// 	marketingPromise = new Promise(async (resolve, reject) => {
-	// 		let response = await fetch(
-	// 			`https://admin-console.kine-helper.be/api/get-ads?lang=${get(locale).toLowerCase()}`
-	// 		);
-	// 		response = await response.json();
-	// 		interval = setInterval(() => {
-	// 			if ($currentIndex === response.length - 1) {
-	// 				currentIndex.set(0);
-	// 			} else {
-	// 				currentIndex.update((n) => {
-	// 					return n + 1;
-	// 				});
-	// 			}
-	// 		}, 12000);
-	// 		console.log('THE RESPONSE', response);
-	// 		return resolve(response);
-	// 	});
-	// 	return {
-	// 		destroy() {
-	// 			clearInterval(interval);
-	// 		}
-	// 	};
-	// }
 </script>
 
 <main class="flex h-[80vh] w-full flex-col">

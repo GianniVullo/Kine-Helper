@@ -1,31 +1,30 @@
 <script>
-	import { safeParse } from 'valibot';
 	import { onMount } from 'svelte';
-	import { extractErrorForField, Formulaire } from '../../../libraries/formHandler.svelte';
+	import { Formulaire } from '../../../libraries/formHandler.svelte';
 	import Field from '../abstract-components/Field.svelte';
-	import { LoginSchema, onValid, fieldSchema } from './LoginSchema';
+	import { LoginSchema, onValid, fieldSchema, validateurs } from './LoginSchema';
 	import SubmitButton from '../../../../forms/ui/SubmitButton.svelte';
 
 	let formHandler = new Formulaire({
+		validateurs,
 		schema: LoginSchema,
-		initialValues: { email: localStorage.getItem('lastLoggedUser'), password: null },
+		initialValues: { email: localStorage.getItem('lastLoggedUser') },
 		onValid
 	});
-
-	let validationState = $derived(safeParse(LoginSchema, formHandler.form));
 
 	onMount(() => {
 		formHandler.setup(onValid);
 	});
 </script>
 
-{#each fieldSchema as field}
-	<Field
-		{field}
-		error={extractErrorForField(field.name, validationState).errorString}
-		bind:value={formHandler.form[field.name]} />
-{/each}
+<form action="" id="default-form" class="space-y-4">
+	{#each fieldSchema as field}
+		<Field {field} error={formHandler.errors[field.name]} bind:value={formHandler.form[field.name]} />
+	{/each}
+	<div class="items flex w-full justify-center mt-4">
+		<SubmitButton />
+	</div>
+</form>
 
-<div class="flex w-full items justify-center">
-	<SubmitButton />
-</div>
+
+<p class="mt-2 text-lg text-red-800">{formHandler.message}</p>

@@ -7,13 +7,16 @@
 	import FormSection from '../abstract-components/FormSection.svelte';
 	import { onMount } from 'svelte';
 	import SubmitButton from '../../../../forms/ui/SubmitButton.svelte';
+	import { appState } from '../../../../managers/AppState.svelte';
 
 	let { patient } = $props();
+
+	console.log(typeof appState.user);
 
 	let formHandler = new Formulaire({
 		schema: PatientSchema,
 		submiter: '#patient-submit',
-		initialValues: patient,
+		initialValues: patient ?? { user_id: appState?.user?.id },
 		onValid
 	});
 

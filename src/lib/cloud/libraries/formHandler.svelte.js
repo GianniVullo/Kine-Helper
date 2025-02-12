@@ -1,4 +1,4 @@
-import * as v from 'valibot';
+import { safeParse, safeParseAsync } from 'valibot';
 
 //* API de validation de formulaire
 /**
@@ -9,74 +9,133 @@ import * as v from 'valibot';
  **     - Validation grâce à Valibot
  **     - Exécution de fonctions "life cycle hook"
  **          - onSubmit
- **          - onError : de base : scroller en haut du form où il y aura un message avec tous les champs fautifs
+ **          - onError : de base : scroller en haut du form où il y aura un message avec tous les champs fautifs + validation avec affichage de message d'erreur
  **          - onResult
  */
 
-function defaultOnError(data) {
-	console.log('in onError with ', data);
-	window.scrollTo({ top: 0, behavior: 'smooth' });
-}
 export class Formulaire {
 	form = $state({});
+	touched = $derived(
+		Object.keys(this.form).reduce((acc, key) => {
+			acc[key] = this.form[key] !== this.initialValues[key];
+			return acc;
+		}, {})
+	);
+	errors = $state({});
+	isDirty = $derived(Object.values(this.touched).some(Boolean));
+	message = $state();
+	initialValues = {};
+	validateurs;
+	formElement;
 	submiter;
 	schema;
 	onError;
 	onValid;
 	isAsynchronous = false;
 
-	constructor({ schema, submiter = '#submit-button', initialValues, onValid, onError }) {
-		console.log('IN Formulaire constructor');
-
+	constructor({
+		schema,
+		validateurs,
+		submiter = '#submit-button',
+		formElement = '#default-form',
+		initialValues,
+		onValid,
+		onError
+	}) {
 		this.submiter = submiter;
-		console.log('Assigned submiter');
+		this.validateurs = validateurs;
+		this.formElement = formElement;
 		for (const fieldName of Object.keys(schema.entries)) {
 			this.form[fieldName] =
 				initialValues?.[fieldName] ?? schema.entries[fieldName].default ?? null;
+			this.errors[fieldName] = false;
+			this.initialValues[fieldName] = initialValues?.[fieldName] ?? null;
 		}
 		this.schema = schema;
 		this.onValid = onValid.bind(this);
 		if (onError) {
 			this.onError = onError.bind(this);
 		} else {
-			this.onError = defaultOnError.bind(this);
+			this.onError = this.defaultOnError.bind(this);
 		}
+		$effect(() => {
+			this.evaluateAndValidate(this.form);
+		});
 	}
 
 	setup() {
-		console.log('In Formulaire.setup with');
-
 		let submitButton = document.querySelector(this.submiter);
+		let formEl = document.querySelector(this.formElement);
+		formEl.onsubmit = async (e) => {
+			e.preventDefault();
+			submitButton.disabled = true;
+			await this.validateAndTerminate();
+			submitButton.disabled = false;
+		};
 
 		submitButton.onclick = async (e) => {
 			e.preventDefault();
 			e.target.disabled = true;
-			let validData;
-			if (this.isAsynchronous) {
-				validData = await v.safeParseAsync(this.schema, this.form);
-			} else {
-				validData = v.safeParse(this.schema, this.form);
-			}
-			if (validData.success) {
-				await this.onValid(validData.output);
-			} else {
-				await this.onError(validData.output);
-			}
+			await this.validateAndTerminate();
 			e.target.disabled = false;
 		};
 	}
+
+	async validateAndTerminate() {
+		let validData;
+		if (this.isAsynchronous) {
+			validData = await safeParseAsync(this.schema, this.form);
+		} else {
+			validData = safeParse(this.schema, this.form);
+		}
+		if (validData.success) {
+			await this.onValid(validData.output);
+		} else {
+			await this.onError(validData);
+		}
+	}
+
+	evaluateAndValidate(form) {
+		for (const field of Object.keys(form)) {
+			if (this.touched[field]) {
+				this.errors[field] = extractErrorForField(
+					safeParse(this.validateurs[field], this.form[field])
+				);
+			}
+		}
+	}
+
+	defaultOnError(data) {
+		console.log('in onError with ', data);
+		this.extractErrorForSchema(data);
+		window.scrollTo({ top: 0, behavior: 'smooth' });
+	}
+
+	extractErrorForSchema(validationState) {
+		let errorFields = new Set();
+		if (validationState.issues && validationState.issues.length > 0) {
+			for (const issue of validationState.issues) {
+				errorFields.add(issue.path?.[0]?.key);
+				this.errors[issue.path?.[0]?.key] = this.errors[issue.path?.[0]?.key]
+					? this.errors[issue.path?.[0]?.key] + '<br />'
+					: '' + issue.message;
+			}
+		}
+
+		this.message =
+			'Le formulaire contient une error sur le ou les champs suivant : ' +
+			Array.from(errorFields.values()).join(', ');
+	}
 }
 
-export function extractErrorForField(fieldName, validationState) {
+export function extractErrorForField(validationState) {
 	let errors = [];
 	let errorFields = [];
 	if (validationState.issues && validationState.issues.length > 0) {
 		for (const issue of validationState.issues) {
 			errorFields.push(issue.path?.[0]?.key);
-			if (issue.path?.[0]?.key === fieldName || fieldName === '*') {
-				errors.push(issue.message);
-			}
+			errors.push(issue.message);
 		}
 	}
-	return { errorString: errors.join('<br />'), errorFields: errorFields.join(', ') };
+	return errors.join('<br />');
 }

@@ -9,6 +9,8 @@
 	const modalStore = getModalStore();
 	import { goto } from '$app/navigation';
 
+	/**
+	 * TODO Il faut faire ça autrement pour checker... genre faire une fonction qui vérifie qu'il y a bien une stronghold key */
 	// 2 façons de faire :
 	//	- Ou bien il s'agit d'jà d'une deuxième machine et donc l'utilisateur doit simplement réencoder sa clé
 	const generatingKey = new Promise(async (resolve) => {

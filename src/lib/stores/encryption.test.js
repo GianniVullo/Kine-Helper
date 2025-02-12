@@ -15,7 +15,7 @@ describe('Encryption Utils', () => {
 		expect(mockEncryptTable('situations_pathologiques', sp)).toEqual({
 			patient_id: 'test_id',
 			sp_id: 'test_id',
-            created_at: '2021-07-27T16:02:08.070557',
+			created_at: '2021-07-27T16:02:08.070557',
 			encrypted: 'blablabala',
 			user_id: 'test_id'
 		});
@@ -102,8 +102,7 @@ async function mockDecryptTable(table, formData, key) {
 		...unencrypted,
 		...JSON.parse(
 			await invoke('decrypt_string', {
-				input: formData.encrypted,
-				key: key ?? (await invoke('get_main_key', {userId: get(user).user.id}))
+				input: formData.encrypted
 			})
 		)
 	};

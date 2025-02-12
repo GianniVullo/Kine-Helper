@@ -12,6 +12,8 @@
 		outerCSS={field.outerCSS}
 		options={field.options}
 		{error} />
+{:else if field.inputType === 'hidden'}
+	<input type="hidden" name={field.name} bind:value />
 {:else}
 	<div class={field.outerCSS}>
 		<label for={field.id} class="block text-sm/6 font-medium text-gray-900">{field.titre}</label>

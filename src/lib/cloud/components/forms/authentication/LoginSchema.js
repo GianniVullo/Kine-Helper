@@ -1,91 +1,102 @@
 import * as v from 'valibot';
-import { t } from '../../../../i18n';
 import { get } from 'svelte/store';
-// import { appState } from '../../../AppState.svelte';
-import { signUserIn } from '../../../../user-ops-handlers/users';
-import { initializeConventions } from '../../../../stores/conventionStore';
-import { retrieveSettings } from '../../../../user-ops-handlers/settings';
-import { file_exists } from '../../../../utils/fsAccessor';
+import { t } from '../../../../i18n';
+import { retrieveProfile, signUserIn } from '../../../../user-ops-handlers/users';
 import { goto } from '$app/navigation';
-import { user } from '$lib/stores/UserStore';
-import { listPatients } from '../../../../user-ops-handlers/patients';
 import { lock, userIcon } from '../../../../ui/svgs/IconSnippets.svelte';
+import { appState } from '../../../../managers/AppState.svelte';
+import { retrieveSettings } from '../../../../user-ops-handlers/settings';
+import { AuthApiError } from '@supabase/supabase-js';
+
+const email = v.pipe(
+	v.transform((input) =>
+		input?.length === 0 ? null : typeof input === 'string' ? input.toLowerCase() : input
+	),
+	v.pipe(v.string('Ce champ est obligatoire'), v.email('Email invalide'))
+);
+
+const password = v.pipe(
+	v.transform((input) => (input?.length == 0 ? null : input)),
+	v.pipe(v.string('Ce champ est obligatoire'))
+);
+
+export const validateurs = {
+	email,
+	password
+};
 
 export const LoginSchema = v.pipe(
 	v.object({
-		// Id
-		email: v.pipe(
-			v.transform((input) =>
-				input?.length === 0 ? null : typeof input === 'string' ? input.toLowerCase() : input
-			),
-			v.pipe(v.string('Ce champ est obligatoire'), v.email('Email invalide'))
-		),
-		password: v.pipe(
-			v.transform((input) => (input?.length == 0 ? null : input)),
-			v.pipe(v.string('Ce champ est obligatoire'))
-		)
+		email,
+		password
 	})
 );
 
 export async function onValid(data) {
-	// <!--* STEP 1 : Connecter l'utilisateur -->
-	await signUserIn(data);
-	let submitter = document.querySelector(this.submiter);
-	submitter.innerHTML = get(t)('login', 'submission.profil');
+	await appState.initializeDatabase();
+	// Connecter l'utilisateur
+	let { user, session, error } = await signUserIn(data);
+	console.log(user);
 
-	// <!--* STEP 2 : Initialiser la DB -->
-	// <!--? Télécharger et mettre à jour les codes de nomenclature -->
-	submitter.innerHTML = get(t)('login', 'submission.convention');
-	await initializeConventions(submitter);
+	let kine = (await appState.db.select('SELECT * FROM kines WHERE user_id = $1', [user.id]))[0];
+	console.log('KINE = , ', kine);
 
-	// <!--* STEP 8 : Setup la sécurité -->
-	// le cas de figure le plus fort c'est qu'il n'y a pas de stronghold key
-	// cela signifie que rien n'est mis en place en ce qui concerne la sécurité
-	// On redirige donc vers la page de mise en place de la sécurité
-	submitter.innerHTML = get(t)('login', 'submission.security', null, 'Security check');
-	await retrieveSettings({ user_id: get(user).user.id });
-	if (!get(user).profil.has_stronghold_key) {
+	user = { ...user, ...kine };
+	if (error) {
+		console.log('the error = ', error.message, typeof error);
+
+		switch (error.message) {
+			case 'Invalid login credentials':
+				return (this.message = 'Identifiants incorrects');
+			default:
+				return (this.message = error.message);
+		}
+	}
+	appState.user = user;
+	appState.session = session;
+
+	// Call au serveur pour obtenir les données de profil utilisateur nécessaire à la gestion des
+	this.message = get(t)('login', 'submission.profil');
+	let profil = await retrieveProfile(user.id);
+	console.log(profil);
+
+	// Récupérer les settings
+	this.message = get(t)('login', 'submission.settings', null, 'Gathering settings');
+	let settings = await retrieveSettings(user.id);
+
+	// Initialiser l'objet "AppState"
+	appState.init(settings, profil);
+
+	// REDIRECTION :
+	// Si l'utilisateur n'a pas de stronghold key
+	if (!appState.user.has_stronghold_key) {
 		goto('/post-signup-forms/encryption-key-setup');
 		return;
 	}
-	// si il y a une stronghold key il faut vérifier qu'il y a un stronghold
-	// avec une clé d'encryption enregestrée dessus
-	// par chance, la fonction getMainKey() contient la fonction initStronghold()
-	// qui elle s'assure d'elle-même de la présence d'un fichier salt.txt sur applocaldatadir(),
-	// ouvre ou crée un stronghold et
-	// tente d'aller y puiser la clé de cryptage.
-	// Si getMainKey retourne null, alors on envoie sur la page de setup avec un query parameter pour proposer en premier le formulaire plutôt que générer une clé d'encryption
-	/**
-	 * TODO Wrap this in userOpsHandler
-	 * */
-	let hold_exists = await file_exists(`${get(user).user.id}.hold`);
-	console.log('file exists', hold_exists);
 
-	if (!hold_exists) {
+	// REDIRECTION :
+	// Si l'utilisateur a une stronghold key mais n'a pas de stronghold (ça voudrait dire que il essaye d'enregistrer un autre appareil)
+	if (!appState.user.hold_exists) {
 		goto('/post-signup-forms/encryption-key-setup?cloud=true');
 		return;
 	}
 
-	// <!--* STEP 5 : Fusionner les données de supabase et de la db -->
-	if (!user.has_complete_profile()) {
-		submitter.disabled = false;
+	// REDIRECTION :
+	// Si le profil de l'utilisateur est incomplet
+	if (!appState.has_complete_profile()) {
 		goto('/post-signup-forms/kine-profile');
 		return;
 	}
-	submitter.innerHTML = get(t)('login', 'submission.patient');
-	// <!--* STEP 6 : Récupérer les patients -->
-	console.log('Now preparing to fetch patients with user = ', get(user));
 
-	await listPatients(get(user).user);
-	submitter.innerHTML = get(t)('login', 'submission.settings', null, 'Gathering settings');
-	// <!--* STEP 7 : Récupérer les settings -->
-	await retrieveSettings({ user_id: get(user).user.id });
-
-	// <!--* STEP 9 : Si il n'y a pas d'imprimante matricielle on redirige vers la page setup correspondante -->
-	if (!get(user).settings.raw_printer) {
+	// Check si l'utilisateur a au moins un appareil enregistré
+	let materiel = await appState.db.select('SELECT * FROM appareils;');
+	// REDIRECTION :
+	// Si l'utilisateur n'a pas d'appareil enregistré
+	if (materiel?.length === 0) {
 		goto('/post-signup-forms/printer-setup');
 		return;
 	}
+
 	goto('/dashboard');
 }
 

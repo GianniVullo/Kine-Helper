@@ -106,8 +106,7 @@ export async function save_user_file(filePath, fileName, fileContent) {
 			//! Encryption du fichier
 			let base64ConvertedFile = await invoke('from_bytes_to_base64', fileContent);
 			let encryptedBase64 = await invoke('encrypt_string', {
-				input: base64ConvertedFile,
-				key: await invoke('get_main_key', { userId: get(user).user.id })
+				input: base64ConvertedFile
 			});
 			let encryptedBase64ToBytes = await invoke('from_base64_to_bytes', { key: encryptedBase64 });
 			return supabase.storage

@@ -1,20 +1,14 @@
 <script>
-	import { patients } from '$lib/stores/PatientStore';
-	import { user } from '$lib/stores/UserStore';
-	import PatientCard from '$lib/patient-detail/PatientCard.svelte';
-	import AddPersonIcon from '$lib/ui/svgs/AddPersonIcon.svelte';
-	import MagnifyingGlassIcon from '$lib/ui/svgs/MagnifyingGlassIcon.svelte';
 	import CardTable from '../../../lib/components/CardTable.svelte';
 	import { onMount } from 'svelte';
-	import { flip } from 'svelte/animate';
-	import { cubicOut } from 'svelte/easing';
 	import { t } from '../../../lib/i18n';
 	import { goto } from '$app/navigation';
+
+	let { data } = $props();
 
 	let searchQuery = $state('');
 	let inputQuery;
 	let timeOut;
-	let loading = false;
 
 	onMount(() => inputQuery.focus());
 
@@ -26,16 +20,21 @@
 		}, 250); // Debounce time in milliseconds
 	}
 
-	let filteredPatients = $derived($patients.filter(
-		(patient) =>
-			(searchQuery.length > 0 &&
-				(patient.nom.toLowerCase().startsWith(searchQuery.toLowerCase()) ||
-					patient.prenom.toLowerCase().startsWith(searchQuery.toLowerCase()) ||
-					patient.localite.toLowerCase().startsWith(searchQuery.toLowerCase()))) ||
-			searchQuery.length == 0
-	))
-	// console.log($patients);
-	// console.log($user);
+	// let patients = $state();
+	// let patientsCallback = listPatients(appState.user).then((v) => {
+	// 	patients = v;
+	// });
+
+	let filteredPatients = $derived.by(() => {
+		return data.patients.filter(
+			(patient) =>
+				(searchQuery.length > 0 &&
+					(patient.nom.toLowerCase().startsWith(searchQuery.toLowerCase()) ||
+						patient.prenom?.toLowerCase().startsWith(searchQuery.toLowerCase()) ||
+						patient.localite?.toLowerCase().startsWith(searchQuery.toLowerCase()))) ||
+				searchQuery.length == 0
+		);
+	});
 </script>
 
 <main
@@ -99,6 +98,9 @@
 	</div>
 
 	<!--* PATIENTS TABLE -->
+	<!-- {#await patientsCallback}
+		loading
+	{:then patientList} -->
 	<CardTable>
 		{#snippet header()}
 			<th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-0"
@@ -106,7 +108,7 @@
 			<th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Adresse</th>
 			<th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Status</th>
 			<!-- <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
-		>Comptabilité</th> -->
+			>Comptabilité</th> -->
 			<th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-0">
 				<span class="sr-only">Consultation</span>
 			</th>
@@ -140,11 +142,13 @@
 					<!-- <td class="whitespace-nowrap px-3 py-5 text-sm text-gray-500">Member</td> -->
 					<td
 						class="relative whitespace-nowrap py-5 pl-3 pr-4 text-right text-sm font-medium sm:pr-0">
-						<p class="text-indigo-600 mr-4 hover:text-indigo-900"
-							>Consulter<span class="sr-only">, {patient.nom} {patient.prenom}</span></p>
+						<p class="mr-4 text-indigo-600 hover:text-indigo-900">
+							Consulter<span class="sr-only">, {patient.nom} {patient.prenom}</span>
+						</p>
 					</td>
 				</tr>
 			{/each}
 		{/snippet}
 	</CardTable>
+	<!-- {/await} -->
 </main>

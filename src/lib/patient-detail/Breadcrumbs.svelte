@@ -2,6 +2,7 @@
 	import { page } from '$app/stores';
 	import { t } from '../i18n';
 	let { currentSp, patient } = $props();
+	
 	let boutonRetour = $derived(
 		$page.params.spId ? '/dashboard/patients/' + patient.patient_id : '/dashboard/patients/'
 	);

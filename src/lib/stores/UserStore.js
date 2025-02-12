@@ -4,6 +4,7 @@ import { invoke } from '@tauri-apps/api/core';
 import dayjs from 'dayjs';
 import { decryptTable } from './encryption';
 import { get } from 'svelte/store';
+import { appState } from '../managers/AppState.svelte';
 
 export class User {
 	constructor(parameters) {
@@ -181,6 +182,7 @@ function createUserStore() {
 			u.profil = profil;
 			return u;
 		});
+		appState.setProfile(profil);
 		return true;
 	}
 

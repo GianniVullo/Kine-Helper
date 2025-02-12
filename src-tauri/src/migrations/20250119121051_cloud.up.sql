@@ -23,7 +23,8 @@ CREATE TABLE IF NOT EXISTS tracking_offline_connexions (
 CREATE TABLE IF NOT EXISTS equipes (
     id TEXT PRIMARY KEY NOT NULL,
     name TEXT,
-    unformal_name TEXT, -- Parce que c'est sympa de s'appeler "Les potos du 6200" quand on a un cabinet à Chatelineau même si le cabinet s'appelle "Cabinet avec un nom ennuyeux pour que les gens sachent c'q'uon fait". Am I being cynical...
+    unformal_name TEXT,
+    -- Parce que c'est sympa de s'appeler "Les potos du 6200" quand on a un cabinet à Chatelineau même si le cabinet s'appelle "Cabinet avec un nom ennuyeux pour que les gens sachent c'q'uon fait". Am I being cynical...
     created_by TEXT NOT NULL,
     created_at TEXT NOT NULL,
     FOREIGN KEY(created_by) REFERENCES kines(user_id) ON DELETE CASCADE ON UPDATE NO ACTION
@@ -33,3 +34,10 @@ ALTER TABLE
     kines
 ADD
     COLUMN niss TEXT;
+
+CREATE TABLE IF NOT EXISTS appareils (
+    id TEXT PRIMARY KEY NOT NULL,
+    name TEXT NOT NULL,
+    role TEXT NOT NULL,
+    metadata TEXT
+);

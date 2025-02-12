@@ -87,8 +87,7 @@
 		console.log('generateurDeSeance', generateurDeSeance);
 		let seances = await generateurDeSeance.seances();
 		console.log('seances', seances);
-		let key = await invoke('get_main_key', { userId: get(user).user.id });
-		await db.save('seances', seances, key);
+		await db.save('seances', seances);
 
 		// ETAPE 7 : Mise à jour de la situation pathologique
 		let dateDeduite;

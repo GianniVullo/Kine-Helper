@@ -43,7 +43,7 @@
 					<div
 						class="mx-auto flex size-20 items-center justify-center rounded-full bg-gray-400 text-center text-xl font-extrabold text-gray-600">
 						{patient.nom[0]}
-						{patient.prenom[0]}
+						{patient?.prenom?.[0]}
 					</div>
 				{/if}
 			</div>

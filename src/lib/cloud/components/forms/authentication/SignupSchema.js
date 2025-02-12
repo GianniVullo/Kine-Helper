@@ -4,30 +4,41 @@ import { get } from 'svelte/store';
 import { lock, userIcon } from '../../../../ui/svgs/IconSnippets.svelte';
 import { getModalStore } from '@skeletonlabs/skeleton';
 
+const email = v.pipe(
+	v.transform((input) =>
+		input?.length === 0 ? null : typeof input === 'string' ? input.toLowerCase() : input
+	),
+	v.pipe(v.string('Ce champ est obligatoire'), v.email('Email invalide'))
+);
+
+const password = v.pipe(
+	v.transform((input) => (input?.length == 0 ? null : input)),
+	v.pipe(
+		v.string('Ce champ est obligatoire'),
+		v.minLength(1, 'Please enter your password.'),
+		v.regex(
+			/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$/,
+			'You password must have 8 characters or more. Contains at least 1 upper case letter, one number and one special caracter'
+		)
+	)
+);
+
+const password2 = v.pipe(
+	v.transform((input) => (input?.length == 0 ? null : input)),
+	v.string('Ce champ est obligatoire')
+);
+
+export const validateurs = {
+	email,
+	password,
+	password2
+};
+
 export const SignupSchema = v.pipe(
 	v.object({
-		// Id
-		email: v.pipe(
-			v.transform((input) =>
-				input?.length === 0 ? null : typeof input === 'string' ? input.toLowerCase() : input
-			),
-			v.pipe(v.string('Ce champ est obligatoire'), v.email('Email invalide'))
-		),
-		password: v.pipe(
-			v.transform((input) => (input?.length == 0 ? null : input)),
-			v.pipe(
-				v.string('Ce champ est obligatoire'),
-				v.minLength(1, 'Please enter your password.'),
-				v.regex(
-					/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$/,
-					'You password must have 8 characters or more. Contains at least 1 upper case letter, one number and one special caracter'
-				)
-			)
-		),
-		password2: v.pipe(
-			v.transform((input) => (input?.length == 0 ? null : input)),
-			v.string('Ce champ est obligatoire'),
-		)
+		email,
+		password,
+		password2
 	}),
 	v.forward(
 		v.partialCheck(

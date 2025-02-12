@@ -31,16 +31,21 @@ export async function createPatient(data) {
 export async function retrievePatient(data) {
 	const opsHandler = setupPatientOpsHandler();
 	await opsHandler.execute(async () => {
-		data.user_id = get(user).user.id;
-		let result = await appState.db.select('SELECT * from patients WHERE patient_id = $1', [data]);
+		appState
+		let result = await appState.db.select('SELECT * from patients WHERE patient_id = $1', [
+			data.patient_id
+		]);
 		console.log('result for dbAdatper action : ', result);
 		if (result) {
-			let p = new Patient(data);
-			p.situations_pathologiques = (
+			let p = new Patient(result);
+			let sps = (
 				await appState.db.select('SELECT * from situations_pathologiques WHERE patient_id = $1', [
 					data
 				])
 			).map((sp) => new SituationPathologique(sp));
+			console.log('THE SPS = ', sps);
+
+			p.situations_pathologiques = sps;
 			return p;
 		}
 		return;
@@ -102,6 +107,7 @@ export async function deletePatient(data) {
 
 export async function listPatients(data) {
 	const opsHandler = setupPatientOpsHandler();
+	let patients;
 	await opsHandler.execute(async () => {
 		console.log('in list patient operation handler with ', data);
 		let db = new DBAdapter();
@@ -126,7 +132,9 @@ export async function listPatients(data) {
 			}
 		});
 		let transformed = patientList.map((p) => new Patient(p));
-		console.log('Les patients transformed', transformed);
-		patients.set(transformed);
+		// console.log('Les patients transformed', transformed);
+		// patients.set(transformed);
+		patients = transformed;
 	});
+	return patients;
 }

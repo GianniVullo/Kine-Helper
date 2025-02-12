@@ -6,7 +6,8 @@
 	import { onMount } from 'svelte';
 	import { get, writable } from 'svelte/store';
 	import { appLocalDataDir } from '@tauri-apps/api/path';
-	import { exists, readTextFile, writeTextFile } from '@tauri-apps/plugin-fs';
+	import { exists, writeTextFile, BaseDirectory } from '@tauri-apps/plugin-fs';
+	import { read_file } from "../../lib/utils/fsAccessor";
 	import { blur } from 'svelte/transition';
 	import { cubicOut } from 'svelte/easing';
 	import { supabase } from '../../lib';
@@ -63,13 +64,14 @@
 								if (progress.event === 'Started') {
 									contentSize = progress.data.contentLength;
 									pushToStatus('0 %');
-									indexOfContentDownload = $loadingStatus.indexOf('0 %')
+									indexOfContentDownload = $loadingStatus.indexOf('0 %');
 								}
-								if (progress.event === "Progress") {
-									$loadingStatus[indexOfContentDownload] = `${(progress.data.chunkLength / contentSize) * 100} %`
+								if (progress.event === 'Progress') {
+									$loadingStatus[indexOfContentDownload] =
+										`${(progress.data.chunkLength / contentSize) * 100} %`;
 								}
 								if (progress.event === 'Finished') {
-									$loadingStatus[indexOfContentDownload] = 'DOWNLOAD COMPLETED !'
+									$loadingStatus[indexOfContentDownload] = 'DOWNLOAD COMPLETED !';
 								}
 							})
 							.then(() => {
@@ -105,7 +107,11 @@
 		if (settingsExists) {
 			// Si oui
 			// On récupère la langue par défaut et la version du fichier de traduction présent sur le disque.
-			const settings = JSON.parse(await readTextFile(`${path}/settings.json`));
+			const settingsFileContent = await read_file('settings.json');
+			const textDecoder = new TextDecoder();
+			const str = textDecoder.decode(settingsFileContent);
+			console.log('The settings file content = ', str);
+			const settings = JSON.parse(str);
 			let currentVersion = settings.translations[settings.defaultLocale].version;
 			console.log('currentVersion', currentVersion);
 			// On call l'API pour récupérer la version la plus récente du fichier de traduction et on compare avec la version actuelle.
