@@ -14,7 +14,6 @@
 	import { fetch } from '@tauri-apps/plugin-http';
 	import { open } from '@tauri-apps/plugin-shell';
 	import { invoke } from '@tauri-apps/api/core';
-	import { getMainKey } from '../../lib/stores/strongHold';
 	import Calendar from '@event-calendar/core';
 	import TimeGrid from '../../lib/calendar-vkurko/timeGrid';
 

@@ -6,18 +6,23 @@
 	import { writeText } from '@tauri-apps/plugin-clipboard-manager';
 	import { t } from '../../../lib/i18n';
 	import { getModalStore } from '@skeletonlabs/skeleton';
+
 	const modalStore = getModalStore();
 	import { goto } from '$app/navigation';
 
 	/**
-	 * TODO Il faut faire ça autrement pour checker... genre faire une fonction qui vérifie qu'il y a bien une stronghold key */
-	// 2 façons de faire :
-	//	- Ou bien il s'agit d'jà d'une deuxième machine et donc l'utilisateur doit simplement réencoder sa clé
+	 * TODO
+	 * ENCRYPTION SETUP 2 cas de figure
+	 ** - Première connexion donc : pas de stronghold_key ni de strong_hold file donc on doit tout créer
+	 ** - Première connexion sur cette machine (flag cloud = true) : il y a une stronghold_key MAIS pas de stronghold donc il faut demander à l'utilisateur d'insérer sa clé et l'ordi doit faire le reste
+	 * */
 	const generatingKey = new Promise(async (resolve) => {
 		// the function generateEncryptionKeys does everything security needs
 		let key;
 		if (!key) {
-			key = await invoke('get_main_key', { userId: get(user).user.id });
+			//! encore une fois y'a un problème ici en ça que la get_main_key avait deux rôles : soit elle retournait directement la clé soit elle créait un strong_hold et elle générait une clé qu'elle mettait dans le stronghold puis retournait
+			// key = await invoke('get_main_key', { userId: get(user).user.id });
+			key = 'Blabla';
 		}
 		resolve(key);
 	});
@@ -25,9 +30,9 @@
 	// Ici il faut s'arranger pour setup la sécurité puis vérifier si le profil est rempli puis l'imprimante a besoin d'être setup. Si oui rediriger vers l'imprimante sinon on peut aller au dashboard directement
 	async function checkForData() {
 		console.log($user);
-		
+
 		if (!$user.profil.inami) {
-			goto('/post-signup-forms/kine-profile')
+			goto('/post-signup-forms/kine-profile');
 		}
 		if (!$user.settings?.raw_printer) {
 			goto('/post-signup-forms/printer-setup');

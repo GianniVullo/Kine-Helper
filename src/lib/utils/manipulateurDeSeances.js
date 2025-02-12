@@ -5,7 +5,6 @@ import { get } from 'svelte/store';
 import { user } from '../stores/UserStore';
 import { patients } from '../stores/PatientStore';
 import { encryptTable } from '../stores/encryption';
-import { getMainKey } from '../stores/strongHold';
 import { supabase } from '../stores/supabaseClient';
 
 /** Pour manipuler une séances :
@@ -101,7 +100,6 @@ export class ManipulateurDeSeances {
 		if (get(user).profil.offre === 'cloud') {
 			//* We need to build a list of encrypted and adjusted seance
 			let seances_data = [];
-			const key = await getMainKey();
 			for (let idx = 0; idx < this.seances.length; idx++) {
 				
 				const seance = this.seances[idx];
@@ -123,8 +121,7 @@ export class ManipulateurDeSeances {
 						{
 							...seance,
 							code_id: updated_code_id
-						},
-						key
+						}
 					)
 				);
 			}

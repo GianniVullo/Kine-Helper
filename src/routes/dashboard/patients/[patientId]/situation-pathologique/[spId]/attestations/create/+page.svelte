@@ -14,7 +14,6 @@
 	import { patients } from '$lib/stores/PatientStore';
 	import { goto } from '$app/navigation';
 	import { t } from '../../../../../../../../lib/i18n';
-	import { getMainKey } from '../../../../../../../../lib/stores/strongHold';
 
 	let patient = $patients.find((p) => p.patient_id === $page.params.patientId);
 	let sp = patient.situations_pathologiques.find((sp) => sp.sp_id === $page.params.spId);
@@ -63,16 +62,15 @@
 		async save() {
 			if (!this.toBeProduced) return;
 
-			const key = await getMainKey();
 			let dbAdapter = new DBAdapter();
-			let attestation = await dbAdapter.save('attestations', this.attestation, key);
+			let attestation = await dbAdapter.save('attestations', this.attestation);
 			attestation = attestation.data[0];
 			attestation.porte_prescr = JSON.parse(attestation.porte_prescr);
 			attestation.with_indemnity = JSON.parse(attestation.with_indemnity);
 			attestation.with_intake = JSON.parse(attestation.with_intake);
 			attestation.with_rapport = JSON.parse(attestation.with_rapport);
 			attestation.has_been_printed = JSON.parse(attestation.has_been_printed);
-			await dbAdapter.update_seances(this.seances, key);
+			await dbAdapter.update_seances(this.seances);
 			console.log('attestation', attestation, 'seances', this.seances);
 			let jointe_a =
 				typeof this.attestation.date === 'string'
@@ -85,8 +83,7 @@
 					{
 						...this.prescr,
 						jointe_a
-					},
-					key
+					}
 				);
 				this.prescr.jointe_a = jointe_a;
 			}

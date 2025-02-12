@@ -138,6 +138,7 @@ fn decrypt_fn(encrypted: String, key: String) -> Result<String, String> {
         .map_err(|e| e.to_string())?;
     Ok(String::from_utf8(plaintext).map_err(|e| e.to_string())?)
 }
+
 #[tauri::command]
 pub fn generate_encryption_key() -> String {
     STANDARD.encode(gen_fn())
