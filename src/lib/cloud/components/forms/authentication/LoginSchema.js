@@ -36,15 +36,11 @@ export async function onValid(data) {
 	await appState.initializeDatabase();
 	// Connecter l'utilisateur
 	let { user, session, error } = await signUserIn(data);
-	console.log(user);
 
 	let kine = (await appState.db.select('SELECT * FROM kines WHERE user_id = $1', [user.id]))[0];
-	console.log('KINE = , ', kine);
 
 	user = { ...user, ...kine };
 	if (error) {
-		console.log('the error = ', error.message, typeof error);
-
 		switch (error.message) {
 			case 'Invalid login credentials':
 				return (this.message = 'Identifiants incorrects');
@@ -52,20 +48,16 @@ export async function onValid(data) {
 				return (this.message = error.message);
 		}
 	}
-	appState.user = user;
-	appState.session = session;
 
 	// Call au serveur pour obtenir les données de profil utilisateur nécessaire à la gestion des
 	this.message = get(t)('login', 'submission.profil');
 	let profil = await retrieveProfile(user.id);
-	console.log(profil);
 
 	// Récupérer les settings
 	this.message = get(t)('login', 'submission.settings', null, 'Gathering settings');
-	let settings = await retrieveSettings(user.id);
 
+	await appState.init({ user, session, profil });
 	// Initialiser l'objet "AppState"
-	appState.init(settings, profil);
 
 	// REDIRECTION :
 	// Si l'utilisateur n'a pas de stronghold key

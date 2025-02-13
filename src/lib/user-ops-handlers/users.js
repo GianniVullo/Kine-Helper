@@ -39,7 +39,7 @@ export async function signUserIn(formData) {
 	});
 	//  TODO STEP 1a : Error handling
 	if (error) {
-		return {error};
+		return { error };
 	}
 
 	return {
@@ -74,7 +74,7 @@ export async function retrieveProfile(user_id) {
 	}
 	// TODO : Le profil ne sera plus encrypté à partir de maintenant
 	kineRemoteData.data[0].has_stronghold_key = has_stronghold_key;
-	let hold_exists = await file_exists(`${appState.user.id}.hold`);
+	let hold_exists = await file_exists(`${user_id}.hold`);
 	console.log('Hold exists', hold_exists);
 	kineRemoteData.data[0].hold_exists = hold_exists;
 	return kineRemoteData.data[0];
@@ -97,7 +97,7 @@ export async function updateUser(data) {
 				cp: data.cp,
 				localite: data.localite,
 				conventionne: data.conventionne
-			}),
+			})
 		});
 		let { data, error } = await supabase
 			.from('kinesitherapeutes')

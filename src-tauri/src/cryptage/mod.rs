@@ -14,8 +14,16 @@ pub fn setup_stronghold_key(
     app_state: tauri::State<'_, Mutex<AppState>>,
     stronghold_key: String,
 ) -> Result<(), String> {
-    let mut state = app_state.lock().unwrap();
-    state.stronghold_key = Some(stronghold_key);
+    let mut appstate = match app_state.lock() {
+        Ok(state) => state,
+        Err(err) => {
+            return Err(format!(
+                "Panic: cannot reatrive the appState from Mutex {}",
+                err
+            ))
+        }
+    };
+    appstate.stronghold_key = Some(stronghold_key);
     Ok(())
 }
 

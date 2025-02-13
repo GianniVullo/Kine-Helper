@@ -7,72 +7,55 @@ import { file_exists } from '../utils/fsAccessor';
 import { user } from '../stores/UserStore';
 import { listPatients } from '../user-ops-handlers/patients';
 import { t } from '../i18n';
+import { invoke } from '@tauri-apps/api/core';
 /**
  ** L'objet AppState est là pour stocker les données importantes at runtime
  **
  */
 class AppState {
-	user_data;
-	session_data;
+	user;
+	session;
 	connectivite = true;
 	settings; // Important de l'avoir at runtime parce que petit et en interaction forte avec l'UI
 	/**@type Database */
 	db; // DB connection
-	contratStatus; //! inutile en fait, il est dans user.
+
 	async initializeDatabase() {
 		this.db = new DatabaseManager();
 		await this.db.initializing();
 	}
 
-	init(settings, profil) {		
-		this.user_data = { ...this.user_data, ...profil };
-		// Pour pouvoir offrir l'email pré-rempli dans l'écran de login
-		localStorage.setItem('lastLoggedUser', this.user_data.email);
-		sessionStorage.setItem('user', JSON.stringify(this.user_data));
-		sessionStorage.setItem('contrat', JSON.stringify(profil.offre));
-		this.settings = settings;
-		this.contratStatus = profil.offre;
-	}
+	async init({ user, session, profil }) {
+		// lors de la première initialisation
+		if (user && profil && session) {
+			// Pour pouvoir offrir l'email pré-rempli dans l'écran de login
+			localStorage.setItem('lastLoggedUser', user.email);
+			this.user = { ...user, ...profil };
+			// TODO Handle error here
+			await invoke('set_app_state', { user: this.user, session });
 
-	get user() {
-		if (this.user_data) {
-			return this.user_data;
+			if (!this.settings) {
+				console.log();
+				this.settings = await retrieveSettings(user.id);
+			}
+		} else {
+			// le de toutes les initialisations subséquentes à un rechargement de la page
+			if (!this.user || !this.session) {
+				// les if statement viennent éviter les chargements inutiles bien que ceux-ci soient de l'ordre de la poignée de millisecondes
+				// TODO handle error here
+				let { user, session } = await invoke('get_app_state');
+				this.user = user;
+				this.session = session;
+			}
 		}
-		const user = JSON.parse(sessionStorage.getItem('user'))?.user;
-		console.log('USER : ', user);
 
-		if (user) {
-			return user;
-		}
-	}
-
-	set user(user) {
-		sessionStorage.setItem('user', JSON.stringify(user));
-		this.user_data = user;
-	}
-	set session(session) {
-		sessionStorage.setItem('supabaseSession', JSON.stringify(session));
-		this.session_data = session;
-	}
-
-	get session() {
-		if (this.user_data) {
-			return this.user_data;
-		}
-		const session = sessionStorage.getItem('supabaseSession');
-		if (session) {
-			return session;
+		if (!this.settings) {
+			this.settings = await retrieveSettings(this.user.id);
 		}
 	}
 
 	get contrat() {
-		if (this.contratStatus) {
-			return this.contratStatus;
-		}
-		const contrat = sessionStorage.getItem('contrat');
-		if (contrat) {
-			return contrat;
-		}
+		return user.offre;
 	}
 
 	get readOnly() {
@@ -80,10 +63,6 @@ class AppState {
 			return true;
 		}
 		return false;
-	}
-
-	setProfile(data) {
-		this.user = { ...this.user, ...data };
 	}
 
 	async initialiseKineHelper(submitter) {
@@ -94,7 +73,6 @@ class AppState {
 
 	has_complete_profile() {
 		let profil = this.user;
-		console.log(profil);
 		return (
 			profil.nom &&
 			profil.prenom &&

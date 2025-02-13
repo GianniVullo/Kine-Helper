@@ -75,7 +75,8 @@
     "updater:default",
     "dialog:allow-save",
     "process:allow-restart",
-    "clipboard-manager:allow-write-text"
+    "clipboard-manager:allow-write-text",
+    "log:default"
   ],
   "platforms": [
     "macOS",

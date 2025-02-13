@@ -13,9 +13,9 @@ use printer::raw_printer::unix::print_attestation;
 use printer::raw_printer::windows::print_attestation;
 
 #[cfg(any(target_os = "macos", target_os = "linux", target_os = "windows"))]
-use printers::{get_printers, printer::Printer};
+use printers::{common::base::printer::Printer, get_printers};
 
-use appstate::get_app_state;
+use appstate::{get_app_state, set_app_state};
 use cryptage::{
     decrypt_string, does_private_key_exist, encrypt_string, from_base64_to_bytes,
     from_bytes_to_base64, generate_encryption_key, setup_stronghold_key,
@@ -102,6 +102,10 @@ async fn get_printer() -> Vec<LocalPrinter> {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .plugin(
+            tauri_plugin_log::Builder::new()
+                .filter(|metadata| metadata.target().starts_with("webview"))
+                .build())
         .plugin(tauri_plugin_clipboard_manager::init())
         .setup(|app| {
             #[cfg(desktop)]
@@ -183,6 +187,7 @@ pub fn run() {
         // .plugin(sentry_tauri::plugin())
         .invoke_handler(tauri::generate_handler![
             get_app_state,
+            set_app_state,
             generate_encryption_key,
             does_private_key_exist,
             encrypt_string,

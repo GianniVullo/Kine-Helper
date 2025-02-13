@@ -7,7 +7,7 @@
 	import { goto } from '$app/navigation';
 	import { onDestroy } from 'svelte';
 	import { platform } from '@tauri-apps/plugin-os';
-	import PatientForm from '../lib/cloud/components/forms/patient/PatientForm.svelte';
+	import { debug, error, info, trace, warn } from '@tauri-apps/plugin-log';
 
 	function registerShortcut(callback) {
 		window.addEventListener('keydown', function (event) {
@@ -72,7 +72,7 @@
 		<div class="card-footer mt-4 flex flex-col items-center justify-center space-y-2">
 			{#if selectedForm == 'login'}
 				<button
-					on:click={() => (selectedForm = 'signup')}
+					onclick={() => (selectedForm = 'signup')}
 					class="group text-gray-600 dark:text-gray-300"
 					>{$t('login', 'controls.register.question')}
 					<span class="border-purple-500 text-base duration-200 group-hover:border-b"
@@ -80,7 +80,7 @@
 					></button>
 			{:else}
 				<button
-					on:click={() => (selectedForm = 'login')}
+					onclick={() => (selectedForm = 'login')}
 					class="group text-gray-600 dark:text-gray-300"
 					>{@html selectedForm == 'passwordReset'
 						? $t('login', 'controls.resetCancel')
@@ -91,7 +91,7 @@
 			{/if}
 			{#if selectedForm !== 'passwordReset'}
 				<button
-					on:click={() => {
+					onclick={() => {
 						selectedForm = 'passwordReset';
 					}}
 					class="text-gray-600 dark:text-gray-300">
