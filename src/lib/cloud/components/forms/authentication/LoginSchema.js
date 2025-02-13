@@ -5,8 +5,7 @@ import { retrieveProfile, signUserIn } from '../../../../user-ops-handlers/users
 import { goto } from '$app/navigation';
 import { lock, userIcon } from '../../../../ui/svgs/IconSnippets.svelte';
 import { appState } from '../../../../managers/AppState.svelte';
-import { retrieveSettings } from '../../../../user-ops-handlers/settings';
-import { AuthApiError } from '@supabase/supabase-js';
+import { trace, error as errorLog, info } from '@tauri-apps/plugin-log';
 
 const email = v.pipe(
 	v.transform((input) =>
@@ -33,14 +32,13 @@ export const LoginSchema = v.pipe(
 );
 
 export async function onValid(data) {
+	trace('In the LoginForm onValid');
 	await appState.initializeDatabase();
 	// Connecter l'utilisateur
 	let { user, session, error } = await signUserIn(data);
 
-	let kine = (await appState.db.select('SELECT * FROM kines WHERE user_id = $1', [user.id]))[0];
-
-	user = { ...user, ...kine };
 	if (error) {
+		errorLog(`Erreur dans LoginForm onValid : ${error}`);
 		switch (error.message) {
 			case 'Invalid login credentials':
 				return (this.message = 'Identifiants incorrects');
@@ -48,20 +46,31 @@ export async function onValid(data) {
 				return (this.message = error.message);
 		}
 	}
+	info('Successfully logged user in');
 
+	trace('Fetching local user data');
+	let kine = (await appState.db.select('SELECT * FROM kines WHERE user_id = $1', [user.id]))[0];
+	trace('Local user data successfully fetched');
+
+	user = { ...user, ...kine };
+
+	trace('Remote user data fetching');
 	// Call au serveur pour obtenir les données de profil utilisateur nécessaire à la gestion des
 	this.message = get(t)('login', 'submission.profil');
 	let profil = await retrieveProfile(user.id);
+	info('Remote user data successfully fetched');
 
 	// Récupérer les settings
 	this.message = get(t)('login', 'submission.settings', null, 'Gathering settings');
 
+	trace('Initialising AppState for the first time');
 	await appState.init({ user, session, profil });
 	// Initialiser l'objet "AppState"
 
 	// REDIRECTION :
 	// Si l'utilisateur n'a pas de stronghold key
 	if (!appState.user.has_stronghold_key) {
+		info('User has no stronghold key');
 		goto('/post-signup-forms/encryption-key-setup');
 		return;
 	}
@@ -69,6 +78,7 @@ export async function onValid(data) {
 	// REDIRECTION :
 	// Si l'utilisateur a une stronghold key mais n'a pas de stronghold (ça voudrait dire que il essaye d'enregistrer un autre appareil)
 	if (!appState.user.hold_exists) {
+		info('User has stronghold key but no stronghold');
 		goto('/post-signup-forms/encryption-key-setup?cloud=true');
 		return;
 	}
@@ -76,19 +86,24 @@ export async function onValid(data) {
 	// REDIRECTION :
 	// Si le profil de l'utilisateur est incomplet
 	if (!appState.has_complete_profile()) {
+		info('User has incomplete profile');
 		goto('/post-signup-forms/kine-profile');
 		return;
 	}
 
 	// Check si l'utilisateur a au moins un appareil enregistré
+	trace('Fetching user devices');
 	let materiel = await appState.db.select('SELECT * FROM appareils;');
+
 	// REDIRECTION :
 	// Si l'utilisateur n'a pas d'appareil enregistré
 	if (materiel?.length === 0) {
+		info('User has no device on local db');
 		goto('/post-signup-forms/printer-setup');
 		return;
 	}
 
+	info('Everything is fine, redirecting to the dashboard');
 	goto('/dashboard');
 }
 
