@@ -1,0 +1,1 @@
+<div class="fixed bottom-0 right-0 h-8 w-96 bg-black text-white">Footer avec info de connexion et tout</div>
