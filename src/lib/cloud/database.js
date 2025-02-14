@@ -1,8 +1,15 @@
+import { trace, error as errorLog } from '@tauri-apps/plugin-log';
 import Database from '@tauri-apps/plugin-sql';
 
 export class DatabaseManager {
 	/**@type Database */
 	db;
+
+	constructor(dbPath) {
+		if (dbPath) {
+			this.db = new Database(dbPath);
+		}
+	}
 
 	async update(table, filters, formData, key) {
 		let updateStmt = Object.keys(formData).reduce((acc, key, idx) => {
@@ -93,8 +100,7 @@ export class DatabaseManager {
 		filters,
 		{ selectStatement, limit, orderBy, ascending = true } = { selectStatement: '*' }
 	) {
-		console.log('in DBAdapter.list() with', table, selectStatement, orderBy, ascending);
-		let db = new LocalDatabase();
+		trace('In DatabaseManager.list');
 		let liteQuery = `SELECT ${selectStatement} FROM ${table}`;
 
 		// Adding filters
@@ -123,7 +129,7 @@ export class DatabaseManager {
 			filters?.map(([_, filterValue]) => filterValue)
 		);
 		// Prepare and execute the query
-		const stmt = await db.select(
+		const stmt = await this.select(
 			liteQuery,
 			filters?.map(([_, filterValue]) => filterValue)
 		);
@@ -155,18 +161,18 @@ export class DatabaseManager {
 
 	async select(query, bindValues) {
 		try {
-			console.log('in LocalDatabase with', query, bindValues);
+			trace('In DatabaseManager.select with ' + query);
 			let result = await this.db.select(query, bindValues);
 			console.log('result is ', result);
 			return result;
 		} catch (error) {
+			errorLog(`In the DatabaseManager.select with error : ${error}`);
 			if (error === 'attempted to acquire a connection on a closed pool') {
 				await this.initializing();
 				let result = await this.db.select(query, bindValues);
 				return result;
 			}
 			// TODO : handle error properly
-			console.error(error);
 		}
 	}
 

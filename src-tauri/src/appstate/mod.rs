@@ -9,6 +9,7 @@ pub struct AppState {
     pub stronghold_key: Option<String>,
     pub user: Option<User>,
     pub session: Option<Session>,
+    pub db: Option<String>,
 }
 
 #[tauri::command]
@@ -27,7 +28,9 @@ pub fn set_app_state(
     app_state: tauri::State<'_, Mutex<AppState>>,
     user: User,
     session: Session,
+    db: String,
 ) -> Result<bool, String> {
+    println!("In the set_app_state with dbPath = {}", db);
     let mut state = match app_state.lock() {
         Ok(state) => state,
         Err(err) => {
@@ -39,5 +42,6 @@ pub fn set_app_state(
     };
     state.session = Some(session);
     state.user = Some(user);
+    state.db = Some(db);
     Ok(true)
 }

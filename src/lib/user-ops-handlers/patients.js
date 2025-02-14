@@ -31,7 +31,6 @@ export async function createPatient(data) {
 export async function retrievePatient(data) {
 	const opsHandler = setupPatientOpsHandler();
 	await opsHandler.execute(async () => {
-		appState
 		let result = await appState.db.select('SELECT * from patients WHERE patient_id = $1', [
 			data.patient_id
 		]);
@@ -109,9 +108,9 @@ export async function listPatients(data) {
 	const opsHandler = setupPatientOpsHandler();
 	let patients;
 	await opsHandler.execute(async () => {
-		console.log('in list patient operation handler with ', data);
-		let db = new DBAdapter();
-		const { data: patientList, error } = await db.list(
+		console.log(appState);
+
+		const { data: patientList } = await appState.db.list(
 			'patients',
 			[
 				['user_id', data.id],
@@ -123,7 +122,6 @@ export async function listPatients(data) {
 				// orderBy: 'nom' Not needed I think
 			}
 		);
-		console.log('Les patients queried', patientList, error);
 		patientList.sort((a, b) => {
 			if (a.nom > b.nom) {
 				return 1;

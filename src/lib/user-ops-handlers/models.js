@@ -1,3 +1,5 @@
+import { appState } from '../managers/AppState.svelte';
+
 export class Patient {
 	constructor({
 		patient_id,
@@ -22,6 +24,7 @@ export class Patient {
 		numero_etablissement,
 		service
 	}) {
+		this.user_id = appState.user.id;
 		this.patient_id = patient_id;
 		this.created_at = created_at;
 		this.nom = nom;
