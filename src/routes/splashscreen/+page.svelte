@@ -59,6 +59,7 @@
 							)}`
 						);
 						// <!--? ETAPE 2 : télécharger et installer -->
+						// TODO : mettre un timout reload, parce que si il y a un problème lors du fetch tout plante
 						update
 							.downloadAndInstall((progress) => {
 								if (progress.event === 'Started') {
