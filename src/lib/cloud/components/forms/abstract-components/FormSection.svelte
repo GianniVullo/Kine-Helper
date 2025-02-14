@@ -8,7 +8,7 @@
 		form = $bindable(),
 		fields,
 		customField,
-		validationState
+		errors = $bindable()
 	} = $props();
 </script>
 
@@ -24,10 +24,7 @@
 			{@render customField()}
 		{:else}
 			{#each fields as field}
-				<Field
-					{field}
-					error={extractErrorForField(field.name, validationState).errorString}
-					bind:value={form[field.name]} />
+				<Field {field} error={errors[field.name]} bind:value={form[field.name]} />
 			{:else}
 				Il n'y a aucun champs à afficher
 			{/each}

@@ -2,87 +2,135 @@ import * as v from 'valibot';
 import { t } from '../../../../i18n';
 import { createPatient, updatePatient } from '../../../../user-ops-handlers/patients';
 import { get } from 'svelte/store';
-import { appState } from '../../../../managers/AppState.svelte';
-import { user } from '../../../../stores/UserStore';
 import { goto } from '$app/navigation';
+import { info, trace } from '@tauri-apps/plugin-log';
 
 const SEX = ['F', 'M'];
+
+const user_id = v.pipe(v.nonNullable(v.string()), v.uuid());
+const patient_id = v.pipe(v.optional(v.string()), v.uuid());
+const nom = v.pipe(
+	v.transform((input) => (input?.length === 0 ? null : input)),
+	v.string('Ce champ est obligatoire'),
+	v.minWords(1, 'Veuillez insérer un nom')
+);
+const prenom = v.nullable(v.string());
+const niss = v.pipe(
+	v.transform((input) => (input?.length === 0 ? null : input)),
+	v.nullable(
+		v.pipe(
+			v.string(),
+			v.length(11, 'Veuillez insérer seulement les 11 caractères du niss'),
+			v.digits('Ce champ ne peut contenir que des chiffres')
+		)
+	)
+);
+const date_naissance = v.pipe(
+	v.nullable(v.isoDate())
+	// v.transform((input) => dayjs(input))
+);
+const sexe = v.nullable(v.picklist(SEX));
+const adresse = v.pipe(v.nullable(v.string()));
+const cp = v.nullable(
+	v.pipe(
+		v.string(),
+		v.length(4, 'Veuillez entrer seulement 4 chiffres svp'),
+		v.digits('Ce champ ne peut contenir que des chiffres')
+	)
+);
+const localite = v.nullable(v.string());
+const num_affilie = v.nullable(v.string());
+const tiers_payant = v.pipe(v.optional(v.boolean()));
+const ticket_moderateur = v.pipe(v.optional(v.boolean()));
+const bim = v.pipe(v.optional(v.boolean()));
+const mutualite = v.nullable(
+	v.pipe(
+		v.string(),
+		v.length(3, "Veuillez entrer seulement l'identifiant à 3 chiffres de la mutualité"),
+		v.digits('Ce champ ne peut contenir que des chiffres')
+	)
+);
+const numero_etablissement = v.nullable(v.string());
+const service = v.nullable(v.string());
+const email = v.pipe(
+	v.transform((input) => (input?.length == 0 ? null : input)),
+	v.nullable(v.pipe(v.string(), v.email('Email invalide')))
+);
+const tel = v.nullable(v.pipe(v.string(), v.digits('Ce champ ne peut contenir que des chiffres')));
+const gsm = v.nullable(v.pipe(v.string(), v.digits('Ce champ ne peut contenir que des chiffres')));
+
+export const validateurs = {
+	// Id
+	user_id,
+	patient_id,
+	nom,
+	prenom,
+	niss,
+	date_naissance,
+	sexe,
+	adresse,
+	cp,
+	localite,
+	// Assurabilité
+	num_affilie,
+	tiers_payant,
+	ticket_moderateur,
+	bim,
+	mutualite,
+	numero_etablissement,
+	service,
+	// Contact
+	tel,
+	gsm,
+	email
+};
 
 export const PatientSchema = v.pipe(
 	v.object({
 		// Id
-		user_id: v.pipe(v.nonNullable(v.string()), v.uuid()),
-		patient_id: v.pipe(v.optional(v.string(), crypto.randomUUID()), v.uuid()),
-		nom: v.pipe(
-			v.transform((input) => (input?.length === 0 ? null : input)),
-			v.string('Ce champ est obligatoire'),
-			v.minWords(1, 'Veuillez insérer un nom')
-		),
-		prenom: v.nullable(v.string()),
-		niss: v.pipe(
-			v.transform((input) => (input?.length === 0 ? null : input)),
-			v.nullable(
-				v.pipe(
-					v.string(),
-					v.length(11, 'Veuillez insérer seulement les 11 caractères du niss'),
-					v.digits('Ce champ ne peut contenir que des chiffres')
-				)
-			)
-		),
-		date_naissance: v.pipe(
-			v.nullable(v.isoDate())
-			// v.transform((input) => dayjs(input))
-		),
-		sexe: v.nullable(v.picklist(SEX)),
-		adresse: v.pipe(v.nullable(v.string())),
-		cp: v.nullable(
-			v.pipe(
-				v.string(),
-				v.length(4, 'Veuillez entrer seulement 4 chiffres svp'),
-				v.digits('Ce champ ne peut contenir que des chiffres')
-			)
-		),
-		localite: v.nullable(v.string()),
+		user_id,
+		patient_id,
+		nom,
+		prenom,
+		niss,
+		date_naissance,
+		sexe,
+		adresse,
+		cp,
+		localite,
 		// Assurabilité
-		num_affilie: v.nullable(v.string()),
-		tiers_payant: v.pipe(v.optional(v.boolean(), false)),
-		ticket_moderateur: v.pipe(v.optional(v.boolean(), true)),
-		bim: v.pipe(v.optional(v.boolean(), false)),
-		mutualite: v.nullable(
-			v.pipe(
-				v.string(),
-				v.length(3, "Veuillez entrer seulement l'identifiant à 3 chiffres de la mutualité"),
-				v.digits('Ce champ ne peut contenir que des chiffres')
-			)
-		),
-		numero_etablissement: v.nullable(v.string()),
-		service: v.nullable(v.string()),
+		num_affilie,
+		tiers_payant,
+		ticket_moderateur,
+		bim,
+		mutualite,
+		numero_etablissement,
+		service,
 		// Contact
-		tel: v.nullable(v.pipe(v.string(), v.digits('Ce champ ne peut contenir que des chiffres'))),
-		gsm: v.nullable(v.pipe(v.string(), v.digits('Ce champ ne peut contenir que des chiffres'))),
-		email: v.pipe(
-			v.transform((input) => (input?.length == 0 ? null : input)),
-			v.nullable(v.pipe(v.string(), v.email('Email invalide')))
-		)
+		tel,
+		gsm,
+		email
 	})
 );
 
-console.log('AFTER PatientSchema');
-
 export async function onValid(data) {
+	trace('In PatientForm.onValid');
 	let patient;
-	console.log(data);
 
 	if (!patient) {
+		trace('Engaging Patient creation');
 		// <!--* CREATE PROCEDURE -->
 		await createPatient(data);
+		info('Patient Creation done Successfully');
 	} else {
+		trace('Engaging Patient modification');
 		// <!--* UPDATE PROCEDURE -->
 		await updatePatient(data);
+		info('Patient modified done Successfully');
 	}
+
 	goto('/dashboard/patients/' + data.patient_id);
 }
-console.log('AFTER onValid');
 
 const identificationFields = [
 	{
@@ -180,8 +228,6 @@ const identificationFields = [
 		innerCSS: ''
 	}
 ];
-
-console.log('after idfields');
 
 const assurabiliteFields = [
 	{
@@ -285,7 +331,6 @@ const contactFields = [
 		innerCSS: ''
 	}
 ];
-console.log('BEFORE fieldSchema');
 
 export const fieldSchema = [
 	{
@@ -307,5 +352,3 @@ export const fieldSchema = [
 		fields: contactFields
 	}
 ];
-
-console.log('END OF PatientSchema FILE');

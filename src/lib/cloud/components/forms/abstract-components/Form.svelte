@@ -2,28 +2,16 @@
 	import { extractErrorForField } from '../../../libraries/formHandler.svelte';
 	import FormTitle from './FormTitle.svelte';
 
-	let {
-		id = 'default-form',
-		title,
-		action = undefined,
-		multipart,
-		inner,
-		validationState
-	} = $props();
-	console.log('End of form.svelte');
-	console.log(validationState);
+	let { id = 'default-form', title, action = undefined, multipart, children, message } = $props();
 </script>
 
 {#if title}
 	<FormTitle titre={title} />
 {/if}
 
-{#if validationState?.issues?.length > 0}
+{#if message}
 	<p class="mt-2 text-sm text-red-600">
-		Le formulaire comporte une erreur sur le ou les champs suivants : {extractErrorForField(
-			'*',
-			validationState
-		).errorFields}
+		{message}
 	</p>
 {/if}
 <form
@@ -33,6 +21,6 @@
 	method="POST"
 	enctype={multipart ? undefined : 'multipart/form-data'}>
 	<div class="space-y-12">
-		{@render inner()}
+		{@render children()}
 	</div>
 </form>

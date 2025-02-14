@@ -1,3 +1,4 @@
+import { trace } from '@tauri-apps/plugin-log';
 import { safeParse, safeParseAsync } from 'valibot';
 
 //* API de validation de formulaire
@@ -42,10 +43,12 @@ export class Formulaire {
 		onValid,
 		onError
 	}) {
+		trace('Constructing the Formulaire instance with ' + Object.keys(schema.entries).join(', '));
 		this.submiter = submiter;
 		this.validateurs = validateurs;
 		this.formElement = formElement;
 		for (const fieldName of Object.keys(schema.entries)) {
+			trace('Registering ' + fieldName);
 			this.form[fieldName] =
 				initialValues?.[fieldName] ?? schema.entries[fieldName].default ?? null;
 			this.errors[fieldName] = false;
@@ -58,6 +61,7 @@ export class Formulaire {
 		} else {
 			this.onError = this.defaultOnError.bind(this);
 		}
+		trace('Setting $effect up')
 		$effect(() => {
 			this.evaluateAndValidate(this.form);
 		});
@@ -98,6 +102,7 @@ export class Formulaire {
 	evaluateAndValidate(form) {
 		for (const field of Object.keys(form)) {
 			if (this.touched[field]) {
+				trace(field + ' is touched')
 				this.errors[field] = extractErrorForField(
 					safeParse(this.validateurs[field], this.form[field])
 				);
