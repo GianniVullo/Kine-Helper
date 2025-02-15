@@ -1,8 +1,9 @@
 import { UserOperationsHandler } from './abstractHandler';
 import DBAdapter from './dbAdapter';
 import { user } from '../stores/UserStore';
-import { SituationPathologique, patients } from '../stores/PatientStore';
+import { SituationPathologique } from './models';
 import { get } from 'svelte/store';
+import { appState } from '../managers/AppState.svelte';
 
 function setupSPOpsHandler() {
 	const opsHandler = new UserOperationsHandler();
@@ -77,20 +78,14 @@ export async function retrieveLastSPWithRelatedObjectsPlusOlderSPWithoutRelatedO
 
 export async function retrieveSituationPathologique(data) {
 	const opsHandler = setupSPOpsHandler();
+	let sp;
 	await opsHandler.execute(async () => {
-		let db = new DBAdapter();
-		let completedSp = await db.retrieve_sp(data.sp_id);
+		let completedSp = await appState.db.retrieve_sp(data.sp_id);
 		completedSp = new SituationPathologique(completedSp.data);
 		completedSp.upToDate = true;
-		patients.update((p) => {
-			let patientIndex = p.findIndex((p) => p.patient_id === data.patient_id);
-			let spIndex = p[patientIndex].situations_pathologiques.findIndex(
-				(sp) => sp.sp_id === completedSp.sp_id
-			);
-			p[patientIndex].situations_pathologiques[spIndex] = completedSp;
-			return p;
-		});
+		sp = completedSp;
 	});
+	return sp;
 }
 
 async function getLastSpAndOthers(patient_id) {

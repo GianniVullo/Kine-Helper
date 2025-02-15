@@ -5,6 +5,7 @@ import { user } from '../stores/UserStore';
 import { UserOperationsHandler } from './abstractHandler';
 import { appState } from '../managers/AppState.svelte';
 import { Patient, SituationPathologique } from './models';
+import { info, trace } from '@tauri-apps/plugin-log';
 
 //* ça a l'air con mtn mais je suis sûr que ça va payer à un moment
 function setupPatientOpsHandler() {
@@ -15,90 +16,65 @@ function setupPatientOpsHandler() {
 
 export async function createPatient(data) {
 	const opsHandler = setupPatientOpsHandler();
+	let result;
 	await opsHandler.execute(async () => {
-		let db = new DBAdapter();
-		data.user_id = get(user).user.id;
-		let result = await db.save('patients', data);
-		console.log('result for dbAdatper action : ', result);
-		let newPatient = new Patient(data);
-		patients.update((ps) => {
-			ps.push(newPatient);
-			return ps;
-		});
+		trace('Creating new patient');
+		await appState.db.save('patients', data);
+		result = new Patient(data);
 	});
+	return result;
 }
 
 export async function retrievePatient(data) {
 	const opsHandler = setupPatientOpsHandler();
+	let p;
 	await opsHandler.execute(async () => {
 		let result = await appState.db.select('SELECT * from patients WHERE patient_id = $1', [
 			data.patient_id
 		]);
-		console.log('result for dbAdatper action : ', result);
+		console.log('Result of retrievePatient = ', result);
+
 		if (result) {
-			let p = new Patient(result);
+			p = new Patient(result[0]);
+			trace('Engaging SP summary fetch');
 			let sps = (
 				await appState.db.select('SELECT * from situations_pathologiques WHERE patient_id = $1', [
-					data
+					data.patient_id
 				])
 			).map((sp) => new SituationPathologique(sp));
-			console.log('THE SPS = ', sps);
 
 			p.situations_pathologiques = sps;
-			return p;
+			info("Patient + SP's successfully fetched returning in load fonction");
 		}
-		return;
+		console.log('P = ', p);
 	});
+	return p;
 }
 
 export async function updatePatient(data) {
 	const opsHandler = setupPatientOpsHandler();
 	await opsHandler.execute(async () => {
-		let db = new DBAdapter();
-		let result = await db.update(
+		trace('Updating Patient');
+		await appState.db.update(
 			'patients',
 			[
-				['user_id', get(user).user.id],
+				['user_id', appState.user.id],
 				['patient_id', data.patient_id]
 			],
 			data
 		);
-		console.log('The resulte of the update query = ', result);
-
-		patients.update((ps) => {
-			let rpatient = ps.find((p) => p.patient_id === data.patient_id);
-			rpatient.nom = nom;
-			rpatient.prenom = prenom;
-			rpatient.niss = niss;
-			rpatient.date_naissance = date_naissance;
-			rpatient.sexe = sexe;
-			rpatient.adresse = adresse;
-			rpatient.cp = cp;
-			rpatient.localite = localite;
-			rpatient.num_affilie = num_affilie;
-			rpatient.tiers_payant = tiers_payant;
-			rpatient.ticket_moderateur = ticket_moderateur;
-			rpatient.bim = bim;
-			rpatient.mutualite = mutualite;
-			rpatient.numero_etablissement = numero_etablissement;
-			rpatient.service = service;
-			rpatient.tel = tel;
-			rpatient.gsm = gsm;
-			rpatient.email = email;
-			return ps;
-		});
+		trace('Patient Updated');
 	});
 }
 
 export async function deletePatient(data) {
 	const opsHandler = setupPatientOpsHandler();
 	await opsHandler.execute(async () => {
-		let db = new DBAdapter();
-		await db.delete('patients', [
+		trace('deleting patient');
+		await appState.db.delete('patients', [
 			['patient_id', data.patient_id],
-			['user_id', get(user).user.id]
+			['user_id', appState.user.id]
 		]);
-		console.log('DONE the deletion');
 
 		patients.update((p) => p.filter((p) => p.patient_id !== data.patient_id));
 	});
@@ -114,11 +90,10 @@ export async function listPatients(data) {
 			'patients',
 			[
 				['user_id', data.id],
-				['actif', get(user).profil?.offre === 'cloud' ? true : 1]
+				['actif', appState.profil?.offre === 'cloud' ? true : 1]
 			],
 			{
-				selectStatement:
-					get(user).profil?.offre === 'cloud' ? 'patient_id, actif, user_id, encrypted' : '*'
+				selectStatement: '*'
 				// orderBy: 'nom' Not needed I think
 			}
 		);
