@@ -6,6 +6,7 @@ import { safeParse, safeParseAsync } from 'valibot';
  ** les features nécessaires :
  **     - fournir un context au formulaire :
  **         - Touched : est-ce que le formulaire a été touché par l'utilisateur
+ **			- isDirty : doit servir pour le truc qui empêche de quitter la page. Si isDirty => are you sure you want to leave the page ?
  **     - contrôle du submiter : désactiver la soumission du formulaire pendant la validation
  **     - Validation grâce à Valibot
  **     - Exécution de fonctions "life cycle hook"
@@ -26,6 +27,7 @@ export class Formulaire {
 	isDirty = $derived(Object.values(this.touched).some(Boolean));
 	message = $state();
 	initialValues = {};
+	mode;
 	validateurs;
 	formElement;
 	submiter;
@@ -41,12 +43,14 @@ export class Formulaire {
 		formElement = '#default-form',
 		initialValues,
 		onValid,
-		onError
+		onError,
+		mode = 'create'
 	}) {
 		trace('Constructing the Formulaire instance with ' + Object.keys(schema.entries).join(', '));
 		this.submiter = submiter;
 		this.validateurs = validateurs;
 		this.formElement = formElement;
+		this.mode = mode;
 		for (const fieldName of Object.keys(schema.entries)) {
 			trace('Registering ' + fieldName);
 			this.form[fieldName] =
@@ -61,7 +65,7 @@ export class Formulaire {
 		} else {
 			this.onError = this.defaultOnError.bind(this);
 		}
-		trace('Setting $effect up')
+		trace('Setting $effect up');
 		$effect(() => {
 			this.evaluateAndValidate(this.form);
 		});
@@ -102,7 +106,7 @@ export class Formulaire {
 	evaluateAndValidate(form) {
 		for (const field of Object.keys(form)) {
 			if (this.touched[field]) {
-				trace(field + ' is touched')
+				trace(field + ' is touched');
 				this.errors[field] = extractErrorForField(
 					safeParse(this.validateurs[field], this.form[field])
 				);

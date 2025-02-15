@@ -2,7 +2,7 @@ import * as v from 'valibot';
 import { t } from '../../../../i18n';
 import { createPatient, updatePatient } from '../../../../user-ops-handlers/patients';
 import { get } from 'svelte/store';
-import { goto } from '$app/navigation';
+import { goto, invalidate } from '$app/navigation';
 import { info, trace } from '@tauri-apps/plugin-log';
 
 const SEX = ['F', 'M'];
@@ -115,9 +115,8 @@ export const PatientSchema = v.pipe(
 
 export async function onValid(data) {
 	trace('In PatientForm.onValid');
-	let patient;
 
-	if (!patient) {
+	if (this.mode === 'create') {
 		trace('Engaging Patient creation');
 		// <!--* CREATE PROCEDURE -->
 		await createPatient(data);
@@ -126,6 +125,7 @@ export async function onValid(data) {
 		trace('Engaging Patient modification');
 		// <!--* UPDATE PROCEDURE -->
 		await updatePatient(data);
+		await invalidate('patient:layout');
 		info('Patient modified done Successfully');
 	}
 

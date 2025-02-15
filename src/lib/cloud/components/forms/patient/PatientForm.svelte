@@ -8,14 +8,21 @@
 	import SubmitButton from '../../../../forms/ui/SubmitButton.svelte';
 	import { appState } from '../../../../managers/AppState.svelte';
 
-	let { patient } = $props();
+	let { patient, mode } = $props();
 
 	let formHandler = new Formulaire({
 		validateurs,
 		schema: PatientSchema,
 		submiter: '#patient-submit',
-		initialValues: patient ?? { user_id: appState.user.id, patient_id: crypto.randomUUID(), tiers_payant: false, ticket_moderateur: true, bim: false },
-		onValid
+		initialValues: patient ?? {
+			user_id: appState.user.id,
+			patient_id: crypto.randomUUID(),
+			tiers_payant: false,
+			ticket_moderateur: true,
+			bim: false
+		},
+		onValid,
+		mode
 	});
 
 	onMount(() => {
@@ -25,7 +32,12 @@
 
 <Form title="Création d'un nouveau patient" message={formHandler.message}>
 	{#each fieldSchema as { titre, description, fields }}
-		<FormSection {titre} {description} {fields} bind:form={formHandler.form} bind:errors={formHandler.errors} />
+		<FormSection
+			{titre}
+			{description}
+			{fields}
+			bind:form={formHandler.form}
+			bind:errors={formHandler.errors} />
 	{:else}
 		Error : no section!
 	{/each}
