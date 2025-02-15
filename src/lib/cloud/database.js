@@ -1,4 +1,4 @@
-import { trace, error as errorLog } from '@tauri-apps/plugin-log';
+import { trace, error as errorLog, info } from '@tauri-apps/plugin-log';
 import Database from '@tauri-apps/plugin-sql';
 
 export class DatabaseManager {
@@ -45,54 +45,57 @@ export class DatabaseManager {
 	}
 
 	async retrieve_sp(sp_id) {
-		console.log('in DBAdapter.retrieve_sp() with', sp_id);
+		trace('Entering AppState.db.retrieve_sp');
 		let latestPs = await this.db.select('SELECT * FROM situations_pathologiques WHERE sp_id = $1', [
 			sp_id
 		]);
-		console.log('in DBAdapter.retrieve_sp() with', latestPs);
 		if (latestPs.length === 0) {
+			trace('No sp found');
 			// No record found
 			return;
 		}
 
 		// Fetch related data for each table
+		trace('Fetching Séances');
 		let seances = await this.db.select(`SELECT * FROM seances WHERE sp_id = $1 ORDER BY date ASC`, [
 			sp_id
 		]);
-		console.log('in DBAdapter.retrieve_sp() with', seances);
+
+		trace('Fetching Prescriptions');
 		let prescriptions = await this.db.select(
 			`SELECT * FROM prescriptions WHERE sp_id = $1 ORDER BY created_at ASC`,
 			[sp_id]
 		);
-		console.log('in DBAdapter.retrieve_sp() with', prescriptions);
+
+		trace('Fetching Attestations');
 		let attestations = await this.db.select(
 			`SELECT * FROM attestations WHERE sp_id = $1 ORDER BY created_at ASC`,
 			[sp_id]
 		);
-		console.log('in DBAdapter.retrieve_sp() with', attestations);
-		let generateurs = await this.db.select(
-			`SELECT * FROM generateurs_de_seances WHERE sp_id = $1`,
-			[sp_id]
-		);
-		console.log('in DBAdapter.retrieve_sp() with', generateurs);
+
+		// trace("Fetching ")
+		// let generateurs = await this.db.select(
+		// 	`SELECT * FROM generateurs_de_seances WHERE sp_id = $1`,
+		// 	[sp_id]
+		// );
+
+		trace('Fetching Documents');
 		let documents = await this.db.select(
 			`SELECT * FROM documents WHERE sp_id = $1 ORDER BY created_at ASC`,
 			[sp_id]
 		);
-		console.log('in DBAdapter.retrieve_sp() with', documents);
-		// Aggregate the data in JavaScript
-		let result = {
+
+		info('Fetched all elements of the SP');
+		return {
 			data: {
 				...latestPs[0],
 				seances: seances,
 				prescriptions: prescriptions,
 				attestations: attestations,
-				generateurs_de_seances: generateurs,
+				// generateurs_de_seances: generateurs, deprecated
 				documents: documents
 			}
 		};
-		console.log('in DBAdapter.retrieve_sp() with', result);
-		return result;
 	}
 
 	async list(
