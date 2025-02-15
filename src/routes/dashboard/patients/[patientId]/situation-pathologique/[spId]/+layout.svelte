@@ -1,16 +1,11 @@
 <script>
 	import SpTitle from '../../../../../../lib/patient-detail/SPTitle.svelte';
-	import { reloadPatientSpRetrieval } from '../../../../../../lib/utils/depenciesRelodingScripts';
 	import { t } from '../../../../../../lib/i18n';
 	import { page } from '$app/state';
 	import Tabs from '../../../../../../lib/components/Tabs.svelte';
 
 	/** @type {{ data: import('./$types').LayoutData, children: import('svelte').Snippet }} */
 	let { children, data } = $props();
-	const depReloading = new Promise(async (resolve) => {
-		await reloadPatientSpRetrieval(data);
-		resolve();
-	});
 
 	const homeUrl = () =>
 		`/dashboard/patients/${data.patient.patient_id}/situation-pathologique/${data.sp.sp_id}`;
@@ -43,7 +38,9 @@
 	]);
 </script>
 
-{#await depReloading then _}
+{#if data.sp === 'none'}
+	Error, no sp found
+{:else}
 	<SpTitle patient={data.patient} currentSp={data.sp} />
 	<div class="-mt-5 mb-5 flex w-full items-center justify-start px-4 py-1 sm:py-1"></div>
 	<!--* Tabs -->
@@ -51,4 +48,4 @@
 		className="w-full text-center flex justify-center sm:block border-b border-gray-300 shadow-sm"
 		{tabs} />
 	{@render children()}
-{/await}
+{/if}
