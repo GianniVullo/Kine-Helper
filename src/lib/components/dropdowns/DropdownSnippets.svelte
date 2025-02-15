@@ -16,7 +16,7 @@
 	inner,
 	icon,
 	iconClass = 'mr-3 size-5 text-gray-400',
-	cls = 'group flex items-center px-4 py-2 text-sm text-gray-700'
+	cls = 'group flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 w-full'
 )}
 	{#if href}
 		<a {href} class={cls} role="menuitem" tabindex="-1">

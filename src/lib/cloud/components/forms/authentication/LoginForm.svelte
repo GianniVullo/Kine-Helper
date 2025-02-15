@@ -27,4 +27,4 @@
 </form>
 
 
-<p class="mt-2 text-lg text-red-800">{formHandler.message}</p>
+<p class="mt-2 text-lg text-purple-800">{formHandler.message}</p>
