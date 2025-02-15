@@ -1,5 +1,5 @@
 <script module>
-	export { iconBadge };
+	export { iconBadge, iconBadgeWCSS };
 </script>
 
 {#snippet iconBadge(inner, icon, color, cls)}
@@ -14,6 +14,15 @@
 			<svg class="size-1.5 fill-{color}-500" viewBox="0 0 6 6" aria-hidden="true">
 				<circle cx="3" cy="3" r="3" />
 			</svg>
+		{/if}
+		{inner}
+	</span>
+{/snippet}
+{#snippet iconBadgeWCSS(inner, icon, css, cls)}
+	<span
+		class="inline-flex items-center gap-x-1.5 rounded-md px-2 py-1 text-xs font-medium {css}">
+		{#if icon}
+			{@render icon("size-4")}
 		{/if}
 		{inner}
 	</span>
