@@ -1,11 +1,9 @@
 <script>
-	import { PatientForm } from '$lib/index';
-	import { page } from '$app/stores';
-	import { patients } from '$lib/stores/PatientStore';
+	import PatientForm from "../../../../../lib/cloud/components/forms/patient/PatientForm.svelte";
 
-	const patient = $patients.find((p) => p.patient_id === $page.params.patientId);
+	let { data } = $props();
 </script>
 
 <div class="-mx-4">
-	<PatientForm patient={patient} />
+	<PatientForm patient={data.patient} mode="update" />
 </div>

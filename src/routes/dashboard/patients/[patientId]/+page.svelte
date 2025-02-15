@@ -1,17 +1,13 @@
 <script>
-	import { page } from '$app/stores';
-	import { goto } from '$app/navigation';
-	import { patients } from '$lib/stores/PatientStore';
 	import { t } from '../../../../lib/i18n';
 	import dayjs from 'dayjs';
 	import relativeTime from 'dayjs/plugin/relativeTime';
 	import Title from '$lib/patient-detail/Title.svelte';
 
 	let { data } = $props();
-	console.log('le data de layout', data);
 
 	dayjs.extend(relativeTime);
-	let sps = data.patient.situations_pathologiques.length > 0;
+	let sps = data.patient?.situations_pathologiques?.length > 0;
 	// if (sps) {
 	// 	goto(
 	// 		'/dashboard/patients/' +
@@ -38,7 +34,7 @@
 	</div>
 
 	<ul role="list" class="w-full divide-y divide-gray-100">
-		{#each data.patient.situations_pathologiques as sp}
+		{#each data.patient?.situations_pathologiques as sp}
 			<li class="relative flex justify-between gap-x-6 py-5">
 				<div class="flex min-w-0 gap-x-4">
 					<!-- <img

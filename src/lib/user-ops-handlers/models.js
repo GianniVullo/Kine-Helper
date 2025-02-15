@@ -43,7 +43,7 @@ export class Patient {
 		this.tiers_payant = JSON.parse(tiers_payant);
 		this.ticket_moderateur = JSON.parse(ticket_moderateur);
 		this.bim = JSON.parse(bim);
-		this.actif = JSON.parse(actif ?? null);
+		this.actif = actif ? JSON.parse(actif) : true;
 		this.numero_etablissement = numero_etablissement;
 		this.service = service;
 		this.situations_pathologiques = [];
@@ -100,7 +100,7 @@ export class SituationPathologique {
 		this.prescriptions = prescriptions;
 		this.attestations = attestations;
 		this.documents = documents;
-		this.user_id = get(user).user.id;
+		this.user_id = appState.user.id;
 		this.upToDate = false;
 		this.intake = JSON.parse(intake ?? null);
 		this.rapport_ecrit = JSON.parse(rapport_ecrit ?? null);

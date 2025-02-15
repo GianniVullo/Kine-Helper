@@ -1,10 +1,8 @@
 <script>
 	import { t } from '../../../../lib/i18n';
-	import { page } from '$app/state';
 	import Breadcrumbs from '../../../../lib/patient-detail/Breadcrumbs.svelte';
-	import { patientState } from '../../../../lib/managers/PatientCache.svelte';
 
-	let { data, children } = $props();
+	let { data, children } = $props();	
 </script>
 
 {#if data.patient}

@@ -13,8 +13,9 @@
 	import { deleteSituationPathologique } from '../../../../../../lib/user-ops-handlers/situations_pathologiques';
 	import EmptyState from '../../../../../../lib/components/EmptyState.svelte';
 
-	const patient = $patients.find((p) => p.patient_id === $page.params.patientId);
-	const sp = patient.situations_pathologiques.find((sp) => sp.sp_id === $page.params.spId);
+	let { data } = $props();
+	let { patient, sp } = data;
+	
 </script>
 
 <div class="flex w-full flex-col">
@@ -47,6 +48,7 @@
 	{/if}
 
 	{#if sp.prescriptions.length > 0 && sp.seances.length === 0}
+	WHAAAT
 		<EmptyState
 			className="!text-start"
 			titre={$t('sp.detail', 'content.start') +
@@ -76,36 +78,5 @@
 	{/if}
 
 	Ajouter des overview de la situation pathologique : Où on en est dans le traitement, dans la
-	facturation etc (bref toutes les données que je pensais compiler dan l'object sp)
-	<!--* Motif et plan de la situation pathologique -->
-	<!-- <div class="flex flex-col space-y-2">
-		<div class="relative flex rounded-xl bg-surface-100 px-4 pb-4 pt-8 dark:bg-surface-800">
-			<p class="absolute left-4 top-1 text-sm text-surface-400">
-				{$t('sp.detail', 'reason')}
-			</p>
-			<p class="text-base text-surface-700 dark:text-surface-300">{sp.motif}</p>
-		</div>
-		<div class="relative flex rounded-xl bg-surface-100 px-4 pb-4 pt-8 dark:bg-surface-800">
-			<p class="absolute left-4 top-1 text-sm text-surface-400">
-				{$t('sp.detail', 'plan')}
-			</p>
-			<p class="text-base text-surface-700 dark:text-surface-300">{sp.plan_du_ttt}</p>
-		</div>
-	</div>
- -->
-	<!--* Séances Agenda -->
-	<!-- {#if sp.seances.length > 0}
-		<div class="mt-4 flex w-[90%] flex-col">
-			<h5 class="mb-2 text-lg text-surface-500 dark:text-surface-400">
-				{$t('patients.detail', 'prestations')} ({sp.seances.length})
-			</h5>
-			{#key eventsSource}
-				{#await eventsSource}
-					{$t('shared', 'loading')}
-				{:then events}
-					<EventCalendar bind:this={ec} {events} options={{}} />
-				{/await}
-			{/key}
-		</div>
-	{/if} -->
+	facturation etc (bref toutes les données que je pensais compiler dans l'object sp)
 </div>

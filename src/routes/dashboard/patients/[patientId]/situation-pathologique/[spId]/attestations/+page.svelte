@@ -18,9 +18,7 @@
 		buildingIcon,
 		buildingIconWithCheck,
 		buildingIconWithCross,
-		deleteIcon,
 		editIcon,
-		euroIcon,
 		printerIcon,
 		userIcon,
 		userIconWithCheck,
@@ -29,22 +27,12 @@
 	import { iconBadge } from '../../../../../../../lib/components/snippets/BadgesSnippets.svelte';
 	import { updateAttestation } from '../../../../../../../lib/user-ops-handlers/attestations';
 
-	let patient = $derived($patients.find((p) => p.patient_id === $page.params.patientId));
-	let sp = $state(
-		$patients
-			.find((p) => p.patient_id === $page.params.patientId)
-			.situations_pathologiques.find((sp) => sp.sp_id === $page.params.spId)
-	);
+	let { data } = $props();
+	let { patient, sp } = data;
 	const modalStore = getModalStore();
 	function prescription(prescriptionId) {
 		return sp.prescriptions.find((prescription) => prescription.prescription_id === prescriptionId);
 	}
-
-	$effect(() => {
-		sp = $patients
-			.find((p) => p.patient_id === $page.params.patientId)
-			.situations_pathologiques.find((sp) => sp.sp_id === $page.params.spId);
-	});
 
 	const printHandler = async (attestation) => {
 		modalStore.trigger({
@@ -141,7 +129,6 @@
 		{/snippet}
 		{#snippet body()}
 			{#each sp.attestations as attestation}
-				{console.log(attestation)}
 				<tr>
 					<td class="whitespace-nowrap px-3 py-5 text-sm text-gray-500">
 						{dayjs(attestation.date).format('DD/MM/YYYY')}
@@ -184,10 +171,12 @@
 					</td>
 					<td
 						class="relative whitespace-nowrap py-5 pl-3 pr-4 text-left text-sm font-medium sm:pr-0">
-						<Dropdown inner="actions" className="">
+						<Dropdown inner="actions" className="" id={attestation.attestation_id}>
 							{#snippet dropper(menuItems, menuState)}
 								<div
-									class="absolute right-0 z-10 mt-2 w-56 origin-top-right divide-y divide-gray-100 rounded-md bg-white shadow-lg ring-1 ring-black/5 transition duration-200 focus:outline-none {menuState
+									id={attestation.attestation_id}
+									style="width: max-content;"
+									class="fixed z-10 mt-2 origin-bottom-right divide-y divide-gray-100 rounded-md bg-white shadow-lg ring-1 ring-black/5 transition duration-200 focus:outline-none {menuState
 										? 'scale-100 opacity-100 ease-out'
 										: 'pointer-events-none scale-95 opacity-0 ease-in'}"
 									role="menu"
