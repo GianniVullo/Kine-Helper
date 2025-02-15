@@ -1,9 +1,9 @@
 import { get, writable } from 'svelte/store';
 import { jsPDF } from 'jspdf';
-import { user } from '../stores/UserStore';
 import dayjs from 'dayjs';
-import DBAdapter from '$lib/user-ops-handlers/dbAdapter';import { patients } from '../stores/PatientStore';
+import DBAdapter from '$lib/user-ops-handlers/dbAdapter';
 import { file_exists, open_file, read_file, remove_file, save_to_disk } from '../utils/fsAccessor';
+import { appState } from '../managers/AppState.svelte';
 
 function yPositionStore(initialValue) {
 	const yStore = writable(initialValue);
@@ -47,7 +47,7 @@ export class PDFGeneration {
 	buildPdf() {}
 
 	buildDirPath() {
-		return `${get(user).user.id}/${this.patient.nom}-${this.patient.prenom}(${
+		return `${appState.user.id}/${this.patient.nom}-${this.patient.prenom}(${
 			this.patient.patient_id
 		})/situation-pathologique-${this.sp.created_at}(${this.sp.sp_id})${
 			this.dirPath.length > 0 ? '/' + this.dirPath : ''
@@ -77,16 +77,10 @@ export class PDFGeneration {
 			document_id: crypto.randomUUID(),
 			patient_id: this.patient.patient_id,
 			sp_id: this.sp.sp_id,
-			user_id: get(user).user.id
+			user_id: appState.user.id
 		};
 		await db.save('documents', document);
 		this.data = document;
-		patients.update((p) => {
-			p.find((p) => p.patient_id === this.patient.patient_id)
-				.situations_pathologiques.find((sp) => sp.sp_id === this.sp.sp_id)
-				.documents.push(document);
-			return p;
-		});
 		console.log(
 			'in pdfGeneration with path ==',
 			dirPath + '/' + this.documentName.replaceAll(' ', ' ')
@@ -98,7 +92,7 @@ export class PDFGeneration {
 		let db = new DBAdapter();
 		await db.delete('documents', [
 			['document_id', this.data.document_id],
-			[('user_id', get(user).user.id)]
+			[('user_id', appState.user.id)]
 		]);
 		let dirpath = await this.buildPath();
 		let path = dirpath + (this.platform === 'windows' ? '\\' : '/') + this.documentName + '.pdf';
@@ -107,12 +101,6 @@ export class PDFGeneration {
 			await remove_file(path, { recursive: false });
 			console.log('the file is removed');
 		}
-		patients.update((ps) => {
-			let p = ps.find((p) => p.patient_id === this.patient.patient_id);
-			let sp = p.situations_pathologiques.find((sp) => sp.sp_id === this.sp.sp_id);
-			sp.documents = sp.documents.filter((d) => d.document_id !== this.data.document_id);
-			return ps;
-		});
 	}
 
 	async open() {
@@ -251,10 +239,10 @@ export class PDFGeneration {
 		}
 	}
 	signature(x = this.margins.left) {
-		this.addParagraph(`${get(user).profil.nom} ${get(user).profil.prenom}`, { x: x });
-		this.addParagraph(get(user).profil.adresse, { x: x });
-		this.addParagraph(`${get(user).profil.cp} ${get(user).profil.localite}`, { x: x });
-		this.addParagraph(get(user).profil.inami, { x: x });
+		this.addParagraph(`${appState.user.nom} ${appState.user.prenom}`, { x: x });
+		this.addParagraph(appState.user.adresse, { x: x });
+		this.addParagraph(`${appState.user.cp} ${appState.user.localite}`, { x: x });
+		this.addParagraph(appState.user.inami, { x: x });
 	}
 	async authSignature({
 		x = this.margins.left + this.pageWidth / 2,

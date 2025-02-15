@@ -62,5 +62,5 @@ CREATE TABLE IF NOT EXISTS factures_mutuelles_attestations ();
 
 CREATE TABLE IF NOT EXISTS demandes_accord ();
 CREATE TABLE IF NOT EXISTS testings ();
-CREATE TABLE IF NOT EXISTS documents_custom ();
+CREATE TABLE IF NOT EXISTS custom_documents ();
  

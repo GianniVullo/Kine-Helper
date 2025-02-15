@@ -68,7 +68,7 @@ export function fetchCodeDesSeances(loading, seances, sp) {
 	if (loading) {
 		loading.update((n) => true);
 	}
-	return new Promise(async (resolve, reject) => {
+	return new Promise(async (resolve) => {
 		let db = guesseur.database;
 		await guesseur.bulkGuess(seances, async (seances) => {
 			for (const seance of seances) {

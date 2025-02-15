@@ -169,3 +169,11 @@ export class SituationPathologique {
 		};
 	}
 }
+
+export class FacturePatient {}
+
+export class FactureMutuelle {}
+
+export class DemandeAccord {}
+
+export class CustomDocument {}
