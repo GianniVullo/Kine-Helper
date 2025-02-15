@@ -1,21 +1,66 @@
 <script>
+	import { onDestroy, onMount } from 'svelte';
 	import { simpleDropper } from './DropdownSnippets.svelte';
+	import { computePosition, autoUpdate, flip, shift } from '@floating-ui/dom';
 
 	let {
+		id = 'dropper-id',
 		inner,
 		dropper = undefined,
 		menuItems = undefined,
 		trailing = undefined,
 		className = 'ml-3 sm:hidden'
 	} = $props();
+
 	let menuState = $state(false);
+	let referenceEl;
+	let floatingEl;
+	let cleanup;
+
+	function clickOutside(node) {
+		const handleClick = (event) => {
+			if (!node.contains(event.target) && !referenceEl.contains(event.target)) {
+				menuState = false;
+			}
+		};
+
+		document.addEventListener('click', handleClick, true);
+
+		return {
+			destroy() {
+				document.removeEventListener('click', handleClick, true);
+			}
+		};
+	}
+	onMount(() => {
+		floatingEl = document.getElementById(id);
+		cleanup = autoUpdate(referenceEl, floatingEl, () => {
+			computePosition(referenceEl, floatingEl, {
+				placement: 'bottom-end',
+				middleware: [flip(), shift()],
+				strategy: 'fixed'
+			}).then((info) => {
+				floatingEl.style.left = `${info.x}px`;
+				floatingEl.style.top = `${info.y}px`;
+			});
+		});
+	});
+	onDestroy(() => {
+		cleanup();
+	});
 </script>
 
-<div class="relative {className}">
+<div bind:this={referenceEl} class="relative {className}">
 	<button
 		type="button"
-		onclick={() => {
-			menuState = !menuState;
+		onclick={(e) => {
+			if (menuState) {
+				console.log('is true');
+				menuState = false;
+			} else {
+				console.log('isFalse');
+				menuState = true;
+			}
 		}}
 		class="inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:ring-gray-400"
 		id="mobile-menu-button"
@@ -39,8 +84,8 @@
 		{/if}
 	</button>
 	{#if dropper}
-		{@render dropper(menuItems, menuState)}
+		<div use:clickOutside>{@render dropper(menuItems, menuState, id)}</div>
 	{:else}
-		{@render simpleDropper(menuItems, menuState)}
+		<div use:clickOutside>{@render simpleDropper(menuItems, menuState, id)}</div>
 	{/if}
 </div>
