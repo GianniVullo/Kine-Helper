@@ -1,10 +1,10 @@
 <script>
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import { t } from '../i18n';
 	let { currentSp, patient } = $props();
 	
 	let boutonRetour = $derived(
-		$page.params.spId ? '/dashboard/patients/' + patient.patient_id : '/dashboard/patients/'
+		page.params.spId ? '/dashboard/patients/' + patient.patient_id : '/dashboard/patients/'
 	);
 </script>
 

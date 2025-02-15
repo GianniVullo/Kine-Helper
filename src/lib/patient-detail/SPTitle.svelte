@@ -1,5 +1,5 @@
 <script>
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import { getModalStore } from '@skeletonlabs/skeleton';
 	import { t } from '../i18n';
 	import { get } from 'svelte/store';
@@ -35,10 +35,10 @@
 		response: async (r) => {
 			if (r) {
 				await deleteSituationPathologique({
-					sp_id: $page.params.spId,
-					patient_id: $page.params.patientId
+					sp_id: page.params.spId,
+					patient_id: page.params.patientId
 				});
-				goto('/dashboard/patients/' + $page.params.patientId);
+				goto('/dashboard/patients/' + page.params.patientId);
 			}
 		}
 	};
@@ -106,14 +106,14 @@
 						{/each}
 					</div>
 					{@render dropdownItemWithIcon(
-						`/dashboard/patients/${$page.params.patientId}/situation-pathologique/${$page.params.spId}/details`,
+						`/dashboard/patients/${page.params.patientId}/situation-pathologique/${page.params.spId}/details`,
 						null,
 						'Détails',
 						linkIcon
 					)}
 					<div class="py-1" role="none">
 						{@render dropdownItemWithIcon(
-							`/dashboard/patients/${$page.params.patientId}/situation-pathologique/${$page.params.spId}/update`,
+							`/dashboard/patients/${page.params.patientId}/situation-pathologique/${page.params.spId}/update`,
 							null,
 							'Modifier',
 							editIcon

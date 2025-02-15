@@ -1,5 +1,5 @@
 <script>
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import { getModalStore } from '@skeletonlabs/skeleton';
 	import { dropdownItem } from '../components/dropdowns/DropdownSnippets.svelte';
 	import { t } from '../i18n';
@@ -22,14 +22,14 @@
 		},
 		response: async (r) => {
 			if (r) {
-				await deletePatient(data);
+				await deletePatient(patient);
 			}
 		}
 	});
 
 	let { patient } = $props();
 	const homeUrl = () => {
-		return `/dashboard/patients/${$page.params.patientId}`;
+		return `/dashboard/patients/${page.params.patientId}`;
 	};
 </script>
 
