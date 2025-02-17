@@ -1,10 +1,9 @@
 <script>
-	import { user } from '../../../../../../lib';
-	import SPForm from '../../../../../../lib/forms/situation-pathologique/SPForm.svelte';
-	import { patients } from '../../../../../../lib/stores/PatientStore';
-	import { page } from '$app/stores';
+	import SPForm from '../../../../../../lib/cloud/components/forms/situation-pathologique/SPForm.svelte';
 	import { t } from '../../../../../../lib/i18n';
-	const patient = $patients.find((p) => p.patient_id === $page.params.patientId);
+
+	let { data } = $props();
+	const patient = data.patient;
 </script>
 
 <div class="flex flex-col">

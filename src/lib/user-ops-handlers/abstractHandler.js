@@ -13,8 +13,9 @@
 
 //? Ca me semble lourd compte tenu du fait que les opérations vont être utilisées une à une. Mais d'un autre côté
 
+import { error as errorLog } from '@tauri-apps/plugin-log';
+
 export class UserOperationsHandler {
-	
 	constructor() {
 		//* L'idée ici c'est d'avoir une liste de codes/nom d'error en clé et un handler spécifique à l'erreur en valeur. Peut-être serait-ce intelligent d'avoir au moins une clé de base qui serait le fallback si l'erreure n'est pas reprise
 		this.errors = {
@@ -33,6 +34,7 @@ export class UserOperationsHandler {
 		try {
 			await operation();
 		} catch (error) {
+			errorLog('Failed to execute the operation!' + operation.toString());
 			// Todo use ErrorManager
 			console.log(error);
 		}

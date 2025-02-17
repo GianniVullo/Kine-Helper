@@ -14,15 +14,9 @@ function setupSPOpsHandler() {
 export async function createSituationPathologique(data) {
 	const opsHandler = setupSPOpsHandler();
 	await opsHandler.execute(async () => {
-		let db = new DBAdapter();
 		let situation_pathologique = new SituationPathologique(data);
 		situation_pathologique.upToDate = true;
-		await db.save('situations_pathologiques', situation_pathologique.toDB);
-		patients.update((patients) => {
-			let rpatient = patients.find((p) => p.patient_id == data.patient_id);
-			rpatient.situations_pathologiques.push(situation_pathologique);
-			return patients;
-		});
+		await appState.db.insert('situations_pathologiques', data);
 	});
 }
 

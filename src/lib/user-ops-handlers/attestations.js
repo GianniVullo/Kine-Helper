@@ -1,8 +1,9 @@
 import { UserOperationsHandler } from './abstractHandler';
 import DBAdapter from '$lib/user-ops-handlers/dbAdapter';
 import { get } from 'svelte/store';
-import { patients, Patient } from '../stores/PatientStore';
+import { patients } from '../stores/PatientStore';
 import { user } from '../stores/UserStore';
+import { appState } from '../managers/AppState.svelte';
 
 function setupAttestationOpsHandler() {
 	const opsHandler = new UserOperationsHandler();
@@ -12,6 +13,13 @@ function setupAttestationOpsHandler() {
 export async function createAttestation(data) {
 	const opsHandler = setupAttestationOpsHandler();
 	opsHandler.execute(async () => {});
+}
+
+export async function getCodes(data) {
+	const opsHandler = setupAttestationOpsHandler();
+	opsHandler.execute(async () => {
+		let code = appState.db.select('SELECT * FROM codes WHERE code_id = $1', [code_id])
+	});
 }
 
 export async function updateAttestation(data) {
@@ -39,5 +47,6 @@ export async function updateAttestation(data) {
 		});
 	});
 }
+
 
 export async function deleteAttestation(data) {}

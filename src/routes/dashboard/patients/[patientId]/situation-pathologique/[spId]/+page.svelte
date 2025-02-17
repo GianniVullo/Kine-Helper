@@ -1,21 +1,10 @@
 <script>
-	import { page } from '$app/stores';
-	import { PlusIcon, UpdateIcon, DeleteIcon } from '$lib/ui/svgs/index';
-	import dayjs from 'dayjs';
-	import Card from '../../../../../../lib/components/Card.svelte';
-	import SoftButton from '../../../../../../lib/components/SoftButton.svelte';
-	import { patients } from '../../../../../../lib/stores/PatientStore';
-	import { getModalStore } from '@skeletonlabs/skeleton';
 	import { t } from '../../../../../../lib/i18n';
-	import { onMount } from 'svelte';
-	import { get } from 'svelte/store';
 	import { goto } from '$app/navigation';
-	import { deleteSituationPathologique } from '../../../../../../lib/user-ops-handlers/situations_pathologiques';
 	import EmptyState from '../../../../../../lib/components/EmptyState.svelte';
 
 	let { data } = $props();
 	let { patient, sp } = data;
-	
 </script>
 
 <div class="flex w-full flex-col">
@@ -48,7 +37,7 @@
 	{/if}
 
 	{#if sp.prescriptions.length > 0 && sp.seances.length === 0}
-	WHAAAT
+		WHAAAT
 		<EmptyState
 			className="!text-start"
 			titre={$t('sp.detail', 'content.start') +

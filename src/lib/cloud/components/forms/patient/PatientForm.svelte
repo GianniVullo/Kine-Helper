@@ -26,7 +26,7 @@
 	});
 
 	onMount(() => {
-		formHandler.setup(onValid);
+		formHandler.setup();
 	});
 </script>
 

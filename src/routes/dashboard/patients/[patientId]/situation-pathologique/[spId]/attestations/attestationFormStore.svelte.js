@@ -35,7 +35,7 @@ export function createAttestationFormState(patient, untill, page) {
 		codeMap.set(codes);
 	});
 	return {
-		state,
+		attestationFormState: state,
 		loading,
 		codeMap
 	};

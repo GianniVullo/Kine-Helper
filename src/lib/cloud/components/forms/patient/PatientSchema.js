@@ -50,8 +50,8 @@ const mutualite = v.nullable(
 		v.digits('Ce champ ne peut contenir que des chiffres')
 	)
 );
-const numero_etablissement = v.nullable(v.string());
-const service = v.nullable(v.string());
+//// const numero_etablissement = v.nullable(v.string());
+//// const service = v.nullable(v.string());
 const email = v.pipe(
 	v.transform((input) => (input?.length == 0 ? null : input)),
 	v.nullable(v.pipe(v.string(), v.email('Email invalide')))
@@ -77,8 +77,8 @@ export const validateurs = {
 	ticket_moderateur,
 	bim,
 	mutualite,
-	numero_etablissement,
-	service,
+	//// numero_etablissement,
+	//// service,
 	// Contact
 	tel,
 	gsm,
@@ -104,8 +104,8 @@ export const PatientSchema = v.pipe(
 		ticket_moderateur,
 		bim,
 		mutualite,
-		numero_etablissement,
-		service,
+		//// numero_etablissement,
+		//// service,
 		// Contact
 		tel,
 		gsm,
@@ -277,26 +277,26 @@ const assurabiliteFields = [
 		outerCSS: 'sm:col-span-4',
 		innerCSS: ''
 	},
-	{
-		id: 'numero_etablissement',
-		name: 'numero_etablissement',
-		inputType: 'text',
-		placeholder: get(t)('sp.update', 'label.numero_etablissement'),
-		titre: get(t)('sp.update', 'label.numero_etablissement'),
-		help: null,
-		outerCSS: 'sm:col-span-4',
-		innerCSS: ''
-	},
-	{
-		id: 'service',
-		name: 'service',
-		inputType: 'text',
-		placeholder: get(t)('sp.update', 'label.service'),
-		titre: get(t)('sp.update', 'label.service'),
-		help: null,
-		outerCSS: 'sm:col-span-4',
-		innerCSS: ''
-	}
+	// {
+	// 	id: 'numero_etablissement',
+	// 	name: 'numero_etablissement',
+	// 	inputType: 'text',
+	// 	placeholder: get(t)('sp.update', 'label.numero_etablissement'),
+	// 	titre: get(t)('sp.update', 'label.numero_etablissement'),
+	// 	help: null,
+	// 	outerCSS: 'sm:col-span-4',
+	// 	innerCSS: ''
+	// },
+	// {
+	// 	id: 'service',
+	// 	name: 'service',
+	// 	inputType: 'text',
+	// 	placeholder: get(t)('sp.update', 'label.service'),
+	// 	titre: get(t)('sp.update', 'label.service'),
+	// 	help: null,
+	// 	outerCSS: 'sm:col-span-4',
+	// 	innerCSS: ''
+	// }
 ];
 
 const contactFields = [
