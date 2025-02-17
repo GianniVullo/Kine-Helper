@@ -5,11 +5,6 @@ ADD
     COLUMN metadata TEXT;
 
 ALTER TABLE
-    patients
-ADD
-    COLUMN metadata TEXT;
-
-ALTER TABLE
     situations_pathologiques
 ADD
     COLUMN metadata TEXT;
