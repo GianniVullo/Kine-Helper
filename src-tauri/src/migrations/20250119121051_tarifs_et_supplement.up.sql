@@ -26,3 +26,7 @@ CREATE TABLE IF NOT EXISTS supplements (
     valeur TEXT,
     user_id TEXT
 );
+
+
+-- Le numéro de l'ASD pour s'y retrouver dans la facturation
+ALTER TABLE attestations ADD COLUMN numero INTEGER;
