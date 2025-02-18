@@ -15,10 +15,13 @@ export async function createAttestation(data) {
 	opsHandler.execute(async () => {});
 }
 
+// TODO : absolutely not functional
 export async function getCodes(data) {
 	const opsHandler = setupAttestationOpsHandler();
 	opsHandler.execute(async () => {
-		let code = appState.db.select('SELECT * FROM codes WHERE code_id = $1', [code_id])
+		let { data, error } = await appState.db.select('SELECT * FROM codes WHERE code_id = $1', [
+			code_id
+		]);
 	});
 }
 
@@ -47,6 +50,5 @@ export async function updateAttestation(data) {
 		});
 	});
 }
-
 
 export async function deleteAttestation(data) {}

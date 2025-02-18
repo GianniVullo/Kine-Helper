@@ -14,100 +14,91 @@ function setupPatientOpsHandler() {
 	return opsHandler;
 }
 
-export async function createPatient(data) {
-	const opsHandler = setupPatientOpsHandler();
-	let result;
-	await opsHandler.execute(async () => {
-		trace('Creating new patient');
-		await appState.db.save('patients', data);
-		result = new Patient(data);
-	});
-	return result;
+export async function createPatient(patient) {
+	trace('Creating new patient');
+	let { data, error } = await appState.db.insert('patients', patient);
+	if (data) {
+		data = new Patient(data);
+	}
+	return { data, error };
 }
 
 export async function retrievePatient(data) {
-	const opsHandler = setupPatientOpsHandler();
-	let p;
-	await opsHandler.execute(async () => {
-		let result = await appState.db.select('SELECT * from patients WHERE patient_id = $1', [
-			data.patient_id
-		]);
-		console.log('Result of retrievePatient = ', result);
+	let { data: result, error } = await appState.db.select(
+		'SELECT * from patients WHERE patient_id = $1',
+		[data.patient_id]
+	);
+	if (error) {
+		return { data: null, error };
+	}
+	console.log('Result of retrievePatient = ', result);
 
-		if (result) {
-			p = new Patient(result[0]);
-			trace('Engaging SP summary fetch');
-			let sps = (
-				await appState.db.select('SELECT * from situations_pathologiques WHERE patient_id = $1', [
-					data.patient_id
-				])
-			).map((sp) => new SituationPathologique(sp));
-
-			p.situations_pathologiques = sps;
-			info("Patient + SP's successfully fetched returning in load fonction");
+	if (result) {
+		result = new Patient(result[0]);
+		trace('Engaging SP summary fetch');
+		let { data: spResult, error: spError } = await appState.db.select(
+			'SELECT * from situations_pathologiques WHERE patient_id = $1',
+			[data.patient_id]
+		);
+		if (spError) {
+			return { data: result, error: spError };
 		}
-		console.log('P = ', p);
-	});
-	return p;
+		spResult = spResult.map((sp) => new SituationPathologique(sp));
+
+		result.situations_pathologiques = spResult;
+		info("Patient + SP's successfully fetched returning in load fonction");
+	}
+	return { data: result, error: null };
 }
 
 export async function updatePatient(data) {
-	const opsHandler = setupPatientOpsHandler();
-	await opsHandler.execute(async () => {
-		trace('Updating Patient');
-		await appState.db.update(
-			'patients',
-			[
-				['user_id', appState.user.id],
-				['patient_id', data.patient_id]
-			],
-			data
-		);
-		trace('Patient Updated');
-	});
+	trace('Updating Patient');
+	const { error } = await appState.db.update(
+		'patients',
+		[
+			['user_id', appState.user.id],
+			['patient_id', data.patient_id]
+		],
+		data
+	);
+	if (error) {
+		return { error };
+	}
+	trace('Patient Updated');
+	return { error: null };
 }
 
 export async function deletePatient(data) {
-	const opsHandler = setupPatientOpsHandler();
-	await opsHandler.execute(async () => {
-		trace('deleting patient');
-		await appState.db.delete('patients', [
-			['patient_id', data.patient_id],
-			['user_id', appState.user.id]
-		]);
-
-		patients.update((p) => p.filter((p) => p.patient_id !== data.patient_id));
-	});
+	trace('deleting patient');
+	const { error } = await appState.db.delete('patients', [
+		['patient_id', data.patient_id],
+		['user_id', appState.user.id]
+	]);
+	return { error };
 }
 
 export async function listPatients(data) {
-	const opsHandler = setupPatientOpsHandler();
-	let patients;
-	await opsHandler.execute(async () => {
-		console.log(appState);
-
-		const { data: patientList } = await appState.db.list(
-			'patients',
-			[
-				['user_id', data.id],
-				['actif', appState.profil?.offre === 'cloud' ? true : 1]
-			],
-			{
-				selectStatement: '*'
-				// orderBy: 'nom' Not needed I think
-			}
-		);
-		patientList.sort((a, b) => {
-			if (a.nom > b.nom) {
-				return 1;
-			} else {
-				return -1;
-			}
-		});
-		let transformed = patientList.map((p) => new Patient(p));
-		// console.log('Les patients transformed', transformed);
-		// patients.set(transformed);
-		patients = transformed;
+	const { data: patientList, error } = await appState.db.list(
+		'patients',
+		[
+			['user_id', data.id],
+			['actif', appState.profil?.offre === 'cloud' ? true : 1]
+		],
+		{
+			selectStatement: '*'
+			// orderBy: 'nom' Not needed I think
+		}
+	);
+	if (error) {
+		return { data: null, error };
+	}
+	patientList.sort((a, b) => {
+		if (a.nom > b.nom) {
+			return 1;
+		} else {
+			return -1;
+		}
 	});
-	return patients;
+	let transformed = patientList.map((p) => new Patient(p));
+	return { data: transformed, error: null };
 }

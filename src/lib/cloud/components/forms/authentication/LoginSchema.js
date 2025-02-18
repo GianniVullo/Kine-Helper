@@ -49,15 +49,24 @@ export async function onValid(data) {
 	info('Successfully logged user in');
 
 	trace('Fetching local user data');
-	let kine = (await appState.db.select('SELECT * FROM kines WHERE user_id = $1', [user.id]))[0];
+	let { result: kine, error: kineError } = await appState.db.select(
+		'SELECT * FROM kines WHERE user_id = $1',
+		[user.id]
+	);
+	if (kineError) {
+		return (this.message = kineError.message);
+	}
 	trace('Local user data successfully fetched');
 
-	user = { ...user, ...kine };
+	user = { ...user, ...kine[0] };
 
 	trace('Remote user data fetching');
 	// Call au serveur pour obtenir les données de profil utilisateur nécessaire à la gestion des
 	this.message = get(t)('login', 'submission.profil');
-	let profil = await retrieveProfile(user.id);
+	let { data: profil, error: profilError } = await retrieveProfile(user.id);
+	if (profilError) {
+		return (this.message = profilError.message);
+	}
 	info('Remote user data successfully fetched');
 
 	// Récupérer les settings
@@ -93,7 +102,11 @@ export async function onValid(data) {
 
 	// Check si l'utilisateur a au moins un appareil enregistré
 	trace('Fetching user devices');
-	let materiel = await appState.db.select('SELECT * FROM appareils;');
+	let { data, error: appareilError } = await appState.db.select('SELECT * FROM appareils;');
+
+	if (appareilError) {
+		return (this.message = appareilError.message);
+	}
 
 	// REDIRECTION :
 	// Si l'utilisateur n'a pas d'appareil enregistré

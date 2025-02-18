@@ -119,12 +119,18 @@ export async function onValid(data) {
 	if (this.mode === 'create') {
 		trace('Engaging Patient creation');
 		// <!--* CREATE PROCEDURE -->
-		await createPatient(data);
+		const { error } = await createPatient(data);
+		if (error) {
+			return (this.message = error.message);
+		}
 		info('Patient Creation done Successfully');
 	} else {
 		trace('Engaging Patient modification');
 		// <!--* UPDATE PROCEDURE -->
-		await updatePatient(data);
+		const { error } = await updatePatient(data);
+		if (error) {
+			return (this.message = error.message);
+		}
 		await invalidate('patient:layout');
 		info('Patient modified done Successfully');
 	}
@@ -276,7 +282,7 @@ const assurabiliteFields = [
 		help: null,
 		outerCSS: 'sm:col-span-4',
 		innerCSS: ''
-	},
+	}
 	// {
 	// 	id: 'numero_etablissement',
 	// 	name: 'numero_etablissement',

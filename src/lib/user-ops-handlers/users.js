@@ -50,34 +50,43 @@ export async function signUserIn(formData) {
 
 export async function retrieveProfile(user_id) {
 	let kineRemoteData;
+	let errorThrown;
 	try {
-		kineRemoteData = await supabase
+		const { data, error } = await supabase
 			.from('kinesitherapeutes')
 			.select('stronghold_key, offre')
 			.eq('id', user_id);
+		kineRemoteData = data?.[0] ?? {};
+		errorThrown = error;
 	} catch (error) {
 		console.log("Erreur lors de l'appel à la table kines sur supabase");
-		kineRemoteData = await supabase.from('kines').select().eq('user_id', user_id);
+		try {
+			const { data, error } = await supabase.from('kines').select().eq('user_id', user_id);
+			kineRemoteData = data?.[0] ?? {};
+			errorThrown = error;
+		} catch (error) {
+			errorThrown = error;
+		}
+	}
+	if (errorThrown) {
+		return { data: kineRemoteData, error: errorThrown };
 	}
 	let has_stronghold_key;
-	if (kineRemoteData.data[0].stronghold_key) {
+	if (kineRemoteData.stronghold_key) {
 		await invoke('setup_stronghold_key', {
-			strongholdKey: kineRemoteData.data[0].stronghold_key
+			strongholdKey: kineRemoteData.stronghold_key
 		});
-		delete kineRemoteData.data[0].stronghold_key;
+		delete kineRemoteData.stronghold_key;
 		has_stronghold_key = true;
 	} else {
 		has_stronghold_key = false;
 	}
-	if (kineRemoteData.data.length === 0) {
-		return;
-	}
 	// TODO : Le profil ne sera plus encrypté à partir de maintenant
-	kineRemoteData.data[0].has_stronghold_key = has_stronghold_key;
+	kineRemoteData.has_stronghold_key = has_stronghold_key;
 	let hold_exists = await file_exists(`${user_id}.hold`);
 	console.log('Hold exists', hold_exists);
-	kineRemoteData.data[0].hold_exists = hold_exists;
-	return kineRemoteData.data[0];
+	kineRemoteData.hold_exists = hold_exists;
+	return { data: kineRemoteData, error: errorThrown };
 }
 
 export async function updateUser(data) {

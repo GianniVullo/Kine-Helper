@@ -4,6 +4,8 @@ import { patients } from '../stores/PatientStore';
 import { user } from '../stores/UserStore';
 import { UserOperationsHandler } from './abstractHandler';
 import { file_exists, remove_file, save_to_disk } from '../utils/fsAccessor';
+import { appState } from '../managers/AppState.svelte';
+import { trace } from '@tauri-apps/plugin-log';
 
 //* ça a l'air con mtn mais je suis sûr que ça va payer à un moment
 function setupPrescriptionOpsHandler() {
@@ -48,26 +50,12 @@ export async function updatePrescription(data) {
 export async function createPrescription(data) {
 	const opsHandler = setupPrescriptionOpsHandler();
 	await opsHandler.execute(async () => {
-		console.log('in createPrescription with', data);
-		
-		let db = new DBAdapter();
-		await db.save('prescriptions', data.prescription);
-		data.prescription.prescripteur = JSON.parse(data.prescription.prescripteur);
+		trace('in createPrescription');
+		data.prescription.prescripteur = JSON.stringify(data.prescription.prescripteur);
+		await appState.db.insert('prescriptions', data.prescription);
 		if (data.buffer) {
 			await save_to_disk(data.filePath, data.fileName, Array.from(data.buffer));
 		}
-		patients.update((patients) => {
-			let rpatient = patients.find((p) => p.patient_id == data.prescription.patient_id);
-			let tsp = rpatient.situations_pathologiques.find(
-				(bsp) => bsp.sp_id == data.prescription.sp_id
-			);
-			if (Array.isArray(tsp.prescriptions)) {
-				tsp.prescriptions.push(data.prescription);
-			} else {
-				tsp.prescriptions = [data.prescription];
-			}
-			return patients;
-		});
 	});
 }
 
@@ -93,4 +81,3 @@ export async function deletePrescription(prescription) {
 		}
 	});
 }
-

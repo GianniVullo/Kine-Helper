@@ -22,12 +22,12 @@ export class DatabaseManager {
 		}, '');
 		let statement = `UPDATE ${table} SET ${updateStmt} WHERE ${whereStmt}`;
 		console.log('in DBAdapter.update() with', updateStmt, whereStmt);
-		const stmt = await this.db.execute(statement, [
+		const { data: stmt, error } = await this.execute(statement, [
 			...Object.values(formData),
 			...filters.map(([_, filterValue]) => filterValue)
 		]);
 		console.log('updated successfully now closing db', stmt);
-		return stmt;
+		return { stmt, error };
 	}
 
 	async delete(table, filters) {
@@ -37,41 +37,55 @@ export class DatabaseManager {
 			whereClauses.push(`${filter[0]} = $${filters.indexOf(filter) + 1}`);
 			filterValues.push(filter[1]);
 		}
-		const stmt = await this.db.execute(
+		const { data: stmt, error } = await this.execute(
 			`DELETE FROM ${table} WHERE ${whereClauses.join(', ')}`,
 			filterValues
 		);
-		return stmt;
+		return { data: stmt, error };
 	}
 
 	async retrieve_sp(sp_id) {
 		trace('Entering AppState.db.retrieve_sp');
-		let latestPs = await this.db.select('SELECT * FROM situations_pathologiques WHERE sp_id = $1', [
-			sp_id
-		]);
+		let { data: latestPs, error } = await this.select(
+			'SELECT * FROM situations_pathologiques WHERE sp_id = $1',
+			[sp_id]
+		);
+		if (error) {
+			return { data: null, error };
+		}
 		if (latestPs.length === 0) {
 			trace('No sp found');
 			// No record found
-			return;
+			return { data: null, error };
 		}
 
 		// Fetch related data for each table
 		trace('Fetching Séances');
-		let seances = await this.db.select(`SELECT * FROM seances WHERE sp_id = $1 ORDER BY date ASC`, [
-			sp_id
-		]);
+		let { data: seances, error: seancesError } = await this.select(
+			`SELECT * FROM seances WHERE sp_id = $1 ORDER BY date ASC`,
+			[sp_id]
+		);
 
+		if (seancesError) {
+			return { data: null, error: seancesError };
+		}
 		trace('Fetching Prescriptions');
-		let prescriptions = await this.db.select(
+		let { data: prescriptions, error: prescriptionsError } = await this.select(
 			`SELECT * FROM prescriptions WHERE sp_id = $1 ORDER BY created_at ASC`,
 			[sp_id]
 		);
+		if (prescriptionsError) {
+			return { data: null, error: prescriptionsError };
+		}
 
 		trace('Fetching Attestations');
-		let attestations = await this.db.select(
+		let { data: attestations, error: attestationsError } = await this.select(
 			`SELECT * FROM attestations WHERE sp_id = $1 ORDER BY created_at ASC`,
 			[sp_id]
 		);
+		if (attestationsError) {
+			return { data: null, error: attestationsError };
+		}
 
 		// trace("Fetching ")
 		// let generateurs = await this.db.select(
@@ -80,21 +94,25 @@ export class DatabaseManager {
 		// );
 
 		trace('Fetching Documents');
-		let documents = await this.db.select(
+		let { data: documents, error: documentsError } = await this.select(
 			`SELECT * FROM documents WHERE sp_id = $1 ORDER BY created_at ASC`,
 			[sp_id]
 		);
+		if (documentsError) {
+			return { data: null, error: documentsError };
+		}
 
 		info('Fetched all elements of the SP');
 		return {
 			data: {
 				...latestPs[0],
-				seances: seances,
-				prescriptions: prescriptions,
-				attestations: attestations,
+				seances,
+				prescriptions,
+				attestations,
 				// generateurs_de_seances: generateurs, deprecated
-				documents: documents
-			}
+				documents
+			},
+			error: null
 		};
 	}
 
@@ -132,14 +150,15 @@ export class DatabaseManager {
 			filters?.map(([_, filterValue]) => filterValue)
 		);
 		// Prepare and execute the query
-		const stmt = await this.select(
+		const { data, error } = await this.select(
 			liteQuery,
 			filters?.map(([_, filterValue]) => filterValue)
 		);
-		console.log('in DBAdapter.list() After query', stmt);
-		return { data: stmt };
+		console.log('in DBAdapter.list() After query', data);
+		return { data, error };
 	}
 
+	//! Attention il faut modifier pour utiliser this.execute
 	async update_seances(seances_array, key) {
 		console.log('in DBAdapter.update_seances() with', seances_array);
 
@@ -163,20 +182,26 @@ export class DatabaseManager {
 	}
 
 	async select(query, bindValues) {
+		let data;
+		let errorThrown;
+
 		try {
 			trace('In DatabaseManager.select with ' + query);
-			let result = await this.db.select(query, bindValues);
-			console.log('result is ', result);
-			return result;
+			data = await this.db.select(query, bindValues);
 		} catch (error) {
 			errorLog(`In the DatabaseManager.select with error : ${error}`);
 			if (error === 'attempted to acquire a connection on a closed pool') {
-				await this.initializing();
-				let result = await this.db.select(query, bindValues);
-				return result;
+				try {
+					await this.initializing();
+					data = await this.db.select(query, bindValues);
+				} catch (error) {
+					errorThrown = error;
+				}
+			} else {
+				errorThrown = error;
 			}
-			// TODO : handle error properly
 		}
+		return { data, error: errorThrown };
 	}
 
 	async insert(table, formData) {
@@ -211,12 +236,11 @@ export class DatabaseManager {
 			console.log('Prepared save statement with : ', columns, placeholders, values);
 		}
 		// Prepare and run the INSERT statement
-		let query = await this.db.select(
+		let { data, error } = await this.select(
 			`INSERT INTO ${table} (${columns}) VALUES ${placeholders} RETURNING *`,
 			values
 		);
-		console.log('Inserted successfully now closing db', query);
-		return { data: query };
+		return { data, error };
 	}
 
 	// for now I just add a placeholder for stability
@@ -225,18 +249,25 @@ export class DatabaseManager {
 	}
 
 	async execute(query, bindValues) {
+		let data;
+		let errorThrown;
 		try {
 			console.log('in LocalDatabase with', query, bindValues);
-			let result = await this.db.execute(query, bindValues);
-			await this.db.close();
-			return result;
+			data = await this.db.execute(query, bindValues);
+			// await this.db.close();
 		} catch (error) {
 			if (error === 'attempted to acquire a connection on a closed pool') {
 				await this.initializing();
-				let result = await this.db.execute(query, bindValues);
-				return result;
+				try {
+					data = await this.db.execute(query, bindValues);
+				} catch (error) {
+					errorThrown = error;
+				}
+			} else {
+				errorThrown = error;
 			}
 		}
+		return { data, error: errorThrown };
 	}
 }
 

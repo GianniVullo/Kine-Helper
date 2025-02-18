@@ -71,15 +71,13 @@ export async function retrieveLastSPWithRelatedObjectsPlusOlderSPWithoutRelatedO
 }
 
 export async function retrieveSituationPathologique(data) {
-	const opsHandler = setupSPOpsHandler();
-	let sp;
-	await opsHandler.execute(async () => {
-		let completedSp = await appState.db.retrieve_sp(data.sp_id);
-		completedSp = new SituationPathologique(completedSp.data);
-		completedSp.upToDate = true;
-		sp = completedSp;
-	});
-	return sp;
+	let { data: completedSp, error } = await appState.db.retrieve_sp(data.sp_id);
+	if (error) {
+		return { data: null, error };
+	}
+	completedSp = new SituationPathologique(completedSp);
+	completedSp.upToDate = true;
+	return { data: completedSp, error };
 }
 
 async function getLastSpAndOthers(patient_id) {
