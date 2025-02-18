@@ -1,5 +1,5 @@
 <script>
-	import { SPSchema, onValid, validateurs, fieldSchema } from './SPSchema';
+	import { PrescriptionSchema, onValid, validateurs, fieldSchema } from './PrescriptionSchema';
 	import { SubmitButton } from '../../../../forms/index';
 	import { t } from '../../../../i18n';
 	import Form from '../abstract-components/Form.svelte';
@@ -9,16 +9,17 @@
 	import { appState } from '../../../../managers/AppState.svelte';
 	import { onMount } from 'svelte';
 
-	let { patient, sp, mode } = $props();
+	let { prescription, patient, sp, mode } = $props();
 
 	let formHandler = new Formulaire({
 		validateurs,
-		schema: SPSchema,
+		schema: PrescriptionSchema,
 		submiter: '#sp-submit',
-		initialValues: sp ?? {
+		initialValues: prescription ?? {
 			user_id: appState.user.id,
 			patient_id: patient.patient_id,
-			sp_id: crypto.randomUUID(),
+			sp_id: sp.sp_id,
+			prescription_id: crypto.randomUUID(),
 			created_at: dayjs().format('YYYY-MM-DD')
 		},
 		onValid,
@@ -30,7 +31,7 @@
 	});
 </script>
 
-<Form title={$t('sp.create', 'title')} message={formHandler.message}>
+<Form title={$t('prescription.create', 'title')} message={formHandler.message}>
 	<FormSection
 		titre="Informations générales"
 		fields={fieldSchema}

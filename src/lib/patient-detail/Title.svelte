@@ -22,7 +22,14 @@
 		},
 		response: async (r) => {
 			if (r) {
-				await deletePatient(patient);
+				const { error } = await deletePatient(patient);
+				if (error) {
+					modalStore.trigger({
+						type: 'alert',
+						title: 'ERROR',
+						body: error
+					});
+				}
 			}
 		}
 	});

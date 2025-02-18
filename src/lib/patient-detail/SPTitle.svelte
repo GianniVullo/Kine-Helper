@@ -10,7 +10,6 @@
 	import Dropdown from '../components/dropdowns/Dropdown.svelte';
 	import {
 		dividerDropper,
-		dropdownItem,
 		dropdownItemWithIcon
 	} from '../components/dropdowns/DropdownSnippets.svelte';
 	import {

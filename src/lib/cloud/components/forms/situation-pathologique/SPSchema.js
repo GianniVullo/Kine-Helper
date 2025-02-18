@@ -24,6 +24,8 @@ const service = v.pipe(
 	v.nullable(v.string())
 );
 
+// TODO : ADD the tarif(s) and suppléements
+
 export const validateurs = {
 	user_id,
 	patient_id,
@@ -74,6 +76,11 @@ export const fieldSchema = [
 	{
 		id: 'sp_id',
 		name: 'sp_id',
+		inputType: 'hidden'
+	},
+	{
+		id: 'created_id',
+		name: 'created_id',
 		inputType: 'hidden'
 	},
 	{
