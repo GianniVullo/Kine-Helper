@@ -1,5 +1,6 @@
 <script>
 	import TwUiField from '../fields/TwUIField.svelte';
+	import TwUiFileField from '../fields/TwUIFileField.svelte';
 	import TwUiRadioGroup from '../fields/TwUIRadioGroup.svelte';
 	let { field, value = $bindable(), error } = $props();
 </script>
@@ -14,6 +15,27 @@
 		{error} />
 {:else if field.inputType === 'hidden'}
 	<input type="hidden" name={field.name} bind:value />
+{:else if field.inputType === 'file'}
+	<div class={field.outerCSS}>
+		<label for={field.id} class="block text-sm/6 font-medium text-gray-900">{field.titre}</label>
+		<TwUiFileField
+			id={field.id}
+			name={field.name}
+			inputType={field.inputType}
+			placeholder={field.placeholder}
+			help={field.help}
+			leading={field.leading}
+			leadingCSS={field.leadingCSS}
+			className={field.innerCSS}
+			removeArrows={field.removeArrows}
+			trailing={field.trailing}
+			readonly={field.readonly}
+			oninput={(e) => {
+				value = Array.from(e.currentTarget.files ?? []);
+			}}
+			files={value}
+			{error} />
+	</div>
 {:else}
 	<div class={field.outerCSS}>
 		<label for={field.id} class="block text-sm/6 font-medium text-gray-900">{field.titre}</label>
