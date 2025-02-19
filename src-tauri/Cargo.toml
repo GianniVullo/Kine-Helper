@@ -38,6 +38,7 @@ base64 = "0.22.1"
 tauri-plugin-clipboard-manager = "2.2.1"
 tauri-plugin-log = { version = "2", features = ["colored"] }
 log = "0.4"
+regex = "1.11.1"
 
 
 # you can add the dependencies on the `[dependencies]` section if you do not target mobile

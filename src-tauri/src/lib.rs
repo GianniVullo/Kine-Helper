@@ -2,6 +2,7 @@ mod appstate;
 mod cryptage;
 mod nomenclature;
 mod printer;
+mod stability_corrections;
 
 use appstate::AppState;
 use nomenclature::convention_decompression;
@@ -20,6 +21,7 @@ use cryptage::{
     decrypt_string, does_private_key_exist, encrypt_string, from_base64_to_bytes,
     from_bytes_to_base64, generate_encryption_key, setup_stronghold_key,
 };
+use stability_corrections::file_system_correction::perform_fs_stability_patch;
 use std::sync::Mutex;
 use std::{
     fs::{self, File},
@@ -112,7 +114,8 @@ pub fn run() {
             app.handle()
                 .plugin(tauri_plugin_updater::Builder::new().build())?;
             app.manage(Mutex::new(AppState::default()));
-
+            // Ici je corrige le problème de stabilité du file système le prblm prevenait du faire que j'ai utilisé des variables que les utilisateurs peuvent modifier pour nommer le file system de Kiné Helper. En conséquence lorsque les utilisateurs modifient une de ces variables, le file system se désynchronise d'avec KH qui recrée une nouvelle structure perdant ansi l'accès à toutes les données précédentes.
+            perform_fs_stability_patch(app);
             Ok(())
         })
         .plugin(tauri_plugin_os::init())
