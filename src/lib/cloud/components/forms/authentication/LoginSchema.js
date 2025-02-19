@@ -49,12 +49,13 @@ export async function onValid(data) {
 	info('Successfully logged user in');
 
 	trace('Fetching local user data');
-	let { result: kine, error: kineError } = await appState.db.select(
+	let { data: kine, error: kineError } = await appState.db.select(
 		'SELECT * FROM kines WHERE user_id = $1',
 		[user.id]
 	);
+
 	if (kineError) {
-		return (this.message = kineError.message);
+		return (this.message = kineError);
 	}
 	trace('Local user data successfully fetched');
 
@@ -65,7 +66,7 @@ export async function onValid(data) {
 	this.message = get(t)('login', 'submission.profil');
 	let { data: profil, error: profilError } = await retrieveProfile(user.id);
 	if (profilError) {
-		return (this.message = profilError.message);
+		return (this.message = profilError);
 	}
 	info('Remote user data successfully fetched');
 
@@ -102,19 +103,24 @@ export async function onValid(data) {
 
 	// Check si l'utilisateur a au moins un appareil enregistré
 	trace('Fetching user devices');
-	let { data, error: appareilError } = await appState.db.select('SELECT * FROM appareils;');
+	// TODO Add Appareil
+	// let { data: appareil, error: appareilError } = await appState.db.select(
+	// 	'SELECT * FROM appareils;'
+	// );
 
-	if (appareilError) {
-		return (this.message = appareilError.message);
-	}
+	// if (appareilError) {
+	// 	console.log('appareil Error : ', appareilError);
+
+	// 	return (this.message = appareilError);
+	// }
 
 	// REDIRECTION :
 	// Si l'utilisateur n'a pas d'appareil enregistré
-	if (materiel?.length === 0) {
-		info('User has no device on local db');
-		goto('/post-signup-forms/printer-setup');
-		return;
-	}
+	// if (materiel?.length === 0) {
+	// 	info('User has no device on local db');
+	// 	goto('/post-signup-forms/printer-setup');
+	// 	return;
+	// }
 
 	info('Everything is fine, redirecting to the dashboard');
 	goto('/dashboard');
