@@ -34,6 +34,7 @@ async function completePath() {
 	return localDir;
 }
 
+// This is a legacy function because there was a bug on the tauri fs-plugin that didn't allow me to make use of their really usefull Basedir.AppLocalData
 async function pathFormat(path) {
 	console.log('in pathFormat with ', path);
 
@@ -44,13 +45,16 @@ async function pathFormat(path) {
 }
 
 export async function create_directories(path) {
-	return await mkdir(await pathFormat(path), { baseDir: srcDir() });
+	// return await mkdir(await pathFormat(path), { baseDir: srcDir() });
+	console.log('In create directory');
+
+	return await mkdir(path, { baseDir: BaseDirectory.AppLocalData, recursive: true });
 }
 
 export async function file_exists(path) {
 	console.log('in file_exists with ', path);
 
-	return await exists(await pathFormat(path), { baseDir: srcDir() });
+	return await exists(path, { baseDir: BaseDirectory.AppLocalData });
 }
 
 export async function save_to_disk(path, fileName, fileContent) {
@@ -64,7 +68,7 @@ export async function save_to_disk(path, fileName, fileContent) {
 			await create_directories(formatedPath);
 		}
 	} catch (error) {
-		console.log(error);
+		return error;
 	}
 	console.log('trying to write file');
 
@@ -79,12 +83,18 @@ export async function save_to_disk(path, fileName, fileContent) {
 		});
 		console.log(response);
 	} catch (error) {
-		console.log(error);
+		return error;
 	}
 }
 
 export async function remove_file(path, { recursive = false }) {
-	return await remove(await pathFormat(path), { baseDir: srcDir(), recursive });
+	console.log('in remove_file');
+
+	try {
+		return await remove(path, { baseDir: BaseDirectory.AppLocalData, recursive });
+	} catch (error) {
+		return error;
+	}
 }
 
 export async function read_file(path) {
@@ -92,9 +102,13 @@ export async function read_file(path) {
 }
 
 export async function open_file(path) {
-	return await open(
-		(await completePath()) + (platform() === 'windows' ? '\\' : '/') + (await pathFormat(path))
-	);
+	try {
+		return await open(
+			(await completePath()) + (platform() === 'windows' ? '\\' : '/') + (await pathFormat(path))
+		);
+	} catch (error) {
+		return error;
+	}
 }
 
 export async function save_user_file(filePath, fileName, fileContent) {

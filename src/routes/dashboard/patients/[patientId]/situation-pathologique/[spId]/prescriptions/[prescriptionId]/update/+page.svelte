@@ -1,15 +1,11 @@
 <script>
-	import PrescriptionForm from '$lib/forms/prescription/PrescriptionForm.svelte';
-	import { patients } from '$lib/stores/PatientStore';
-	import { page } from '$app/stores';
+	import PrescriptionForm from '../../../../../../../../../lib/cloud/components/forms/prescription/PrescriptionForm.svelte';
 
-	const patient = $patients.find((patient) => patient.patient_id === $page.params.patientId);
-	const sp = patient.situations_pathologiques.find((sp) => sp.sp_id === $page.params.spId);
-	const prescription = sp.prescriptions.find(
-		(prescription) => prescription.prescription_id === $page.params.prescriptionId
-	);
+	let { data } = $props();
+	const { patient, sp, prescription } = data;
+	console.log('In component with prescription = ', prescription);
 </script>
 
 <div class="">
-	<PrescriptionForm {prescription} {patient} {sp} />
+	<PrescriptionForm title="Modifier la prescription" {prescription} {patient} {sp} mode="update" />
 </div>

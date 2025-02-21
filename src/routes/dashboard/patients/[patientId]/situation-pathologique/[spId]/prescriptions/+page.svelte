@@ -2,29 +2,19 @@
 	import dayjs from 'dayjs';
 	import { OpenIcon, DeleteIcon, UpdateIcon, PlusIcon } from '$lib/ui/svgs/index';
 	import { getModalStore } from '@skeletonlabs/skeleton';
-	import { appState } from '../../../../../../../lib/managers/AppState.svelte';
 	import { t } from '../../../../../../../lib/i18n';
-	import { file_exists, open_file } from '../../../../../../../lib/utils/fsAccessor';
-	import { deletePrescription } from '../../../../../../../lib/user-ops-handlers/prescriptions';
+	import {
+		deletePrescription,
+		openPrescription
+	} from '../../../../../../../lib/user-ops-handlers/prescriptions';
+	import { invalidateAll } from '$app/navigation';
+	import { page } from '$app/state';
 
 	let { data } = $props();
 	const modalStore = getModalStore();
 
-	let { patient, sp } = data;
-
-	async function prescriptionPath(prescription) {
-		return `${$appState.user.id}/${patient.nom}-${patient.prenom}(${patient.patient_id})/situation-pathologique-${sp.created_at}(${sp.sp_id})/prescriptions/${prescription.prescripteur.nom}-${prescription.prescripteur.prenom}-${prescription.date}(${prescription.prescription_id}).${prescription.file_name}`;
-	}
-
-	async function openPrescription(prescription) {
-		let path = await prescriptionPath(prescription);
-		console.log('path', path);
-		let pathExists = await file_exists(path);
-		console.log('pathExists', pathExists);
-		if (pathExists) {
-			await open_file(path);
-		}
-	}
+	let patient = $state(data.patient);
+	let sp = $state(data.sp);
 </script>
 
 {#if sp.prescriptions.length > 0}
@@ -73,7 +63,10 @@
 											type: 'confirm',
 											response: async (response) => {
 												if (response) {
-													await deletePrescription(prescription);
+													const { error } = await deletePrescription(prescription);
+													await invalidateAll();
+													patient = page.data.patient;
+													sp = page.data.sp;
 												}
 											}
 										});
@@ -82,22 +75,29 @@
 									><DeleteIcon
 										class="h-5 w-5 stroke-surface-600 dark:stroke-surface-200" /></button>
 							{/if}
-							<button
-								onclick={async () => {
-									console.log('open prescription');
-									if (prescription.file_name) {
-										await openPrescription(prescription);
-									} else {
-										console.log('no file');
-										modalStore.trigger({
-											type: 'alert',
-											title: $t('prescription.list', 'alertModal.title'),
-											body: $t('prescription.list', 'alertModal.body')
-										});
-									}
-								}}
-								class="variant-filled btn-icon btn-icon-sm dark:variant-filled"
-								><OpenIcon class="h-5 w-5" /></button>
+							{#if prescription.file_name}
+								<button
+									onclick={async (e) => {
+										if (prescription.file_name) {
+											e.target.disabled = true;
+											let error = await openPrescription(prescription);
+											console.log('the error', error);
+											e.target.disabled = false;
+										} else {
+											modalStore.trigger({
+												type: 'alert',
+												title: $t('prescription.list', 'alertModal.title'),
+												body: $t('prescription.list', 'alertModal.body')
+											});
+										}
+									}}
+									class="variant-filled btn-icon btn-icon-sm dark:variant-filled"
+									><OpenIcon class="h-5 w-5" /></button>
+							{:else}
+								<button class="variant-filled btn-icon btn-icon-sm dark:variant-filled" disabled>
+									<OpenIcon class="h-5 w-5" />
+								</button>
+							{/if}
 						</div>
 					</div>
 					<!--* Body -->

@@ -4,7 +4,7 @@
 		name,
 		// placeholder,
 		error,
-		// help,
+		help,
 		multiple,
 		oninput,
 		constraints,
@@ -102,4 +102,7 @@
 </div>
 {#if error}
 	<p class="mt-2 space-y-1 text-sm text-red-600" id={`${name}-error`}>{error}</p>
+{/if}
+{#if help}
+	<p class="mt-3 text-sm/6 text-gray-600">{help}</p>
 {/if}

@@ -1,15 +1,28 @@
-// /** @type {import('./$types').PageLoad} */
-// export async function load({ parent, params }) {
-// 	const { patient } = await parent();
-// 	console.log('the sp from update page', patient);
-// 	const sp = patient.situations_pathologiques.find((sp) => sp.sp_id === params.spId);
-// 	return {
-// 		sp,
-// 		prescription: sp.prescriptions.find(
-// 			(prescription) => prescription.prescription_id === params.prescriptionId
-// 		)
-// 	};
-// }
+import { appState } from '../../../../../../../../../lib/managers/AppState.svelte';
+import { error } from '@sveltejs/kit';
+
+/** @type {import('./$types').PageLoad} */
+export async function load({ params }) {
+	let { data: prescription, error } = await appState.db.select(
+		'SELECT * FROM prescriptions WHERE prescription_id = $1',
+		[params.prescriptionId]
+	);
+	if (error) {
+		error(500, { message: error });
+	}
+	prescription = prescription[0];
+	if (prescription.prescripteur) {
+		prescription.prescripteur = JSON.parse(prescription.prescripteur);
+		prescription.prescripteurNom = prescription.prescripteur.nom;
+		prescription.prescripteurPrenom = prescription.prescripteur.prenom;
+		prescription.prescripteurInami = prescription.prescripteur.inami;
+		delete prescription.prescripteur;
+	}
+
+	return {
+		prescription
+	};
+}
 
 /** @type {import('./$types').EntryGenerator} */
 export function entries() {

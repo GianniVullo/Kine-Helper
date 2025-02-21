@@ -4,16 +4,20 @@ import { get } from 'svelte/store';
 import { goto, invalidate } from '$app/navigation';
 import { info, trace } from '@tauri-apps/plugin-log';
 import { nombre_seance_trailing } from './prescriptionSnippets.svelte';
-import { appState } from '../../../../managers/AppState.svelte';
-import { page } from '$app/state';
-import { createPrescription } from '../../../../user-ops-handlers/prescriptions';
+import {
+	createPrescription,
+	updatePrescription
+} from '../../../../user-ops-handlers/prescriptions';
 
 const user_id = v.pipe(v.nonNullable(v.string()), v.uuid());
 const patient_id = v.pipe(v.optional(v.string()), v.uuid());
 const sp_id = v.pipe(v.optional(v.string()), v.uuid());
 const prescription_id = v.pipe(v.optional(v.string()), v.uuid());
 const created_at = v.isoDate();
-const date = v.isoDate();
+const date = v.pipe(
+	v.transform((input) => (input?.length === 0 ? null : input)),
+	v.nonNullable(v.isoDate('Ce champ est obligatoire'),'Ce champ est obligatoire')
+);
 const jointe_a = v.nullable(v.isoDate());
 const nombre_seance = v.nullable(v.number());
 const seance_par_semaine = v.nullable(v.number());
@@ -30,11 +34,14 @@ const prescripteurPrenom = v.pipe(
 const prescripteurInami = v.pipe(
 	v.transform((input) => (input?.length === 0 ? null : input)),
 	v.string('Ce champ est obligatoire'),
+	v.length(11, 'Veuillez insérer 11 chiffres.'),
+	v.digits("Veuillez n'insérer que des chiffres"),
 	v.nonEmpty('Veuillez insérer le n°INAMI du prescripteur')
 );
 const file = v.pipe(
 	v.transform((input) => (input?.length === 0 ? null : input[0])),
-	v.nullable(v.file())
+	v.nullable(v.file()),
+	v.transform((input) => (input?.length === 0 ? null : input[0]))
 );
 
 export const validateurs = {
@@ -64,11 +71,22 @@ export const PrescriptionSchema = v.pipe(
 		jointe_a,
 		nombre_seance,
 		seance_par_semaine,
-		prescripteur: v.object({
-			nom: prescripteurNom,
-			prenom: prescripteurPrenom,
-			inami: prescripteurInami
-		})
+		prescripteurNom,
+		prescripteurPrenom,
+		prescripteurInami,
+		file_name: v.nullable(v.string())
+	}),
+	v.transform((input) => {
+		input.prescripteur = {
+			nom: input.prescripteurNom,
+			prenom: input.prescripteurPrenom,
+			inami: input.prescripteurInami
+		};
+
+		delete input.prescripteurNom;
+		delete input.prescripteurPrenom;
+		delete input.prescripteurInami;
+		return input;
 	})
 );
 
@@ -78,30 +96,36 @@ export async function onValid(data) {
 	if (this.mode === 'create') {
 		trace('Engaging Prescription creation');
 		// <!--* CREATE PROCEDURE -->
-		const { patient, sp } = page.data;
-		let compiledData = {
-			prescription: data,
-			filePath: `${appState.user.id}/patient-${
-				patient.patient_id
-			}/situation-pathologique-${sp.created_at}(${sp.sp_id})/prescriptions`,
-			fileName: data.prescription_id,
-			buffer: Array.from(await this.form.file.bytes())
-		};
-		await createPrescription(compiledData);
+		let { data: prescription, error } = await createPrescription(
+			data,
+			$state.snapshot(this.form.file)?.[0]
+		);
+		// ça pourrait être cool d'implémenter un ssytème de toast qui notifie "l'élément a bien été enregistré"
+		if (error) {
+			return (this.message = error);
+		}
 		// TODO : Handle Error
 		info('SP Creation done Successfully');
 	} else {
 		trace('Engaging Patient modification');
 		// <!--* UPDATE PROCEDURE -->
-		// await updatePatient(data);
-		await invalidate('patient:layout');
+		const { error } = await updatePrescription(data, $state.snapshot(this.form.file)?.[0]);
+		if (error) {
+			return (this.message = error);
+		}
 		info('Patient modified done Successfully');
 	}
 
+	await invalidate('patient:layout');
 	goto('/dashboard/patients/' + data.patient_id + '/situation-pathologique/' + data.sp_id);
 }
 
-export const fieldSchema = [
+export const fieldSchema = (mode) => [
+	{
+		id: 'file_name',
+		name: 'file_name',
+		inputType: 'hidden'
+	},
 	{
 		id: 'patient_id',
 		name: 'patient_id',
@@ -172,8 +196,6 @@ export const fieldSchema = [
 		name: 'nombre_seance',
 		inputType: 'number',
 		titre: get(t)('form.prescription', 'nombre_seance.label'),
-		removeArrows: true,
-		trailing: nombre_seance_trailing,
 		help: null,
 		outerCSS: 'sm:col-span-2',
 		innerCSS: ''
@@ -183,6 +205,8 @@ export const fieldSchema = [
 		name: 'seance_par_semaine',
 		inputType: 'number',
 		titre: get(t)('form.prescription', 'seance_par_semaine.label'),
+		removeArrows: true,
+		trailing: nombre_seance_trailing,
 		help: null,
 		outerCSS: 'sm:col-span-2',
 		innerCSS: ''
@@ -201,7 +225,11 @@ export const fieldSchema = [
 		name: 'file',
 		inputType: 'file',
 		titre: get(t)('form.prescription', 'copy.label'),
-		outerCSS: 'sm:col-span-full'
+		outerCSS: 'sm:col-span-full',
+		help:
+			mode === 'update'
+				? 'Si vous uploadez un nouveau fichier la copie de la prescription précédemment enregistrée sera écrasée'
+				: undefined
 		// innerCSS: ''
 	}
 ];

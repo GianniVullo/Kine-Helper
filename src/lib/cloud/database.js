@@ -37,10 +37,10 @@ export class DatabaseManager {
 			whereClauses.push(`${filter[0]} = $${filters.indexOf(filter) + 1}`);
 			filterValues.push(filter[1]);
 		}
-		const { data: stmt, error } = await this.execute(
-			`DELETE FROM ${table} WHERE ${whereClauses.join(', ')}`,
-			filterValues
-		);
+		const stt = `DELETE FROM ${table} WHERE ${whereClauses.join(', ')}`;
+		console.log(stt);
+		
+		const { data: stmt, error } = await this.execute(stt, filterValues);
 		return { data: stmt, error };
 	}
 

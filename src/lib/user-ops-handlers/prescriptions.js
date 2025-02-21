@@ -1,11 +1,8 @@
-import DBAdapter from '$lib/user-ops-handlers/dbAdapter';
-import { get } from 'svelte/store';
-import { patients } from '../stores/PatientStore';
-import { user } from '../stores/UserStore';
 import { UserOperationsHandler } from './abstractHandler';
-import { file_exists, remove_file, save_to_disk } from '../utils/fsAccessor';
+import { file_exists, remove_file, save_to_disk, open_file } from '../utils/fsAccessor';
 import { appState } from '../managers/AppState.svelte';
 import { trace } from '@tauri-apps/plugin-log';
+import { page } from '$app/state';
 
 //* ça a l'air con mtn mais je suis sûr que ça va payer à un moment
 function setupPrescriptionOpsHandler() {
@@ -14,70 +11,107 @@ function setupPrescriptionOpsHandler() {
 	return opsHandler;
 }
 
-export async function updatePrescription(data) {
-	const opsHandler = setupPrescriptionOpsHandler();
-	await opsHandler.execute(async () => {
-		let db = new DBAdapter();
-		await db.update(
-			'prescriptions',
-			[
-				['prescription_id', data.prescription.prescription_id],
-				['user_id', get(user).user.id]
-			],
-			data.prescription
-		);
-		// TODO Implement the saveFile with supabase API
-		if (data.fileResponse) {
-			//* comme c'est update, il n'y a pas besoin de changer l'image si elle n'a pas été transformée
-			await data.saveFile(data.filExt, data.buffer);
+export async function updatePrescription(data, file) {
+	// TODO 1 : Il faut enregistrer le filename en fait car il faut pouvoir supprimer l'ancienne prescription même si l'extension de fichier n'est pas le même.
+	// TODO 2 Implement the saveFile with supabase API
+	//* comme c'est update, il n'y a pas besoin de changer l'image si elle n'a pas été transformée
+	if (file) {
+		console.log('there is a file');
+
+		const filePath = prescriptionPath();
+		const fileName = `${data.prescription_id}.${file.name.split('.').pop()}`;
+
+		if (data.file_name) {
+			let delError = await remove_file(filePath + '/' + data.file_name, { recursive: true });
+			if (delError) {
+				return { error: delError };
+			}
+			data.file_name = fileName;
 		}
-		patients.update((p) => {
-			let rprescription = p
-				.find((p) => p.patient_id === data.prescription.patient.patient_id)
-				.situations_pathologiques.find((sp) => sp.sp_id === data.prescription.sp_id)
-				.prescriptions.find((p) => p.prescription_id === data.prescription.prescription_id);
-			rprescription.date = data.prescription.date;
-			rprescription.jointe_a = data.prescription.jointe_a;
-			rprescription.nombre_seance = data.prescription.nombre_seance;
-			rprescription.seance_par_semaine = data.prescription.seance_par_semaine;
-			rprescription.prescripteur = JSON.parse(data.prescription.prescripteur);
-			rprescription.file_name = data.prescription.file_name;
-			return p;
-		});
-	});
+		let fsError = await save_to_disk(filePath, fileName, Array.from(await file.bytes()));
+		console.log('ERRor! ', fsError);
+
+		if (fsError) {
+			return { data, error: fsError };
+		}
+		data.file_name = fileName;
+	}
+	const { error } = await appState.db.update(
+		'prescriptions',
+		[
+			['prescription_id', data.prescription_id],
+			['user_id', appState.user.id]
+		],
+		data
+	);
+	if (error) {
+		return { error };
+	}
+	return { error: null };
 }
 
-export async function createPrescription(data) {
-	const opsHandler = setupPrescriptionOpsHandler();
-	await opsHandler.execute(async () => {
-		trace('in createPrescription');
-		data.prescription.prescripteur = JSON.stringify(data.prescription.prescripteur);
-		await appState.db.insert('prescriptions', data.prescription);
-		if (data.buffer) {
-			await save_to_disk(data.filePath, data.fileName, Array.from(data.buffer));
+export async function createPrescription(data, file) {
+	trace('in createPrescription');
+	let file_name;
+	if (file) {
+		file_name = `${data.prescription_id}.${file.name.split('.').pop()}`;
+		const filePath = prescriptionPath();
+		data.prescripteur = JSON.stringify(data.prescripteur);
+		let fsError = await save_to_disk(filePath, file_name, Array.from(await file.bytes()));
+		data.file_name = file_name;
+		if (fsError) {
+			return { data: prescription, error: fsError };
 		}
-	});
+	}
+	const { data: prescription, error } = await appState.db.insert('prescriptions', data);
+	if (error) {
+		return { data: null, error };
+	}
+	return { data: prescription, error: null };
 }
 
 export async function deletePrescription(prescription) {
-	const opsHandler = setupPrescriptionOpsHandler();
-	await opsHandler.execute(async () => {
-		let db = new DBAdapter();
-		await db.delete('prescriptions', [
-			['prescription_id', prescription.prescription_id],
-			['user_id', get(user).user.id]
-		]);
-		patients.update((ps) => {
-			let p = ps.find((p) => p.patient_id === patient.patient_id);
-			let sp = p.situations_pathologiques.find((sp) => sp.sp_id === $page.params.spId);
-			sp.prescriptions = sp.prescriptions.filter(
-				(p) => p.prescription_id !== prescription.prescription_id
-			);
-			return ps;
-		});
-		let path = await prescriptionPath(prescription);
-		if (await file_exists(path)) {
-			await remove_file(path);
+	let { data, error } = await appState.db.delete('prescriptions', [
+		['prescription_id', prescription.prescription_id]
+	]);
+	if (error) {
+		console.log(error);
+
+		return { data: null, error };
+	}
+	const filePath = prescriptionPath();
+	let file_name = prescription.file_name;
+	const completePath = `${filePath}/${file_name}`;
+	if (file_name) {
+		if (await file_exists(completePath)) {
+			let fserror = await remove_file(completePath, { recursive: false });
+			if (fserror) {
+				console.log(fserror);
+
+				return { data: null, error: fserror };
+			}
 		}
-	});
+	}
+	return { data, error: error };
+}
+
+export async function openPrescription(prescription) {
+	let path = prescriptionPath();
+	const completePath = `${path}/${prescription.file_name}`;
+	let exist = await file_exists(completePath);
+	if (!exist) {
+		return { error: 'File does not exist' };
+	}
+	let fsError = await open_file(completePath);
+	if (fsError) {
+		return { error: fsError };
+	}
+	return { data: null, error: null };
+}
+
+function prescriptionPath() {
+	const { patient, sp } = page.data;
+	return `${appState.user.id}/patient${
+		patient.patient_id
+	}/situation-pathologique-${sp.created_at}(${sp.sp_id})/prescriptions`;
 }
