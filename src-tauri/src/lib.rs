@@ -182,6 +182,18 @@ pub fn run() {
                             sql: include_str!("migrations/20240906062350_rename_patients_kine_id.up.sql"),
                             kind: MigrationKind::Up,
                         },
+                        Migration {
+                            version: 9,
+                            description: "New tarification paradigma",
+                            sql: include_str!("migrations/20250119121051_tarifs_et_supplement.up.sql"),
+                            kind: MigrationKind::Up,
+                        },
+                        Migration {
+                            version: 10,
+                            description: "Added Appareils table that will only be local to track the USB/Bluetooth devices linked to the machine",
+                            sql: include_str!("migrations/20250216165021_appareils.up.sql"),
+                            kind: MigrationKind::Up,
+                        },
                     ],
                 )
                 .build(),

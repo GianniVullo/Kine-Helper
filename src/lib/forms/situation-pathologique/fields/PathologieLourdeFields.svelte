@@ -22,17 +22,7 @@
 		label={$t('form.generateur', 'heavy.label')} />
 </div>
 
-{#if pathologieLourde == '1'}
-	<GMFCSScoreField {readOnly} bind:value={GMFCSScore} />
-	<WarningDisplayer
-		descriptionLines={[
-			$t('form.generateur', 'warning1'),
-			$t('form.generateur', 'warning2'),
-			$t('form.generateur', 'warning3'),
-			$t('form.generateur', 'warning4'),
-			$t('form.generateur', 'warning5')
-		]} />
-{:else if ['2', '3'].includes(pathologieLourde)}
+{#if ['2', '3'].includes(pathologieLourde)}
 	<WarningDisplayer descriptionLines={[$t('form.generateur', 'warning5')]} />
 {:else if pathologieLourde == '4'}
 	<WarningDisplayer

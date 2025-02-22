@@ -2,14 +2,7 @@
 	import { extractErrorForField } from '../../../libraries/formHandler.svelte';
 	import Field from './Field.svelte';
 
-	let {
-		titre,
-		description = undefined,
-		form = $bindable(),
-		fields,
-		customField,
-		errors = $bindable()
-	} = $props();
+	let { titre, description = undefined, form = $bindable(), fields, children, errors } = $props();
 </script>
 
 <div class="border-b border-gray-900/10 pb-12">
@@ -20,8 +13,8 @@
 		</p>
 	{/if}
 	<div class="mt-10 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
-		{#if customField}
-			{@render customField()}
+		{#if children}
+			{@render children()}
 		{:else}
 			{#each fields as field}
 				<Field {field} error={errors[field.name]} bind:value={form[field.name]} />

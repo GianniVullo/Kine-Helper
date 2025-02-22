@@ -4,6 +4,9 @@ import { createSituationPathologique } from '../../../../user-ops-handlers/situa
 import { get } from 'svelte/store';
 import { goto, invalidate } from '$app/navigation';
 import { info, trace } from '@tauri-apps/plugin-log';
+import { groupes, lieux } from '../../../../stores/codeDetails';
+
+const SEX = ['F', 'M'];
 
 const user_id = v.pipe(v.nonNullable(v.string()), v.uuid());
 const patient_id = v.pipe(v.optional(v.string()), v.uuid());
@@ -24,6 +27,36 @@ const service = v.pipe(
 	v.nullable(v.string())
 );
 
+// Tarifaction fields
+const supplements = v.pipe(
+	v.transform((input) => (input?.length === 0 ? null : input)),
+	v.nullable(v.array(v.uuid()))
+);
+
+// The nomenclature fields
+// Ces champs peuvent être nul ici et dans la création de séance mais pas dans la génération d'attestation
+
+const groupe_id = v.pipe(
+	v.transform((input) => (input?.length === 0 ? null : input)),
+	v.nullable(v.number())
+);
+const lieu_id = v.pipe(
+	v.transform((input) => (input?.length === 0 ? null : input)),
+	v.nullable(v.number())
+);
+const duree_id = v.pipe(
+	v.transform((input) => (input?.length === 0 ? null : input)),
+	v.nullable(v.number())
+);
+const patho_lourde_type = v.pipe(
+	v.transform((input) => (input?.length === 0 ? null : input)),
+	v.nullable(v.number())
+);
+const gmfcs = v.nullable(v.number());
+const has_seconde_seance = v.pipe(v.optional(v.boolean()));
+
+const amb_hos = v.nullable(v.nullable(v.picklist(SEX)));
+
 // TODO : ADD the tarif(s) and suppléements
 
 export const validateurs = {
@@ -34,7 +67,14 @@ export const validateurs = {
 	motif,
 	plan_du_ttt,
 	numero_etablissement,
-	service
+	service,
+	groupe_id,
+	lieu_id,
+	duree_id,
+	patho_lourde_type,
+	amb_hos,
+	has_seconde_seance,
+	supplements
 };
 
 export const SPSchema = v.pipe(
@@ -61,6 +101,8 @@ export async function onValid(data) {
 
 	goto('/dashboard/patients/' + data.patient_id + '/situation-pathologique/' + data.sp_id);
 }
+
+export const tarificationField = [];
 
 export const fieldSchema = [
 	{

@@ -2,6 +2,7 @@
 	import TwUiField from '../fields/TwUIField.svelte';
 	import TwUiFileField from '../fields/TwUIFileField.svelte';
 	import TwUiRadioGroup from '../fields/TwUIRadioGroup.svelte';
+	import SimpleSelect from '../fields/SimpleSelect.svelte';
 	let { field, value = $bindable(), error } = $props();
 </script>
 
@@ -15,6 +16,10 @@
 		{error} />
 {:else if field.inputType === 'hidden'}
 	<input type="hidden" name={field.name} bind:value />
+{:else if field.inputType === 'select'}
+	<div class={field.outerCSS}>
+		<SimpleSelect {...field} bind:value />
+	</div>
 {:else if field.inputType === 'file'}
 	<div class={field.outerCSS}>
 		<label for={field.id} class="block text-sm/6 font-medium text-gray-900">{field.titre}</label>

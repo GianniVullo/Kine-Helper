@@ -1,0 +1,170 @@
+<script>
+	import {
+		dureeParGroupeParLieu,
+		durees,
+		groupes,
+		lieux,
+		lieuxParGroupe
+	} from '../../../../stores/codeDetails';
+	import SimpleSelect from '../fields/SimpleSelect.svelte';
+	import { get } from 'svelte/store';
+	import { t } from '../../../../i18n';
+	import { untrack } from 'svelte';
+	import RadioFieldV2 from '../../../../forms/abstract-fields/RadioFieldV2.svelte';
+	import CheckboxFieldV2 from '../../../../forms/abstract-fields/CheckboxFieldV2.svelte';
+	import PathologieLourdeFields from '../situation-pathologique/PathologieLourdeFields.svelte';
+	import WarningDisplayer from '../situation-pathologique/WarningDisplayer.svelte';
+
+	let { form = $bindable(), errors } = $props();
+
+	let dureeOptions = $state();
+
+	let groupeOptions = groupes()
+		.map((val, index) => ({
+			label: val,
+			value: index,
+			id: `groupe${index}`
+		}))
+		.filter((s) => {
+			if (form.groupe_id && s.value === form.groupe_id) {
+				return s;
+			} else if (form.groupe_id && s.value !== form.groupe_id) {
+				return;
+			} else {
+				return s;
+			}
+		});
+
+	let lieuOptions = $state([]);
+
+	$effect(() => {
+		console.log('RUNNING WITH ', form.groupe_id);
+		form.groupe_id;
+		if (typeof form.groupe_id === 'number') {
+			const lpG = lieuxParGroupe[form.groupe_id];
+			console.log(lpG);
+
+			untrack(() => {
+				form.lieu_id = undefined;
+
+				lieuOptions = lieux()
+					.map((val, index) => ({
+						label: val,
+						value: index,
+						id: `lieu${index}`
+					}))
+					.filter((_, index) => lpG[0] === '*' || lpG.includes(index));
+				form.duree_id = undefined;
+				form.patho_lourde_type = undefined;
+				form.amb_hos = undefined;
+				form.has_seconde_seance = undefined;
+				form.gmfcs = undefined;
+			});
+		}
+	});
+
+	const checkIfDuree = (index) => {
+		const dureeParGroupeParLieuDuGroupeAChecker = dureeParGroupeParLieu[form.groupe_id];
+
+		if (dureeParGroupeParLieuDuGroupeAChecker) {
+			for (const [repartitionParLieux, durees] of Object.entries(
+				dureeParGroupeParLieuDuGroupeAChecker
+			)) {
+				let parsedRepartition = repartitionParLieux.split(',').map((s) => parseInt(s));
+				if (parsedRepartition?.includes(form.lieu_id) && durees.includes(index)) {
+					return true;
+				}
+			}
+		}
+	};
+
+	$effect(() => {
+		form.lieu_id;
+		untrack(
+			() =>
+				(dureeOptions = durees()
+					.map((d, index) => ({ label: d, value: index }))
+					.filter((s, index) => {
+						const ceck = checkIfDuree(index);
+						return ceck;
+					})
+					.map(({ label, value }, index) => ({
+						label,
+						value,
+						id: `duree${index}`
+					})))
+		);
+		if (lieuOptions.length === 1) {
+			untrack(() => (form.lieu_id = lieuOptions[0].value));
+		}
+		const dO = untrack(() => dureeOptions);
+		if (dO.length === 1) {
+			untrack(() => (form.duree_id = dO[0].value));
+		}
+	});
+</script>
+
+<div class="col-span-full md:col-span-4">
+	<SimpleSelect
+		label={get(t)('form.generateur', 'group.label')}
+		name="groupe_id"
+		bind:value={form.groupe_id}
+		options={groupeOptions}
+		placeholder={get(t)('form.generateur', 'group.placeholder')} />
+</div>
+
+<!--? LIEUX ID -->
+{#if typeof form.groupe_id == 'number'}
+	<div class="col-span-full md:col-span-4">
+		<SimpleSelect
+			label={get(t)('form.generateur', 'lieu.label')}
+			name="lieu_id"
+			bind:value={form.lieu_id}
+			options={lieuOptions}
+			placeholder={get(t)('form.generateur', 'lieu.placeholder')} />
+	</div>
+{/if}
+
+<!--? PATHOLOURDE TYPE -->
+{#if typeof form.groupe_id == 'number' && form.groupe_id === 1}
+	<div class="col-span-full md:col-span-4">
+		<PathologieLourdeFields bind:pathologieLourde={form.patho_lourde_type} />
+	</div>
+{/if}
+<!--? DURÉE ID -->
+{#if typeof form.groupe_id == 'number' && typeof form.lieu_id == 'number' && form.groupe_id !== 1}
+	<div class="col-span-full md:col-span-4">
+		<SimpleSelect
+			label={$t('form.generateur', 'duree.label')}
+			name="duree_id"
+			bind:value={form.duree_id}
+			options={dureeOptions}
+			placeholder="Choisissez une durée" />
+	</div>
+{/if}
+
+<!--? Permet une seconde séance par jour -->
+{#if (typeof form.groupe_id == 'number' && form.groupe_id === 1 && typeof form.patho_lourde_type == 'number' && form.patho_lourde_type === 0) || form.groupe_id === 4 || form.groupe_id === 6}
+	<div class="col-span-full">
+		<CheckboxFieldV2
+			bind:value={form.has_seconde_seance}
+			name="secondeSeance"
+			label={$t('form.generateur', 'second.label')} />
+		<WarningDisplayer descriptionLines={[$t('form.generateur', 'warning12')]} />
+	</div>
+{/if}
+
+<!--? AMB/HOS (if lieu 5) -->
+{#if typeof form.groupe_id == 'number' && typeof form.lieu_id == 'number' && form.lieu_id === 7}
+	<div class="col-span-full">
+		<RadioFieldV2
+			name="Amb_hos"
+			bind:value={form.amb_hos}
+			options={[
+				{ value: 'AMB', label: 'AMB' },
+				{ value: 'HOS', label: 'HOS' }
+			]}
+			inline
+			label={$t('form.generateur', 'amb_hos')} />
+	</div>
+{/if}

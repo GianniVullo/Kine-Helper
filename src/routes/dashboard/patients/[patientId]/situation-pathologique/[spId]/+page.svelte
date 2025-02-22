@@ -37,7 +37,6 @@
 	{/if}
 
 	{#if sp.prescriptions.length > 0 && sp.seances.length === 0}
-		WHAAAT
 		<EmptyState
 			className="!text-start"
 			titre={$t('sp.detail', 'content.start') +
@@ -65,6 +64,7 @@
 			{/snippet}
 		</EmptyState>
 	{/if}
+	Je pense que ce serait une bonne idée d'avoir un objet qui gère les différents type de situation pathologique pour pouvoir afficher différentes notes comme, par exemple, la suggestion de Marc Leflot de prévenir l'utilisateur de si la demande d'accord arrive à échéance. 
 
 	Ajouter des overview de la situation pathologique : Où on en est dans le traitement, dans la
 	facturation etc (bref toutes les données que je pensais compiler dans l'object sp)

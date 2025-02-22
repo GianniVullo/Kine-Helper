@@ -9,6 +9,12 @@ ALTER TABLE
 ADD
     COLUMN metadata TEXT;
 
+-- Le champ metadata sur patient sert à recevoir si le patient a déjà reçu un intake ou le nombre de reconduction 
+ALTER TABLE
+    patients
+ADD
+    COLUMN metadata TEXT;
+
 -- une table pour les kinés déconventionnés
 CREATE TABLE IF NOT EXISTS tarifs (
     id TEXT PRIMARY KEY,
