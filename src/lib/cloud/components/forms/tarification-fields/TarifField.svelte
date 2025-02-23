@@ -31,7 +31,7 @@
 	<div class="col-span-3">
 		<SimpleSelect
 			label="Tarif de votre séance de kinésithérapie"
-			bind:value={form.tarifs}
+			bind:value={form.tarif_seance}
 			options={tarifs} />
 	</div>
 	<div class="col-span-3">
@@ -55,14 +55,11 @@
 	<div class="col-span-3">
 		<SimpleSelect
 			label="Tarif de votre seconde séance par jour"
-			bind:value={form.tarif_consultatif}
+			bind:value={form.tarif_seconde_seance}
 			options={tarifs} />
 	</div>
 	<div class="col-span-3">
-		<SimpleSelect
-			label="Tarif de votre intake"
-			bind:value={form.tarif_consultatif}
-			options={tarifs} />
+		<SimpleSelect label="Tarif de votre intake" bind:value={form.tarif_intake} options={tarifs} />
 	</div>
 {:catch error}
 	<!-- options was rejected -->

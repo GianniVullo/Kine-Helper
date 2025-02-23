@@ -48,7 +48,7 @@
 				<TarifField form={formHandler.form} errors={formHandler.errors} />
 			{/if}
 			<!--* Qu'il soit conventionne ou non l'utilisateur peut compter des suppléments -->
-			<SupplementField form={formHandler.form} errors={formHandler.errors} />
+			<SupplementField bind:value={formHandler.form.supplements} errors={formHandler.errors} />
 		</FormSection>
 	{/if}
 	<FormSection

@@ -104,6 +104,7 @@ export class Formulaire {
 	}
 
 	evaluateAndValidate(form) {
+		console.log('in evaluateAndValidate with', $state.snapshot(form));
 		for (const field of Object.keys(form)) {
 			if (this.touched[field]) {
 				trace(field + ' is touched');

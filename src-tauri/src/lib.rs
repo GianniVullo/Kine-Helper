@@ -194,6 +194,12 @@ pub fn run() {
                             sql: include_str!("migrations/20250216165021_appareils.up.sql"),
                             kind: MigrationKind::Up,
                         },
+                        Migration {
+                            version: 11,
+                            description: "Added column metadata to tables tarifs and supplements",
+                            sql: include_str!("migrations/20250216165602_tarifs_metadata.up.sql"),
+                            kind: MigrationKind::Up,
+                        },
                     ],
                 )
                 .build(),

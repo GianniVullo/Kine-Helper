@@ -1,23 +1,10 @@
 <script>
 	import { t } from '../../../../lib/i18n';
 	import dayjs from 'dayjs';
-	import { goto } from '$app/navigation';
-	import relativeTime from 'dayjs/plugin/relativeTime';
 	import Title from '$lib/patient-detail/Title.svelte';
 
 	let { data } = $props();
-
-	dayjs.extend(relativeTime);
 	let sps = data.patient?.situations_pathologiques?.length > 0;
-	// if (sps) {
-	// 	goto(
-	// 		'/dashboard/patients/' +
-	// 			$page.params.patientId +
-	// 			'/situation-pathologique/' +
-	// 			patient.situations_pathologiques[0]?.sp_id
-	// 	);
-	// }
-	// let Balise = Second;
 </script>
 
 <Title patient={data.patient} />
@@ -26,13 +13,6 @@
 		class="mt-10 w-full border-b border-gray-200 pb-5 sm:flex sm:items-center sm:justify-between">
 		<h3 class="text-base font-semibold text-gray-900">Situations pathologiques</h3>
 		<div class="mt-3 sm:ml-4 sm:mt-0">
-			<button
-				onclick={() => {
-					const path = `/dashboard/patients/${data.patient.patient_id}/situation-pathologique/create`;
-					console.log('going to ', path);
-
-					goto(path);
-				}}>TEST</button>
 			<a
 				href={`/dashboard/patients/${data.patient.patient_id}/situation-pathologique/create`}
 				class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"

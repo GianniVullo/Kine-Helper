@@ -1,5 +1,5 @@
 <script>
-	let { label, options, name, value = $bindable(), placeholder } = $props();
+	let { label, options, name, value = $bindable(), help } = $props();
 </script>
 
 <div>
@@ -11,11 +11,8 @@
 			{name}
 			bind:value
 			class="col-start-1 row-start-1 w-full appearance-none rounded-md bg-white py-1.5 pl-3 pr-8 text-base text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-secondary-600 sm:text-sm/6">
-			{#if placeholder}
-				<option value="" disabled selected>{placeholder}</option>
-			{/if}
 			{#each options as option}
-				<option value={option?.value}>{option?.label}</option>
+				<option id={option?.id} value={option?.value} label={option?.label}></option>
 			{/each}
 		</select>
 		<svg
@@ -31,3 +28,6 @@
 		</svg>
 	</div>
 </div>
+{#if help}
+	<p class="mt-3 text-sm/6 text-gray-600">{help}</p>
+{/if}
