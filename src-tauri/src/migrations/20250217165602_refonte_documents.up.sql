@@ -13,12 +13,26 @@ CREATE TABLE IF NOT EXISTS factures_patients (
 );
 
 CREATE TABLE IF NOT EXISTS factures_patients_attestations ();
+
 CREATE TABLE IF NOT EXISTS factures_mutuelles ();
+
 CREATE TABLE IF NOT EXISTS factures_mutuelles_attestations ();
 
 -- devraient contenir les réponses papiers des mutuelles en attendant eAgreement
-CREATE TABLE IF NOT EXISTS demandes_accord ();
+CREATE TABLE IF NOT EXISTS demandes_accord (
+    id TEXT PRIMARY KEY,
+    user_id TEXT,
+    patient_id TEXT,
+    sp_id TEXT,
+    created_at TEXT,
+    validity TEXT,
+    reference TEXT,
+    buildable INTEGER, -- ce champ indique si les metadatas
+    metadata
+);
+
 CREATE TABLE IF NOT EXISTS demandes_reconduction ();
+
 CREATE TABLE IF NOT EXISTS testings ();
+
 CREATE TABLE IF NOT EXISTS custom_documents ();
- 
