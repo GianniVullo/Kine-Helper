@@ -30,31 +30,35 @@ const service = v.pipe(
 // Tarifaction fields
 const supplements = v.nullish(v.array(v.uuid()), []);
 
-const tarif_seance = v.nullish(v.uuid());
-const tarif_indemnite_dplcmt = v.nullish(v.uuid());
-const tarif_rapport_ecrit = v.nullish(v.uuid());
-const tarif_consultatif = v.nullish(v.uuid());
-const tarif_seconde_seance = v.nullish(v.uuid());
-const tarif_intake = v.nullish(v.uuid());
+const tarif_seance = v.uuid();
+const tarif_indemnite_dplcmt = v.uuid();
+const tarif_rapport_ecrit = v.uuid();
+const tarif_consultatif = v.uuid();
+const tarif_seconde_seance = v.uuid();
+const tarif_intake = v.uuid();
+const tarif_seance_customm = v.uuid();
+const tarif_indemnite_dplcmt_customm = v.uuid();
+const tarif_rapport_ecrit_customm = v.uuid();
+const tarif_consultatif_customm = v.uuid();
+const tarif_seconde_seance_customm = v.uuid();
+const tarif_intake_customm = v.uuid();
 // The nomenclature fields
 // Ces champs peuvent être nul ici et dans la création de séance mais pas dans la génération d'attestation
 
 const groupe_id = v.pipe(
 	v.transform((input) => (input?.length === 0 ? null : input)),
-	v.nullish(v.number())
+	v.number('Veuillez choisir un groupe pathologique')
 );
 const lieu_id = v.pipe(
 	v.transform((input) => (input?.length === 0 ? null : input)),
-	v.nullish(v.number())
+	v.number('Veuillez choisir un lieu')
 );
-const duree_id = v.pipe(
+const duree = v.pipe(
 	v.transform((input) => (input?.length === 0 ? null : input)),
 	v.nullish(v.number())
 );
 const patho_lourde_type = v.nullish(v.number());
 const gmfcs = v.nullish(v.number());
-const has_seconde_seance = v.optional(v.boolean(), false);
-
 const amb_hos = v.nullish(v.picklist(SEX));
 
 // TODO : ADD the tarif(s) and suppléements
@@ -70,11 +74,10 @@ export const validateurs = {
 	service,
 	groupe_id,
 	lieu_id,
-	duree_id,
+	duree,
 	patho_lourde_type,
 	gmfcs,
 	amb_hos,
-	has_seconde_seance,
 	supplements,
 	tarif_seance,
 	tarif_indemnite_dplcmt,
@@ -88,6 +91,57 @@ export const SPSchema = v.pipe(
 	v.object({
 		...validateurs
 	}),
+	v.forward(
+		v.partialCheck(
+			[['lieu_id'], ['amb_hos']],
+			(input) => input.lieu_id !== 7 || input.amb_hos,
+			'Veuillez précisez si la séance est ambulatoire (par example au cabinet) ou hospitalier (en hopital)'
+		),
+		['amb_hos']
+	),
+	v.forward(
+		v.partialCheck(
+			[['groupe_id'], ['patho_lourde_type']],
+			(input) => input.groupe_id !== 1 || typeof input.patho_lourde_type === "number",
+			'Merci de spécifier un type de pathologie lourde.'
+		),
+		['patho_lourde_type']
+	),
+	v.forward(
+		v.partialCheck(
+			[['patho_lourde_type'], ['gmfcs']],
+			(input) => input.patho_lourde_type !== 1 || input.gmfcs,
+			'Veuillez remplir le gmfcs du patient.'
+		),
+		['gmfcs']
+	),
+	v.forward(
+		v.partialCheck(
+			[['patho_lourde_type'], ['duree']],
+			(input) => typeof input.patho_lourde_type === 'number' || input.duree,
+			'Veuillez remplir le gmfcs du patient.'
+		),
+		['duree']
+	),
+	// v.forward(
+	// 	v.partialCheck(
+	// 		[
+	// 			['groupe_id'],
+	// 			['lieu_id'],
+	// 			['duree'],
+	// 			['patho_lourde_type'],
+	// 			['gmfcs'],
+	// 			['has_seconde_seance'],
+	// 			['amb_hos']
+	// 		],
+	// 		(input) => {
+	// 			if (groupe_id === 1) {
+	// 			}
+	// 		},
+	// 		'Il y a déjà 2 séances ce jour là !'
+	// 	),
+	// 	['groupe_id']
+	// ),
 	v.transform((input) => {
 		input.metadata = {};
 		if (input.tarif_seance) {
