@@ -70,7 +70,7 @@
 				<label for={id} class="font-medium text-gray-900">{checkboxLabel}</label>
 				{#if checkboxDescription}
 					<p id="{name}-description" class="text-gray-500">
-						{checkboxDescription}
+						{@html checkboxDescription}
 					</p>
 				{/if}
 			</div>

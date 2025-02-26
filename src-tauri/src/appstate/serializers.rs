@@ -24,7 +24,7 @@ pub struct User {
     pub adresse: String,
     pub cp: u16,
     pub localite: String,
-    pub conventionne: String,
+    pub conventionne: Option<bool>,
     pub offre: String,
     pub has_stronghold_key: bool,
     pub hold_exists: bool,

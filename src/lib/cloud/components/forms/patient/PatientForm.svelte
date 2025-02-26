@@ -37,7 +37,7 @@
 			{description}
 			{fields}
 			bind:form={formHandler.form}
-			bind:errors={formHandler.errors} />
+			errors={formHandler.errors} />
 	{:else}
 		Error : no section!
 	{/each}

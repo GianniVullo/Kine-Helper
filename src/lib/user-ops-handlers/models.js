@@ -74,6 +74,7 @@ export class SituationPathologique {
 		patho_lourde_type,
 		lieu_id,
 		duree,
+		metadata,
 		volet_j,
 		volet_h,
 		gmfcs,
@@ -88,6 +89,8 @@ export class SituationPathologique {
 		documents = [],
 		seances = []
 	}) {
+		console.log('in the sp constructor');
+		
 		this.sp_id = sp_id;
 		this.created_at = created_at;
 		this.patient_id = patient_id;
@@ -100,6 +103,7 @@ export class SituationPathologique {
 		this.prescriptions = prescriptions;
 		this.attestations = attestations;
 		this.documents = documents;
+		this.metadata = metadata;
 		this.user_id = appState.user.id;
 		this.upToDate = false;
 		this.intake = JSON.parse(intake ?? null);

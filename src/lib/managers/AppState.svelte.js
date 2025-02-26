@@ -89,8 +89,7 @@ class AppState {
 			profil.localite &&
 			profil.inami &&
 			profil.iban &&
-			profil.bce &&
-			profil.conventionne
+			profil.bce
 		);
 	}
 }

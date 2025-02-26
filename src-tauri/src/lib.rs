@@ -200,6 +200,12 @@ pub fn run() {
                             sql: include_str!("migrations/20250216165602_tarifs_metadata.up.sql"),
                             kind: MigrationKind::Up,
                         },
+                        Migration {
+                            version: 12,
+                            description: "Added missing column amb_hos to tables sp",
+                            sql: include_str!("migrations/20250225195209_sp_amb_hos.up.sql"),
+                            kind: MigrationKind::Up,
+                        },
                     ],
                 )
                 .build(),

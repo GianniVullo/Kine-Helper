@@ -10,6 +10,7 @@
 	let {
 		pathologieLourde = $bindable(),
 		GMFCSScore,
+		errors,
 		secondeSeance = false,
 		readOnly = false
 	} = $props();
@@ -20,12 +21,23 @@
 		{readOnly}
 		{options}
 		bind:value={pathologieLourde}
-		name="pathologieLourdeCode"
+		name="patho_lourde_type"
 		label={$t('form.generateur', 'heavy.label')} />
+	{#if errors.patho_lourde_type}
+		<p class="mt-2 text-sm text-red-600" id="patho_lourde_type-error">
+			{@html errors.patho_lourde_type}
+		</p>
+	{/if}
 </div>
 
 {#if pathologieLourde === 1}
 	<GMFCSScoreField {readOnly} bind:value={GMFCSScore} />
+	{#if errors.gmfcs}
+		<p class="mt-2 text-sm text-red-600" id="patho_lourde_type-error">
+			{@html errors.gmfcs}
+		</p>
+	{/if}
+
 	<WarningDisplayer
 		descriptionLines={[
 			$t('form.generateur', 'warning1'),

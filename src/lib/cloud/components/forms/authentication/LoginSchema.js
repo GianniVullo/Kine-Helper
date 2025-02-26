@@ -60,6 +60,9 @@ export async function onValid(data) {
 	trace('Local user data successfully fetched');
 
 	user = { ...user, ...kine[0] };
+	if (user.conventionne) {
+		user.conventionne = JSON.parse(user.conventionne);
+	}
 
 	trace('Remote user data fetching');
 	// Call au serveur pour obtenir les données de profil utilisateur nécessaire à la gestion des
