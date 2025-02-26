@@ -1,0 +1,1 @@
+ALTER TABLE situations_pathologiques ADD COLUMN amb_hos TEXT; 
