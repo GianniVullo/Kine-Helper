@@ -15,7 +15,7 @@
 	import PathologieLourdeFields from '../situation-pathologique/PathologieLourdeFields.svelte';
 	import WarningDisplayer from '../situation-pathologique/WarningDisplayer.svelte';
 
-	let { form = $bindable(), errors } = $props();
+	let { form = $bindable(), lieuOptions, errors } = $props();
 
 	let dureeOptions = $state();
 
@@ -34,34 +34,6 @@
 				return s;
 			}
 		});
-
-	let lieuOptions = $state([]);
-
-	$effect(() => {
-		console.log('RUNNING WITH ', form.groupe_id);
-		form.groupe_id;
-		if (typeof form.groupe_id === 'number') {
-			const lpG = lieuxParGroupe[form.groupe_id];
-			console.log(lpG);
-
-			untrack(() => {
-				form.lieu_id = undefined;
-
-				lieuOptions = lieux()
-					.map((val, index) => ({
-						label: val,
-						value: index,
-						id: `lieu${index}`
-					}))
-					.filter((_, index) => lpG[0] === '*' || lpG.includes(index));
-				form.duree_id = undefined;
-				form.patho_lourde_type = undefined;
-				form.amb_hos = undefined;
-				form.has_seconde_seance = undefined;
-				form.gmfcs = undefined;
-			});
-		}
-	});
 
 	const checkIfDuree = (index) => {
 		const dureeParGroupeParLieuDuGroupeAChecker = dureeParGroupeParLieu[form.groupe_id];
@@ -99,7 +71,7 @@
 		}
 		const dO = untrack(() => dureeOptions);
 		if (dO.length === 1) {
-			untrack(() => (form.duree_id = dO[0].value));
+			untrack(() => (form.duree = dO[0].value));
 		}
 	});
 </script>
@@ -111,6 +83,11 @@
 		bind:value={form.groupe_id}
 		options={groupeOptions}
 		placeholder={get(t)('form.generateur', 'group.placeholder')} />
+	{#if errors.groupe_id}
+		<p class="mt-2 text-sm text-red-600" id="groupe_id-error">
+			{@html errors.groupe_id}
+		</p>
+	{/if}
 </div>
 
 <!--? LIEUX ID -->
@@ -122,13 +99,18 @@
 			bind:value={form.lieu_id}
 			options={lieuOptions}
 			placeholder={get(t)('form.generateur', 'lieu.placeholder')} />
+		{#if errors.lieu_id}
+			<p class="mt-2 text-sm text-red-600" id="lieu_id-error">
+				{@html errors.lieu_id}
+			</p>
+		{/if}
 	</div>
 {/if}
 
 <!--? PATHOLOURDE TYPE -->
 {#if typeof form.groupe_id == 'number' && form.groupe_id === 1}
 	<div class="col-span-full md:col-span-4">
-		<PathologieLourdeFields bind:pathologieLourde={form.patho_lourde_type} />
+		<PathologieLourdeFields bind:pathologieLourde={form.patho_lourde_type} {errors} />
 	</div>
 {/if}
 <!--? DURÉE ID -->
@@ -136,15 +118,21 @@
 	<div class="col-span-full md:col-span-4">
 		<SimpleSelect
 			label={$t('form.generateur', 'duree.label')}
-			name="duree_id"
-			bind:value={form.duree_id}
+			name="duree"
+			bind:value={form.duree}
 			options={dureeOptions}
 			placeholder="Choisissez une durée" />
+		{#if errors.duree}
+			<p class="mt-2 text-sm text-red-600" id="duree-error">
+				{@html errors.duree}
+			</p>
+		{/if}
 	</div>
 {/if}
 
 <!--? Permet une seconde séance par jour -->
-{#if (typeof form.groupe_id == 'number' && form.groupe_id === 1 && typeof form.patho_lourde_type == 'number' && form.patho_lourde_type === 0) || form.groupe_id === 4 || form.groupe_id === 6}
+<!--! cette histoire de seconde séance/jour le kiné doit savoi. kiné helper n'a pas besoin de cette innfo -->
+<!-- {#if (typeof form.groupe_id == 'number' && form.groupe_id === 1 && typeof form.patho_lourde_type == 'number' && form.patho_lourde_type === 0) || form.groupe_id === 4 || form.groupe_id === 6}
 	<div class="col-span-full">
 		<CheckboxFieldV2
 			bind:value={form.has_seconde_seance}
@@ -152,7 +140,7 @@
 			label={$t('form.generateur', 'second.label')} />
 		<WarningDisplayer descriptionLines={[$t('form.generateur', 'warning12')]} />
 	</div>
-{/if}
+{/if} -->
 
 <!--? AMB/HOS (if lieu 5) -->
 {#if typeof form.groupe_id == 'number' && typeof form.lieu_id == 'number' && form.lieu_id === 7}
@@ -166,5 +154,10 @@
 			]}
 			inline
 			label={$t('form.generateur', 'amb_hos')} />
+		{#if errors.amb_hos}
+			<p class="mt-2 text-sm text-red-600" id="amb_hos-error">
+				{@html errors.amb_hos}
+			</p>
+		{/if}
 	</div>
 {/if}

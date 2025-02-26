@@ -1,16 +1,11 @@
 <script>
-	// import { NomenclatureArchitecture } from '../../../../../../../lib/utils/nomenclatureManager';
 	import { t } from '../../../../../../../lib/i18n';
-	import { patients } from '../../../../../../../lib/stores/PatientStore';
 	import EventCalendar from '../../../../../../../lib/EventCalendar.svelte';
-	import { page } from '$app/stores';
 	import { getEvents } from '../eventFigureOuter';
 
-	// import dayjs from 'dayjs';
-	// import { LocalDatabase } from '../../../../../../../lib/stores/databaseInitializer';
+	let { data } = $props();
+	let { patient, sp } = data;
 
-	const patient = $patients.find((p) => p.patient_id === $page.params.patientId);
-	const sp = patient.situations_pathologiques.find((sp) => sp.sp_id === $page.params.spId);
 	let eventsSource = new Promise(async (resolve) => {
 		console.log('sp', sp);
 		//! temporary solution as It seems that whatever I try it keeps on failing from time to time
@@ -23,18 +18,15 @@
 		}
 	});
 	let ec;
-
-	// const nomenclature = new NomenclatureArchitecture(patient, sp);
-	// console.log('nomenclature', nomenclature);
-	// const codes = new Promise(async (resolve, reject) => {
-	// 	let db = new LocalDatabase();
-	// 	let codes = await db.select('SELECT * FROM codes WHERE convention_id = $1', [
-	// 		'3ba16c31-d8c3-4f07-a5ed-9148dfcccf8f'
-	// 	]);
-	// 	return codes;
-	// });
-	// console.log('codes', codes);
 </script>
+
+<a
+	class="btn variant-form-material"
+	href={'/dashboard/patients/' +
+		patient.patient_id +
+		'/situation-pathologique/' +
+		sp.sp_id +
+		'/seances/create'}>Ajouter une nouvelle séance</a>
 
 {#if sp.seances.length > 0}
 	<!--* Séances Agenda -->
