@@ -49,6 +49,8 @@
 			name={field.name}
 			inputType={field.inputType}
 			placeholder={field.placeholder}
+			checkboxLabel={field.checkboxLabel}
+			checkboxDescription={field.checkboxDescription}
 			help={field.help}
 			leading={field.leading}
 			leadingCSS={field.leadingCSS}
