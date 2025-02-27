@@ -5,41 +5,27 @@ import { get } from 'svelte/store';
 import { goto, invalidate } from '$app/navigation';
 import { info, trace } from '@tauri-apps/plugin-log';
 
+const tarifUnitValidator = v.object({
+	id: v.uuid(),
+	nom: v.string('Ce champ est obligatoire'),
+	valeur: v.string('Ce champ est obligatoire'),
+	created_at: v.isoDate(),
+	user_id: v.uuid()
+});
+
 const user_id = v.pipe(v.nonNullable(v.string()), v.uuid());
 
 // Tarifaction fields
-const tarif_seance = v.nullish(v.string());
-const tarif_indemnite_dplcmt = v.nullish(v.string());
-const tarif_rapport_ecrit = v.nullish(v.string());
-const tarif_consultatif = v.nullish(v.string());
-const tarif_seconde_seance = v.nullish(v.string());
-const tarif_intake = v.nullish(v.string());
-const tarif_custom = v.nullish(
-	v.array(
-		v.object({
-			id: v.uuid(),
-			nom: v.string('Ce champ est obligatoire'),
-			valeur: v.string('Ce champ est obligatoire'),
-			created_at: v.isoDate(),
-			user_id: v.uuid()
-		})
-	),
-	[]
-);
+const tarif_seance = v.nullish(tarifUnitValidator);
+const tarif_indemnite_dplcmt = v.nullish(tarifUnitValidator);
+const tarif_rapport_ecrit = v.nullish(tarifUnitValidator);
+const tarif_consultatif = v.nullish(tarifUnitValidator);
+const tarif_seconde_seance = v.nullish(tarifUnitValidator);
+const tarif_intake = v.nullish(tarifUnitValidator);
+const tarifs_custom = v.nullish(v.array(tarifUnitValidator), []);
 
 // Supplément field
-const supplements = v.nullish(
-	v.array(
-		v.object({
-			id: v.uuid(),
-			nom: v.string('Ce champ est obligatoire'),
-			valeur: v.string('Ce champ est obligatoire'),
-			created_at: v.isoDate(),
-			user_id: v.uuid()
-		})
-	),
-	[]
-);
+const supplements = v.nullish(v.array(tarifUnitValidator), []);
 
 export const validateurs = {
 	user_id,
@@ -50,13 +36,13 @@ export const validateurs = {
 	tarif_consultatif,
 	tarif_seconde_seance,
 	tarif_intake,
-	tarif_custom
+	tarifs_custom
 };
 
-export const SPSchema = v.pipe(
+export const TarifsSchema = v.pipe(
 	v.object({
 		...validateurs
-	}),
+	})
 	// v.transform((input) => {
 	// 	input.metadata = {};
 	// 	if (input.tarif_seance) {
@@ -112,63 +98,8 @@ export async function onValid(data) {
 
 export const fieldSchema = [
 	{
-		id: 'patient_id',
-		name: 'patient_id',
-		inputType: 'hidden'
-	},
-	{
 		id: 'user_id',
 		name: 'user_id',
 		inputType: 'hidden'
-	},
-	{
-		id: 'sp_id',
-		name: 'sp_id',
-		inputType: 'hidden'
-	},
-	{
-		id: 'created_id',
-		name: 'created_id',
-		inputType: 'hidden'
-	},
-	{
-		id: 'motif',
-		name: 'motif',
-		inputType: 'text',
-		placeholder: get(t)('sp.detail', 'reason.label'),
-		titre: get(t)('sp.detail', 'reason'),
-		help: null,
-		outerCSS: 'col-span-full',
-		innerCSS: ''
-	},
-	{
-		id: 'plan_du_ttt',
-		name: 'plan_du_ttt',
-		inputType: 'textarea',
-		placeholder: get(t)('sp.detail', 'plan.label'),
-		titre: get(t)('sp.detail', 'plan'),
-		help: null,
-		outerCSS: 'col-span-full',
-		innerCSS: ''
-	},
-	{
-		id: 'numero_etablissement',
-		name: 'numero_etablissement',
-		inputType: 'text',
-		placeholder: get(t)('sp.update', 'label.numero_etablissement'),
-		titre: get(t)('sp.update', 'label.numero_etablissement'),
-		help: 'Seulement si le patient est hospitalisé',
-		outerCSS: 'sm:col-span-4',
-		innerCSS: ''
-	},
-	{
-		id: 'service',
-		name: 'service',
-		inputType: 'text',
-		placeholder: get(t)('sp.update', 'label.service'),
-		titre: get(t)('sp.update', 'label.service'),
-		help: 'Seulement si le patient est hospitalisé',
-		outerCSS: 'sm:col-span-4',
-		innerCSS: ''
 	}
 ];

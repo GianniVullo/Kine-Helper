@@ -1,6 +1,6 @@
 <script>
 	import TwUIField from '../fields/TwUIField.svelte';
-	let { formField = $bindable(), errors } = $props();
+	let { formField = $bindable(), name, id, error, label, outerCSS = "sm:col-span-4" } = $props();
 </script>
 
 {#snippet leadingMoney()}
@@ -11,15 +11,15 @@
 {/snippet}
 
 <!--* Price -->
-<div class="sm:col-span-4">
-	<label for="price" class="block text-sm/6 font-medium text-gray-900">Prix</label>
+<div class={outerCSS}>
+	<label for={id} class="block text-sm/6 font-medium text-gray-900">{label}</label>
 	<TwUIField
-		id="price"
-		name="price"
+		{id}
+		{name}
 		inputType="text"
 		placeholder="0,00"
 		leading={leadingMoney}
 		trailing={trailingMoney}
 		bind:value={formField}
-		error={errors.price} />
+		{error} />
 </div>
