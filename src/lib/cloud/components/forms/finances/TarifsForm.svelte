@@ -1,14 +1,13 @@
 <script>
 	import { Formulaire } from '../../../libraries/formHandler.svelte';
-	import { TarifsSchema, onValid, validateurs, fieldSchema } from './TarifsSchema.svelte';
+	import { TarifsSchema, validateurs, onValid } from './TarifsSchema.svelte';
 	import BoutonPrincipal from '../../../../components/BoutonPrincipal.svelte';
 	import BoutonSecondaireAvecIcone from '../../../../components/BoutonSecondaireAvecIcone.svelte';
 	import Form from '../abstract-components/Form.svelte';
 	import FormSection from '../abstract-components/FormSection.svelte';
-	import { onMount, tick } from 'svelte';
+	import { onMount } from 'svelte';
 	import SubmitButton from '../../../../forms/ui/SubmitButton.svelte';
 	import { appState } from '../../../../managers/AppState.svelte';
-	import MoneyField from '../tarification-fields/MoneyField.svelte';
 	import DefaultTarifField from './DefaultTarifField.svelte';
 	import Field from '../abstract-components/Field.svelte';
 	import dayjs from 'dayjs';
@@ -16,17 +15,18 @@
 	import { getModalStore } from '@skeletonlabs/skeleton';
 	import { get } from 'svelte/store';
 	import { t } from '../../../../i18n';
+	import { metadata } from 'valibot';
 
 	let now = dayjs().format('YYYY-MM-DD');
 
 	let {
 		tarif_seance,
-		tarif_indemnite_dplcmt,
+		tarif_indemnite,
 		tarif_rapport_ecrit,
 		tarif_consultatif,
 		tarif_seconde_seance,
 		tarif_intake,
-		tarifs_custom,
+		tarifs,
 		supplements
 	} = $props();
 
@@ -35,50 +35,55 @@
 		schema: TarifsSchema,
 		submiter: '#seance-submit',
 		initialValues: {
-			user_id: appState.user.id,
-			tarifs_custom,
+			tarifs,
 			supplements,
 			tarif_seance: tarif_seance ?? {
-				id: crypto.randomUUID(),
+				id: null,
 				user_id: appState.user.id,
 				nom: 'tarif_seance',
 				valeur: null,
-				created_at: now
+				created_at: now,
+				metadata: JSON.stringify({ seance: true })
 			},
-			tarif_indemnite_dplcmt: tarif_indemnite_dplcmt ?? {
-				id: crypto.randomUUID(),
+			tarif_indemnite: tarif_indemnite ?? {
+				id: null,
 				user_id: appState.user.id,
-				nom: 'tarif_indemnite_dplcmt',
+				nom: 'tarif_indemnite',
 				valeur: null,
-				created_at: now
+				created_at: now,
+				metadata: JSON.stringify({ indemnite: true })
 			},
 			tarif_rapport_ecrit: tarif_rapport_ecrit ?? {
-				id: crypto.randomUUID(),
+				id: null,
 				user_id: appState.user.id,
 				nom: 'tarif_rapport_ecrit',
 				valeur: null,
-				created_at: now
+				created_at: now,
+				metadata: JSON.stringify({ rapport_ecrit: true })
 			},
 			tarif_consultatif: tarif_consultatif ?? {
-				id: crypto.randomUUID(),
+				id: null,
 				user_id: appState.user.id,
 				nom: 'tarif_consultatif',
 				valeur: null,
-				created_at: now
+				created_at: now,
+				metadata: JSON.stringify({ consultatif: true })
 			},
 			tarif_seconde_seance: tarif_seconde_seance ?? {
-				id: crypto.randomUUID(),
+				id: null,
 				user_id: appState.user.id,
 				nom: 'tarif_seconde_seance',
 				valeur: null,
-				created_at: now
+				created_at: now,
+				metadata: JSON.stringify({ seconde_seance: true })
 			},
 			tarif_intake: tarif_intake ?? {
-				id: crypto.randomUUID(),
+				id: null,
 				user_id: appState.user.id,
 				nom: 'tarif_intake',
 				valeur: null,
-				created_at: now
+				created_at: now,
+				metadata: JSON.stringify({ intake: true })
 			}
 		},
 		onValid
@@ -117,14 +122,6 @@
 		<FormSection
 			titre="Vos tarifs"
 			description="Vous pouvez définir la valeur de vos prestations et actes kinés ici. Si vous laissez une case vierge, le tarifs de la convention en cours sera pris par défaut.">
-			<!--* Id fields -->
-			{#each fieldSchema as idField}
-				<Field
-					field={idField}
-					error={formHandler.errors?.[idField.name]}
-					bind:value={formHandler.form[idField.name]} />
-			{/each}
-
 			<!--* tarif_seance -->
 			<DefaultTarifField
 				outerCSS="span-col-full sm:col-span-3 md:col-span-2"
@@ -134,13 +131,13 @@
 				name="tarif_seance"
 				label="Séances de kinésithérapie" />
 
-			<!--* tarif_indemnite_dplcmt -->
+			<!--* tarif_indemnite -->
 			<DefaultTarifField
 				outerCSS="span-col-full sm:col-span-3 md:col-span-2"
-				bind:value={formHandler.form.tarif_indemnite_dplcmt}
-				error={formHandler.errors.tarif_indemnite_dplcmt}
-				id="tarif_indemnite_dplcmt"
-				name="tarif_indemnite_dplcmt"
+				bind:value={formHandler.form.tarif_indemnite}
+				error={formHandler.errors.tarif_indemnite}
+				id="tarif_indemnite"
+				name="tarif_indemnite"
 				label="Indemnités de déplacment" />
 
 			<!--* tarif_rapport_ecrit -->
@@ -179,7 +176,7 @@
 				name="tarif_intake"
 				label="Intakes" />
 
-			<!--* tarifs_custom -->
+			<!--* tarifs -->
 			<div class="col-span-full">
 				<label
 					class="mb-4 flex flex-col items-start space-x-0 space-y-2 text-sm/6 font-medium text-gray-900 sm:flex-row sm:items-center sm:space-x-4 sm:space-y-0"
@@ -189,49 +186,51 @@
 						size="sm"
 						onclick={async (e) => {
 							e.preventDefault();
-							formHandler.form.tarifs_custom = [
-								...formHandler.form.tarifs_custom,
+							formHandler.form.tarifs = [
+								...formHandler.form.tarifs,
 								{
 									id: crypto.randomUUID(),
 									nom: null,
 									valeur: null,
 									created_at: now,
-									user_id: appState.user.id
+									user_id: appState.user.id,
+									metadata: JSON.stringify({
+										custom: true
+									})
 								}
 							];
 						}} />
 				</label>
 
 				<div class="ml-4 flex flex-col space-y-4">
-					{#each formHandler.form.tarifs_custom as custom_tarif, index}
-						<BoutonSecondaireAvecIcone
-							size="sm"
-							className="inline-flex items-center bg-red-200 text-sm font-semibold text-red-900 shadow-sm ring-1 ring-inset ring-red-300 hover:bg-red-100 self-end"
-							onclick={(e) => {
-								e.preventDefault();
-								modalStore.trigger(modal(custom_tarif, 'tarifs_custom'));
-							}}
-							inner="Supprimer">
-							{#snippet icon(cls)}
-								<svg
-									xmlns="http://www.w3.org/2000/svg"
-									fill="none"
-									viewBox="0 0 24 24"
-									stroke-width="3.5"
-									stroke="currentColor"
-									class="-ml-0.5 mr-1.5 size-5 text-red-400">
-									<path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
-								</svg>
-							{/snippet}
-						</BoutonSecondaireAvecIcone>
-
+					{#each formHandler.form.tarifs as custom_tarif, index}
 						{@const identifiant = `tarifs_custom${index}`}
 						<div class="flex flex-col space-y-2 rounded border border-indigo-500 p-2 sm:w-3/4">
+							<BoutonSecondaireAvecIcone
+								size="sm"
+								className="inline-flex items-center bg-white text-sm font-medium text-red-900 shadow-sm ring-1 ring-inset ring-red-300 hover:bg-red-50 self-end"
+								onclick={(e) => {
+									e.preventDefault();
+									modalStore.trigger(modal(custom_tarif, 'tarifs'));
+								}}
+								inner="Supprimer">
+								{#snippet icon(cls)}
+									<svg
+										xmlns="http://www.w3.org/2000/svg"
+										fill="none"
+										viewBox="0 0 24 24"
+										stroke-width="1.5"
+										stroke="currentColor"
+										class="-ml-0.5 mr-1.5 size-5 text-red-400">
+										<path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+									</svg>
+								{/snippet}
+							</BoutonSecondaireAvecIcone>
 							<input type="hidden" name={identifiant} id={identifiant} value={custom_tarif.id} />
 							<Field
 								field={{ inputType: 'text', titre: 'Nom de votre tarif', labelCSS: '!text-xs' }}
-								error={formHandler.errors?.tarifs_custom?.[index]?.nom}
-								bind:value={formHandler.form.tarifs_custom[index].nom} />
+								error={formHandler.errors?.tarifs?.[index]?.nom}
+								bind:value={formHandler.form.tarifs[index].nom} />
 
 							{#snippet leadingMoney()}
 								<span class="text-gray-500 sm:text-sm">€</span>
@@ -251,8 +250,8 @@
 									placeholder="0,00"
 									leading={leadingMoney}
 									trailing={trailingMoney}
-									error={formHandler.errors?.tarifs_custom?.[index]?.nom}
-									bind:value={formHandler.form.tarifs_custom[index].valeur} />
+									error={formHandler.errors?.tarifs?.[index]?.valeur}
+									bind:value={formHandler.form.tarifs[index].valeur} />
 							</div>
 						</div>
 					{:else}
@@ -298,7 +297,7 @@
 					<div class="flex flex-col space-y-2 rounded border border-indigo-500 p-2 sm:w-3/4">
 						<BoutonSecondaireAvecIcone
 							size="sm"
-							className="inline-flex items-center bg-red-200 text-sm font-semibold text-red-900 shadow-sm ring-1 ring-inset ring-red-300 hover:bg-red-100 self-end"
+							className="inline-flex items-center bg-white text-sm font-medium text-red-900 shadow-sm ring-1 ring-inset ring-red-300 hover:bg-red-50 self-end"
 							onclick={(e) => {
 								e.preventDefault();
 								modalStore.trigger(modal(custom_tarif, 'supplements'));
@@ -309,7 +308,7 @@
 									xmlns="http://www.w3.org/2000/svg"
 									fill="none"
 									viewBox="0 0 24 24"
-									stroke-width="3.5"
+									stroke-width="1.5"
 									stroke="currentColor"
 									class="-ml-0.5 mr-1.5 size-5 text-red-400">
 									<path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
@@ -320,7 +319,6 @@
 						<input type="hidden" name={identifiant} id={identifiant} value={custom_tarif.id} />
 						<Field
 							field={{ inputType: 'text', titre: 'Nom de votre supplément', labelCSS: '!text-xs' }}
-							error={formHandler.errors?.supplements?.[index]?.nom}
 							bind:value={formHandler.form.supplements[index].nom} />
 
 						{#snippet leadingMoney()}
@@ -341,7 +339,6 @@
 								placeholder="0,00"
 								leading={leadingMoney}
 								trailing={trailingMoney}
-								error={formHandler.errors?.supplements?.[index]?.nom}
 								bind:value={formHandler.form.supplements[index].valeur} />
 						</div>
 					</div>
@@ -353,5 +350,3 @@
 	</FormSection>
 	<SubmitButton id="seance-submit" className="col-span-full" />
 </Form>
-
-<!-- {JSON.stringify(formHandler.form)} -->
