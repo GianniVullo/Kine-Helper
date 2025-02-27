@@ -43,7 +43,8 @@
 	</div>
 {:else}
 	<div class={field.outerCSS}>
-		<label for={field.id} class="block text-sm/6 font-medium text-gray-900">{field.titre}</label>
+		<label for={field.id} class="block text-sm/6 font-medium text-gray-900 {field.labelCSS}"
+			>{field.titre}</label>
 		<TwUiField
 			id={field.id}
 			name={field.name}
