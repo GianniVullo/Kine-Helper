@@ -5,5 +5,3 @@
 </script>
 
 <ResponsiveSideBar {children} />
-
-// Ajouter ici une barre en fond

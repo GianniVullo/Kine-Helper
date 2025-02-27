@@ -12,11 +12,13 @@ function setupSettingsOpsHandler() {
 }
 
 export async function retrieveSettings(user_id) {
-	const opsHandler = setupSettingsOpsHandler();
-	await opsHandler.execute(async () => {
-		let settings = (
-			await appState.db.select('SELECT * FROM settings WHERE user_id = $1', [user_id])
-		)[0];
-		return settings;
-	});
+	console.log('in retrieveSettings with appState = ', appState);
+
+	let { data, error } = await appState.db.select('SELECT * FROM settings WHERE user_id = $1', [
+		user_id
+	]);
+	if (error) {
+		console.log('ERROR ', error);
+	}
+	return { data, error };
 }

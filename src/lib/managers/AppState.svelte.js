@@ -7,7 +7,7 @@ import { user } from '../stores/UserStore';
 import { listPatients } from '../user-ops-handlers/patients';
 import { t } from '../i18n';
 import { invoke } from '@tauri-apps/api/core';
-import { trace } from '@tauri-apps/plugin-log';
+import { trace, error as errorLog } from '@tauri-apps/plugin-log';
 /**
  ** L'objet AppState est là pour stocker les données importantes at runtime
  **
@@ -46,18 +46,22 @@ class AppState {
 			if (!this.user || !this.session) {
 				// les if statement viennent éviter les chargements inutiles bien que ceux-ci soient de l'ordre de la poignée de millisecondes
 				// TODO handle error here
+				trace('Refetch the appState from Rust');
 				let { user, session, db } = await invoke('get_app_state');
 				dbPath = db;
+				console.log('Refeted = ', user, session, db);
 
 				this.user = user;
 				this.session = session;
-			}
-			if (!this.db) {
 				this.db = new DatabaseManager(dbPath);
-				console.log(this.db);
 			}
+
 			if (!this.settings) {
-				this.settings = await retrieveSettings(this.user.id);
+				let { data, error } = await retrieveSettings(this.user.id);
+				if (error) {
+					errorLog(error)
+				}
+				this.settings = data
 			}
 		}
 	}

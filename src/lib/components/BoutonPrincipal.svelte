@@ -1,5 +1,5 @@
 <script>
-	let { href = undefined, onclick = undefined, inner, size = 'base' } = $props();
+	let { href = undefined, onclick = undefined, inner, size = 'base', ...rest } = $props();
 	const className =
 		'bg-indigo-600 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600';
 	const sizes = {
@@ -14,7 +14,7 @@
 		{inner}
 	</a>
 {:else}
-	<button {onclick} class={className + sizes[size]}>
+	<button {onclick} class={className + sizes[size]} {...rest}>
 		{inner}
 	</button>
 {/if}
