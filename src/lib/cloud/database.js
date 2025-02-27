@@ -21,7 +21,7 @@ export class DatabaseManager {
 			}`;
 		}, '');
 		let statement = `UPDATE ${table} SET ${updateStmt} WHERE ${whereStmt}`;
-		console.log('in DBAdapter.update() with', updateStmt, whereStmt);
+		console.log('in DBManager.update() with', updateStmt, whereStmt);
 		const { data: stmt, error } = await this.execute(statement, [
 			...Object.values(formData),
 			...filters.map(([_, filterValue]) => filterValue)
@@ -144,7 +144,7 @@ export class DatabaseManager {
 			liteQuery += ` LIMIT ${limit}`;
 		}
 		console.log(
-			'in DBAdapter.list() Before query',
+			'in DBManager.list() Before query',
 			liteQuery,
 			'with args',
 			filters?.map(([_, filterValue]) => filterValue)
@@ -154,13 +154,13 @@ export class DatabaseManager {
 			liteQuery,
 			filters?.map(([_, filterValue]) => filterValue)
 		);
-		console.log('in DBAdapter.list() After query', data);
+		console.log('in DBManager.list() After query', data);
 		return { data, error };
 	}
 
 	//! Attention il faut modifier pour utiliser this.execute
 	async update_seances(seances_array, key) {
-		console.log('in DBAdapter.update_seances() with', seances_array);
+		console.log('in DBManager.update_seances() with', seances_array);
 
 		for (const seance of seances_array) {
 			// Construct the update query for each seance
