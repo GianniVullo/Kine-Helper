@@ -15,7 +15,6 @@
 	import { getModalStore } from '@skeletonlabs/skeleton';
 	import { get } from 'svelte/store';
 	import { t } from '../../../../i18n';
-	import { metadata } from 'valibot';
 
 	let now = dayjs().format('YYYY-MM-DD');
 

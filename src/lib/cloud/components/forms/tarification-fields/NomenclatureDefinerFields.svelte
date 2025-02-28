@@ -110,7 +110,7 @@
 <!--? PATHOLOURDE TYPE -->
 {#if typeof form.groupe_id == 'number' && form.groupe_id === 1}
 	<div class="col-span-full md:col-span-4">
-		<PathologieLourdeFields bind:pathologieLourde={form.patho_lourde_type} {errors} />
+		<PathologieLourdeFields bind:pathologieLourde={form.patho_lourde_type} bind:gmfcs={form.gmfcs} {errors} />
 	</div>
 {/if}
 <!--? DURÉE ID -->

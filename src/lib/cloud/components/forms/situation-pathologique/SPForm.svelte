@@ -13,7 +13,14 @@
 	import TarifField from '../tarification-fields/TarifField.svelte';
 	import { lieux, lieuxParGroupe } from '../../../../stores/codeDetails';
 
-	let { patient, sp, mode = 'create' } = $props();
+	let { patient, sp, mode = 'create', tarifs, supplements } = $props();
+
+	function isItTheOne(value, id) {
+		const parsedMetadata = JSON.parse(value.metadata);
+		if (parsedMetadata) {
+			return parsedMetadata[id];
+		}
+	}
 
 	let formHandler = new Formulaire({
 		validateurs,
@@ -23,12 +30,31 @@
 			user_id: appState.user.id,
 			patient_id: patient.patient_id,
 			sp_id: crypto.randomUUID(),
-			created_at: dayjs().format('YYYY-MM-DD')
+			created_at: dayjs().format('YYYY-MM-DD'),
+			tarif_seance: tarifs.find((t) => isItTheOne(t, 'seance'))?.id,
+			tarif_indemnite: tarifs.find((t) => isItTheOne(t, 'indemnite'))?.id,
+			tarif_rapport_ecrit: tarifs.find((t) => isItTheOne(t, 'rapport_ecrit'))?.id,
+			tarif_consultatif: tarifs.find((t) => isItTheOne(t, 'consultatif'))?.id,
+			tarif_seconde_seance: tarifs.find((t) => isItTheOne(t, 'seconde_seance'))?.id,
+			tarif_intake: tarifs.find((t) => isItTheOne(t, 'intake'))?.id,
+			tarif_seance_custom: tarifs.find((t) => isItTheOne(t, 'seance'))?.valeur,
+			tarif_indemnite_custom: tarifs.find((t) => isItTheOne(t, 'indemnite'))?.valeur,
+			tarif_rapport_ecrit_custom: tarifs.find((t) => isItTheOne(t, 'rapport_ecrit'))?.valeur,
+			tarif_consultatif_custom: tarifs.find((t) => isItTheOne(t, 'consultatif'))?.valeur,
+			tarif_seconde_seance_custom: tarifs.find((t) => isItTheOne(t, 'seconde_seance'))?.valeur,
+			tarif_intake_custom: tarifs.find((t) => isItTheOne(t, 'intake'))?.valeur
 		},
 		onValid,
 		mode
 	});
-console.log(appState.user);
+
+	let displayTarifs = $derived(
+		(formHandler.form.lieu_id !== 7 || formHandler.form.amb_hos) &&
+			(formHandler.form.groupe_id !== 1 ||
+				typeof formHandler.form.patho_lourde_type === 'number') &&
+			(formHandler.form.patho_lourde_type !== 1 || formHandler.form.gmfcs) &&
+			(typeof formHandler.form.patho_lourde_type === 'number' || formHandler.form.duree)
+	);
 
 	onMount(() => {
 		formHandler.setup();
@@ -37,11 +63,9 @@ console.log(appState.user);
 	let lieuOptions = $state([]);
 
 	$effect(() => {
-		console.log('RUNNING WITH ', formHandler.form.groupe_id);
 		formHandler.form.groupe_id;
 		if (typeof formHandler.form.groupe_id === 'number') {
 			const lpG = lieuxParGroupe[formHandler.form.groupe_id];
-			console.log(lpG);
 
 			untrack(() => {
 				formHandler.form.lieu_id = undefined;
@@ -71,7 +95,7 @@ console.log(appState.user);
 		errors={formHandler.errors} />
 	<FormSection
 		titre="Informations relative à la nomenclature"
-		description="Ces champs ne sont pas obligatoires mais vont vous faire gagner du temps par la suite">
+		description="Ces champs permettent à Kiné Helper d'assigner les bons codes de nomenclatures à vos séances.">
 		<NomenclatureDefinerFields
 			{lieuOptions}
 			bind:form={formHandler.form}
@@ -82,11 +106,20 @@ console.log(appState.user);
 		description="Ces champs ne sont pas obligatoires. Veuillez remplir ce qui est digne d'intérêt.">
 		<!--* Si l'utilisateur n'est pas conventionné il peut utiliser les tarifs qu'il veut -->
 		{#if !appState.user.conventionne}
-		HEU
-			<TarifField bind:form={formHandler.form} errors={formHandler.errors} />
+			<!-- TODO: Ici Il faut mettre un "en attente de définition de la nomenclature" pour connaitre les champs nécessaires -->
+			{#if displayTarifs}
+				<TarifField bind:form={formHandler.form} errors={formHandler.errors} all {tarifs} />
+			{:else}
+				<p class="col-span-full mt-2 text-sm text-red-600">
+					Veuillez remplir les champs de la nomenclature pour pouvoir définir les tarifs
+				</p>
+			{/if}
 		{/if}
 		<!--* Qu'il soit conventionne ou non l'utilisateur peut compter des suppléments -->
-		<SupplementField bind:value={formHandler.form.supplements} errors={formHandler.errors} />
+		<SupplementField
+			bind:value={formHandler.form.supplements}
+			errors={formHandler.errors}
+			{supplements} />
 	</FormSection>
 	<SubmitButton id="sp-submit" className="col-span-full" />
 	<div class="col-span-full"><p class="w-60">{JSON.stringify(formHandler.form)}</p></div>

@@ -9,7 +9,7 @@
 
 	let {
 		pathologieLourde = $bindable(),
-		GMFCSScore,
+		gmfcs = $bindable(),
 		errors,
 		secondeSeance = false,
 		readOnly = false
@@ -31,7 +31,7 @@
 </div>
 
 {#if pathologieLourde === 1}
-	<GMFCSScoreField {readOnly} bind:value={GMFCSScore} />
+	<GMFCSScoreField {readOnly} bind:value={gmfcs} />
 	{#if errors.gmfcs}
 		<p class="mt-2 text-sm text-red-600" id="patho_lourde_type-error">
 			{@html errors.gmfcs}

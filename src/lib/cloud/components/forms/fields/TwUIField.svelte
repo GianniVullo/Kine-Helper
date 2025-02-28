@@ -14,6 +14,7 @@
 		readonly = false,
 		value = $bindable(),
 		checkboxLabel = undefined,
+		onchange,
 		checkboxDescription = undefined,
 		constraints
 	} = $props();
@@ -91,7 +92,8 @@
 			aria-invalid={error ? 'true' : undefined}
 			{placeholder}
 			bind:value
-			{...constraints} />
+			{...constraints}
+			{onchange} />
 	{/if}
 	{#if error}
 		<div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">

@@ -1,6 +1,14 @@
 <script>
 	import TwUIField from '../fields/TwUIField.svelte';
-	let { formField = $bindable(), name, id, error, label, outerCSS = "sm:col-span-4" } = $props();
+	let {
+		formField = $bindable(),
+		name,
+		id,
+		error,
+		label,
+		outerCSS = 'sm:col-span-4',
+		onchange
+	} = $props();
 </script>
 
 {#snippet leadingMoney()}
@@ -16,6 +24,7 @@
 	<TwUIField
 		{id}
 		{name}
+		{onchange}
 		inputType="text"
 		placeholder="0,00"
 		leading={leadingMoney}

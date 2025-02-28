@@ -6,6 +6,18 @@ import { goto, invalidate } from '$app/navigation';
 import { info, trace } from '@tauri-apps/plugin-log';
 import { groupes, lieux } from '../../../../stores/codeDetails';
 
+const numericalString = v.pipe(
+	v.transform((input) => (input?.length == 0 ? null : input)),
+	v.nullish(
+		v.pipe(
+			v.string('Ce champs est obligatoire'),
+			v.regex(
+				/^\d+(,\d{2})?$/,
+				'Veuillez introduire un nombre avec 2 décimales séparés par une virgule. Par example 50,35.'
+			)
+		)
+	)
+);
 const SEX = ['AMB', 'HOS', null, undefined];
 
 const user_id = v.pipe(v.nonNullable(v.string()), v.uuid());
@@ -30,18 +42,18 @@ const service = v.pipe(
 // Tarifaction fields
 const supplements = v.nullish(v.array(v.uuid()), []);
 
-const tarif_seance = v.uuid();
-const tarif_indemnite_dplcmt = v.uuid();
-const tarif_rapport_ecrit = v.uuid();
-const tarif_consultatif = v.uuid();
-const tarif_seconde_seance = v.uuid();
-const tarif_intake = v.uuid();
-const tarif_seance_customm = v.uuid();
-const tarif_indemnite_dplcmt_customm = v.uuid();
-const tarif_rapport_ecrit_customm = v.uuid();
-const tarif_consultatif_customm = v.uuid();
-const tarif_seconde_seance_customm = v.uuid();
-const tarif_intake_customm = v.uuid();
+const tarif_seance = v.nullish(v.uuid());
+const tarif_indemnite = v.nullish(v.uuid());
+const tarif_rapport_ecrit = v.nullish(v.uuid());
+const tarif_consultatif = v.nullish(v.uuid());
+const tarif_seconde_seance = v.nullish(v.uuid());
+const tarif_intake = v.nullish(v.uuid());
+const tarif_seance_custom = numericalString;
+const tarif_indemnite_custom = numericalString;
+const tarif_rapport_ecrit_custom = numericalString;
+const tarif_consultatif_custom = numericalString;
+const tarif_seconde_seance_custom = numericalString;
+const tarif_intake_custom = numericalString;
 // The nomenclature fields
 // Ces champs peuvent être nul ici et dans la création de séance mais pas dans la génération d'attestation
 
@@ -80,11 +92,17 @@ export const validateurs = {
 	amb_hos,
 	supplements,
 	tarif_seance,
-	tarif_indemnite_dplcmt,
+	tarif_indemnite,
 	tarif_rapport_ecrit,
 	tarif_consultatif,
 	tarif_seconde_seance,
-	tarif_intake
+	tarif_intake,
+	tarif_seance_custom,
+	tarif_indemnite_custom,
+	tarif_rapport_ecrit_custom,
+	tarif_consultatif_custom,
+	tarif_seconde_seance_custom,
+	tarif_intake_custom
 };
 
 export const SPSchema = v.pipe(
@@ -102,7 +120,7 @@ export const SPSchema = v.pipe(
 	v.forward(
 		v.partialCheck(
 			[['groupe_id'], ['patho_lourde_type']],
-			(input) => input.groupe_id !== 1 || typeof input.patho_lourde_type === "number",
+			(input) => input.groupe_id !== 1 || typeof input.patho_lourde_type === 'number',
 			'Merci de spécifier un type de pathologie lourde.'
 		),
 		['patho_lourde_type']
@@ -123,55 +141,51 @@ export const SPSchema = v.pipe(
 		),
 		['duree']
 	),
-	// v.forward(
-	// 	v.partialCheck(
-	// 		[
-	// 			['groupe_id'],
-	// 			['lieu_id'],
-	// 			['duree'],
-	// 			['patho_lourde_type'],
-	// 			['gmfcs'],
-	// 			['has_seconde_seance'],
-	// 			['amb_hos']
-	// 		],
-	// 		(input) => {
-	// 			if (groupe_id === 1) {
-	// 			}
-	// 		},
-	// 		'Il y a déjà 2 séances ce jour là !'
-	// 	),
-	// 	['groupe_id']
-	// ),
 	v.transform((input) => {
+		/**
+		 ** un uuid si c'est un tarifs pré-défini et un nombre si c'est un tarif custom
+		 */
 		input.metadata = {};
-		if (input.tarif_seance) {
-			input.metadata.tarif_seance = input.tarif_seance;
+		if (input.tarif_seance || input.tarif_seance_custom) {
+			input.metadata.tarif_seance = input.tarif_seance ?? input.tarif_seance_custom;
 		}
-		if (input.tarif_indemnite_dplcmt) {
-			input.metadata.tarif_indemnite_dplcmt = input.tarif_indemnite_dplcmt;
+		if (input.tarif_indemnite || input.tarif_indemnite_custom) {
+			input.metadata.tarif_indemnite = input.tarif_indemnite ?? input.tarif_indemnite_custom;
 		}
-		if (input.tarif_rapport_ecrit) {
-			input.metadata.tarif_rapport_ecrit = input.tarif_rapport_ecrit;
+		if (input.tarif_rapport_ecrit || input.tarif_rapport_ecrit_custom) {
+			input.metadata.tarif_rapport_ecrit =
+				input.tarif_rapport_ecrit ?? input.tarif_rapport_ecrit_custom;
 		}
-		if (input.tarif_consultatif) {
-			input.metadata.tarif_consultatif = input.tarif_consultatif;
+		if (input.tarif_consultatif || input.tarif_consultatif_custom) {
+			input.metadata.tarif_consultatif = input.tarif_consultatif ?? input.tarif_consultatif_custom;
 		}
-		if (input.tarif_seconde_seance) {
-			input.metadata.tarif_seconde_seance = input.tarif_seconde_seance;
+		if (input.tarif_seconde_seance || input.tarif_seconde_seance_custom) {
+			input.metadata.tarif_seconde_seance =
+				input.tarif_seconde_seance ?? input.tarif_seconde_seance_custom;
 		}
-		if (input.tarif_intake) {
-			input.metadata.tarif_intake = input.tarif_intake;
+		if (input.tarif_intake || input.tarif_intake_custom) {
+			input.metadata.tarif_intake = input.tarif_intake ?? input.tarif_intake_custom;
+		}
+		if (input.supplements.length > 0) {
+			input.metadata.supplements = input.supplements;
 		}
 
 		if (Object.keys(input.metadata).length === 0) {
 			input.metadata = null;
 		}
+		delete input.supplements;
 		delete input.tarif_seance;
-		delete input.tarif_indemnite_dplcmt;
+		delete input.tarif_indemnite;
 		delete input.tarif_rapport_ecrit;
 		delete input.tarif_consultatif;
 		delete input.tarif_seconde_seance;
 		delete input.tarif_intake;
+		delete input.tarif_seance_custom;
+		delete input.tarif_indemnite_custom;
+		delete input.tarif_rapport_ecrit_custom;
+		delete input.tarif_consultatif_custom;
+		delete input.tarif_seconde_seance_custom;
+		delete input.tarif_intake_custom;
 		return input;
 	})
 );

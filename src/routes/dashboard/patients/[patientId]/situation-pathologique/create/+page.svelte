@@ -4,7 +4,7 @@
 	import { t } from '../../../../../../lib/i18n';
 
 	let { data } = $props();
-	const patient = data.patient;
+	const { patient, tarifs, supplements } = data;
 </script>
 
-<SPForm {patient} />
+<SPForm {patient} {tarifs} {supplements} />
