@@ -22,7 +22,9 @@
 		<Field {field} error={formHandler.errors[field.name]} bind:value={formHandler.form[field.name]} />
 	{/each}
 	<div class="items flex w-full justify-center mt-4">
-		<SubmitButton />
+		<SubmitButton>
+			Se connecter
+		</SubmitButton>
 	</div>
 </form>
 
