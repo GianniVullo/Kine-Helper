@@ -1,9 +1,12 @@
 import * as v from 'valibot';
 import { t } from '../../../../i18n';
-import { createSituationPathologique } from '../../../../user-ops-handlers/situations_pathologiques';
+import {
+	createSituationPathologique,
+	editSituationPathologique
+} from '../../../../user-ops-handlers/situations_pathologiques';
 import { get } from 'svelte/store';
 import { goto, invalidate } from '$app/navigation';
-import { info, trace } from '@tauri-apps/plugin-log';
+import { info, trace, error as errorLog } from '@tauri-apps/plugin-log';
 import { groupes, lieux } from '../../../../stores/codeDetails';
 
 const numericalString = v.pipe(
@@ -40,7 +43,7 @@ const service = v.pipe(
 );
 
 // Tarifaction fields
-const supplements = v.nullish(v.array(v.uuid()), []);
+const supplements = v.nullish(v.array(v.uuid()));
 
 const tarif_seance = v.nullish(v.uuid());
 const tarif_indemnite = v.nullish(v.uuid());
@@ -57,18 +60,9 @@ const tarif_intake_custom = numericalString;
 // The nomenclature fields
 // Ces champs peuvent être nul ici et dans la création de séance mais pas dans la génération d'attestation
 
-const groupe_id = v.pipe(
-	v.transform((input) => (input?.length === 0 ? null : input)),
-	v.number('Veuillez choisir un groupe pathologique')
-);
-const lieu_id = v.pipe(
-	v.transform((input) => (input?.length === 0 ? null : input)),
-	v.number('Veuillez choisir un lieu')
-);
-const duree = v.pipe(
-	v.transform((input) => (input?.length === 0 ? null : input)),
-	v.nullish(v.number())
-);
+const groupe_id = v.number('Veuillez choisir un groupe pathologique');
+const lieu_id = v.number('Veuillez choisir un lieu');
+const duree = v.nullish(v.number());
 const patho_lourde_type = v.nullish(v.number());
 const gmfcs = v.nullish(v.number());
 const amb_hos = v.nullish(v.picklist(SEX));
@@ -196,12 +190,21 @@ export async function onValid(data) {
 	if (this.mode === 'create') {
 		trace('Engaging SP creation');
 		// <!--* CREATE PROCEDURE -->
-		await createSituationPathologique(data);
+		const { error } = await createSituationPathologique(data);
+		if (error) {
+			this.message = error;
+			return;
+		}
 		info('SP Creation done Successfully');
 	} else {
-		trace('Engaging Patient modification');
+		trace('Engaging sp modification');
 		// <!--* UPDATE PROCEDURE -->
-		// await updatePatient(data);
+		const { error } = await editSituationPathologique(data);
+		if (error) {
+			errorLog('Error while updating SP', error);
+			this.message = error;
+			return;
+		}
 		await invalidate('patient:layout');
 		info('Patient modified done Successfully');
 	}

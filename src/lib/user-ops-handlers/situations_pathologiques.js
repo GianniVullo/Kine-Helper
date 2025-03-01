@@ -12,37 +12,11 @@ function setupSPOpsHandler() {
 }
 
 export async function createSituationPathologique(data) {
-	const opsHandler = setupSPOpsHandler();
-	await opsHandler.execute(async () => {
-		let situation_pathologique = new SituationPathologique(data);
-		situation_pathologique.upToDate = true;
-		await appState.db.insert('situations_pathologiques', data);
-	});
+	return await appState.db.insert('situations_pathologiques', data);
 }
 
-export async function editSituationPathologique(data, seances) {
-	const opsHandler = setupSPOpsHandler();
-	await opsHandler.execute(async () => {
-		let db = new DBAdapter();
-		await db.update(
-			'situations_pathologiques',
-			[
-				['sp_id', data.sp_id],
-				['user_id', get(user).user.id]
-			],
-			data
-		);
-		patients.update((ps) => {
-			let patient = ps.find((p) => p.patient_id === data.patient_id);
-			let spIndex = patient.situations_pathologiques.findIndex((sp) => sp.sp_id === data.sp_id);
-			patient.situations_pathologiques[spIndex] = {
-				...patient.situations_pathologiques[spIndex],
-				...data,
-				seances: [...patient.situations_pathologiques[spIndex].seances, ...seances]
-			};
-			return ps;
-		});
-	});
+export async function editSituationPathologique(data) {
+	return await appState.db.update('situations_pathologiques', [['sp_id', data.sp_id]], data);
 }
 
 export async function deleteSituationPathologique(data) {

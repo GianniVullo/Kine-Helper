@@ -2,38 +2,18 @@
 	import {
 		dureeParGroupeParLieu,
 		durees,
-		groupes,
-		lieux,
-		lieuxParGroupe
+		groupes
 	} from '../../../../stores/codeDetails';
 	import SimpleSelect from '../fields/SimpleSelect.svelte';
 	import { get } from 'svelte/store';
 	import { t } from '../../../../i18n';
 	import { untrack } from 'svelte';
 	import RadioFieldV2 from '../../../../forms/abstract-fields/RadioFieldV2.svelte';
-	import CheckboxFieldV2 from '../../../../forms/abstract-fields/CheckboxFieldV2.svelte';
 	import PathologieLourdeFields from '../situation-pathologique/PathologieLourdeFields.svelte';
-	import WarningDisplayer from '../situation-pathologique/WarningDisplayer.svelte';
 
-	let { form = $bindable(), lieuOptions, errors } = $props();
+	let { form = $bindable(), lieuOptions, errors, groupeOptions } = $props();
 
 	let dureeOptions = $state();
-
-	let groupeOptions = groupes()
-		.map((val, index) => ({
-			label: val,
-			value: index,
-			id: `groupe${index}`
-		}))
-		.filter((s) => {
-			if (form.groupe_id && s.value === form.groupe_id) {
-				return s;
-			} else if (form.groupe_id && s.value !== form.groupe_id) {
-				return;
-			} else {
-				return s;
-			}
-		});
 
 	const checkIfDuree = (index) => {
 		const dureeParGroupeParLieuDuGroupeAChecker = dureeParGroupeParLieu[form.groupe_id];
@@ -49,7 +29,7 @@
 			}
 		}
 	};
-
+	console.log('In NomenclatureDefinerFields', form);
 	$effect(() => {
 		form.lieu_id;
 		untrack(
@@ -110,7 +90,10 @@
 <!--? PATHOLOURDE TYPE -->
 {#if typeof form.groupe_id == 'number' && form.groupe_id === 1}
 	<div class="col-span-full md:col-span-4">
-		<PathologieLourdeFields bind:pathologieLourde={form.patho_lourde_type} bind:gmfcs={form.gmfcs} {errors} />
+		<PathologieLourdeFields
+			bind:pathologieLourde={form.patho_lourde_type}
+			bind:gmfcs={form.gmfcs}
+			{errors} />
 	</div>
 {/if}
 <!--? DURÉE ID -->
@@ -132,15 +115,6 @@
 
 <!--? Permet une seconde séance par jour -->
 <!--! cette histoire de seconde séance/jour le kiné doit savoi. kiné helper n'a pas besoin de cette innfo -->
-<!-- {#if (typeof form.groupe_id == 'number' && form.groupe_id === 1 && typeof form.patho_lourde_type == 'number' && form.patho_lourde_type === 0) || form.groupe_id === 4 || form.groupe_id === 6}
-	<div class="col-span-full">
-		<CheckboxFieldV2
-			bind:value={form.has_seconde_seance}
-			name="secondeSeance"
-			label={$t('form.generateur', 'second.label')} />
-		<WarningDisplayer descriptionLines={[$t('form.generateur', 'warning12')]} />
-	</div>
-{/if} -->
 
 <!--? AMB/HOS (if lieu 5) -->
 {#if typeof form.groupe_id == 'number' && typeof form.lieu_id == 'number' && form.lieu_id === 7}

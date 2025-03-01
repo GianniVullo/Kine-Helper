@@ -78,6 +78,7 @@ export class SituationPathologique {
 		volet_j,
 		volet_h,
 		gmfcs,
+		amb_hos,
 		seconde_seance_fa,
 		seconde_seance_e,
 		duree_seconde_seance_fa,
@@ -90,10 +91,11 @@ export class SituationPathologique {
 		seances = []
 	}) {
 		console.log('in the sp constructor');
-		
+
 		this.sp_id = sp_id;
 		this.created_at = created_at;
 		this.patient_id = patient_id;
+		this.amb_hos = amb_hos;
 		this.numero_etablissement = numero_etablissement;
 		this.service = service;
 		this.motif = motif;
@@ -103,7 +105,7 @@ export class SituationPathologique {
 		this.prescriptions = prescriptions;
 		this.attestations = attestations;
 		this.documents = documents;
-		this.metadata = metadata;
+		this.metadata = metadata ? JSON.parse(metadata) : {};
 		this.user_id = appState.user.id;
 		this.upToDate = false;
 		this.intake = JSON.parse(intake ?? null);
