@@ -26,6 +26,7 @@
     "@tauri-apps/plugin-updater": "^2.5.0",
     "dayjs": "^1.11.10",
     "jspdf": "^2.5.1",
+    "lodash": "^4.17.21",
     "pristinejs": "^1.1.0",
     "svelte-persisted-store": "^0.7.0",
     "valibot": "^1.0.0-beta.15"

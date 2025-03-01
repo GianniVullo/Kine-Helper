@@ -1,4 +1,5 @@
 import { trace } from '@tauri-apps/plugin-log';
+import { isEqual } from 'lodash';
 import { safeParse, safeParseAsync } from 'valibot';
 
 //* API de validation de formulaire
@@ -19,7 +20,7 @@ export class Formulaire {
 	form = $state({});
 	touched = $derived(
 		Object.keys(this.form).reduce((acc, key) => {
-			acc[key] = this.form[key] !== this.initialValues[key];
+			acc[key] = !isEqual(this.form[key], this.initialValues[key]);
 			return acc;
 		}, {})
 	);
