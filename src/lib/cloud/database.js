@@ -21,11 +21,11 @@ export class DatabaseManager {
 			}`;
 		}, '');
 		let statement = `UPDATE ${table} SET ${updateStmt} WHERE ${whereStmt}`;
-		console.log('in DBManager.update() with', updateStmt, whereStmt);
-		const { data: stmt, error } = await this.execute(statement, [
+		const bindValues = [
 			...Object.values(formData),
 			...filters.map(([_, filterValue]) => filterValue)
-		]);
+		];
+		const { data: stmt, error } = await this.execute(statement, bindValues);
 		console.log('updated successfully now closing db', stmt);
 		return { stmt, error };
 	}
@@ -39,7 +39,7 @@ export class DatabaseManager {
 		}
 		const stt = `DELETE FROM ${table} WHERE ${whereClauses.join(', ')}`;
 		console.log(stt);
-		
+
 		const { data: stmt, error } = await this.execute(stt, filterValues);
 		return { data: stmt, error };
 	}
@@ -252,15 +252,19 @@ export class DatabaseManager {
 		let data;
 		let errorThrown;
 		try {
-			console.log('in LocalDatabase with', query, bindValues);
+			trace('In DatabaseManager.execute with ' + query);
+
 			data = await this.db.execute(query, bindValues);
+			console.log('In DatabaseManager.execute with data : ', data);
 			// await this.db.close();
 		} catch (error) {
+			errorLog(`In the DatabaseManager.execute with error : ${error}`);
 			if (error === 'attempted to acquire a connection on a closed pool') {
 				await this.initializing();
 				try {
 					data = await this.db.execute(query, bindValues);
 				} catch (error) {
+					errorLog(`In the DatabaseManager.execute with error : ${error}`);
 					errorThrown = error;
 				}
 			} else {
