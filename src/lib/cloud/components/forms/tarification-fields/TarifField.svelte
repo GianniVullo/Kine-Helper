@@ -14,10 +14,9 @@
 		rapport,
 		intake,
 		tarifs,
+		no_show,
 		all = false
 	} = $props();
-
-	console.log('in tarif field', form);
 
 	const options = tarifs.map((s) => ({
 		label: `${s.nom} - ${s.valeur}€`,
@@ -36,6 +35,18 @@
 		label2="Tarifs disponibles"
 		{tarifs}
 		bind:value={form.tarif_seance}
+		{options} />
+{/if}
+{#if consultatif || all}
+	<DefaultTarifFieldWithEventListener
+		bind:formField={form.tarif_consultatif_custom}
+		{errors}
+		id="tarif_consultatif"
+		name="tarif_consultatif"
+		label="Séances à titre consultatif"
+		label2="Tarifs disponibles"
+		{tarifs}
+		bind:value={form.tarif_consultatif}
 		{options} />
 {/if}
 {#if indemnite || all}
@@ -62,18 +73,6 @@
 		bind:value={form.tarif_rapport_ecrit}
 		{options} />
 {/if}
-{#if consultatif || all}
-	<DefaultTarifFieldWithEventListener
-		bind:formField={form.tarif_consultatif_custom}
-		{errors}
-		id="tarif_consultatif"
-		name="tarif_consultatif"
-		label="Séances à titre consultatif"
-		label2="Tarifs disponibles"
-		{tarifs}
-		bind:value={form.tarif_consultatif}
-		{options} />
-{/if}
 {#if seconde_seance || all}
 	<DefaultTarifFieldWithEventListener
 		bind:formField={form.tarif_seconde_seance_custom}
@@ -96,5 +95,18 @@
 		label2="Tarif de votre intake"
 		{tarifs}
 		bind:value={form.tarif_intake}
+		{options} />
+{/if}
+
+{#if no_show || all}
+	<DefaultTarifFieldWithEventListener
+		bind:formField={form.tarif_no_show_custom}
+		{errors}
+		id="tarif_no_show"
+		name="tarif_no_show"
+		label="Séance manquée"
+		label2="Tarif si le patient ne se présente pas"
+		{tarifs}
+		bind:value={form.tarif_no_show}
 		{options} />
 {/if}
