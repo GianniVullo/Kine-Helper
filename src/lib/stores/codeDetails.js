@@ -71,11 +71,30 @@ export class Code {
 	}
 }
 
+export function duree_int(duree_id) {
+	switch (duree_id) {
+		case 0:
+			return 15;
+		case 1:
+			return 20;
+		case 2:
+			return 30;
+		case 3:
+			return 45;
+		case 4:
+			return 60;
+		case 5:
+			return 120;
+		default:
+			break;
+	}
+}
+
 /**
  *!  Par chance, une réécriture bcp plus simple de figuringConventionsOut est possible.
  ** La complexité de la précédente écriture provient du fait que j'ignorais l'existence de la fonction date() de SQLite.
  ** Cette réécriture tient dans une seule query :
-*/
+ */
 export async function figuringConventionOut(date, db) {
 	return await db.select(
 		`SELECT c.*

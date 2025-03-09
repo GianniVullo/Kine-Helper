@@ -3,7 +3,7 @@
 
 	/** @type {{ data: import('./$types').PageData }} */
 	let { data } = $props();
-	let { patient, sp } = data;
+	let { patient, sp, tarifs, supplements, prescriptions } = data;
 </script>
 
-<SeanceForm {patient} {sp} />
+<SeanceForm {patient} {sp} {tarifs} {supplements} {prescriptions} />

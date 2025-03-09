@@ -4,7 +4,6 @@ import { invalidate, invalidateAll } from '$app/navigation';
 
 /** @type {import('./$types').PageLoad} */
 export async function load() {
-	console.log('In the tarifs-form load function with ', appState);
 	if (!appState.db) {
 		await appState.init({});
 	}
@@ -27,6 +26,7 @@ export async function load() {
 	let tarif_consultatif = tarifs.find((t) => JSON.parse(t.metadata)?.consultatif);
 	let tarif_seconde_seance = tarifs.find((t) => JSON.parse(t.metadata)?.seconde_seance);
 	let tarif_intake = tarifs.find((t) => JSON.parse(t.metadata)?.intake);
+	let tarif_no_show = tarifs.find((t) => JSON.parse(t.metadata)?.no_show);
 	let tarifs_custom = tarifs.filter((t) => JSON.parse(t.metadata)?.custom);
 	let data = {
 		tarif_seance,
@@ -35,10 +35,10 @@ export async function load() {
 		tarif_consultatif,
 		tarif_seconde_seance,
 		tarif_intake,
+		tarif_no_show,
 		tarifs: tarifs_custom,
 		supplements
 	};
-	console.log('the data in tarifs-form', data);
 
 	return data;
 }
