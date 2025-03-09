@@ -241,7 +241,7 @@ const assurabiliteFields = [
 		name: 'mutualite',
 		inputType: 'text',
 		placeholder: '319',
-		titre: get(t)('form.patient', 'mutualite'),
+		titre: 'Mutualité',
 		help: 'Veuillez n\'entrez que des nombres de 3 chiffres. Par exemple "319" pour Solidaris Wallonie',
 		outerCSS: 'sm:col-span-4',
 		innerCSS: ''
@@ -252,7 +252,7 @@ const assurabiliteFields = [
 		inputType: 'text',
 		placeholder: get(t)('form.patient', 'label.num_affilie'),
 		titre: get(t)('form.patient', 'label.num_affilie'),
-		help: null,
+		help: 'Ce champ est <span class="italic ">extrêmement</span> facultatif.',
 		outerCSS: 'sm:col-span-4',
 		innerCSS: ''
 	},
@@ -260,8 +260,11 @@ const assurabiliteFields = [
 		id: 'tiers_payant',
 		name: 'tiers_payant',
 		inputType: 'checkbox',
-		titre: get(t)('form.patient', 'label.tiers_payant'),
+		checkboxLabel: get(t)('form.patient', 'label.tiers_payant'),
+		checkboxDescription:
+			'Cochez cette case pour pratiquer le tiers payant avec ce patient. Vous devrez donc envoyer vos attestations à sa mutuelle.',
 		help: null,
+
 		outerCSS: 'sm:col-span-4',
 		innerCSS: ''
 	},
@@ -269,7 +272,9 @@ const assurabiliteFields = [
 		id: 'ticket_moderateur',
 		name: 'ticket_moderateur',
 		inputType: 'checkbox',
-		titre: get(t)('form.patient', 'label.ticket_moderateur'),
+		checkboxLabel: get(t)('form.patient', 'label.ticket_moderateur'),
+		checkboxDescription:
+			'Cochez cette case si vous faites payer le ticket modérateur à votre patient. Attention il y a une limite au nombre de patient pour lequel vous laissez tomber le ticket modérateur.',
 		help: null,
 		outerCSS: 'sm:col-span-4',
 		innerCSS: ''
@@ -278,31 +283,12 @@ const assurabiliteFields = [
 		id: 'bim',
 		name: 'bim',
 		inputType: 'checkbox',
-		titre: get(t)('form.patient', 'label.bim'),
+		checkboxLabel: get(t)('form.patient', 'label.bim'),
 		help: null,
+		checkboxDescription: 'Cochez cette case si votre patient est un Bénéficiaire à Intervention Majorée.',
 		outerCSS: 'sm:col-span-4',
 		innerCSS: ''
 	}
-	// {
-	// 	id: 'numero_etablissement',
-	// 	name: 'numero_etablissement',
-	// 	inputType: 'text',
-	// 	placeholder: get(t)('sp.update', 'label.numero_etablissement'),
-	// 	titre: get(t)('sp.update', 'label.numero_etablissement'),
-	// 	help: null,
-	// 	outerCSS: 'sm:col-span-4',
-	// 	innerCSS: ''
-	// },
-	// {
-	// 	id: 'service',
-	// 	name: 'service',
-	// 	inputType: 'text',
-	// 	placeholder: get(t)('sp.update', 'label.service'),
-	// 	titre: get(t)('sp.update', 'label.service'),
-	// 	help: null,
-	// 	outerCSS: 'sm:col-span-4',
-	// 	innerCSS: ''
-	// }
 ];
 
 const contactFields = [

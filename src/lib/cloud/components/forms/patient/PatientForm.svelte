@@ -8,7 +8,7 @@
 	import SubmitButton from '../../../../forms/ui/SubmitButton.svelte';
 	import { appState } from '../../../../managers/AppState.svelte';
 
-	let { patient, mode } = $props();
+	let { patient, mode = 'create' } = $props();
 
 	let formHandler = new Formulaire({
 		validateurs,
