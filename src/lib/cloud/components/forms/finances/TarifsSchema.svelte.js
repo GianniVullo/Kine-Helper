@@ -6,38 +6,7 @@ import { goto, invalidate } from '$app/navigation';
 import { info, trace } from '@tauri-apps/plugin-log';
 import { getModalStore } from '@skeletonlabs/skeleton';
 import { appState } from '../../../../managers/AppState.svelte';
-
-const tarifUnitValidator = (e, name) => {
-	const numericalString = v.pipe(
-		v.string('Ce champs est obligatoire'),
-		v.regex(
-			/^\d+(,\d{2})?$/,
-			'Veuillez introduire un nombre avec 2 décimales séparés par une virgule. Par example 50,35.'
-		)
-	);
-	if (name == 'custom') {
-		return v.object({
-			id: e ? v.nullish(v.uuid()) : v.uuid(),
-			nom: v.string('Ce champ est obligatoire'),
-			valeur: e
-				? v.pipe(
-						v.transform((input) => (input?.length == 0 ? null : input)),
-						v.nullish(numericalString)
-					)
-				: numericalString,
-			created_at: v.isoDate(),
-			user_id: v.uuid(),
-			metadata: v.string()
-		});
-	}
-	return v.object({
-		id: e ? v.nullish(v.uuid()) : v.uuid(),
-		nom: v.string('Ce champ est obligatoire'),
-		valeur: e ? v.nullish(numericalString) : numericalString,
-		created_at: v.isoDate(),
-		user_id: v.uuid()
-	});
-};
+import { tarifUnitValidator } from '../tarification-fields/tarifHelpers';
 
 // Tarifaction fields
 const tarif_seance = v.nullish(tarifUnitValidator(true, 'custom'));
@@ -46,6 +15,8 @@ const tarif_rapport_ecrit = v.nullish(tarifUnitValidator(true, 'custom'));
 const tarif_consultatif = v.nullish(tarifUnitValidator(true, 'custom'));
 const tarif_seconde_seance = v.nullish(tarifUnitValidator(true, 'custom'));
 const tarif_intake = v.nullish(tarifUnitValidator(true, 'custom'));
+const tarif_no_show = v.nullish(tarifUnitValidator(true, 'custom'));
+
 const tarifs = v.nullish(v.array(tarifUnitValidator(false, 'custom')), []);
 
 // Supplément field
@@ -59,6 +30,7 @@ export const validateurs = {
 	tarif_consultatif,
 	tarif_seconde_seance,
 	tarif_intake,
+	tarif_no_show,
 	tarifs
 };
 
@@ -70,7 +42,6 @@ export const TarifsSchema = v.pipe(
 
 export async function onValid(data) {
 	trace('In TarifsForm.onValid');
-	console.log(data, this.initialValues);
 	/**
 	 ** Ici trois cas de figures : ou bien le tarifs/suppléments existe déjà => update ou bien non => create ou bien y'a rien de changé => on fait rien
 	 */

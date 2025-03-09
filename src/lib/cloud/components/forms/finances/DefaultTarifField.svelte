@@ -1,6 +1,6 @@
 <script>
 	import MoneyField from '../tarification-fields/MoneyField.svelte';
-	let { value = $bindable(), id, name, label, error, outerCSS } = $props();	
+	let { value = $bindable(), id, name, label, error, outerCSS, help } = $props();	
 </script>
 
 <input type="hidden" name={name + 'id'} value={value.id} />
@@ -13,4 +13,5 @@
 	{error}
 	{id}
 	{name}
+	{help}
 	{label} />

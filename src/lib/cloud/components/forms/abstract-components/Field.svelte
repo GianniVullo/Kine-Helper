@@ -3,7 +3,7 @@
 	import TwUiFileField from '../fields/TwUIFileField.svelte';
 	import TwUiRadioGroup from '../fields/TwUIRadioGroup.svelte';
 	import SimpleSelect from '../fields/SimpleSelect.svelte';
-	let { field, value = $bindable(), error } = $props();
+	let { field, value = $bindable(), error, warning } = $props();
 </script>
 
 {#if field.inputType === 'radio'}
@@ -59,6 +59,7 @@
 			removeArrows={field.removeArrows}
 			trailing={field.trailing}
 			readonly={field.readonly}
+			{warning}
 			bind:value
 			{error} />
 	</div>

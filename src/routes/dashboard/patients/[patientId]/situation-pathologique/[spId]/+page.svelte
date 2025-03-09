@@ -42,10 +42,10 @@
 			titre={$t('sp.detail', 'content.start') +
 				' ' +
 				$t('sp.detail', 'button.start2').toLowerCase()}
-			buttonText={'Generate séance'}
+			buttonText={'Créez votre première séance'}
 			onclick={() => {
 				goto(
-					`/dashboard/patients/${patient.patient_id}/situation-pathologique/${sp.sp_id}/generateurs/create`
+					`/dashboard/patients/${patient.patient_id}/situation-pathologique/${sp.sp_id}/seances/create`
 				);
 			}}>
 			{#snippet icon()}

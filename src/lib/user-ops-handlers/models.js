@@ -101,7 +101,7 @@ export class SituationPathologique {
 		this.motif = motif;
 		this.plan_du_ttt = plan_du_ttt;
 		this.generateurs_de_seances = generateurs_de_seances;
-		this.seances = seances;
+		this.seances = seances.map((s) => new Seance(s));
 		this.prescriptions = prescriptions;
 		this.attestations = attestations;
 		this.documents = documents;
@@ -173,6 +173,79 @@ export class SituationPathologique {
 			numero_etablissement: this.numero_etablissement,
 			service: this.service
 		};
+	}
+}
+
+export class Seance {
+	constructor({
+		patient_id,
+		user_id,
+		sp_id,
+		seance_id,
+		start,
+		date,
+		metadata,
+		created_at,
+		code_id,
+		attestation_id,
+		prescription_id,
+		has_been_attested,
+		is_paid,
+		indemnite,
+		rapport_ecrit,
+		ticket_moderateur,
+		seance_type,
+		groupe_id,
+		lieu_id,
+		patho_lourde_type,
+		duree
+	}) {
+		this.patient_id = patient_id;
+		this.user_id = user_id;
+		this.sp_id = sp_id;
+		this.seance_id = seance_id;
+		this.start = start;
+		this.date = date;
+		this.indemnite = JSON.parse(indemnite);
+		this.rapport_ecrit = JSON.parse(rapport_ecrit);
+		this.ticket_moderateur = JSON.parse(ticket_moderateur);
+		this.seance_type = seance_type;
+		this.groupe_id = groupe_id;
+		this.lieu_id = lieu_id;
+		this.patho_lourde_type = patho_lourde_type;
+		this.duree = duree;
+		if (typeof metadata === 'string') {
+			console.log('metadata', metadata);
+			this.metadata = JSON.parse(metadata);
+		} else if (typeof metadata === 'object') {
+			this.metadata = metadata;
+		} else {
+			this.metadata = null;
+		}
+		this.created_at = created_at;
+		this.code_id = code_id;
+		this.attestation_id = attestation_id;
+		this.prescription_id = prescription_id;
+		this.has_been_attested = has_been_attested;
+		this.is_paid = is_paid;
+	}
+	get minutes() {
+		switch (this.duree) {
+			case 0:
+				return 15;
+			case 1:
+				return 20;
+			case 2:
+				return 30;
+			case 3:
+				return 45;
+			case 4:
+				return 60;
+			case 5:
+				return 120;
+			default:
+				break;
+		}
 	}
 }
 

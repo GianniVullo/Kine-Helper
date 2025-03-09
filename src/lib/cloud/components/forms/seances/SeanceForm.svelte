@@ -6,69 +6,94 @@
 		dateField,
 		idFieldSchema,
 		onValid,
-		validateurs
-	} from './SeanceSchema';
+		validateurs,
+		defineDuree,
+		ComplexSetup,
+		seanceTypes
+	} from './SeanceSchema.svelte';
 	import Form from '../abstract-components/Form.svelte';
 	import FormSection from '../abstract-components/FormSection.svelte';
-	import { onMount } from 'svelte';
+	import { onMount, untrack } from 'svelte';
 	import SubmitButton from '../../../../forms/ui/SubmitButton.svelte';
 	import { appState } from '../../../../managers/AppState.svelte';
-	import { isoDate, safeParse } from 'valibot';
 	import Field from '../abstract-components/Field.svelte';
 	import SimpleSelect from '../fields/SimpleSelect.svelte';
 	import TarifField from '../tarification-fields/TarifField.svelte';
+	import { getTarificationInitialValues } from '../tarification-fields/tarifHelpers';
+	import { get } from 'svelte/store';
+	import { page } from '$app/state';
+	import { t } from '../../../../i18n';
+	import SupplementField from '../tarification-fields/SupplementField.svelte';
+	import { getModalStore } from '@skeletonlabs/skeleton';
+	import TarifsListField from '../finances/TarifsListField.svelte';
+	import dayjs from 'dayjs';
+	import { clock } from '../../../../ui/svgs/IconSnippets.svelte';
 
-	let { patient, sp, seance, mode = 'create' } = $props();
+	const modalStore = getModalStore();
+	let fromCalendarDate = page.url.searchParams.get('date');
+	let now = dayjs().format('YYYY-MM-DD');
 
-	let { groupe_id, lieu_id, patho_lourde_type, metadata } = sp;
+	let { patient, sp, seance, tarifs, supplements, prescriptions, mode = 'create' } = $props();
+	console.log('seance', seance);
 
+	let { groupe_id, lieu_id, patho_lourde_type } = sp;
+
+	const tarifMetadata = getTarificationInitialValues(sp, tarifs, seance);
+	const initialValues = {
+		user_id: appState.user.id,
+		patient_id: patient.patient_id,
+		sp_id: sp.sp_id,
+		prescription_id:
+			(seance?.prescription_id ?? prescriptions.length === 1)
+				? prescriptions[0].prescription_id
+				: null,
+		duree: seance?.duree ?? sp.duree,
+		seanceType:
+			typeof seance?.seance_type === 'number' ? seanceTypes[seance.seance_type] : undefined,
+		lieu_id: seance?.lieu_id ?? sp.lieu_id,
+		start: seance?.start,
+		duree_custom:
+			seance?.metadata?.duree_custom ?? defineDuree(sp.duree, sp.patho_lourde_type, sp.lieu_id),
+		seance_id: seance?.seance_id ?? crypto.randomUUID(),
+		created_at: seance?.created_at ?? now,
+		date: seance?.date ?? fromCalendarDate ?? now,
+		ticket_moderateur: seance?.ticket_moderateur ?? patient.ticket_moderateur ?? true,
+		indemnite: seance?.indemnite ?? (lieu_id === 3 || groupe_id === 6 ? true : false),
+		rapport_ecrit: seance?.rapport_ecrit ?? false,
+		intake: seance?.metadata?.intake ?? false,
+		supplements_ponctuels:
+			seance?.metadata?.supplements_ponctuels?.map((s) => ({
+				id: undefined,
+				user_id: undefined,
+				created_at: undefined,
+				nom: s.nom,
+				valeur: s.valeur
+			})) ?? [],
+		groupe_id,
+		patho_lourde_type,
+		mode,
+		...tarifMetadata,
+		supplements: seance?.metadata?.supplements ?? []
+	};
+	console.log('initialValues', initialValues);
 	let formHandler = new Formulaire({
 		validateurs,
 		schema: SeanceSchema,
+		isAsynchronous: true,
 		submiter: '#seance-submit',
-		initialValues: seance ?? {
-			user_id: appState.user.id,
-			patient_id: patient.patient_id,
-			sp_id: sp.sp_id,
-			seance_id: crypto.randomUUID(),
-			tiers_payant: false,
-			ticket_moderateur: true,
-			bim: false,
-			indemnite: lieu_id === 3 || groupe_id === 6 ? true : false,
-			groupe_id,
-			patho_lourde_type
-		},
+		initialValues,
 		onValid,
 		mode
 	});
 
-	let seanceTheSameDayChecker = $derived(
-		new Promise(async (resolve) => {
-			resolve(await checkSeance(formHandler.form.date));
-		})
-	);
-
-	async function checkSeance(date) {
-		let valid = safeParse(isoDate(), date);
-		if (valid.success) {
-			appState.db.select('SELECT count(*) FROM seances WHERE date(date) = $1 AND sp_id = $2', [
-				date,
-				sp.sp_id
-			]);
-		}
-	}
-
 	const checkIfRapportEcrit = new Promise(async (resolve, reject) => {
-		console.log('in checkIfRapportEcrit with ', typeof groupe_id, groupe_id);
-
 		if (typeof groupe_id === 'number' && [0, 6, 7].includes(groupe_id)) {
 			resolve(true);
 		}
 		let { data, error } = await appState.db.select(
-			`SELECT * FROM seances WHERE sp_id = $1 AND json_extract(metadata, '$.rapport_ecrit') is not NULL`,
+			`SELECT * FROM seances WHERE sp_id = $1 AND rapport_ecrit = 1 AND seance_type != 3`,
 			[sp.sp_id]
 		);
-		console.log('data in checkIfRapportEcrit', data);
 
 		if (error) {
 			reject(error);
@@ -85,88 +110,60 @@
 			resolve(true);
 		}
 		let { data, error } = await appState.db.select(
-			`SELECT * FROM seances WHERE json_extract(metadata, '$.intake') is not NULL AND sp_id = $1;`,
+			`SELECT * FROM seances WHERE json_extract(metadata, '$.intake') is not NULL AND seance_type != 3 AND sp_id = $1;`,
 			[sp.sp_id]
 		);
-		console.log(data);
-		
+
 		if (error) {
 			reject(error);
 		}
-		if (data.length > 0) {
+		if (data.length > 0 && !seance?.metadata?.intake) {
 			resolve(true);
 		} else {
 			resolve(false);
 		}
 	});
 
-	const sTypes = [
-		{ label: 'Séance de kinésitherapie', id: 'kiné', value: 'kiné' },
-		{ label: 'Séance à titre consultative', id: 'consult', value: 'consult' },
-		{ label: 'Seconde séance dans la journée', id: 'seconde', value: 'seconde' }
-	];
-	let seanceTypes = $state([sTypes]);
-	$effect(() => {
-		appState.db
-			.select('SELECT * FROM seances WHERE date(date) = $1 AND sp_id = $2', [
-				formHandler.form.date,
-				sp.sp_id
-			])
-			.then(({ data, error }) => {
-				if (error) {
-					formHandler.message = 'Erreur, la table séance ne peut pas être sélectionnée' + error;
-				}
-				if (data.length === 0) {
-					if (formHandler.form.seanceType === 'seconde') {
-						formHandler.form.seanceType = 'kiné';
-					}
-					formHandler.message = null;
-					formHandler.errors.date = null;
-					seanceTypes = sTypes.filter((st) => st.value !== 'seconde');
-					console.log(sTypes);
-				}
-				if (data.length === 1) {
-					formHandler.message =
-						'Attention, il y a déjà une séance ce jour là. Si cela est permis vous pouvez tarifez une seconde séance. Pour le volet j) d\'une pathologie lourde veuillez sélectionner "séance de kinésitherapie"';
-					if (
-						typeof groupe_id === 'number' &&
-						groupe_id === 1 &&
-						typeof patho_lourde_type === 'number' &&
-						patho_lourde_type === 5
-					) {
-						formHandler.form.seanceType = 'kiné';
-						seanceTypes = sTypes.filter((st) => {
-							st.value === 'kiné';
-						});
-					} else {
-						console.log('in else', sTypes);
-
-						formHandler.form.seanceType = 'seconde';
-						seanceTypes = sTypes.filter((st) => st.value === 'seconde');
-						console.log(seanceTypes);
-					}
-				}
-				if (data.length > 1) {
-					if (
-						typeof groupe_id === 'number' &&
-						groupe_id !== 1 &&
-						typeof patho_lourde_type === 'number' &&
-						patho_lourde_type !== 5
-					) {
-						formHandler.errors.date = 'Attention, il y a déjà deux séances ce jour là !';
-					} else {
-						formHandler.message =
-							"Attention, il y a déjà deux séances ce jour là, votre attestation risque d'être invalide si vous ne soignez pas une pathologie lourde volet j). Vous n'avez pas spécifié ces données dans le formulaire situation pathologique. Kiné Helper n'est donc pas en mesure de valider ce champ. Si vous êtes sûr de vous, Kiné Helper ne vous bloquera pas.";
-					}
-				}
-			});
+	const modal = (element, elementType) => ({
+		type: 'confirm',
+		title: 'Confirmation',
+		body: `Voulez-vous vraiment supprimer ${element.nom} ?`,
+		buttonTextConfirm: get(t)('shared', 'confirm'),
+		buttonTextCancel: get(t)('shared', 'cancel'),
+		modalClasses: {
+			buttonPositive: 'isModal'
+		},
+		response: async (r) => {
+			if (r) {
+				formHandler.form[elementType] = formHandler.form[elementType].filter(
+					(s) => s.id != element.id
+				);
+			}
+		}
 	});
+
+	const duree_custom_help = $derived.by(() => {
+		if (sp.groupe_id === 4 && formHandler.form.seanceType === 'seconde') {
+			return 'Deux durées possibles dans la nomenclature : 15 ou 30 minutes. Pour toutes durées supérieures à 20 minutes Kiné Helper assignera le code de nomenclature de 30 minutes.';
+		}
+		return '';
+	});
+
+	const manager = new ComplexSetup(
+		formHandler.mode === 'create' ? false : true,
+		seance,
+		formHandler,
+		sp
+	);
+
 	onMount(() => {
 		formHandler.setup();
 	});
 </script>
 
-<Form title="Créer une Séance" message={formHandler.message}>
+<Form
+	title={formHandler.mode === 'create' ? 'Créer une Séance' : 'Modifier la séance'}
+	message={formHandler.message}>
 	<FormSection titre="Informations générales">
 		<!--* Id fields -->
 		{#each idFieldSchema as idField}
@@ -176,18 +173,62 @@
 				bind:value={formHandler.form[idField.name]} />
 		{/each}
 
-		<!--* Date Field with conditions -->
-		<Field field={dateField} bind:value={formHandler.form.date} />
+		<!--* prescription -->
+		<div class="col-span-full md:col-span-3">
+			<SimpleSelect
+				label="Prescription"
+				bind:value={formHandler.form.prescription_id}
+				options={prescriptions.map((p) => ({
+					label: p.date + ' - ' + p.prescripteur.nom,
+					value: p.prescription_id
+				}))} />
+		</div>
 
 		<!--* Le type de séance -->
 		<Field
 			field={{
-				options: seanceTypes,
+				options: manager.seanceTypes,
 				inputType: 'select',
-				outerCSS: 'col-span-full sm:col-span-4',
+				outerCSS: 'col-span-full md:col-span-3',
 				label: 'Type de séance'
 			}}
-			bind:value={formHandler.form.seanceType} />
+			bind:value={formHandler.form.seanceType}
+			error={formHandler.errors.seanceType} />
+
+		<!--* Date Field with conditions -->
+		<Field
+			field={dateField}
+			bind:value={formHandler.form.date}
+			error={formHandler.errors.date}
+			warning={manager.dateWarning} />
+
+		<!--* Start -->
+		<Field
+			field={{
+				inputType: 'time',
+				titre: 'Heure du rendez-vous',
+				outerCSS: 'col-span-full sm:col-span-2'
+			}}
+			bind:value={formHandler.form.start}
+			error={formHandler.errors.start} />
+
+		{#snippet minute()}
+			<p class="text-gray-500">min</p>
+		{/snippet}
+		<!--* duree_custom -->
+		<Field
+			field={{
+				inputType: 'number',
+				leading: clock,
+				removeArrows: true,
+				leadingCSS: 'size-6 stroke-black',
+				trailing: minute,
+				help: duree_custom_help,
+				titre: 'Durée de la séance',
+				outerCSS: 'col-span-full sm:col-span-2'
+			}}
+			bind:value={formHandler.form.duree_custom}
+			error={formHandler.errors.duree_custom} />
 	</FormSection>
 	<FormSection titre="Information relative à la tarification">
 		<!--* Indemnité -->
@@ -218,9 +259,54 @@
 		{:catch error}
 			{error}
 		{/await}
-		<TarifField bind:form={formHandler.form} errors={formHandler.errors} />
+		<Field
+			field={checkboxesFields[3]}
+			error={formHandler.errors?.[checkboxesFields[3].name]}
+			bind:value={formHandler.form[checkboxesFields[3].name]} />
+		{#if !patient.bim}
+			{#if !appState.user.conventionne}
+				<TarifField
+					bind:form={formHandler.form}
+					errors={formHandler.errors}
+					{tarifs}
+					seance={formHandler.form.seanceType === 'kiné'}
+					consultatif={formHandler.form.seanceType === 'consult'}
+					seconde_seance={formHandler.form.seanceType === 'seconde'}
+					indemnite={formHandler.form.indemnite && formHandler.form.seanceType !== 'no-show'}
+					rapport={formHandler.form.rapport_ecrit && formHandler.form.seanceType !== 'no-show'}
+					intake={formHandler.form.intake && formHandler.form.seanceType !== 'no-show'}
+					no_show={formHandler.form.seanceType === 'no-show'} />
+			{/if}
+			<SupplementField
+				bind:value={formHandler.form.supplements}
+				errors={formHandler.errors?.supplements}
+				{supplements} />
+			<TarifsListField
+				label="Suppléments ponctuels"
+				key="supplements_ponctuels"
+				bind:tarifList={formHandler.form.supplements_ponctuels}
+				addButtonLabel="Ajouter un supplément ponctuel"
+				removeButtonLabel="Supprimer"
+				addButtonHandler={async (e) => {
+					e.preventDefault();
+					formHandler.form.supplements_ponctuels = [
+						...formHandler.form.supplements_ponctuels,
+						{
+							id: crypto.randomUUID(),
+							nom: null,
+							valeur: null,
+							created_at: now,
+							user_id: appState.user.id
+						}
+					];
+				}}
+				removeButtonHandler={(custom_tarif) => (e) => {
+					e.preventDefault();
+					modalStore.trigger(modal(custom_tarif, 'supplements_ponctuels'));
+				}} />
+		{/if}
 	</FormSection>
 	<SubmitButton id="seance-submit" className="col-span-full" />
 </Form>
 
-{JSON.stringify(formHandler.form)}
+<!-- {JSON.stringify(formHandler.form)} -->
