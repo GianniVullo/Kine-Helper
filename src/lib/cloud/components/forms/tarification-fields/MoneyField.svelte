@@ -6,6 +6,7 @@
 		id,
 		error,
 		label,
+		help,
 		outerCSS = 'sm:col-span-4',
 		onchange
 	} = $props();
@@ -27,6 +28,7 @@
 		{onchange}
 		inputType="text"
 		placeholder="0,00"
+		{help}
 		leading={leadingMoney}
 		trailing={trailingMoney}
 		bind:value={formField}

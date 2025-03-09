@@ -44,7 +44,7 @@
 		titre="Informations générales"
 		fields={fieldSchemaMode}
 		bind:form={formHandler.form}
-		bind:errors={formHandler.errors} />
+		errors={formHandler.errors} />
 	<SubmitButton id="sp-submit" className="col-span-full" />
 </Form>
 

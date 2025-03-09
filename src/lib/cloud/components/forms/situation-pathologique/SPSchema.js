@@ -7,20 +7,9 @@ import {
 import { get } from 'svelte/store';
 import { goto, invalidate } from '$app/navigation';
 import { info, trace, error as errorLog } from '@tauri-apps/plugin-log';
-import { groupes, lieux } from '../../../../stores/codeDetails';
+import { numericalString } from '../../../../utils/validationGenerics';
+import { modelingMetadata } from '../tarification-fields/tarifHelpers';
 
-const numericalString = v.pipe(
-	v.transform((input) => (input?.length == 0 ? null : input)),
-	v.nullish(
-		v.pipe(
-			v.string('Ce champs est obligatoire'),
-			v.regex(
-				/^\d+(,\d{2})?$/,
-				'Veuillez introduire un nombre avec 2 décimales séparés par une virgule. Par example 50,35.'
-			)
-		)
-	)
-);
 const SEX = ['AMB', 'HOS', null, undefined];
 
 const user_id = v.pipe(v.nonNullable(v.string()), v.uuid());
@@ -136,50 +125,10 @@ export const SPSchema = v.pipe(
 		['duree']
 	),
 	v.transform((input) => {
-		/**
-		 ** un uuid si c'est un tarifs pré-défini et un nombre si c'est un tarif custom
-		 */
-		input.metadata = {};
-		if (input.tarif_seance || input.tarif_seance_custom) {
-			input.metadata.tarif_seance = input.tarif_seance ?? input.tarif_seance_custom;
-		}
-		if (input.tarif_indemnite || input.tarif_indemnite_custom) {
-			input.metadata.tarif_indemnite = input.tarif_indemnite ?? input.tarif_indemnite_custom;
-		}
-		if (input.tarif_rapport_ecrit || input.tarif_rapport_ecrit_custom) {
-			input.metadata.tarif_rapport_ecrit =
-				input.tarif_rapport_ecrit ?? input.tarif_rapport_ecrit_custom;
-		}
-		if (input.tarif_consultatif || input.tarif_consultatif_custom) {
-			input.metadata.tarif_consultatif = input.tarif_consultatif ?? input.tarif_consultatif_custom;
-		}
-		if (input.tarif_seconde_seance || input.tarif_seconde_seance_custom) {
-			input.metadata.tarif_seconde_seance =
-				input.tarif_seconde_seance ?? input.tarif_seconde_seance_custom;
-		}
-		if (input.tarif_intake || input.tarif_intake_custom) {
-			input.metadata.tarif_intake = input.tarif_intake ?? input.tarif_intake_custom;
-		}
-		if (input.supplements.length > 0) {
-			input.metadata.supplements = input.supplements;
-		}
-
+		modelingMetadata(input);
 		if (Object.keys(input.metadata).length === 0) {
 			input.metadata = null;
 		}
-		delete input.supplements;
-		delete input.tarif_seance;
-		delete input.tarif_indemnite;
-		delete input.tarif_rapport_ecrit;
-		delete input.tarif_consultatif;
-		delete input.tarif_seconde_seance;
-		delete input.tarif_intake;
-		delete input.tarif_seance_custom;
-		delete input.tarif_indemnite_custom;
-		delete input.tarif_rapport_ecrit_custom;
-		delete input.tarif_consultatif_custom;
-		delete input.tarif_seconde_seance_custom;
-		delete input.tarif_intake_custom;
 		return input;
 	})
 );

@@ -1,10 +1,13 @@
 <script>
+	import { warningIcon } from '../../../../ui/svgs/IconSnippets.svelte';
+
 	let {
 		id,
 		name,
 		placeholder,
 		className,
 		error,
+		warning,
 		leading,
 		leadingCSS,
 		removeArrows = false,
@@ -32,9 +35,14 @@
 			{name}
 			rows="3"
 			{placeholder}
-			class="block w-full rounded-md border-0 py-1.5 shadow-sm ring-1 ring-inset focus:ring-2 focus:ring-inset sm:text-sm/6 {error
-				? 'pr-10 text-red-900 ring-red-300 placeholder:text-red-300 focus:ring-red-500'
-				: 'text-gray-900 ring-gray-300 placeholder:text-gray-400 focus:ring-indigo-600'}"
+			class={{
+				'block w-full rounded-md border-0 py-1.5 shadow-sm ring-1 ring-inset focus:ring-2 focus:ring-inset sm:text-sm/6': true,
+				'pr-10 text-red-900 ring-red-300 placeholder:text-red-300 focus:ring-red-500': error,
+				'pr-10 text-yellow-900 ring-yellow-300 placeholder:text-yellow-300 focus:ring-yellow-500':
+					warning && !error,
+				'text-gray-900 ring-gray-300 placeholder:text-gray-400 focus:ring-indigo-600':
+					!error && !warning
+			}}
 			bind:value
 			{...constraints}></textarea>
 	{:else if inputType === 'checkbox'}
@@ -84,11 +92,16 @@
 			disabled={readonly}
 			{readonly}
 			class:pl-7={leading}
-			class="block w-full rounded-md border-0 py-1.5 shadow-sm ring-1 ring-inset focus:ring-2 focus:ring-inset disabled:cursor-not-allowed disabled:bg-gray-200 disabled:text-gray-500 disabled:ring-gray-200 sm:text-sm/6 {error
-				? 'pr-10 text-red-900 ring-red-300 placeholder:text-red-300 focus:ring-red-500'
-				: 'text-gray-900 ring-gray-300 placeholder:text-gray-400 focus:ring-indigo-600'} {removeArrows
-				? '[appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none'
-				: ''}"
+			class={[
+				'block w-full rounded-md border-0 py-1.5 shadow-sm ring-1 ring-inset focus:ring-2 focus:ring-inset disabled:cursor-not-allowed disabled:bg-gray-200 disabled:text-gray-500 disabled:ring-gray-200 sm:text-sm/6',
+				error && 'pr-10 text-red-900 ring-red-300 placeholder:text-red-300 focus:ring-red-500',
+				warning && 'pr-10 text-yellow-900 ring-yellow-300 placeholder:text-yellow-300 !focus:ring-yellow-500',
+				!error &&
+					!warning &&
+					'text-gray-900 ring-gray-300 placeholder:text-gray-400 focus:ring-indigo-600',
+				removeArrows &&
+					'[appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none'
+			]}
 			aria-invalid={error ? 'true' : undefined}
 			{placeholder}
 			bind:value
@@ -109,6 +122,10 @@
 					clip-rule="evenodd" />
 			</svg>
 		</div>
+	{:else if warning && !error}
+		<div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+			{@render warningIcon('size-5 text-yellow-400')}
+		</div>
 	{:else if trailing}
 		<div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
 			{@render trailing()}
@@ -118,6 +135,9 @@
 {#if error}
 	<p class="mt-2 text-sm text-red-600" id={`${name}-error`}>{@html error}</p>
 {/if}
+{#if warning && !error}
+	<p class="mt-2 text-sm text-yellow-600" id={`${name}-warning`}>{@html warning}</p>
+{/if}
 {#if help}
-	<p class="mt-3 text-sm/6 text-gray-600">{help}</p>
+	<p class="mt-3 text-sm/6 text-gray-600">{@html help}</p>
 {/if}

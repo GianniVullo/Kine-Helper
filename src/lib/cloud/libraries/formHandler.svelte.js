@@ -35,7 +35,7 @@ export class Formulaire {
 	schema;
 	onError;
 	onValid;
-	isAsynchronous = false;
+	isAsynchronous;
 
 	constructor({
 		schema,
@@ -45,13 +45,15 @@ export class Formulaire {
 		initialValues,
 		onValid,
 		onError,
-		mode = 'create'
+		mode = 'create',
+		isAsynchronous = false
 	}) {
 		trace('Constructing the Formulaire instance with ' + Object.keys(schema.entries).join(', '));
 		this.submiter = submiter;
 		this.validateurs = validateurs;
 		this.formElement = formElement;
 		this.mode = mode;
+		this.isAsynchronous = isAsynchronous;
 		for (const fieldName of Object.keys(schema.entries)) {
 			trace('Registering ' + fieldName);
 			this.form[fieldName] =
@@ -93,6 +95,7 @@ export class Formulaire {
 	async validateAndTerminate() {
 		let validData;
 		if (this.isAsynchronous) {
+			trace('Asynchronous validation');
 			validData = await safeParseAsync(this.schema, this.form);
 		} else {
 			validData = safeParse(this.schema, this.form);
