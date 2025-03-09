@@ -13,7 +13,9 @@
 	import { onMount } from 'svelte';
 	import SeanceCreationModal from '../lib/ui/SeanceCreationModal.svelte';
 	import MarketingModal from '../lib/ui/MarketingModal.svelte';
-	console.log('page', $page);
+	import Drawer from '../lib/cloud/libraries/overlays/Drawer.svelte';
+	import Notification from '../lib/cloud/libraries/overlays/Notification.svelte';
+
 	initializeStores();
 
 	const modalRegistry = {
@@ -27,6 +29,7 @@
 		marketingModal: { ref: MarketingModal }
 		// ...
 	};
+
 	onMount(() => {
 		const myEvent = new CustomEvent('svelteLoaded', {
 			detail: { key: 'value' }
@@ -34,9 +37,10 @@
 		document.dispatchEvent(myEvent);
 	});
 	storePopup.set({ computePosition, autoUpdate, offset, shift, flip, arrow });
-	console.log($page);
 </script>
 
+<Notification />
+<Drawer />
 <Toast position="tr" rounded="rounded-lg" shadow="shadow-xl" />
 <Modal components={modalRegistry} />
 
