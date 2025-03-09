@@ -1,6 +1,21 @@
 import { trace, error as errorLog, info } from '@tauri-apps/plugin-log';
 import Database from '@tauri-apps/plugin-sql';
 
+/**
+ ** Update est une fonction qui aide à la création d'expresion SQL update. Elle vient
+ * @param {Object.<string, boolean>} touched
+ * @param {Object.<string, any>} data
+ */
+export function filtrerLesChampsAUpdater(touched, data) {
+	for (const field of Object.keys(touched)) {
+		const isTouched = touched[field];
+		if (!isTouched) {
+			delete data[field];
+		}
+	}
+	return data;
+}
+
 export class DatabaseManager {
 	/**@type Database */
 	db;
