@@ -1,21 +1,37 @@
 <script>
-	import { DateField, NumberField, TextFieldV2 } from '../index';
-	import CheckboxFieldV2 from '../abstract-fields/CheckboxFieldV2.svelte';
-	import SeancesField from './SeancesField.svelte';
-	import { t } from '../../i18n';
+	import { Formulaire } from '../../../libraries/formHandler.svelte';
+	import { AttestationSchema, fieldSchema, onValid, validateurs } from './AttestationSchema';
+	import { t } from '../../../../i18n';
+	import Form from '../abstract-components/Form.svelte';
+	import FormSection from '../abstract-components/FormSection.svelte';
+	import { onMount } from 'svelte';
+	import SubmitButton from '../../../../forms/ui/SubmitButton.svelte';
+	import { appState } from '../../../../managers/AppState.svelte';
+	import dayjs from 'dayjs';
 
-	let { patient, mode } = $props();
+	let { patient, sp, attestation, seances, mode = "create" } = $props();
 
 	let formHandler = new Formulaire({
 		validateurs,
-		schema: PatientSchema,
-		submiter: '#patient-submit',
-		initialValues: patient ?? {
+		schema: AttestationSchema,
+		submiter: '#attestation-submit',
+		initialValues: attestation ?? {
 			user_id: appState.user.id,
-			patient_id: crypto.randomUUID(),
-			tiers_payant: false,
-			ticket_moderateur: true,
-			bim: false
+			patient_id: patient.patient_id,
+			sp_id: sp.sp_id,
+			created_at: attestation?.created_at ?? dayjs().format(),
+			prescription_id: attestation?.prescription_id,
+			attestation_id: attestation?.attestation_id ?? crypto.randomUUID(),
+			date: attestation?.date ?? dayjs().format('YYYY-MM-DD'),
+			porte_prescr:
+				attestation?.porte_prescr ?? sp.attestations.reduce((a, b) => a || b.porte_prescr),
+			has_been_printed: attestation?.has_been_printed ?? false,
+			numero_etablissement: attestation?.numero_etablissement,
+			service: attestation?.service,
+			total_recu: attestation?.total_recu,
+			valeur_totale: attestation?.valeur_totale,
+			mutuelle_paid: attestation?.mutuelle_paid ?? false,
+			patient_paid: attestation?.patient_paid ?? false
 		},
 		onValid,
 		mode
@@ -24,76 +40,20 @@
 	onMount(() => {
 		formHandler.setup(onValid);
 	});
-
-	let message = '';
-	//! prescription_id
 </script>
 
-<div class="flex min-w-[30vw] flex-col">
-	<div class="max-w-md space-y-4">
-		<CheckboxFieldV2
-			bind:value={donnees.porte_prescr}
-			name={`${padding}porte_prescr`}
-			label={$t('attestation.detail', 'porte_prescr')} />
-		<CheckboxFieldV2
-			bind:value={donnees.has_been_printed}
-			name={`${padding}has_been_printed`}
-			label={$t('attestation.create', 'printNow')} />
-		<div class="flex flex-col border-l-2 border-l-error-500 pl-2">
-			{#if codeMap.is_lieu3()}
-				<CheckboxFieldV2
-					readOnly
-					bind:value={donnees.with_indemnity}
-					name={`${padding}with_indemnity`}
-					on:change={updateState}
-					label={$t('sp.update', 'label.with_indemnity')} />
-			{/if}
-			{#if codeMap.groupes_has_intake()}
-				<CheckboxFieldV2
-					readOnly
-					bind:value={donnees.with_intake}
-					name={`${padding}with_intake`}
-					on:change={updateState}
-					label={`${$t('shared', 'with')} Intake`} />
-			{/if}
-			{#if codeMap.groupes_has_rapport()}
-				<CheckboxFieldV2
-					readOnly
-					bind:value={donnees.with_rapport}
-					name={`${padding}with_rapport`}
-					on:change={updateState}
-					label={$t('attestation.form', 'with_rapport')} />
-			{/if}
-			<p class="text-surface-400">
-				{$t('attestation.form', 'help')} "<a
-					class="text-primary-500 hover:underline dark:text-primary-400"
-					href={`/dashboard/patients/${patient.patient_id}/situation-pathologique/${sp.sp_id}/update`}
-					>{$t('shared', 'pathologicalSituation')}</a
-				>"
-			</p>
-		</div>
-		<DateField
-			label={$t('attestation.form', 'label.date')}
-			bind:value={donnees.date}
-			name={`${padding}date`} />
-		<NumberField
-			bind:value={donnees.total_recu}
-			name={`${padding}total_recu`}
-			label={$t('attestation.detail', 'total_recu')} />
-		<NumberField
-			bind:value={donnees.valeur_totale}
-			name={`${padding}valeur_totale`}
-			label={$t('attestation.detail', 'valeur_totale')} />
-		<TextFieldV2
-			bind:value={donnees.numero_etablissement}
-			name={`${padding}numero_etablissement`}
-			label={$t('sp.update', 'label.numero_etablissement')} />
-		<TextFieldV2
-			bind:value={donnees.service}
-			name={`${padding}service`}
-			label={$t('sp.update', 'label.service')} />
-		<h4>{$t('patients.detail', 'prestations')}</h4>
-		<SeancesField seances={donnees.seances} />
-		<div class="font-semibold">{message}</div>
-	</div>
-</div>
+<Form title="Création d'un nouveau patient" message={formHandler.message}>
+	{#each fieldSchema as { titre, description, fields }}
+		<FormSection
+			{titre}
+			{description}
+			{fields}
+			bind:form={formHandler.form}
+			errors={formHandler.errors} />
+	{:else}
+		Error : no section!
+	{/each}
+	<SubmitButton id="patient-submit" className="col-span-full" />
+</Form>
+
+<!-- {JSON.stringify(formHandler.form)} -->
