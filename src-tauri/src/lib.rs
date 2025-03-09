@@ -206,6 +206,12 @@ pub fn run() {
                             sql: include_str!("migrations/20250225195209_sp_amb_hos.up.sql"),
                             kind: MigrationKind::Up,
                         },
+                        Migration {
+                            version: 13,
+                            description: "Added control column to table seances",
+                            sql: include_str!("migrations/20250306133523_seance_completion.up.sql"),
+                            kind: MigrationKind::Up,
+                        },
                     ],
                 )
                 .build(),

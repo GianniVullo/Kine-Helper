@@ -1,0 +1,8 @@
+ALTER TABLE seances ADD COLUMN indemnite INTEGER;
+ALTER TABLE seances ADD COLUMN rapport_ecrit INTEGER;
+ALTER TABLE seances ADD COLUMN ticket_moderateur INTEGER;
+ALTER TABLE seances ADD COLUMN seance_type INTEGER;
+ALTER TABLE seances ADD COLUMN groupe_id INTEGER;
+ALTER TABLE seances ADD COLUMN lieu_id INTEGER;
+ALTER TABLE seances ADD COLUMN patho_lourde_type INTEGER;
+ALTER TABLE seances ADD COLUMN duree INTEGER;
