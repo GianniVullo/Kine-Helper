@@ -212,6 +212,12 @@ pub fn run() {
                             sql: include_str!("migrations/20250306133523_seance_completion.up.sql"),
                             kind: MigrationKind::Up,
                         },
+                        Migration {
+                            version: 14,
+                            description: "Documents et Séances API Refonte + migration of seance and document tables",
+                            sql: include_str!("migrations/20250316133523_migrate_data_and_document_refonte.up.sql"),
+                            kind: MigrationKind::Up,
+                        },
                     ],
                 )
                 .build(),

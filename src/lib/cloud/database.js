@@ -108,9 +108,18 @@ export class DatabaseManager {
 		// 	[sp_id]
 		// );
 
-		trace('Fetching Documents');
-		let { data: documents, error: documentsError } = await this.select(
-			`SELECT * FROM documents WHERE sp_id = $1 ORDER BY created_at ASC`,
+		trace('Fetching Accords');
+		let { data: accords, error: accordsError } = await this.select(
+			`SELECT * FROM accords WHERE sp_id = $1 ORDER BY date ASC`,
+			[sp_id]
+		);
+		if (accordsError) {
+			return { data: null, error: accordsError };
+		}
+
+		trace('Fetching Factures');
+		let { data: facture, error: documentsError } = await this.select(
+			`SELECT * FROM factures WHERE sp_id = $1 ORDER BY date ASC`,
 			[sp_id]
 		);
 		if (documentsError) {
@@ -125,7 +134,8 @@ export class DatabaseManager {
 				prescriptions,
 				attestations,
 				// generateurs_de_seances: generateurs, deprecated
-				documents
+				accords,
+				facture
 			},
 			error: null
 		};

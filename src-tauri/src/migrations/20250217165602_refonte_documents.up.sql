@@ -1,38 +1,114 @@
--- on va déconstruire cette API Documents. C'est vraiment pas bien. Il faut faire des tables pour chacun des types de documents parce que là c'est vraiment n'importe quoi...
-CREATE TABLE IF NOT EXISTS factures_patients (
+CREATE TABLE IF NOT EXISTS factures (
     id TEXT PRIMARY KEY,
     user_id TEXT,
     patient_id TEXT,
     sp_id TEXT,
-    created_at TEXT,
-    modified_at TEXT,
     date TEXT,
-    form_data TEXT,
+    type TEXT,
+    total TEXT,
+    metadata TEXT,
     FOREIGN KEY(patient_id) REFERENCES patients(patient_id) ON DELETE CASCADE ON UPDATE NO ACTION,
     FOREIGN KEY(sp_id) REFERENCES situations_pathologiques(sp_id) ON DELETE CASCADE ON UPDATE NO ACTION
 );
 
-CREATE TABLE IF NOT EXISTS factures_patients_attestations ();
-
-CREATE TABLE IF NOT EXISTS factures_mutuelles ();
-
-CREATE TABLE IF NOT EXISTS factures_mutuelles_attestations ();
+CREATE TABLE IF NOT EXISTS factures_attestations (
+    facture_id TEXT,
+    attestation_id TEXT,
+    PRIMARY KEY (facture_id, attestation_id),
+    FOREIGN KEY (facture_id) REFERENCES factures(id) ON DELETE CASCADE ON UPDATE NO ACTION,
+    FOREIGN KEY (attestation_id) REFERENCES attestations(attestation_id) ON DELETE CASCADE ON UPDATE NO ACTION
+);
 
 -- devraient contenir les réponses papiers des mutuelles en attendant eAgreement
-CREATE TABLE IF NOT EXISTS demandes_accord (
+CREATE TABLE IF NOT EXISTS accords (
     id TEXT PRIMARY KEY,
     user_id TEXT,
     patient_id TEXT,
     sp_id TEXT,
     created_at TEXT,
+    -- pexpl 3a (annexe A) 51 (Annexe B) J (patho E)
+    situation TEXT,
     validity TEXT,
     reference TEXT,
-    buildable INTEGER, -- ce champ indique si les metadatas
-    metadata
+    buildable INTEGER,
+    binary TEXT,
+    metadata TEXT
 );
 
-CREATE TABLE IF NOT EXISTS demandes_reconduction ();
+-- Insert data into factures table from documents table where docType is 8 or 9
+INSERT INTO
+    factures (
+        id,
+        user_id,
+        patient_id,
+        sp_id,
+        date
+        type,
+        total
+    )
+SELECT
+    document_id,
+    user_id,
+    patient_id,
+    sp_id,
+    json_extract(form_data, '$.date'),
+    CASE
+        WHEN docType = 8 THEN 'patient'
+        WHEN docType = 9 THEN 'mutuelle'
+    END,
+    CASE
+        WHEN docType = 8 THEN json_extract(form_data, '$.total')
+        WHEN docType = 9 THEN json_extract(form_data, '$.tableRows[0].total')
+    END
+FROM
+    documents
+WHERE
+    docType IN (8, 9);
 
-CREATE TABLE IF NOT EXISTS testings ();
+INSERT INTO
+    factures_attestations (facture_id, attestation_id)
+SELECT
+    document_id,
+    json_each.value
+FROM
+    documents,
+    json_each(json_extract(form_data, '$.attestationsIds'))
+WHERE
+    docType IN (8, 9);
 
-CREATE TABLE IF NOT EXISTS custom_documents ();
+-- Insert data into accords table from documents table where docType is 0 or 1
+INSERT INTO
+    accords (
+        id,
+        user_id,
+        patient_id,
+        sp_id,
+        date,
+        situation,
+        validity,
+        reference,
+        buildable,
+        binary,
+        metadata
+    )
+SELECT
+    document_id,
+    user_id,
+    patient_id,
+    sp_id,
+    json_extract(form_data, '$.date'),
+    json_extract(form_data, '$.situation_pathologique'),
+    NULL,
+    NULL,
+    TRUE,
+    NULL,
+    CASE
+        WHEN docType = 0 THEN NULL
+        WHEN docType = 1 THEN '{"notification": ' || json_extract(form_data, '$.notification') || '}'
+    END
+FROM
+    documents
+WHERE
+    docType IN (0, 1);
+
+DROP TABLE IF EXISTS documents;
