@@ -76,9 +76,9 @@
 				</div>
 			</div>
 			<div class="text-sm/6">
-				<label for={id} class="font-medium text-gray-900">{checkboxLabel}</label>
+				<label for={id} class="select-none font-medium text-gray-900">{checkboxLabel}</label>
 				{#if checkboxDescription}
-					<p id="{name}-description" class="text-gray-500">
+					<p id="{name}-description" class="text-gray-500 select-none cursor-default">
 						{@html checkboxDescription}
 					</p>
 				{/if}
@@ -95,7 +95,8 @@
 			class={[
 				'block w-full rounded-md border-0 py-1.5 shadow-sm ring-1 ring-inset focus:ring-2 focus:ring-inset disabled:cursor-not-allowed disabled:bg-gray-200 disabled:text-gray-500 disabled:ring-gray-200 sm:text-sm/6',
 				error && 'pr-10 text-red-900 ring-red-300 placeholder:text-red-300 focus:ring-red-500',
-				warning && 'pr-10 text-yellow-900 ring-yellow-300 placeholder:text-yellow-300 !focus:ring-yellow-500',
+				warning &&
+					'!focus:ring-yellow-500 pr-10 text-yellow-900 ring-yellow-300 placeholder:text-yellow-300',
 				!error &&
 					!warning &&
 					'text-gray-900 ring-gray-300 placeholder:text-gray-400 focus:ring-indigo-600',

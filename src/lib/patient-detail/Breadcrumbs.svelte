@@ -1,11 +1,8 @@
 <script>
 	import { page } from '$app/state';
 	import { t } from '../i18n';
+
 	let { currentSp, patient } = $props();
-	
-	let boutonRetour = $derived(
-		page.params.spId ? '/dashboard/patients/' + patient.patient_id : '/dashboard/patients/'
-	);
 </script>
 
 {#snippet chevronRight()}
@@ -21,11 +18,29 @@
 			clip-rule="evenodd" />
 	</svg>
 {/snippet}
+{#snippet breadcrumbsItem(href, label, className, first)}
+	<li>
+		<div class={['flex', first ? undefined : 'items-center']}>
+			{#if !first}
+				{@render chevronRight()}
+			{/if}
+			<a
+				{href}
+				class={[
+					'text-sm font-medium text-gray-500 hover:text-gray-700',
+					className,
+					!first && 'ml-4'
+				]}>{label}</a>
+		</div>
+	</li>
+{/snippet}
 
 <div>
 	<nav class="sm:hidden" aria-label="Back">
-		<a
-			href={boutonRetour}
+		<button
+			onclick={() => {
+				history.back();
+			}}
 			class="flex items-center text-sm font-medium text-gray-500 hover:text-gray-700">
 			<svg
 				class="-ml-1 mr-1 size-5 shrink-0 text-gray-400"
@@ -39,39 +54,58 @@
 					clip-rule="evenodd" />
 			</svg>
 			Retour
-		</a>
+		</button>
 	</nav>
 	<nav class="hidden sm:flex" aria-label="Breadcrumb">
 		<ol role="list" class="flex items-center space-x-4">
-			<li>
-				<div class="flex">
-					<a
-						href="/dashboard/patients"
-						class="text-sm font-medium text-gray-500 hover:text-gray-700">Patients</a>
-				</div>
-			</li>
-			<li>
-				<div class="flex items-center">
-					{@render chevronRight()}
-					<a
-						href={'/dashboard/patients/' + patient.patient_id}
-						class="ml-4 text-sm font-medium text-gray-500 hover:text-gray-700">{patient.nom}</a>
-				</div>
-			</li>
+			{@render breadcrumbsItem('/dashboard/patients', 'Patients', null, true)}
+			{@render breadcrumbsItem('/dashboard/patients/' + patient.patient_id, patient.nom)}
 			{#if currentSp}
-				<li>
-					<div class="flex items-center">
-						{@render chevronRight()}
-						<a
-							href={'/dashboard/patients/' +
-								patient.patient_id +
-								'/situation-pathologique/' +
-								currentSp.sp_id}
-							aria-current="page"
-							class="ml-4 max-w-44 truncate text-sm font-medium text-gray-500 hover:text-gray-700"
-							>{currentSp.motif}</a>
-					</div>
-				</li>
+				{@render breadcrumbsItem(
+					'/dashboard/patients/' +
+						patient.patient_id +
+						'/situation-pathologique/' +
+						currentSp.sp_id,
+					currentSp.motif,
+					'max-w-44 truncate'
+				)}
+				{#if page.route.id.includes('attestations')}
+					{@render breadcrumbsItem(
+						'/dashboard/patients/' +
+							patient.patient_id +
+							'/situation-pathologique/' +
+							currentSp.sp_id +
+							'/attestations',
+						'Tarification'
+					)}
+				{:else if page.route.id.includes('seances')}
+					{@render breadcrumbsItem(
+						'/dashboard/patients/' +
+							patient.patient_id +
+							'/situation-pathologique/' +
+							currentSp.sp_id +
+							'/seances',
+						'Séances'
+					)}
+				{:else if page.route.id.includes('prescriptions')}
+					{@render breadcrumbsItem(
+						'/dashboard/patients/' +
+							patient.patient_id +
+							'/situation-pathologique/' +
+							currentSp.sp_id +
+							'/prescriptions',
+						'Prescriptions'
+					)}
+				{:else if page.route.id.includes('documents')}
+					{@render breadcrumbsItem(
+						'/dashboard/patients/' +
+							patient.patient_id +
+							'/situation-pathologique/' +
+							currentSp.sp_id +
+							'/documents',
+						'Documents'
+					)}
+				{/if}
 			{/if}
 		</ol>
 	</nav>

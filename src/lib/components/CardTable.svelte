@@ -1,5 +1,5 @@
 <script>
-	let { header, body } = $props();
+	let { header, body, headerItems, bodyItems, onclick } = $props();
 </script>
 
 <div class="w-full">
@@ -10,11 +10,36 @@
 					<table class="min-w-full divide-y divide-gray-300">
 						<thead class="bg-gray-50">
 							<tr>
-								{@render header()}
+								{#if header}
+									{@render header()}
+								{:else}
+									{#each headerItems as item}
+										<th
+											scope="col"
+											class="py-3.5 pr-3 text-left text-sm font-semibold text-gray-900 first:pl-4 sm:pl-0"
+											>{@html item}</th>
+									{/each}
+								{/if}
 							</tr>
 						</thead>
 						<tbody class="divide-y divide-gray-200 bg-white">
-							{@render body()}
+							{#if body}
+								{@render body()}
+							{:else}
+								{#each bodyItems as item}
+									<tr onclick={() => onclick(item)} class="cursor-pointer">
+										{#each item as { className, content, snippet }}
+											<td class={['whitespace-nowrap py-5 pl-4 pr-3 text-sm sm:pl-0', className]}>
+												{#if snippet}
+													{@render snippet()}
+												{:else}
+													{@html content}
+												{/if}
+											</td>
+										{/each}
+									</tr>
+								{/each}
+							{/if}
 						</tbody>
 					</table>
 				</div>

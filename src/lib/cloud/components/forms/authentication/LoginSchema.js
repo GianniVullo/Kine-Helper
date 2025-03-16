@@ -106,24 +106,23 @@ export async function onValid(data) {
 
 	// Check si l'utilisateur a au moins un appareil enregistré
 	trace('Fetching user devices');
-	// TODO Add Appareil
-	// let { data: appareil, error: appareilError } = await appState.db.select(
-	// 	'SELECT * FROM appareils;'
-	// );
+	let { data: appareil, error: appareilError } = await appState.db.select(
+		"SELECT * FROM appareils WHERE role = 'raw_printer';"
+	);
 
-	// if (appareilError) {
-	// 	console.log('appareil Error : ', appareilError);
+	if (appareilError) {
+		console.log('appareil Error : ', appareilError);
 
-	// 	return (this.message = appareilError);
-	// }
+		return (this.message = appareilError);
+	}
 
 	// REDIRECTION :
 	// Si l'utilisateur n'a pas d'appareil enregistré
-	// if (materiel?.length === 0) {
-	// 	info('User has no device on local db');
-	// 	goto('/post-signup-forms/printer-setup');
-	// 	return;
-	// }
+	if (appareil?.length === 0) {
+		info('User has no device on local db');
+		goto('/post-signup-forms/printer-setup');
+		return;
+	}
 
 	info('Everything is fine, redirecting to the dashboard');
 	goto('/dashboard');
