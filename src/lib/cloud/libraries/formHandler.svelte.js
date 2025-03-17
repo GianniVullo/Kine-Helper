@@ -48,16 +48,16 @@ export class Formulaire {
 		mode = 'create',
 		isAsynchronous = false
 	}) {
-		trace('Constructing the Formulaire instance with ' + Object.keys(schema.entries).join(', '));
+		trace('Constructing the Formulaire instance with ' + Object.keys(validateurs).join(', '));
 		this.submiter = submiter;
 		this.validateurs = validateurs;
 		this.formElement = formElement;
 		this.mode = mode;
 		this.isAsynchronous = isAsynchronous;
-		for (const fieldName of Object.keys(schema.entries)) {
+		for (const fieldName of Object.keys(validateurs)) {
 			trace('Registering ' + fieldName);
 			this.form[fieldName] =
-				initialValues?.[fieldName] ?? schema.entries[fieldName].default ?? null;
+				initialValues?.[fieldName] ?? validateurs[fieldName].default ?? null;
 			this.errors[fieldName] = false;
 			this.initialValues[fieldName] = initialValues?.[fieldName] ?? null;
 		}
@@ -72,6 +72,7 @@ export class Formulaire {
 		$effect(() => {
 			this.evaluateAndValidate(this.form);
 		});
+		console.log('initialValues', this.initialValues);
 	}
 
 	setup() {
