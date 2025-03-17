@@ -3,17 +3,15 @@
 	import { open } from '@tauri-apps/plugin-shell';
 	import { FormWrapper, SubmitButton } from '../../../lib/forms/index';
 	import { goto } from '$app/navigation';
-	import { user } from '../../../lib/index';
 	import { t, locale } from '../../../lib/i18n';
 	import { get } from 'svelte/store';
 	import { platform } from '@tauri-apps/plugin-os';
 	import TextFieldV2 from '../../../lib/forms/abstract-fields/TextFieldV2.svelte';
 	import RadioFieldV2 from '../../../lib/forms/abstract-fields/RadioFieldV2.svelte';
 	import WindowsSelectionField from '../../../lib/forms/settings/WindowsSelectionField.svelte';
-	import { LocalDatabase } from '../../../lib/stores/databaseInitializer';
+	import { appState } from '../../../lib/managers/AppState.svelte';
 
-	console.log($user);
-	
+
 	const modalStore = getModalStore();
 	const modal = {
 		type: 'confirm',
@@ -48,18 +46,11 @@
 		setPrinter(formData.printer, formData.is_nine_pin);
 	}
 	async function setPrinter(printerName, is_nine_pin) {
-		let db = new LocalDatabase();
 		// it'es enough to store these in local db
-		await db.execute('UPDATE settings SET raw_printer = $1, is_nine_pin = $2 WHERE user_id = $3', [
-			printerName,
-			JSON.parse(is_nine_pin),
-			$user.user.id
-		]);
-		user.update((u) => {
-			u.settings.raw_printer = printerName;
-			u.settings.is_nine_pin = JSON.parse(is_nine_pin);
-			return u;
-		});
+		await appState.db.execute(
+			'INSERT INTO appareils (id, name, role, metadata) VALUES ($1, $2, $3, $4)',
+			[crypto.randomUUID(), printerName, 'raw_printer', JSON.stringify({ is_nine_pin })]
+		);
 		goto('/dashboard');
 	}
 </script>
@@ -70,7 +61,9 @@
 	</h1>
 	<div class="mb-4 mt-4 flex flex-col items-start">
 		{#if platformName === 'windows'}
-			<h5 class="text-xl text-secondary-700 dark:text-secondary-200">{$t('shared', 'for')} windows</h5>
+			<h5 class="text-xl text-secondary-700 dark:text-secondary-200">
+				{$t('shared', 'for')} windows
+			</h5>
 			<p class="text-surface-700 dark:text-surface-200">
 				{@html $t(
 					'printerSetup',
@@ -80,7 +73,9 @@
 				)}
 			</p>
 		{:else}
-			<h5 class="text-xl text-secondary-700 dark:text-secondary-200">{$t('shared', 'for')} macOs</h5>
+			<h5 class="text-xl text-secondary-700 dark:text-secondary-200">
+				{$t('shared', 'for')} macOs
+			</h5>
 			<p class="text-surface-700 dark:text-surface-200">
 				{@html $t(
 					'printerSetup',

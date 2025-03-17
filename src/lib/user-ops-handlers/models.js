@@ -87,10 +87,11 @@ export class SituationPathologique {
 		generateurs_de_seances = [],
 		prescriptions = [],
 		attestations = [],
-		documents = [],
+		accords = [],
+		factures = [],
 		seances = []
 	}) {
-		console.log('in the sp constructor');
+		console.log('in the sp constructor with', accords, factures);
 
 		this.sp_id = sp_id;
 		this.created_at = created_at;
@@ -104,7 +105,8 @@ export class SituationPathologique {
 		this.seances = seances.map((s) => new Seance(s));
 		this.prescriptions = prescriptions;
 		this.attestations = attestations;
-		this.documents = documents;
+		this.accords = accords;
+		this.factures = factures;
 		this.metadata = metadata ? JSON.parse(metadata) : {};
 		this.user_id = appState.user.id;
 		this.upToDate = false;
@@ -144,19 +146,11 @@ export class SituationPathologique {
 						: prescription.prescripteur;
 			}
 		}
-		if (documents) {
-			for (const document of documents) {
-				document.docType = parseInt(document.docType);
-				document.form_data =
-					typeof document.form_data === 'string'
-						? JSON.parse(document.form_data)
-						: document.form_data;
-			}
-		}
 	}
-	get factures() {
-		return this.documents.filter((d) => [8, 9].includes(d.docType));
-	}
+
+	// get factures() {
+	// 	return this.documents.filter((d) => [8, 9].includes(d.docType));
+	// }
 	get toDB() {
 		return {
 			sp_id: this.sp_id,

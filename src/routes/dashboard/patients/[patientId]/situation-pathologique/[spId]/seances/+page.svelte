@@ -14,14 +14,14 @@
 	let { patient, sp } = data;
 
 	let events = sp.seances.map((seance) => {
-		let start = dayjs(`${seance.date} ${seance.start}`);
+		let start = dayjs(seance.date);
+		console.log('start', start);
+
 		let end = start
 			.add(seance.metadata?.duree_custom ?? seance.minutes, 'minute')
 			.format('YYYY-MM-DD HH:mm');
-		return {
+		const event = {
 			id: seance.seance_id,
-			// resourceIds: '',
-			// allDay: false,
 			start: `${seance.date} ${seance.start}`,
 			end: end,
 			title: patient.nom + ' ' + (patient?.prenom ?? ''),
@@ -32,6 +32,8 @@
 				seance: seance
 			}
 		};
+		console.log('event', event);
+		return event;
 	});
 
 	let display = $state('calendar');

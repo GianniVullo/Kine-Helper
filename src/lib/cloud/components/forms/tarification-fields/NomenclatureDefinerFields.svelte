@@ -1,9 +1,5 @@
 <script>
-	import {
-		dureeParGroupeParLieu,
-		durees,
-		groupes
-	} from '../../../../stores/codeDetails';
+	import { dureeParGroupeParLieu, durees, groupes } from '../../../../stores/codeDetails';
 	import SimpleSelect from '../fields/SimpleSelect.svelte';
 	import { get } from 'svelte/store';
 	import { t } from '../../../../i18n';
@@ -32,27 +28,28 @@
 	console.log('In NomenclatureDefinerFields', form);
 	$effect(() => {
 		form.lieu_id;
-		untrack(
-			() =>
-				(dureeOptions = durees()
-					.map((d, index) => ({ label: d, value: index }))
-					.filter((s, index) => {
-						const ceck = checkIfDuree(index);
-						return ceck;
-					})
-					.map(({ label, value }, index) => ({
-						label,
-						value,
-						id: `duree${index}`
-					})))
-		);
-		if (lieuOptions.length === 1) {
-			untrack(() => (form.lieu_id = lieuOptions[0].value));
-		}
-		const dO = untrack(() => dureeOptions);
-		if (dO.length === 1) {
-			untrack(() => (form.duree = dO[0].value));
-		}
+		untrack(() => {
+			dureeOptions = durees()
+				.map((d, index) => ({ label: d, value: index }))
+				.filter((s, index) => {
+					const ceck = checkIfDuree(index);
+					return ceck;
+				})
+				.map(({ label, value }, index) => ({
+					label,
+					value,
+					id: `duree${index}`
+				}));
+			console.log('dureeOptions', dureeOptions);
+
+			if (lieuOptions.length === 1) {
+				form.lieu_id = lieuOptions[0].value;
+			}
+			const dO = dureeOptions;
+			if (dO.length === 1) {
+				form.duree = dO[0].value;
+			}
+		});
 	});
 </script>
 
