@@ -89,20 +89,24 @@
 			onclick: (attestation) => async () => await printHandler(attestation),
 			icon: (_) => printerIcon,
 			inner: (_) => 'Imprimer'
-		},
-		{
-			href: (attestation) =>
-				`/dashboard/patients/${patient.patient_id}/situation-pathologique/${sp.sp_id}/attestations/${attestation.attestation_id}/update`,
-			icon: (_) => editIcon,
-			inner: (_) => 'Modifier'
 		}
-		// TODO
-		//! Il faut encore définir un comportement pour la suppression : Supprimer les séances liées ou bien les remettres dans le calendrier comme si elle n'avaient jamais été attestée ? je n'avais jamais pu faire ça parce qu'à l'époque de la création de cette page il n'y avait pas encore de handler pour la gestion de l'ajout, réorganisation et même suppression de séances
 		// {
-		// 	onclick: () => {},
-		// 	icon: (attestation) => deleteIcon,
-		// 	inner: (_) => 'Supprimer'
+		// 	href: (attestation) =>
+		// 		`/dashboard/patients/${patient.patient_id}/situation-pathologique/${sp.sp_id}/attestations/${attestation.attestation_id}/update`,
+		// 	icon: (_) => editIcon,
+		// 	inner: (_) => 'Modifier'
 		// }
+		/**
+		 * TODO
+		 * Suppression : Supprimer les séances liées ou bien les remettres dans le calendrier comme si elle n'avaient jamais été attestée ? je n'avais jamais pu faire ça parce qu'à l'époque de la création de cette page il n'y avait pas encore de handler pour la gestion de l'ajout, réorganisation et même suppression de séances
+		 * TODO
+		 * Modifier : Modifier les informations de l'attestation
+		 * {
+		 * 	onclick: () => {},
+		 * 	icon: (attestation) => deleteIcon,
+		 * 	inner: (_) => 'Supprimer'
+		 * }
+		 */
 	]);
 </script>
 
