@@ -25,7 +25,10 @@
 		userIconWithCross
 	} from '../../../../../../../lib/ui/svgs/IconSnippets.svelte';
 	import { iconBadge } from '../../../../../../../lib/components/snippets/BadgesSnippets.svelte';
-	import { updateAttestation } from '../../../../../../../lib/user-ops-handlers/attestations';
+	import {
+		markAsPaid,
+		updateAttestation
+	} from '../../../../../../../lib/user-ops-handlers/attestations';
 
 	let { data } = $props();
 	let { patient, sp } = data;
@@ -33,6 +36,8 @@
 	function prescription(prescriptionId) {
 		return sp.prescriptions.find((prescription) => prescription.prescription_id === prescriptionId);
 	}
+
+	const attestations = $state(sp.attestations);
 
 	const printHandler = async (attestation) => {
 		modalStore.trigger({
@@ -45,32 +50,28 @@
 			type: 'confirm',
 			response: async (response) => {
 				if (response) {
-					await printAttestation(
-						patient,
-						prescription(attestation.prescription_id),
-						attestation,
-						sp,
-						await fetchCodeDesSeances(
-							null,
-							sp.seances.filter((s) => s.attestation_id === attestation.attestation_id),
-							sp
-						)
-					);
+					const { error } = await printAttestation(null, attestation);
+					if (error) {
+						modalStore.trigger({
+							title: 'Hmmm...',
+							body: `Error: ${error}`
+						});
+					}
 				}
 			}
 		});
 	};
 
 	const updatePaidStatuses = async (attestation, key) => {
-		attestation[key] = !attestation[key];
-		await updateAttestation(attestation);
+		attestation[`${key}_paid`] = !attestation[`${key}_paid`];
+		await markAsPaid(attestation, key);
 	};
 
 	let menuItemsList = $state([
 		/* TODO */
 		{
 			onclick: (attestation) => async () => {
-				await updatePaidStatuses(attestation, 'mutuelle_paid');
+				await updatePaidStatuses(attestation, 'mutuelle');
 			},
 			icon: ({ mutuelle_paid }) => (mutuelle_paid ? buildingIconWithCheck : buildingIconWithCross),
 			inner: ({ mutuelle_paid }) =>
@@ -79,13 +80,13 @@
 		/* TODO */
 		{
 			onclick: (attestation) => async () => {
-				await updatePaidStatuses(attestation, 'patient_paid');
+				await updatePaidStatuses(attestation, 'patient');
 			},
 			icon: ({ patient_paid }) => (patient_paid ? userIconWithCheck : userIconWithCross),
 			inner: ({ patient_paid }) => (patient_paid ? 'Impayé par le patient' : 'Payé par le patient')
 		},
 		{
-			onclick: (attestation) => () => printHandler(attestation),
+			onclick: (attestation) => async () => await printHandler(attestation),
 			icon: (_) => printerIcon,
 			inner: (_) => 'Imprimer'
 		},
@@ -120,15 +121,9 @@
 				>Paiement</th>
 			<th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Actions</th>
 			<!-- TODO Ici j'ai mis action parce que, en fait, il va falloir mettre Modifier, Supprimer, Imprimer, Marquer comme payée par la mutuelle, par le patient, et qui sait quoi d'autres encore -->
-			<!-- <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-0">
-						<span class="sr-only">Modifier</span>
-					</th>
-					<th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-0">
-						<span class="sr-only">Imprimer</span>
-					</th> -->
 		{/snippet}
 		{#snippet body()}
-			{#each sp.attestations as attestation}
+			{#each attestations as attestation}
 				<tr>
 					<td class="whitespace-nowrap px-3 py-5 text-sm text-gray-500">
 						{dayjs(attestation.date).format('DD/MM/YYYY')}

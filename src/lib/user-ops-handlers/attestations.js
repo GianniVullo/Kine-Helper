@@ -166,14 +166,14 @@ export async function updateAttestation(data) {
 
 export async function deleteAttestation(data) {}
 
-export async function markAsPaid(attestation_id, factureType) {
+export async function markAsPaid(data, factureType) {
 	const { data: attestation, error: attestationError } = await appState.db.execute(
 		`
 		UPDATE attestations
-		SET ${factureType}_paid = true
-		WHERE attestation_id = $1
+		SET ${factureType}_paid = $1
+		WHERE attestation_id = $2
 	`,
-		[attestation_id]
+		[!data[`${factureType}_paid`], data.attestation_id]
 	);
 	if (attestationError) {
 		return { error: attestationError };
