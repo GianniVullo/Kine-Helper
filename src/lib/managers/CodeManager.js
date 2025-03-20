@@ -1,26 +1,31 @@
-import dayjs from 'dayjs';
-import { user } from '../../index';
-import { get } from 'svelte/store';
 import {
 	SEANCE_NORMALE,
 	DEPASSEMENT,
 	DEPASSEMENT2,
-	RAPPORT_ECRIT,
 	EXAMEN_A_TITRE_CONSULTATIF,
-	SECONDE_SEANCE,
-	figuringConventionOut
-} from '../../stores/codeDetails';
-import { NomenclatureArchitecture } from '../../utils/nomenclatureManager';
-import Database from '@tauri-apps/plugin-sql';
-import { error } from '@sveltejs/kit';
+	SECONDE_SEANCE
+} from '../stores/codeDetails.js';
 import { appState } from './AppState.svelte';
+
+const SEANCE_KINE = 0;
+const SEANCE_CONSULTATIVE = 1;
+const SEANCE_SECONDE = 2;
+const NO_SHOW = 3;
 
 /**
  ** C'est quoi le plan en fait...
  **   Il faut qu'on puisse donner des cades aux séances... Pour ça il faut savoir toutes les séances qui ont été déjà tarifée dans la sp. puis y ajouter
  */
 
-export async function assignCodes(sp, seance, indexOfSeance, architecture) {
+export async function assignCodes({
+	sp,
+	seance,
+	indexOfSeance,
+	architecture,
+	patient,
+	convention_id,
+	seancesGeneree
+}) {
 	let sqlAgreg;
 	let queryCompilerArgs = {
 		groupe_id: sp.groupe_id,
@@ -28,13 +33,15 @@ export async function assignCodes(sp, seance, indexOfSeance, architecture) {
 		lieu_id: seance.lieu_id,
 		patho_lourde_type: sp.patho_lourde_type,
 		patient,
-		convention,
+		convention_id,
 		seancesGeneree,
 		gmfcs: sp.gmfcs,
 		volet_h: sp.groupe_id === 5 && duree === 3
 	};
-	if (seance.code_type === 0) {
-		const seancesAlreadyTarifed = sp.seances.filter((seance) => seance.has_been_attested);
+	if (seance.seance_type === SEANCE_KINE) {
+		const seancesAlreadyTarifed = sp.seances.filter(
+			(seance) => seance.has_been_attested && seance.seance_type === 0
+		);
 		const seancesGeneree = seancesAlreadyTarifed.length + indexOfSeance;
 		if (seancesGeneree < architecture.seances_normales_executables - sp.deja_faites) {
 			sqlAgreg = await sqlQueryCompiler({ ...queryCompilerArgs, codeType: SEANCE_NORMALE });
@@ -54,13 +61,13 @@ export async function assignCodes(sp, seance, indexOfSeance, architecture) {
 		) {
 			sqlAgreg = await sqlQueryCompiler({ ...queryCompilerArgs, codeType: DEPASSEMENT2 });
 		}
-	} else if (seance.code_type === 1) {
+	} else if (seance.seance_type === SEANCE_CONSULTATIVE) {
 		// Consultative
 		sqlAgreg = await sqlQueryCompiler({
 			...queryCompilerArgs,
 			codeType: EXAMEN_A_TITRE_CONSULTATIF
 		});
-	} else if (seance.code_type === 2) {
+	} else if (seance.seance_type === SEANCE_SECONDE) {
 		// Seconde séance
 		if (sp.groupe_id === 1 || sp.groupe_id === 6) {
 			sqlAgreg = await sqlQueryCompiler({ ...queryCompilerArgs, codeType: SECONDE_SEANCE });
@@ -76,9 +83,13 @@ export async function assignCodes(sp, seance, indexOfSeance, architecture) {
 			sqlAgreg = await sqlQueryCompiler({ ...queryCompilerArgs, codeType: SECONDE_SEANCE });
 		}
 	}
+	console.log('sqlAgreg', sqlAgreg);
+
 	if (sqlAgreg) {
 		const [sqlStatement, sqlArgs] = sqlAgreg;
 		const code = await appState.db.select(sqlStatement, sqlArgs);
+		console.log('code', code);
+
 		return code;
 	} else {
 		return { error: 'Aucun code trouvé' };
@@ -92,14 +103,14 @@ async function sqlQueryCompiler({
 	lieu_id,
 	patho_lourde_type,
 	patient,
-	convention,
+	convention_id,
 	seancesGeneree,
 	gmfcs,
 	volet_h
 } = {}) {
 	//? Ensuite les données provenant du formulaire
 	let sqlStatementArgs = [groupe_id, codeType, lieu_id];
-	let sqlStatement = `SELECT * from codes WHERE groupe = $1 AND type = $2 AND lieu = $3 AND convention_id = '${convention.convention_id}'`;
+	let sqlStatement = `SELECT * from codes WHERE groupe = $1 AND type = $2 AND lieu = $3 AND convention_id = '${convention_id}'`;
 	switch (groupe_id) {
 		case 1:
 			const defaultCase = () => {

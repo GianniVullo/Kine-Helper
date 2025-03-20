@@ -1,22 +1,12 @@
 import { PDFGeneration } from './kineHelperPdfs';
 import { get } from 'svelte/store';
-import { user } from '../stores/UserStore';
 import dayjs from 'dayjs';
 import { t } from '../i18n';
+import { appState } from '../managers/AppState.svelte';
 
 export class FactureMutuelle extends PDFGeneration {
-	constructor(formData, patient, sp, obj) {
-		super(
-			`facture-mutuelle ${patient.nom} ${patient.prenom} du ${dayjs(formData.date).format(
-				'DD-MM-YYYY'
-			)}`,
-			formData,
-			patient,
-			sp,
-			9,
-			'factures',
-			obj
-		);
+	constructor(formData, patient, sp) {
+		super(formData.id, formData, patient, sp, 9, 'factures', formData);
 	}
 	buildPdf() {
 		this.header(dayjs(this.formData.date).format('DD/MM/YYYY'));
@@ -28,7 +18,7 @@ export class FactureMutuelle extends PDFGeneration {
 		this.addParagraph(
 			get(t)('pdfs', 'facture.body', {
 				total: this.formData.tableRows[0]['total'] ?? '0',
-				iban: get(user).profil.iban
+				iban: appState.user.iban
 			})
 		);
 		if (!this.patient.ticket_moderateur) {

@@ -3,6 +3,7 @@ import { get } from 'svelte/store';
 import { user } from '../stores/UserStore';
 import dayjs from 'dayjs';
 import { t } from '../i18n';
+import { appState } from '../managers/AppState.svelte';
 
 /**.
  * @typedef {Object} FormData
@@ -18,25 +19,10 @@ export class FacturePatient extends PDFGeneration {
 	 * @param {string} documentName - Le nom du document.
 	 * @param {FormData} formData - Les infos pour créer le pdf.
 	 */
-	constructor(formData, patient, sp, obj) {
-		super(
-			`facture-patient ${patient.nom} ${patient.prenom} du ${dayjs(formData.date).format(
-				'DD-MM-YYYY'
-			)}`,
-			formData,
-			patient,
-			sp,
-			8,
-			'factures',
-			obj
-		);
-		this.attestations =
-			formData.attestations ??
-			sp.attestations.filter((a) => formData.attestationsIds.includes(a.attestation_id));
-		if (formData.attestations) {
-			delete this.formData.attestations;
-		}
-		this.codes;
+	constructor(formData, patient, sp, codes, attestations) {
+		super(formData.id, formData, patient, sp, 8, 'factures', formData);
+		this.attestations = attestations;
+		this.codes = codes;
 	}
 
 	buildPdf() {
@@ -50,7 +36,7 @@ export class FacturePatient extends PDFGeneration {
 		this.addParagraph(
 			get(t)('pdfs', 'facture.body2', {
 				total: this.formData.total ?? '0',
-				iban: get(user).profil.iban,
+				iban: appState.user.iban,
 				patientNom: this.patient.nom
 			})
 		);
@@ -84,10 +70,9 @@ export class FacturePatient extends PDFGeneration {
 				);
 			}
 			if (this.attestations.reduce((acc, att) => acc || att.with_intake, false)) {
-				this.addParagraph(
-					`(Intake) - (code ${this.codes.get('intake')[0].code_reference})`,
-					{ fontSize: 8 }
-				);
+				this.addParagraph(`(Intake) - (code ${this.codes.get('intake')[0].code_reference})`, {
+					fontSize: 8
+				});
 			}
 			this.yPosition.update(3);
 			this.buildDetail();
