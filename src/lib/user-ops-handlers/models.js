@@ -49,6 +49,10 @@ export class Patient {
 		this.situations_pathologiques = [];
 	}
 
+	get is_complete() {
+		return this.nom && this.niss && this.adresse && this.cp && this.localite && this.mutualite;
+	}
+
 	addSP(sp) {
 		this.situations_pathologiques.push(new SituationPathologique(sp));
 	}
