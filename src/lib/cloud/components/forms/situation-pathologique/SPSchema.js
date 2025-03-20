@@ -12,16 +12,16 @@ import { modelingMetadata } from '../tarification-fields/tarifHelpers';
 
 const SEX = ['AMB', 'HOS', null, undefined];
 
-const user_id = v.pipe(v.nonNullable(v.string()), v.uuid());
-const patient_id = v.pipe(v.optional(v.string()), v.uuid());
-const sp_id = v.pipe(v.optional(v.string()), v.uuid());
+const user_id = v.uuid();
+const patient_id = v.uuid();
+const sp_id = v.uuid();
 const created_at = v.isoDate();
 const motif = v.pipe(
 	v.transform((input) => (input?.length === 0 ? null : input)),
 	v.string('Ce champ est obligatoire'),
 	v.minWords(1, 'Veuillez insérer un nom')
 );
-const plan_du_ttt = v.nullable(v.string());
+const plan_du_ttt = v.nullish(v.string());
 const numero_etablissement = v.pipe(
 	v.transform((input) => (input?.length === 0 ? null : input)),
 	v.nullish(v.string())
@@ -40,12 +40,14 @@ const tarif_rapport_ecrit = v.nullish(v.uuid());
 const tarif_consultatif = v.nullish(v.uuid());
 const tarif_seconde_seance = v.nullish(v.uuid());
 const tarif_intake = v.nullish(v.uuid());
+const tarif_no_show = v.nullish(v.uuid());
 const tarif_seance_custom = numericalString;
 const tarif_indemnite_custom = numericalString;
 const tarif_rapport_ecrit_custom = numericalString;
 const tarif_consultatif_custom = numericalString;
 const tarif_seconde_seance_custom = numericalString;
 const tarif_intake_custom = numericalString;
+const tarif_no_show_custom = numericalString;
 // The nomenclature fields
 // Ces champs peuvent être nul ici et dans la création de séance mais pas dans la génération d'attestation
 
@@ -55,8 +57,6 @@ const duree = v.nullish(v.number());
 const patho_lourde_type = v.nullish(v.number());
 const gmfcs = v.nullish(v.number());
 const amb_hos = v.nullish(v.picklist(SEX));
-
-// TODO : ADD the tarif(s) and suppléements
 
 export const validateurs = {
 	user_id,
@@ -85,7 +85,9 @@ export const validateurs = {
 	tarif_rapport_ecrit_custom,
 	tarif_consultatif_custom,
 	tarif_seconde_seance_custom,
-	tarif_intake_custom
+	tarif_intake_custom,
+	tarif_no_show,
+	tarif_no_show_custom
 };
 
 export const SPSchema = v.pipe(

@@ -52,6 +52,10 @@ export async function updatePrescription(data, file) {
 
 export async function createPrescription(data, file) {
 	trace('in createPrescription');
+	if (data.file_name) {
+		delete data.file_name;
+	}
+
 	let file_name;
 	if (file) {
 		file_name = `${data.prescription_id}.${file.name.split('.').pop()}`;
@@ -59,6 +63,7 @@ export async function createPrescription(data, file) {
 		data.prescripteur = JSON.stringify(data.prescripteur);
 		let fsError = await save_to_disk(filePath, file_name, Array.from(await file.bytes()));
 		data.file_name = file_name;
+		delete data.file;
 		if (fsError) {
 			return { data: prescription, error: fsError };
 		}

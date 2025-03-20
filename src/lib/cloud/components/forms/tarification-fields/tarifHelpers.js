@@ -11,6 +11,7 @@ function assignRelevantTarif(value, id) {
 
 function evalTarifDefaultValue(metadata, key, subKey, tarifs) {
 	if (!metadata || !metadata[key]) {
+		console.log('no metadata', tarifs, key);
 		return tarifs.find((t) => assignRelevantTarif(t, key))?.[subKey];
 	} else {
 		const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -26,85 +27,85 @@ export function getTarificationInitialValues(sp, tarifs, seance) {
 	return {
 		tarif_seance: evalTarifDefaultValue(
 			seance?.metadata ?? sp?.metadata,
-			'tarif_seance',
+			'seance',
 			'id',
 			tarifs
 		),
 		tarif_indemnite: evalTarifDefaultValue(
 			seance?.metadata ?? sp?.metadata,
-			'tarif_indemnite',
+			'indemnite',
 			'id',
 			tarifs
 		),
 		tarif_rapport_ecrit: evalTarifDefaultValue(
 			seance?.metadata ?? sp?.metadata,
-			'tarif_rapport_ecrit',
+			'rapport_ecrit',
 			'id',
 			tarifs
 		),
 		tarif_consultatif: evalTarifDefaultValue(
 			seance?.metadata ?? sp?.metadata,
-			'tarif_consultatif',
+			'consultatif',
 			'id',
 			tarifs
 		),
 		tarif_seconde_seance: evalTarifDefaultValue(
 			seance?.metadata ?? sp?.metadata,
-			'tarif_seconde_seance',
+			'seconde_seance',
 			'id',
 			tarifs
 		),
 		tarif_intake: evalTarifDefaultValue(
 			seance?.metadata ?? sp?.metadata,
-			'tarif_intake',
+			'intake',
 			'id',
 			tarifs
 		),
 		tarif_no_show: evalTarifDefaultValue(
 			seance?.metadata ?? sp?.metadata,
-			'tarif_no_show',
+			'no_show',
 			'id',
 			tarifs
 		),
 		tarif_seance_custom: evalTarifDefaultValue(
 			seance?.metadata ?? sp?.metadata,
-			'tarif_seance',
+			'seance',
 			'valeur',
 			tarifs
 		),
 		tarif_indemnite_custom: evalTarifDefaultValue(
 			seance?.metadata ?? sp?.metadata,
-			'tarif_indemnite',
+			'indemnite',
 			'valeur',
 			tarifs
 		),
 		tarif_rapport_ecrit_custom: evalTarifDefaultValue(
 			seance?.metadata ?? sp?.metadata,
-			'tarif_rapport_ecrit',
+			'rapport_ecrit',
 			'valeur',
 			tarifs
 		),
 		tarif_consultatif_custom: evalTarifDefaultValue(
 			seance?.metadata ?? sp?.metadata,
-			'tarif_consultatif',
+			'consultatif',
 			'valeur',
 			tarifs
 		),
 		tarif_seconde_seance_custom: evalTarifDefaultValue(
 			seance?.metadata ?? sp?.metadata,
-			'tarif_seconde_seance',
+			'seconde_seance',
 			'valeur',
 			tarifs
 		),
 		tarif_intake_custom: evalTarifDefaultValue(
 			seance?.metadata ?? sp?.metadata,
-			'tarif_intake',
+			'intake',
 			'valeur',
 			tarifs
 		),
 		tarif_no_show_custom: evalTarifDefaultValue(
 			seance?.metadata ?? sp?.metadata,
-			'tarif_no_show',
+			'no_show',
 			'valeur',
 			tarifs
 		),
@@ -188,6 +189,8 @@ export function modelingMetadata(input) {
 	delete input.tarif_consultatif_custom;
 	delete input.tarif_seconde_seance_custom;
 	delete input.tarif_intake_custom;
+	delete input.tarif_no_show_custom;
+	delete input.tarif_no_show;
 	return input;
 }
 

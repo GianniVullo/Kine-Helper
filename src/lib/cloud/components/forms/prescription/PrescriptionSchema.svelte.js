@@ -43,7 +43,7 @@ const file = v.pipe(
 	v.nullable(v.file()),
 	v.transform((input) => (input?.length === 0 ? null : input[0]))
 );
-
+const file_name = v.nullable(v.string());
 export const validateurs = {
 	user_id,
 	patient_id,
@@ -57,24 +57,13 @@ export const validateurs = {
 	prescripteurNom,
 	prescripteurPrenom,
 	prescripteurInami,
-	file
+	file,
+	file_name
 };
 
 export const PrescriptionSchema = v.pipe(
 	v.object({
-		user_id,
-		patient_id,
-		sp_id,
-		created_at,
-		prescription_id,
-		date,
-		jointe_a,
-		nombre_seance,
-		seance_par_semaine,
-		prescripteurNom,
-		prescripteurPrenom,
-		prescripteurInami,
-		file_name: v.nullable(v.string())
+		...validateurs,
 	}),
 	v.transform((input) => {
 		input.prescripteur = {

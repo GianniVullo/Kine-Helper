@@ -11,7 +11,8 @@
 	import NomenclatureDefinerFields from '../tarification-fields/NomenclatureDefinerFields.svelte';
 	import SupplementField from '../tarification-fields/SupplementField.svelte';
 	import TarifField from '../tarification-fields/TarifField.svelte';
-	import { lieux, lieuxParGroupe } from '../../../../stores/codeDetails';
+	import { groupes, lieux, lieuxParGroupe } from '../../../../stores/codeDetails';
+	import { getTarificationInitialValues } from '../tarification-fields/tarifHelpers';
 
 	let { patient, sp, mode = 'create', tarifs, supplements } = $props();
 
@@ -21,28 +22,18 @@
 			return parsedMetadata[id];
 		}
 	}
-
+console.log('sp', getTarificationInitialValues(sp, tarifs));
 	let formHandler = new Formulaire({
 		validateurs,
 		schema: SPSchema,
 		submiter: '#sp-submit',
-		initialValues: sp ?? {
-			user_id: appState.user.id,
-			patient_id: patient.patient_id,
-			sp_id: crypto.randomUUID(),
-			created_at: dayjs().format('YYYY-MM-DD'),
-			tarif_seance: tarifs.find((t) => isItTheOne(t, 'seance'))?.id,
-			tarif_indemnite: tarifs.find((t) => isItTheOne(t, 'indemnite'))?.id,
-			tarif_rapport_ecrit: tarifs.find((t) => isItTheOne(t, 'rapport_ecrit'))?.id,
-			tarif_consultatif: tarifs.find((t) => isItTheOne(t, 'consultatif'))?.id,
-			tarif_seconde_seance: tarifs.find((t) => isItTheOne(t, 'seconde_seance'))?.id,
-			tarif_intake: tarifs.find((t) => isItTheOne(t, 'intake'))?.id,
-			tarif_seance_custom: tarifs.find((t) => isItTheOne(t, 'seance'))?.valeur,
-			tarif_indemnite_custom: tarifs.find((t) => isItTheOne(t, 'indemnite'))?.valeur,
-			tarif_rapport_ecrit_custom: tarifs.find((t) => isItTheOne(t, 'rapport_ecrit'))?.valeur,
-			tarif_consultatif_custom: tarifs.find((t) => isItTheOne(t, 'consultatif'))?.valeur,
-			tarif_seconde_seance_custom: tarifs.find((t) => isItTheOne(t, 'seconde_seance'))?.valeur,
-			tarif_intake_custom: tarifs.find((t) => isItTheOne(t, 'intake'))?.valeur
+		initialValues: {
+			user_id: sp?.user_id ?? appState.user.id,
+			patient_id: sp?.patient_id ?? patient.patient_id,
+			sp_id: sp?.sp_id ?? crypto.randomUUID(),
+			created_at: sp?.created_at ?? dayjs().format('YYYY-MM-DD'),
+			...getTarificationInitialValues(sp, tarifs),
+			supplements: sp?.metadata?.supplements ?? []
 		},
 		onValid,
 		mode
@@ -56,6 +47,14 @@
 			(typeof formHandler.form.patho_lourde_type === 'number' || formHandler.form.duree)
 	);
 
+	const groupeOptions = groupes()
+		.map((val, index) => ({
+			label: val,
+			value: index,
+			id: `groupe${index}`
+		}))
+		.filter((_, index) => (sp?.groupe_id ? sp.groupe_id === index : true));
+
 	onMount(() => {
 		formHandler.setup();
 	});
@@ -63,6 +62,7 @@
 	let lieuOptions = $state([]);
 
 	$effect(() => {
+		console.log('running effect for groupe_id');
 		formHandler.form.groupe_id;
 		if (typeof formHandler.form.groupe_id === 'number') {
 			const lpG = lieuxParGroupe[formHandler.form.groupe_id];
@@ -98,6 +98,7 @@
 		description="Ces champs permettent à Kiné Helper d'assigner les bons codes de nomenclatures à vos séances.">
 		<NomenclatureDefinerFields
 			{lieuOptions}
+			{groupeOptions}
 			bind:form={formHandler.form}
 			errors={formHandler.errors} />
 	</FormSection>
@@ -118,7 +119,7 @@
 		<!--* Qu'il soit conventionne ou non l'utilisateur peut compter des suppléments -->
 		<SupplementField
 			bind:value={formHandler.form.supplements}
-			errors={formHandler.errors}
+			errors={formHandler.errors['supplements']}
 			{supplements} />
 	</FormSection>
 	<SubmitButton id="sp-submit" className="col-span-full" />

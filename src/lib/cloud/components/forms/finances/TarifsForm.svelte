@@ -88,7 +88,7 @@
 				nom: 'tarif_no_show',
 				valeur: null,
 				created_at: now,
-				metadata: JSON.stringify({ tarif_no_show: true })
+				metadata: JSON.stringify({ no_show: true })
 			}
 		},
 		onValid

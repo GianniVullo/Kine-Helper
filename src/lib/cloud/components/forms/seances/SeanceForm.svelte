@@ -13,7 +13,7 @@
 	} from './SeanceSchema.svelte';
 	import Form from '../abstract-components/Form.svelte';
 	import FormSection from '../abstract-components/FormSection.svelte';
-	import { onMount, untrack } from 'svelte';
+	import { onMount } from 'svelte';
 	import SubmitButton from '../../../../forms/ui/SubmitButton.svelte';
 	import { appState } from '../../../../managers/AppState.svelte';
 	import Field from '../abstract-components/Field.svelte';

@@ -45,6 +45,21 @@ export class DatabaseManager {
 		return { stmt, error };
 	}
 
+	async updateMultiples(table, ids, formData, idLabel = 'id') {
+		let updateStmt = Object.keys(formData).reduce((acc, key, idx) => {
+			return `${acc}${idx > 0 ? ', ' : ''}${key} = $${idx + 1}`;
+		}, '');
+		let whereStmt = `${idLabel} IN (${ids.map((_, idx) => `$${idx + Object.keys(formData).length + 1}`).join(', ')})`;
+		let statement = `UPDATE ${table} SET ${updateStmt} WHERE ${whereStmt}`;
+		const bindValues = [
+			...Object.values(formData),
+			...ids
+		];
+		const { data: stmt, error } = await this.execute(statement, bindValues);
+		console.log('updated successfully now closing db', stmt);
+		return { stmt, error };
+	}
+
 	async delete(table, filters) {
 		let whereClauses = [];
 		let filterValues = [];
