@@ -20,13 +20,13 @@ export async function load() {
 	if (dbError || dbError2) {
 		error(500, { message: dbError + dbError2 });
 	}
-	let tarif_seance = tarifs.find((t) => JSON.parse(t.metadata)?.seance);
-	let tarif_indemnite = tarifs.find((t) => JSON.parse(t.metadata)?.indemnite);
-	let tarif_rapport_ecrit = tarifs.find((t) => JSON.parse(t.metadata)?.rapport_ecrit);
-	let tarif_consultatif = tarifs.find((t) => JSON.parse(t.metadata)?.consultatif);
-	let tarif_seconde_seance = tarifs.find((t) => JSON.parse(t.metadata)?.seconde_seance);
-	let tarif_intake = tarifs.find((t) => JSON.parse(t.metadata)?.intake);
-	let tarif_no_show = tarifs.find((t) => JSON.parse(t.metadata)?.no_show);
+	let tarif_seance = tarifs.find((t) => JSON.parse(t.metadata)?.t_s);
+	let tarif_indemnite = tarifs.find((t) => JSON.parse(t.metadata)?.t_id);
+	let tarif_rapport_ecrit = tarifs.find((t) => JSON.parse(t.metadata)?.t_re);
+	let tarif_consultatif = tarifs.find((t) => JSON.parse(t.metadata)?.t_c);
+	let tarif_seconde_seance = tarifs.find((t) => JSON.parse(t.metadata)?.t_sec);
+	let tarif_intake = tarifs.find((t) => JSON.parse(t.metadata)?.t_in);
+	let tarif_no_show = tarifs.find((t) => JSON.parse(t.metadata)?.t_ns);
 	let tarifs_custom = tarifs.filter((t) => JSON.parse(t.metadata)?.custom);
 	let data = {
 		tarif_seance,

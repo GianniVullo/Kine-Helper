@@ -40,7 +40,7 @@
 				nom: 'tarif_seance',
 				valeur: null,
 				created_at: now,
-				metadata: JSON.stringify({ seance: true })
+				metadata: JSON.stringify({ t_s: true })
 			},
 			tarif_indemnite: tarif_indemnite ?? {
 				id: null,
@@ -48,7 +48,7 @@
 				nom: 'tarif_indemnite',
 				valeur: null,
 				created_at: now,
-				metadata: JSON.stringify({ indemnite: true })
+				metadata: JSON.stringify({ t_id: true })
 			},
 			tarif_rapport_ecrit: tarif_rapport_ecrit ?? {
 				id: null,
@@ -56,7 +56,7 @@
 				nom: 'tarif_rapport_ecrit',
 				valeur: null,
 				created_at: now,
-				metadata: JSON.stringify({ rapport_ecrit: true })
+				metadata: JSON.stringify({ t_re: true })
 			},
 			tarif_consultatif: tarif_consultatif ?? {
 				id: null,
@@ -64,7 +64,7 @@
 				nom: 'tarif_consultatif',
 				valeur: null,
 				created_at: now,
-				metadata: JSON.stringify({ consultatif: true })
+				metadata: JSON.stringify({ t_c: true })
 			},
 			tarif_seconde_seance: tarif_seconde_seance ?? {
 				id: null,
@@ -72,7 +72,7 @@
 				nom: 'tarif_seconde_seance',
 				valeur: null,
 				created_at: now,
-				metadata: JSON.stringify({ seconde_seance: true })
+				metadata: JSON.stringify({ t_sec: true })
 			},
 			tarif_intake: tarif_intake ?? {
 				id: null,
@@ -80,7 +80,7 @@
 				nom: 'tarif_intake',
 				valeur: null,
 				created_at: now,
-				metadata: JSON.stringify({ intake: true })
+				metadata: JSON.stringify({ t_in: true })
 			},
 			tarif_no_show: tarif_no_show ?? {
 				id: null,
@@ -88,7 +88,7 @@
 				nom: 'tarif_no_show',
 				valeur: null,
 				created_at: now,
-				metadata: JSON.stringify({ no_show: true })
+				metadata: JSON.stringify({ t_ns: true })
 			}
 		},
 		onValid

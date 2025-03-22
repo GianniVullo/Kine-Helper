@@ -287,5 +287,3 @@ FROM
     documents
 WHERE
     docType IN (0, 1);
-
-DROP TABLE IF EXISTS documents;

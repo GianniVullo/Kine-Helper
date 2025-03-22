@@ -20,21 +20,9 @@ export async function editSituationPathologique(data) {
 }
 
 export async function deleteSituationPathologique(data) {
-	const opsHandler = setupSPOpsHandler();
-	await opsHandler.execute(async () => {
-		let db = new DBAdapter();
-		await db.delete('situations_pathologiques', [
+		await appState.db.delete('situations_pathologiques', [
 			['sp_id', data.sp_id],
-			['user_id', get(user).user.id]
 		]);
-		patients.update((p) => {
-			let patient = p.find((p) => p.patient_id === data.patient_id);
-			patient.situations_pathologiques = patient.situations_pathologiques.filter(
-				(sp) => sp.sp_id !== data.sp_id
-			);
-			return p;
-		});
-	});
 }
 
 export async function retrieveLastSPWithRelatedObjectsPlusOlderSPWithoutRelatedObjects(data) {
@@ -49,6 +37,7 @@ export async function retrieveSituationPathologique(data) {
 	if (error) {
 		return { data: null, error };
 	}
+	console.log('completedSp', completedSp);
 	completedSp = new SituationPathologique(completedSp);
 	completedSp.upToDate = true;
 	return { data: completedSp, error };

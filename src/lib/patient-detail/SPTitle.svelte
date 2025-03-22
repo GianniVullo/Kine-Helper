@@ -21,6 +21,7 @@
 		calendarIcon
 	} from '../ui/svgs/IconSnippets.svelte';
 	import dayjs from 'dayjs';
+	import { goto } from '$app/navigation';
 
 	const modalStore = getModalStore();
 	const modal = {

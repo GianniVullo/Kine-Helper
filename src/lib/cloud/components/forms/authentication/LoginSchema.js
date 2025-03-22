@@ -37,6 +37,9 @@ export async function onValid(data) {
 	// Connecter l'utilisateur
 	let { user, session, error } = await signUserIn(data);
 
+	console.log('user : ', user);
+	console.log('session : ', session);
+	console.log('error : ', error);
 	if (error) {
 		errorLog(`Erreur dans LoginForm onValid : ${error}`);
 		switch (error.message) {
@@ -80,21 +83,21 @@ export async function onValid(data) {
 	await appState.init({ user, session, profil });
 	// Initialiser l'objet "AppState"
 
-	// REDIRECTION :
-	// Si l'utilisateur n'a pas de stronghold key
-	if (!appState.user.has_stronghold_key) {
-		info('User has no stronghold key');
-		goto('/post-signup-forms/encryption-key-setup');
-		return;
-	}
+	// TODO REDIRECTION FOR Stronghold key:
+	//! Si l'utilisateur n'a pas de stronghold key
+	// if (!appState.user.has_stronghold_key && !appState.user.offre === 'free') {
+	// 	info('User has no stronghold key');
+	// 	goto('/post-signup-forms/encryption-key-setup');
+	// 	return;
+	// }
 
 	// REDIRECTION :
 	// Si l'utilisateur a une stronghold key mais n'a pas de stronghold (ça voudrait dire que il essaye d'enregistrer un autre appareil)
-	if (!appState.user.hold_exists) {
-		info('User has stronghold key but no stronghold');
-		goto('/post-signup-forms/encryption-key-setup?cloud=true');
-		return;
-	}
+	// if (!appState.user.hold_exists && !appState.user.offre === 'free') {
+	// 	info('User has stronghold key but no stronghold');
+	// 	goto('/post-signup-forms/encryption-key-setup?cloud=true');
+	// 	return;
+	// }
 
 	// REDIRECTION :
 	// Si le profil de l'utilisateur est incomplet

@@ -191,16 +191,16 @@ export async function onValid(data) {
 	} else {
 		trace('Engaging Attestation modification');
 		// <!--* UPDATE PROCEDURE -->
-
+		// TODO
 		await invalidate('patient:layout');
 		info('Attestation modified done Successfully');
 	}
 
 	goto(
 		'/dashboard/patients/' +
-			data.patient_id +
+			data.attestation.patient_id +
 			'/situation-pathologique/' +
-			data.sp_id +
+			data.attestation.sp_id +
 			'/attestations'
 	);
 }

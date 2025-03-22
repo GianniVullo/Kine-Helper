@@ -150,7 +150,7 @@ export const SeanceSchema = v.pipeAsync(
 			delete input.metadata.tarif_seance;
 		}
 		if (input.supplements_ponctuels.length > 0) {
-			input.metadata.supplements_ponctuels = input.supplements_ponctuels.map((sup) => {
+			input.metadata.ss_p = input.supplements_ponctuels.map((sup) => {
 				return { nom: sup.nom, valeur: sup.valeur };
 			});
 		}
@@ -282,7 +282,7 @@ export const checkboxesFields = [
 		inputType: 'checkbox',
 		checkboxLabel: 'Indemnité de déplacement',
 		checkboxDescription:
-			"Cochez cette case si la séance était à domicile. Attention, si vous traitez deux patients au même domicile vous ne pouvez compter l'indemnité qu'une seule fois",
+			"Cochez cette case si la séance était à domicile. Attention, si vous traitez deux patients au même domicile vous ne pouvez compter l'indemnité que pour un seul des deux patients.",
 		outerCSS: 'sm:col-span-4',
 		innerCSS: ''
 	},
