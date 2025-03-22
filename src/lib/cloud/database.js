@@ -51,10 +51,7 @@ export class DatabaseManager {
 		}, '');
 		let whereStmt = `${idLabel} IN (${ids.map((_, idx) => `$${idx + Object.keys(formData).length + 1}`).join(', ')})`;
 		let statement = `UPDATE ${table} SET ${updateStmt} WHERE ${whereStmt}`;
-		const bindValues = [
-			...Object.values(formData),
-			...ids
-		];
+		const bindValues = [...Object.values(formData), ...ids];
 		const { data: stmt, error } = await this.execute(statement, bindValues);
 		console.log('updated successfully now closing db', stmt);
 		return { stmt, error };
@@ -99,6 +96,14 @@ export class DatabaseManager {
 		if (seancesError) {
 			return { data: null, error: seancesError };
 		}
+		seances.map((seance) => {
+			seance.metadata = JSON.parse(seance.metadata);
+			typeof seance.indemnite === 'string' && (seance.indemnite = JSON.parse(seance.indemnite));
+			typeof seance.rapport_ecrit === 'string' &&
+				(seance.rapport_ecrit = JSON.parse(seance.rapport_ecrit));
+			typeof seance.ticket_moderateur === 'string' &&
+				(seance.ticket_moderateur = JSON.parse(seance.ticket_moderateur));
+		});
 		trace('Fetching Prescriptions');
 		let { data: prescriptions, error: prescriptionsError } = await this.select(
 			`SELECT * FROM prescriptions WHERE sp_id = $1 ORDER BY created_at ASC`,
@@ -116,6 +121,12 @@ export class DatabaseManager {
 		if (attestationsError) {
 			return { data: null, error: attestationsError };
 		}
+		attestations.map((attestation) => {
+			typeof attestation.mutuelle_paid == 'string' &&
+				(attestation.mutuelle_paid = JSON.parse(attestation.mutuelle_paid));
+			typeof attestation.patient_paid == 'string' &&
+				(attestation.patient_paid = JSON.parse(attestation.patient_paid));
+		});
 
 		// trace("Fetching ")
 		// let generateurs = await this.db.select(
@@ -133,7 +144,7 @@ export class DatabaseManager {
 		}
 
 		trace('Fetching Factures');
-		let { data: facture, error: documentsError } = await this.select(
+		let { data: factures, error: documentsError } = await this.select(
 			`SELECT * FROM factures WHERE sp_id = $1 ORDER BY date ASC`,
 			[sp_id]
 		);
@@ -150,7 +161,7 @@ export class DatabaseManager {
 				attestations,
 				// generateurs_de_seances: generateurs, deprecated
 				accords,
-				facture
+				factures
 			},
 			error: null
 		};
