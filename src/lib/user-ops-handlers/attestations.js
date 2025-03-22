@@ -5,7 +5,6 @@ import { patients } from '../stores/PatientStore';
 import { user } from '../stores/UserStore';
 import { appState } from '../managers/AppState.svelte';
 import { printAttestation } from '../utils/rawPrinting';
-import { FacturePatient } from '../pdfs/facturePatient';
 import { getFactureMutuellePDFHandler, getFacturePatientPDFHandler } from './documents';
 
 function setupAttestationOpsHandler() {
@@ -20,6 +19,7 @@ export async function createAttestation(data) {
 	 ** 	- Mettre à jour la prescription.jointe_a si attestation.porte_prescr
 	 ** 	- Mettre à jour les séances (has_been_attested)
 	 ** 	- Créer une facture si nécessaire
+	 ** 	- Créer le lien entre facture et attestation(s)
 	 ** 	- Imprimer l'attestation et/ou la facture
 	 */
 
@@ -91,6 +91,16 @@ export async function createAttestation(data) {
 		if (facturePatientError) {
 			return { error: facturePatientError };
 		}
+		let { data: factureAttestation, error: factureAttestationError } = await appState.db.insert(
+			'factures_attestations',
+			{
+				facture_id: facturePatient.id,
+				attestation_id: data.attestation.attestation_id
+			}
+		);
+		if (factureAttestationError) {
+			return { error: factureAttestationError };
+		}
 		console.log('facturePatient', facturePatient);
 	}
 	if (data.generateFactureMutuelle) {
@@ -100,6 +110,16 @@ export async function createAttestation(data) {
 		);
 		if (factureMutuelleError) {
 			return { error: factureMutuelleError };
+		}
+		let { data: factureAttestation, error: factureAttestationError } = await appState.db.insert(
+			'factures_attestations',
+			{
+				facture_id: factureMutuelle.id,
+				attestation_id: data.attestation.attestation_id
+			}
+		);
+		if (factureAttestationError) {
+			return { error: factureAttestationError };
 		}
 		console.log('factureMutuelle', factureMutuelle);
 	}
@@ -167,14 +187,16 @@ export async function updateAttestation(data) {
 export async function deleteAttestation(data) {}
 
 export async function markAsPaid(data, factureType) {
-	const { data: attestation, error: attestationError } = await appState.db.execute(
-		`
+	console.log('markAsPaid', data, factureType);
+	const query = `
 		UPDATE attestations
 		SET ${factureType}_paid = $1
 		WHERE attestation_id = $2
-	`,
-		[!data[`${factureType}_paid`], data.attestation_id]
-	);
+	`;
+	console.log(query);
+	const queryArgs = [!data[`${factureType}_paid`], data.attestation_id];
+	console.log(queryArgs);
+	const { data: attestation, error: attestationError } = await appState.db.execute(query, queryArgs);
 	if (attestationError) {
 		return { error: attestationError };
 	}

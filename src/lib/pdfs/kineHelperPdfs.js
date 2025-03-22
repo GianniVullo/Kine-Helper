@@ -47,9 +47,9 @@ export class PDFGeneration {
 	buildPdf() {}
 
 	buildDirPath() {
-		return `${appState.user.id}/${this.patient.nom}-${this.patient.prenom}(${
+		return `${appState.user.id}/patient${
 			this.patient.patient_id
-		})/situation-pathologique-${this.sp.created_at}(${this.sp.sp_id})${
+		}/situation-pathologique-${this.sp.created_at}(${this.sp.sp_id})${
 			this.dirPath.length > 0 ? '/' + this.dirPath : ''
 		}`;
 	}
@@ -89,17 +89,17 @@ export class PDFGeneration {
 
 	async delete() {
 		console.log('arrived in delete');
-		let db = new DBAdapter();
-		await db.delete('documents', [
-			['document_id', this.data.document_id],
-			[('user_id', appState.user.id)]
-		]);
 		let dirpath = await this.buildPath();
 		let path = dirpath + (this.platform === 'windows' ? '\\' : '/') + this.documentName + '.pdf';
-		if (await file_exists(path)) {
-			console.log('the file exists');
-			await remove_file(path, { recursive: false });
-			console.log('the file is removed');
+		try {
+			if (await file_exists(path)) {
+				console.log('the file exists');
+				await remove_file(path, { recursive: false });
+				console.log('the file is removed');
+			}
+			return { error: null };
+		} catch (error) {
+			return { error };
 		}
 	}
 

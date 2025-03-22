@@ -63,28 +63,34 @@
 	};
 
 	const updatePaidStatuses = async (attestation, key) => {
+		await markAsPaid($state.snapshot(attestation), key);
 		attestation[`${key}_paid`] = !attestation[`${key}_paid`];
-		await markAsPaid(attestation, key);
 	};
 
 	let menuItemsList = $state([
-		/* TODO */
-		{
-			onclick: (attestation) => async () => {
-				await updatePaidStatuses(attestation, 'mutuelle');
-			},
-			icon: ({ mutuelle_paid }) => (mutuelle_paid ? buildingIconWithCheck : buildingIconWithCross),
-			inner: ({ mutuelle_paid }) =>
-				mutuelle_paid ? 'Impayé par la mutuelle' : 'Payé par la mutuelle'
-		},
-		/* TODO */
-		{
-			onclick: (attestation) => async () => {
-				await updatePaidStatuses(attestation, 'patient');
-			},
-			icon: ({ patient_paid }) => (patient_paid ? userIconWithCheck : userIconWithCross),
-			inner: ({ patient_paid }) => (patient_paid ? 'Impayé par le patient' : 'Payé par le patient')
-		},
+		...(patient.tiers_payant
+			? [
+					{
+						onclick: (attestation) => async () => {
+							await updatePaidStatuses(attestation, 'mutuelle');
+						},
+						icon: ({ mutuelle_paid }) =>
+							mutuelle_paid ? buildingIconWithCheck : buildingIconWithCross,
+						inner: ({ mutuelle_paid }) => (mutuelle_paid ? 'Impayé' : 'Payé')
+					}
+				]
+			: []),
+		...(patient.ticket_moderateur
+			? [
+					{
+						onclick: (attestation) => async () => {
+							await updatePaidStatuses(attestation, 'patient');
+						},
+						icon: ({ patient_paid }) => (patient_paid ? userIconWithCheck : userIconWithCross),
+						inner: ({ patient_paid }) => (patient_paid ? 'Impayé' : 'Payé')
+					}
+				]
+			: []),
 		{
 			onclick: (attestation) => async () => await printHandler(attestation),
 			icon: (_) => printerIcon,
@@ -161,7 +167,7 @@
 						{#if patient.ticket_moderateur}
 							<div class="mt-1 text-gray-500">
 								{@render iconBadge(
-									`patient ${attestation.patient_paid ? 'a' : "n'a pas"} payé!`,
+									`${attestation.patient_paid ? '' : 'im'}payé!`,
 									userIcon,
 									attestation.patient_paid ? 'green' : 'red'
 								)}

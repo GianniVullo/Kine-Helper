@@ -7,16 +7,21 @@
 	import { page } from '$app/state';
 	import BoutonPrincipalAvecIcone from '../../../../../../../lib/components/BoutonPrincipalAvecIcone.svelte';
 	import { goto } from '$app/navigation';
+	import { setContext } from 'svelte';
 
 	let { data, children } = $props();
 	const modalStore = getModalStore();
 
 	let { patient, sp } = data;
 
+	let factures = $state(sp.factures);
+	console.log('factures In layuot', factures);
+	setContext('factures', factures);
+
 	const documentSelectionModal = {
 		type: 'component',
 		component: 'factureCreation',
-		meta: { sp: sp }
+		meta: { sp, patient, factures }
 	};
 
 	const homeUrl = () =>
@@ -43,7 +48,25 @@
 	{#snippet actions()}
 		<BoutonSecondaireAvecIcone
 			size="sm"
-			onclick={() => modalStore.trigger(documentSelectionModal)}
+			onclick={() => {
+				if (sp.attestations.length > 0) {
+					modalStore.trigger(documentSelectionModal);
+				} else {
+					modalStore.trigger({
+						title: 'Pas d\'attestations',
+						body: 'Veuillez créer une attestation avant de continuer.',
+						buttonTextConfirm: 'Ok',
+						response: (r) => {
+							if (r) {
+								goto(
+									`/dashboard/patients/${patient.patient_id}/situation-pathologique/${sp.sp_id}/attestations/create`
+								);
+							}
+						},
+						type: 'alert'
+					});
+				}
+			}}
 			inner={$t('attestation.detail', 'bill')}
 			icon={addIcon} />
 		<BoutonPrincipalAvecIcone
@@ -64,6 +87,21 @@
 						},
 						...modal
 					});
+				} else if (sp.prescriptions.length === 0) {
+					modalStore.trigger({
+						title: 'Pas de prescription',
+						body: 'Veuillez ajouter une prescription avant de continuer.',
+						buttonTextConfirm: 'Ajouter une prescription',
+						response: (r) => {
+							if (r) {
+								goto(
+									`/dashboard/patients/${patient.patient_id}/situation-pathologique/${sp.sp_id}/prescriptions/create`
+								);
+							}
+						},
+						...modal
+					});
+					
 				} else if (sp.seances.filter((seance) => !seance.has_been_attested).length === 0) {
 					modalStore.trigger({
 						buttonTextConfirm: 'Créer une nouvelle séance',

@@ -4,12 +4,15 @@
 	import { FormWrapper, SelectFieldV2, SubmitButton, RadioFieldV2 } from '../forms/index';
 	import dayjs from 'dayjs';
 	import { fetchCodeDesSeances } from '../utils/nomenclatureManager';
-	import { FacturePatient } from '../pdfs/facturePatient';
-	import { FactureMutuelle } from '../pdfs/factureMutuelle';
+	import { createFacture, getFacturePDF } from '../user-ops-handlers/documents';
 	import { patients } from '../stores/PatientStore';
 	import DateField from '../forms/abstract-fields/DateField.svelte';
 	import { t } from '../i18n';
 	import { get } from 'svelte/store';
+	import { user } from './svgs/IconSnippets.svelte';
+	import { page } from '$app/state';
+	import { getContext } from 'svelte';
+	import { invalidate } from '$app/navigation';
 
 	export let parent;
 
@@ -18,16 +21,17 @@
 		isValid,
 		validators: {}
 	};
-	const sp = $modalStore[0].meta?.sp;
-	const patient = $patients.find((p) => p.patient_id === sp.patient_id);
+	const { sp, patient, factures } = $modalStore[0].meta;
 
+	// let factures = getContext('factures');
+	console.log('factures in factureCreationModal', factures);
 	const options = [
 		{
-			value: 0,
+			value: 'patient',
 			label: `${get(t)('otherModal', 'facture')} ${get(t)('otherModal', 'facture.patient')}`
 		},
 		{
-			value: 1,
+			value: 'mutuelle',
 			label: `${get(t)('otherModal', 'facture')} ${get(t)('otherModal', 'facture.mutuelle')}`
 		}
 	];
@@ -44,124 +48,40 @@
 	});
 
 	async function isValid({ formData, submitter }) {
-		console.log(attestationsIds);
 		let valeurTotale = 0.0;
 		let totalValeurRecue = 0.0;
 		let totalRemboursement = 0.0;
-		attestations.forEach((attestation) => {
+		for (const attestation of sp.attestations) {
 			if (attestationsIds.includes(attestation.attestation_id)) {
-				valeurTotale += attestation.valeur_totale;
-				totalValeurRecue += attestation.total_recu;
-				totalRemboursement += attestation.valeur_totale - attestation.total_recu;
+				console.log('attestation', attestation);
+				const v_t = parseFloat(attestation.valeur_totale.replace(',', '.'));
+				const t_r = parseFloat(attestation.total_recu.replace(',', '.'));
+				valeurTotale += v_t;
+				totalValeurRecue += t_r;
+				totalRemboursement += v_t - t_r;
+				console.log('valeurTotale', valeurTotale);
+				console.log('totalValeurRecue', totalValeurRecue);
+				console.log('totalRemboursement', totalRemboursement);
 			}
-		});
-		let codes = await fetchCodeDesSeances(
-			null,
-			$modalStore[0].meta?.sp.seances,
-			$modalStore[0].meta?.sp
-		);
-		if (factureType === 1) {
-			// imprimer une facture mutuelle
-			let codeNumber = sp.seances.filter((seance) =>
-				attestationsIds.includes(seance.attestation_id)
-			).length;
-			let form_data = {
-				attestationsIds,
-				tableRows: [
-					{
-						Nom: `${patient.nom}\n${patient.prenom}`,
-						NISS: patient.niss,
-						Codes: codeRefChain(codes),
-						'Nbr. de prestations effectuées': `${codeNumber}`,
-						total: sp.attestations
-							.reduce((acc, a) => {
-								if (attestationsIds.includes(a.attestation_id)) {
-									acc += a.valeur_totale - a.total_recu;
-								}
-								return acc;
-							}, 0.0)
-							.toFixed(2)
-					}
-				]
-			};
-			if (dateFactu) {
-				form_data.date = dateFactu;
-			}
-			console.log('form_data', form_data);
-			let fMut = new FactureMutuelle(form_data, patient, sp);
-			await fMut.save();
 		}
-		if (factureType === 0) {
-			let form_data = {
-				total: $modalStore[0].meta?.sp.attestations
-					.filter((att) => attestationsIds.includes(att.attestation_id))
-					.reduce((acc, att) => acc + att.total_recu, 0.0)
-					.toFixed(2),
-				attestationsIds,
-				with_details: true
-			};
-			if (dateFactu) {
-				form_data.date = dateFactu;
-			}
-			console.log(form_data);
-			let fPat = new FacturePatient(form_data, patient, sp);
-			fPat.codes = codes;
-			await fPat.save();
-			// imprimer une facture patient
-		}
+		let facture = {
+			id: crypto.randomUUID(),
+			user_id: sp.user_id,
+			patient_id: patient.patient_id,
+			sp_id: sp.sp_id,
+			date: dateFactu,
+			type: factureType,
+			total:
+				factureType === 'patient'
+					? totalValeurRecue.toFixed(2).replace('.', ',')
+					: totalRemboursement.toFixed(2).replace('.', ',')
+		};
+		console.log('Sending facture and AttestationIds to createFacture', facture, attestationsIds);
+		await createFacture(facture, attestationsIds);
+		factures.push(facture);
+		invalidate('patient:layout');
 		modalStore.close();
 	}
-	function codeRefChain(codes) {
-		let ref = '';
-		let { withRapport, withIndemnity, withIntake } = codesCollector(
-			$modalStore[0].meta?.sp.attestations.filter((att) =>
-				attestationsIds.includes(att.attestation_id)
-			)
-		);
-		for (const [key, value] of codes.entries()) {
-			switch (key) {
-				case 'rapports':
-					if (withRapport) {
-						ref += value[0].code_reference + ' - ' + value[0].honoraire.toFixed(2) + '€ \n';
-					}
-					break;
-				case 'indemnites':
-					if (withIndemnity) {
-						console.log('iindeminty', value[0]);
-						ref += value[0].code_reference + ' - ' + value[0].honoraire.toFixed(2) + '€ \n';
-					}
-					break;
-				case 'intake':
-					if (withIntake) {
-						ref += value[0].code_reference + ' - ' + value[0].honoraire.toFixed(2) + '€ \n';
-					}
-					break;
-				default:
-					ref += value.code_reference + ' - ' + value.honoraire.toFixed(2) + '€\n';
-					break;
-			}
-		}
-		console.log('ref', ref);
-		return ref;
-	}
-	function codesCollector(attestations) {
-		let withRapport = false;
-		let withIndemnity = false;
-		let withIntake = false;
-		for (const attestation of attestations) {
-			if (attestation.with_rapport) {
-				withRapport = true;
-			}
-			if (attestation.with_intake) {
-				withIntake = true;
-			}
-			if (attestation.with_indemnity) {
-				withIndemnity = true;
-			}
-		}
-		return { withRapport, withIndemnity, withIntake };
-	}
-
 	// Base Classes
 	const cBase = 'card p-4 w-modal shadow-xl space-y-4';
 	const cHeader = 'text-2xl font-bold';

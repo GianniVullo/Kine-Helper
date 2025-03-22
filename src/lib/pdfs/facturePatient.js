@@ -13,7 +13,6 @@ import { appState } from '../managers/AppState.svelte';
  * @property {object?} codes
  * @property {Array<string>?} attestationIds
  */
-
 export class FacturePatient extends PDFGeneration {
 	/**
 	 * @param {string} documentName - Le nom du document.
@@ -21,6 +20,7 @@ export class FacturePatient extends PDFGeneration {
 	 */
 	constructor(formData, patient, sp, codes, attestations) {
 		super(formData.id, formData, patient, sp, 8, 'factures', formData);
+		this.sp = sp;
 		this.attestations = attestations;
 		this.codes = codes;
 	}
@@ -46,7 +46,7 @@ export class FacturePatient extends PDFGeneration {
 		}
 		this.yPosition.update(5);
 		this.addParagraph(get(t)('pdfs', 'greetings'));
-		if (this.formData.with_details && this.codes && this.attestations) {
+		if (this.codes && this.attestations) {
 			this.yPosition.update(10);
 			this.addParagraph('', { fontWeight: 'bold' });
 			this.yPosition.update(1);
@@ -87,18 +87,18 @@ export class FacturePatient extends PDFGeneration {
 			'next'
 		)}) :`;
 		for (const attestation of this.attestations) {
-			let seances =
-				attestation.seances ??
-				this.sp.seances.filter((s) => s.attestation_id === attestation.attestation_id);
+			console.log('Dans buildDetail, attestation, this.sp', attestation, this.sp);
+			let seances = this.sp.seances.filter((s) => s.attestation_id === attestation.attestation_id);
 			for (const protoSeance of seances) {
 				let seance = protoSeance.obj ?? protoSeance;
 				let seance_ref = '';
 				let seance_date = dayjs(seance.date).format('DD-MM-YYYY');
 				seance_ref += this.codes.get(seance.code_id).code_reference;
-				if (attestation.with_rapport) {
+				console.log('seance in buildDetail', seance);
+				if (seance.rapport_ecrit) {
 					seance_ref += ' (R)';
 				}
-				if (attestation.with_indemnity) {
+				if (seance.indemnite) {
 					seance_ref += ' (I)';
 				}
 				lignes.push({ Code: seance_ref, Date: seance_date });
