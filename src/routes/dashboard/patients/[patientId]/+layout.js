@@ -2,7 +2,7 @@ import { retrievePatient } from '../../../../lib/user-ops-handlers/patients';
 import { appState } from '../../../../lib/managers/AppState.svelte.js';
 import { trace } from '@tauri-apps/plugin-log';
 import { retrieveSituationPathologique } from '../../../../lib/user-ops-handlers/situations_pathologiques.js';
-import { error } from '@sveltejs/kit';
+import { error as errorKit } from '@sveltejs/kit';
 
 export async function load({ params, depends }) {
 	depends('patient:layout');
@@ -10,7 +10,7 @@ export async function load({ params, depends }) {
 	await appState.init({});
 	let { data: patient, error } = await retrievePatient({ patient_id: params.patientId });
 	if (error) {
-		error(500, { message: error.message });
+		errorKit(500, { message: error.message });
 	}
 	if (!patient) {
 		patient = 'none';
@@ -20,7 +20,7 @@ export async function load({ params, depends }) {
 	if (params.spId) {
 		const { data, error } = await retrieveSituationPathologique({ sp_id: params.spId });
 		if (error) {
-			error(500, { message: error.message });
+			errorKit(500, { message: error.message });
 		}
 		sp = data;
 		if (!sp) {

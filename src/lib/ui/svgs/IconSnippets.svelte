@@ -21,7 +21,9 @@
 		clock,
 		warningIcon,
 		listIcon,
-		successIcon
+		successIcon,
+		arrowRightIcon,
+		arrowBottomIcon
 	};
 </script>
 
@@ -341,5 +343,29 @@
 			stroke-linecap="round"
 			stroke-linejoin="round"
 			d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+	</svg>
+{/snippet}
+
+{#snippet arrowRightIcon(cls)}
+	<svg
+		xmlns="http://www.w3.org/2000/svg"
+		fill="none"
+		viewBox="0 0 24 24"
+		stroke-width="1.5"
+		stroke="currentColor"
+		class={cls}>
+		<path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
+	</svg>
+{/snippet}
+
+{#snippet arrowBottomIcon(cls)}
+	<svg
+		xmlns="http://www.w3.org/2000/svg"
+		fill="none"
+		viewBox="0 0 24 24"
+		stroke-width="1.5"
+		stroke="currentColor"
+		class={cls}>
+		<path stroke-linecap="round" stroke-linejoin="round" d="M19.5 13.5 12 21m0 0-7.5-7.5M12 21V3" />
 	</svg>
 {/snippet}

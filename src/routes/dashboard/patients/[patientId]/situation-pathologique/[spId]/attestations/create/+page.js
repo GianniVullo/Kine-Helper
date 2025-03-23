@@ -1,5 +1,6 @@
 import { appState } from '../../../../../../../../lib/managers/AppState.svelte.js';
 import { groupSeanceInAttestations } from '../../../../../../../../lib/cloud/components/forms/attestation/AttestationSchema.js';
+import dayjs from 'dayjs';
 /**
  *
  ** En fait, pour l'instant on ne fait pas "tarifer jusqu'ici"
@@ -25,6 +26,7 @@ export async function load({ url, parent }) {
 	}
 	const { sp, patient } = await parent();
 	let prescription_id;
+	let fromYear;
 	const seancesToDealWith = [];
 	for (const seance of sp.seances) {
 		if (seance.has_been_attested || seance.attestation_id) continue;
@@ -37,7 +39,13 @@ export async function load({ url, parent }) {
 		if (!prescription_id) {
 			prescription_id = seance.prescription_id;
 		}
+		if (!fromYear) {
+			fromYear = dayjs(seance.date).year();
+		}
 		if (seance.prescription_id !== prescription_id) {
+			continue;
+		}
+		if (dayjs(seance.date).year() !== fromYear) {
 			continue;
 		}
 		seancesToDealWith.push(seance);

@@ -92,7 +92,7 @@
 						</div>
 						<div class="relative mt-6 flex-1 px-4 sm:px-6">
 							{#if drawer.drawer.component}
-								<drawer.drawer.component />
+								<drawer.drawer.component {...drawer.drawer.props ? drawer.drawer.props : {}} />
 							{/if}
 						</div>
 					</div>

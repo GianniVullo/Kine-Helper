@@ -3,15 +3,10 @@
 	import { getModalStore } from '@skeletonlabs/skeleton';
 	import { FormWrapper, SelectFieldV2, SubmitButton, RadioFieldV2 } from '../forms/index';
 	import dayjs from 'dayjs';
-	import { fetchCodeDesSeances } from '../utils/nomenclatureManager';
-	import { createFacture, getFacturePDF } from '../user-ops-handlers/documents';
-	import { patients } from '../stores/PatientStore';
+	import { createFacture } from '../user-ops-handlers/documents';
 	import DateField from '../forms/abstract-fields/DateField.svelte';
 	import { t } from '../i18n';
 	import { get } from 'svelte/store';
-	import { user } from './svgs/IconSnippets.svelte';
-	import { page } from '$app/state';
-	import { getContext } from 'svelte';
 	import { invalidate } from '$app/navigation';
 
 	export let parent;

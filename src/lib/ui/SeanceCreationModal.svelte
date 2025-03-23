@@ -3,7 +3,7 @@
 	import dayjs from 'dayjs';
 	import { patients } from '../stores/PatientStore';
 	import { t } from '../i18n';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import { ManipulateurDeSeances } from '../utils/manipulateurDeSeances';
 	import { FormWrapper, DateField, TextFieldV2, TimeField } from '../forms';
 	import PrescriptionField from '../forms/situation-pathologique/fields/PrescriptionField.svelte';
@@ -14,9 +14,7 @@
 	const modalStore = getModalStore();
 	export let parent;
 
-	const patient = $patients.find((p) => p.patient_id === $page.params.patientId);
-	const sp = patient.situations_pathologiques.find((sp) => sp.sp_id === $page.params.spId);
-
+	let { patient, sp } = page.data;
 	const event = $modalStore[0]?.meta.event;
 	console.log(event);
 	const formSchema = {

@@ -17,16 +17,20 @@
 	let base_options = {
 		allDaySlot: false,
 		view: 'dayGridMonth',
-		dateClick: (event) => {
-			modalStore.trigger({
-				type: 'component',
-				component: 'seanceCreationModal',
-				meta: {
-					event,
-					component: ec
-				}
-			});
-		},
+		/**
+		 ** Pour l'instant l'API n'est plus bonne et utilise l'ancienne Prestine façon de fonctionner
+		 ** Il y a un bouton "Nouvelle séances" qui sera suffisant pour l'instant
+		 */
+		// dateClick: (event) => {
+		// 	modalStore.trigger({
+		// 		type: 'component',
+		// 		component: 'seanceCreationModal',
+		// 		meta: {
+		// 			event,
+		// 			component: ec
+		// 		}
+		// 	});
+		// },
 		firstDay: 1,
 		slotHeight: 50,
 		buttonText: {
