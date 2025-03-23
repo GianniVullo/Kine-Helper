@@ -4,8 +4,8 @@
 	import AnnexeBForm from '../../../../../../../../lib/forms/documents/AnnexeBForm.svelte';
 	import { patients } from '../../../../../../../../lib/stores/PatientStore';
 
-	const patient = $patients.find((p) => p.patient_id === $page.params.patientId);
-	const sp = patient.situations_pathologiques.find((sp) => sp.sp_id === $page.params.spId);
+	let { data } = $props();
+	const { patient, sp } = data;
 	const docType = parseInt($page.url.searchParams.get('docType'));
 	// let additionalParameters = $page.url.searchParams.get('attestationIds');
 </script>
@@ -14,5 +14,5 @@
 	<AnnexeAForm {patient} {sp} />
 {/if}
 {#if docType === 1}
-	 <AnnexeBForm {patient} {sp} />
+	<AnnexeBForm {patient} {sp} />
 {/if}

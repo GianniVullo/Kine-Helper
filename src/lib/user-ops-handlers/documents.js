@@ -2,6 +2,23 @@ import { appState } from '../managers/AppState.svelte';
 import { FacturePatient } from '../pdfs/facturePatient';
 import { FactureMutuelle } from '../pdfs/factureMutuelle';
 import { indmeniteCategory } from '../stores/codeDetails';
+import { AnnexeA } from '../pdfs/annexeA';
+import { AnnexeB } from '../pdfs/annexeB';
+
+export async function getAccordPDF(accord) {
+	console.log('in getAccordPDF with accord :', accord);
+	const { patient, sp, error } = await getpsp(accord);
+	if (error) {
+		return { error };
+	}
+	if (accord.metadata.doc === 'A') {
+		return { accord: new AnnexeA(accord, patient, sp, accord) };
+	} else if (accord.metadata.doc === 'B') {
+		return { accord: new AnnexeB(accord, patient, sp, accord) };
+	}
+	return { error: 'Invalid document type' };
+}
+
 export async function getFacturePDF(facture) {
 	console.log('in getFacturePDF with facture :', facture);
 	if (facture.type === 'patient') {
@@ -91,6 +108,28 @@ export async function createFacture(data, attestation_ids, produce_pdf = true) {
 	return { data: facture[0] };
 }
 
+export async function createAnnexe(accord) {
+	console.log('in createAnnexe with accord :', accord);
+	// Create l'annexe
+	const { data: annexe, error: annexeError } = await appState.db.insert('accords', accord);
+	if (annexeError) {
+		return { error: annexeError };
+	}
+	console.log('annexe', annexe);
+
+	// Create le pdf
+	const { accord: accordPDF, error: accordPDFError } = await getAccordPDF(accord);
+	if (accordPDFError) {
+		return { error: accordPDFError };
+	}
+	try {
+		await accordPDF.open();
+		return { data: annexe[0] };
+	} catch (errorPDFOpen) {
+		return { error: errorPDFOpen };
+	}
+}
+
 export async function editDocument(data) {}
 
 export async function deleteFacture(data) {
@@ -119,6 +158,29 @@ export async function deleteFacture(data) {
 	if (deleteError) {
 		return { error: deleteError };
 	}
+}
+
+export async function deleteAccord(data) {
+	// Delete le pdf
+	const { accord, errorInstantiatingPDF } = await getAccordPDF(data);
+	if (errorInstantiatingPDF) {
+		return { error: errorInstantiatingPDF };
+	}
+	console.log('accordPDF', accord);
+	const { error } = await accord.delete();
+	if (error) {
+		return { error };
+	}
+
+	// Delete l'obj de la db
+	const { data: accordDeleteStatus, error: factureError } = await appState.db.execute(
+		'Delete FROM accords WHERE id = $1;',
+		[data.id]
+	);
+	if (factureError) {
+		return { error: factureError };
+	}
+	console.log('accordDeleteStatus', accordDeleteStatus);
 }
 
 export async function listDocuments(data) {}

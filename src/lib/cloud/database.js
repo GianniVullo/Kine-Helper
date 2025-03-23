@@ -139,9 +139,14 @@ export class DatabaseManager {
 			`SELECT * FROM accords WHERE sp_id = $1 ORDER BY date ASC`,
 			[sp_id]
 		);
+		console.log('accords', accords);
 		if (accordsError) {
 			return { data: null, error: accordsError };
 		}
+		accords.map((accord) => {
+			accord.situation = parseInt(accord.situation);
+			typeof accord.metadata === 'string' && (accord.metadata = JSON.parse(accord.metadata));
+		});
 
 		trace('Fetching Factures');
 		let { data: factures, error: documentsError } = await this.select(

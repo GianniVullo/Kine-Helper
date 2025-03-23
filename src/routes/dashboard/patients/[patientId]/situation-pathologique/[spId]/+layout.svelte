@@ -28,7 +28,7 @@
 		{
 			href: homeUrl() + `/documents`,
 			nom: $t('sp.detail', 'documents'),
-			actif: page.url.pathname === homeUrl() + `/documents`
+			actif: page.url.pathname.includes(`/documents`)
 		},
 		{
 			href: homeUrl() + `/seances`,

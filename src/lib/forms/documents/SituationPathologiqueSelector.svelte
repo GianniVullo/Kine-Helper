@@ -128,7 +128,7 @@
 	{$t('form.annexeA', 'validation.sp')}
 </h5>
 {#each Object.entries(aOrB === 'A' ? annexeAOptions : annexeBOptions) as item, idx}
-	<div class="flex">
+	<div class="flex flex-col">
 		{#if Array.isArray(item[1])}
 			<div class="mb-4 flex flex-col space-y-4">
 				<h5>{item[0]}</h5>

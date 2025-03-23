@@ -171,7 +171,8 @@ CREATE TABLE IF NOT EXISTS accords (
     date TEXT,
     -- pexpl 3a (annexe A) 51 (Annexe B) J (patho E)
     situation TEXT,
-    validity TEXT,
+    valid_from TEXT,
+    valid_to TEXT,
     reference TEXT,
     buildable INTEGER,
     binary TEXT,
@@ -228,10 +229,7 @@ INSERT INTO
         sp_id,
         date,
         situation,
-        validity,
-        reference,
         buildable,
-        binary,
         metadata
     )
 SELECT
@@ -240,45 +238,8 @@ SELECT
     patient_id,
     sp_id,
     json_extract(form_data, '$.date'),
-    CASE
-        WHEN docType = 0 THEN CASE
-            json_extract(form_data, '$.situation_pathologique')
-            WHEN 0 THEN '1.'
-            WHEN 1 THEN '2.'
-            WHEN 2 THEN '2B.'
-            WHEN 3 THEN '3.'
-            WHEN 4 THEN '3B.'
-            WHEN 5 THEN '4.'
-            WHEN 6 THEN '5.'
-            WHEN 7 THEN '6.'
-            WHEN 8 THEN '7.'
-            WHEN 9 THEN '8.'
-            WHEN 10 THEN '9.'
-            WHEN 11 THEN '10.'
-            WHEN 12 THEN '11.'
-            WHEN 13 THEN '12.'
-            WHEN 14 THEN '13.'
-            WHEN 15 THEN '14.'
-            WHEN 16 THEN '15.'
-            WHEN 17 THEN '16.'
-            WHEN 18 THEN '17.'
-        END
-        WHEN docType = 1 THEN CASE
-            json_extract(form_data, '$.situation_pathologique')
-            WHEN 0 THEN '51.'
-            WHEN 1 THEN '59.'
-            WHEN 2 THEN '54.'
-            WHEN 3 THEN '55.'
-            WHEN 4 THEN '56.'
-            WHEN 5 THEN '57.'
-            WHEN 6 THEN '58.'
-            WHEN 7 THEN '60.'
-        END
-    END,
-    NULL,
-    NULL,
+    json_extract(form_data, '$.situation_pathologique'),
     TRUE,
-    NULL,
     CASE
         WHEN docType = 0 THEN '{"doc": "A"}'
         WHEN docType = 1 THEN '{"doc": "B", "notification": ' || json_extract(form_data, '$.notification') || '}'

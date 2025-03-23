@@ -27,8 +27,9 @@ CREATE TABLE IF NOT EXISTS accords (
     sp_id TEXT,
     created_at TEXT,
     -- pexpl 3a (annexe A) 51 (Annexe B) J (patho E)
-    situation TEXT,
-    validity TEXT,
+    situation INTEGER,
+    valid_from TEXT,
+    valid_to TEXT,
     reference TEXT,
     buildable INTEGER,
     binary TEXT,

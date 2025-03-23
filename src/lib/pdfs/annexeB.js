@@ -1,23 +1,13 @@
 import { PDFGeneration } from './kineHelperPdfs';
 import { get } from 'svelte/store';
-import { user } from '../stores/UserStore';
 import dayjs from 'dayjs';
 import { save_to_disk } from '../utils/fsAccessor';
 import { locale } from '../i18n';
+import { appState } from '../managers/AppState.svelte';
 
 export class AnnexeB extends PDFGeneration {
-	constructor(formData, patient, sp, obj) {
-		super(
-			`Annexe B ${patient.nom} ${patient.prenom} ${
-				obj?.created_at ?? dayjs().format('YYYY-MM-DD')
-			}`,
-			formData,
-			patient,
-			sp,
-			1,
-			'',
-			obj
-		);
+	constructor(formData, patient, sp) {
+		super(`Annexe-B(${formData.id})`, formData, patient, sp, 1, '', formData);
 		const langDict = {
 			NL: [
 				'Bijlage 5b',
@@ -179,7 +169,7 @@ export class AnnexeB extends PDFGeneration {
 	}
 
 	buildPdf() {
-		console.log(`Now building PDF Annexe B with and user ==`, this.formData, get(user));
+		console.log(`Now building PDF Annexe B with formData ==`, this.formData);
 		this.addCenteredText(this.langDict[0], this.yPosition);
 		this.yPosition.update(5);
 		this.addParagraph(this.langDict[1], { fontWeight: 'bold' });
@@ -211,8 +201,8 @@ export class AnnexeB extends PDFGeneration {
 		this.yPosition.update(3);
 		this.addParagraph(
 			this.langDict[12](
-				get(user).profil.nom,
-				get(user).profil.prenom,
+				appState.user.nom,
+				appState.user.prenom,
 				dayjs(this.formData.date).format('DD/MM/YYYY')
 			)
 		);
@@ -231,12 +221,12 @@ export class AnnexeB extends PDFGeneration {
 			cardColor: '#000000',
 			padding: 3
 		});
-		console.log('this.formData.situation_pathologique', this.formData.situation_pathologique);
+		console.log('this.formData.situation', this.formData.situation);
 		console.log(
 			'this.situationsPathologiques',
-			this.situationsPathologiques[this.formData.situation_pathologique]
+			this.situationsPathologiques[this.formData.situation]
 		);
-		this.situationsPathologiques[this.formData.situation_pathologique].bind(this)();
+		this.situationsPathologiques[this.formData.situation].bind(this)();
 		this.yPosition.update(5);
 		this.title('5.   ', this.langDict[18]);
 		this.yPosition.update(3);
@@ -316,7 +306,7 @@ export class AnnexeB extends PDFGeneration {
 		this.checkbox(
 			index,
 			yPositionBeforeParagraph,
-			this.indexOfSP[this.formData.situation_pathologique] == index
+			this.indexOfSP[this.formData.situation] == index
 		);
 		for (let index = 0; index < sousSituations.length; index++) {
 			const sousSituation = sousSituations[index];
@@ -333,7 +323,7 @@ export class AnnexeB extends PDFGeneration {
 		this.checkbox(
 			index,
 			yPositionBeforeParagraph,
-			this.indexOfSP[this.formData.situation_pathologique] == index
+			this.indexOfSP[this.formData.situation] == index
 		);
 	}
 

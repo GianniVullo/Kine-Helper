@@ -1,19 +1,20 @@
 <script>
 	import { FormWrapper, SubmitButton, DateField } from '../index';
-	import DBAdapter from '$lib/user-ops-handlers/dbAdapter';	import SituationPathologiqueSelector from './SituationPathologiqueSelector.svelte';
+	import SituationPathologiqueSelector from './SituationPathologiqueSelector.svelte';
 	import { goto } from '$app/navigation';
-	import { AnnexeA } from '../../pdfs/annexeA';
-	import { patients } from '../../stores/PatientStore';
 	import { t } from '../../i18n';
 	import { get } from 'svelte/store';
+	import { appState } from '../../managers/AppState.svelte';
+	import { metadata } from 'valibot';
+	import { createAnnexe } from '../../user-ops-handlers/documents';
 
 	let message = '';
 
-	export let patient;
-	export let sp;
-	export let doc = null;
-	let situationPathologique = doc ? doc.form_data.situation_pathologique : [];
-	let date = doc?.form_data.date;
+	let { patient, sp, doc, accords = $bindable() } = $props();
+
+	let situationPathologique = doc ? doc.situation_pathologique : [];
+	let date = doc?.date;
+	console.log('accords In AnnexeAForm', accords);
 	let formSchema = {
 		isValid: isValid,
 		validators: {}
@@ -30,47 +31,25 @@
 			return;
 		}
 		if (doc) {
-			let db = new DBAdapter();
-			await db.update('documents', [['document_id', doc.document_id]], {
-				...doc,
-				form_data: JSON.stringify({
-					date,
-					situation_pathologique: situationPathologique
-				})
-			});
-			patients.update((ps) => {
-				let p = ps.find((p) => p.patient_id === patient.patient_id);
-				let rsp = p.situations_pathologiques.find((tsp) => tsp.sp_id === sp.sp_id);
-				let rdoc = rsp.documents.find((tdoc) => tdoc.document_id === doc.document_id);
-				rdoc.form_data = {
-					date,
-					situation_pathologique: situationPathologique
-				};
-				return ps;
-			});
-
-			let annexeA = new AnnexeA(
-				{
-					situation_pathologique: situationPathologique,
-					date
-				},
-				patient,
-				sp,
-				doc
-			);
-			await annexeA.save_file();
-			await annexeA.open();
 		} else {
-			let annexeA = new AnnexeA(
-				{
-					situation_pathologique: situationPathologique,
-					date
-				},
-				patient,
-				sp,
-				null
-			);
-			await annexeA.save();
+			let accord = {
+				id: crypto.randomUUID(),
+				user_id: appState.user.id,
+				patient_id: patient.patient_id,
+				sp_id: sp.sp_id,
+				situationPathologique,
+				date,
+				buildable: true,
+				metadata: {
+					doc: 'A'
+				}
+			};
+			let { data, error } = await createAnnexe(accord);
+			if (error) {
+				message = error;
+				submitter.disabled = false;
+				return;
+			}
 		}
 		goto(
 			'/dashboard/patients/' +

@@ -1,23 +1,13 @@
 import { PDFGeneration } from './kineHelperPdfs';
 import { get } from 'svelte/store';
-import { user } from '../stores/UserStore';
 import dayjs from 'dayjs';
 import { locale } from '../i18n';
 import { save_to_disk } from '../utils/fsAccessor';
+import { appState } from '../managers/AppState.svelte';
 
 export class AnnexeA extends PDFGeneration {
-	constructor(formData, patient, sp, obj) {
-		super(
-			`Annexe A ${patient.nom} ${patient.prenom} ${
-				obj?.created_at ?? dayjs().format('YYYY-MM-DD')
-			}`,
-			formData,
-			patient,
-			sp,
-			0,
-			'',
-			obj
-		);
+	constructor(formData, patient, sp) {
+		super(`Annexe-A(${formData.id})`, formData, patient, sp, 0, '', formData);
 		const langDict = {
 			FR: [
 				'Annexe 5a',
@@ -249,7 +239,7 @@ export class AnnexeA extends PDFGeneration {
 		];
 	}
 	buildPdf() {
-		console.log(`Now building PDF Annexe A with ${this.formData} ==`);
+		console.log(`Now building PDF Annexe A with ==`, this.formData);
 		this.addCenteredText(this.langDict[0], this.yPosition);
 		this.yPosition.update(5);
 		this.addParagraph(this.langDict[1], { fontWeight: 'bold' });
@@ -267,7 +257,7 @@ export class AnnexeA extends PDFGeneration {
 		this.title('2.   ', this.langDict[8]);
 		this.yPosition.update(5);
 		this.addParagraph(
-			this.langDict[9](`${get(user).profil.nom} ${get(user).profil.prenom}`, this.formData.date)
+			this.langDict[9](`${appState.user.nom} ${appState.user.prenom}`, this.formData.date)
 		);
 		this.yPosition.update(5);
 		this.addParagraph(this.langDict[10]);
@@ -284,7 +274,7 @@ export class AnnexeA extends PDFGeneration {
 			cardColor: '#000000',
 			padding: 3
 		});
-		this.situationsPathologiques[this.formData.situation_pathologique].bind(this)();
+		this.situationsPathologiques[this.formData.situation].bind(this)();
 		this.yPosition.update(5);
 		this.title('4.   ', this.langDict[15]);
 		this.yPosition.update(5);
@@ -386,7 +376,7 @@ export class AnnexeA extends PDFGeneration {
 			this.checkbox(
 				indexes[index],
 				yPositionBeforeParagraph,
-				this.indexOfSP[this.formData.situation_pathologique] == indexes[index]
+				this.indexOfSP[this.formData.situation] == indexes[index]
 			);
 			if (additionalSpace) {
 				this.yPosition.update(additionalSpace);
@@ -400,7 +390,7 @@ export class AnnexeA extends PDFGeneration {
 		this.checkbox(
 			index,
 			yPositionBeforeParagraph,
-			this.indexOfSP[this.formData.situation_pathologique] == index
+			this.indexOfSP[this.formData.situation] == index
 		);
 	}
 
@@ -438,7 +428,7 @@ export class AnnexeA extends PDFGeneration {
 		this.addParagraph(this.points.h.title);
 		let yPositionBeforeParagraph = get(this.yPosition);
 		this.sousSituation(this.points.h[0], '', -8);
-		this.checkbox('12.', yPositionBeforeParagraph, this.formData.situation_pathologique == 13);
+		this.checkbox('12.', yPositionBeforeParagraph, this.formData.situation == 13);
 		this.yPosition.update(2);
 		yPositionBeforeParagraph = get(this.yPosition);
 		this.sousSituation(this.points.h[1], '', -8);
@@ -446,7 +436,7 @@ export class AnnexeA extends PDFGeneration {
 		this.sousSituation(this.points.h[3], '(02) ', 0, { fontSize: 8 });
 		this.sousSituation(this.points.h[4], '(03) ', 0, { fontSize: 8 });
 		this.sousSituation(this.points.h[5], '(04) ', 0, { fontSize: 8 });
-		this.checkbox('13.', yPositionBeforeParagraph, this.formData.situation_pathologique == 14);
+		this.checkbox('13.', yPositionBeforeParagraph, this.formData.situation == 14);
 		this.yPosition.update(2);
 		yPositionBeforeParagraph = get(this.yPosition);
 		this.sousSituation(this.points.h[6], '', -8);
@@ -457,7 +447,7 @@ export class AnnexeA extends PDFGeneration {
 		this.addParagraph(`-  ${this.points.h[10]}`, { x: xMargins, fontSize: 8 });
 		this.addParagraph(`-  ${this.points.h[11]}`, { x: xMargins, fontSize: 8 });
 		this.sousSituation(this.points.h[12], '(02) ', 0, { fontSize: 8 });
-		this.checkbox('14.', yPositionBeforeParagraph, this.formData.situation_pathologique == 15);
+		this.checkbox('14.', yPositionBeforeParagraph, this.formData.situation == 15);
 	}
 	i() {
 		this.voletAvecSituationUnique(this.points.i.title, '15.');
