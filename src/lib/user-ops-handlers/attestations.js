@@ -21,6 +21,7 @@ export async function createAttestation(data) {
 	 ** 	- Créer une facture si nécessaire
 	 ** 	- Créer le lien entre facture et attestation(s)
 	 ** 	- Imprimer l'attestation et/ou la facture
+	 ** 	- Mettre à jour la valeur de num_attestation dans le store
 	 */
 
 	// Création de l'attestation
@@ -146,6 +147,15 @@ export async function createAttestation(data) {
 		}
 		fact;
 	}
+
+	// Mise à jour de num_attestation
+	let { data: numero, error: storeError } = await appState.db.setItem(
+		'num_attestation',
+		data.attestation.numero + 1
+	);
+	if (storeError) {
+		return { error: storeError };
+	}
 }
 
 // TODO : absolutely not functional
@@ -196,7 +206,10 @@ export async function markAsPaid(data, factureType) {
 	console.log(query);
 	const queryArgs = [!data[`${factureType}_paid`], data.attestation_id];
 	console.log(queryArgs);
-	const { data: attestation, error: attestationError } = await appState.db.execute(query, queryArgs);
+	const { data: attestation, error: attestationError } = await appState.db.execute(
+		query,
+		queryArgs
+	);
 	if (attestationError) {
 		return { error: attestationError };
 	}

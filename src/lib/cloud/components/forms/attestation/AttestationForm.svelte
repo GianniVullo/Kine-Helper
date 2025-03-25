@@ -32,7 +32,8 @@
 		total_recu,
 		seances,
 		mode = 'create',
-		lines
+		lines,
+		numero
 	} = $props();
 
 	console.log('lines', seances);
@@ -70,7 +71,7 @@
 			printFacturePatient: patient.ticket_moderateur,
 			generateFactureMutuelle: patient.tiers_payant,
 			printFactureMutuelle: patient.tiers_payant,
-			numero: attestation?.numero ?? appState.numero_attestation,
+			numero: attestation?.numero ?? numero,
 			has_been_printed: attestation?.has_been_printed ?? false
 		},
 		onValid,
