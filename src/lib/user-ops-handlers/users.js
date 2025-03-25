@@ -1,33 +1,17 @@
 import { supabase } from '../stores/supabaseClient';
-import { UserOperationsHandler } from './abstractHandler';
-import { user } from '../stores/UserStore';
 import { invoke } from '@tauri-apps/api/core';
-import { get } from 'svelte/store';
 import { file_exists } from '../utils/fsAccessor';
 import { appState } from '../managers/AppState.svelte';
 
-function setupKineOpsHandler() {
-	const opsHandler = new UserOperationsHandler();
-	//* Modifier le handler ici pour que ça colle à l'opération : les erreurs possibles, les tâches intermédiaires par exemple.
-	return opsHandler;
-}
-
 //* Aïe aïe je ne sais vraiment pas encore décider si j'ai besoin de faire ça ? À priori oui car la mise-à-jour de ces données va éventuellement avoir besoin de suivre les autres outils
 export async function createUser(data) {
-	const opsHandler = setupKineOpsHandler();
-	await opsHandler.execute(async () => {
-		const { data, error } = await supabase.auth.signUp({
-			email: data.email.toLowerCase(),
-			password: data.password
-		});
-		if (error) {
-			throw new Error(error);
-		}
-		user.set({
-			user: data.user,
-			session: data.session
-		});
+	const { data: _, error } = await supabase.auth.signUp({
+		email: data.email.toLowerCase(),
+		password: data.password
 	});
+	if (error) {
+		return { error };
+	}
 }
 
 export async function signUserIn(formData) {
@@ -46,6 +30,64 @@ export async function signUserIn(formData) {
 		user: data.user,
 		session: data.session
 	};
+}
+
+export async function createProfile(data) {
+	data.conventionne = JSON.parse(data.conventionne);
+	data.cp = parseInt(data.cp);
+	/**
+	 ** - Enregistrer dans la base de données locale
+	 ** - Enregistrer dans Supabase
+	 ** - Mettre les données dans le cache de l'application
+	 */
+	const { data: profileExists, error: queryError } = await appState.db.select(
+		'SELECT * FROM kines WHERE user_id = $1;',
+		[appState.user.id]
+	);
+	console.log('Profile exists', profileExists);
+	if (profileExists?.length > 0) {
+		const { data: dbResponse, error: profileUserError } = await appState.db.update(
+			'kines',
+			[['user_id', appState.user.id]],
+			data
+		);
+		if (profileUserError) {
+			return { error: profileUserError };
+		}
+		console.log('Profile user', dbResponse);
+	} else {
+		const { data: dbResponse, error: profileUserError } = await appState.db.insert('kines', data);
+		if (profileUserError) {
+			return { error: profileUserError };
+		}
+		console.log('Profile user', dbResponse);
+	}
+	if (
+		(profileExists?.length > 0 &&
+			(data.nom !== profileExists[0].nom || data.prenom != profileExists[0].prenom)) ||
+		profileExists?.length === 0
+	) {
+		const { data: supabaseResponse, error: supaError } = await supabase
+			.from('kinesitherapeutes')
+			.upsert({
+				id: appState.user.id,
+				nom: data.nom,
+				prenom: data.prenom,
+				encrypted: null
+			});
+		console.log('Profile supabase', supabaseResponse);
+		if (supaError) {
+			return { error: supaError };
+		}
+	}
+
+	await appState.init({
+		user: appState.user,
+		session: appState.session,
+		profil: data
+	});
+
+	return { data: appState.user };
 }
 
 export async function retrieveProfile(user_id) {
@@ -68,7 +110,7 @@ export async function retrieveProfile(user_id) {
 			errorThrown = error;
 		}
 	}
-	if (errorThrown) {
+	if (errorThrown || !kineRemoteData || Object.keys(kineRemoteData).length === 0) {
 		return { data: kineRemoteData, error: errorThrown };
 	}
 	let has_stronghold_key;
@@ -87,50 +129,4 @@ export async function retrieveProfile(user_id) {
 	console.log('Hold exists', hold_exists);
 	kineRemoteData.hold_exists = hold_exists;
 	return { data: kineRemoteData, error: errorThrown };
-}
-
-export async function updateUser(data) {
-	const opsHandler = setupKineOpsHandler();
-	await opsHandler.execute(async () => {
-		const profil = {
-			nom: data.nom,
-			prenom: data.prenom
-		};
-		//! désormais les données de l'utilisateur seront sur le cloud. donc il faut directement utiliser supabase ici
-		let encrypted_field = await invoke('encrypt_string', {
-			input: JSON.stringify({
-				inami: data.inami,
-				bce: data.bce,
-				iban: data.iban,
-				adresse: data.adresse,
-				cp: data.cp,
-				localite: data.localite,
-				conventionne: data.conventionne
-			})
-		});
-		let { data, error } = await supabase
-			.from('kinesitherapeutes')
-			.update({ ...profil, encrypted: encrypted_field })
-			.eq('id', appState.user.id);
-		console.log(data, error);
-		user.update((u) => {
-			u.profil = {
-				...u.profil,
-				nom: data.nom,
-				prenom: data.prenom,
-				inami: data.inami,
-				bce: data.bce,
-				iban: data.iban,
-				adresse: data.adresse,
-				cp: data.cp,
-				localite: data.localite,
-				conventionne: data.conventionne
-			};
-			return u;
-		});
-		if (error) {
-			message = error.message;
-			throw new Error(error);
-		}
-	});
 }

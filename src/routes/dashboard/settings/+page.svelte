@@ -1,25 +1,36 @@
 <script>
-	import { LightSwitch, getModalStore } from '@skeletonlabs/skeleton';
+	import { getModalStore } from '@skeletonlabs/skeleton';
 	import SelectFieldV2 from '../../../lib/forms/abstract-fields/SelectFieldV2.svelte';
-	import { user } from '../../../lib/stores/UserStore';
-	import { get, writable } from 'svelte/store';
+	import { writable } from 'svelte/store';
 	import { t, locale, dictionnary } from '../../../lib/i18n';
 	import { supabase } from '../../../lib';
-	import { readTextFile, remove, writeTextFile } from '@tauri-apps/plugin-fs';
+	import { readTextFile, remove, writeTextFile, BaseDirectory } from '@tauri-apps/plugin-fs';
 	import { appLocalDataDir } from '@tauri-apps/api/path';
 	import { goto } from '$app/navigation';
-	import DBAdapter from '$lib/user-ops-handlers/dbAdapter';
-	import { patients } from '../../../lib/stores/PatientStore';
 	import PostSignupForm from '../../../lib/forms/authentication/PostSignupForm.svelte';
 	import RadioFieldV2 from '../../../lib/forms/abstract-fields/RadioFieldV2.svelte';
 	import { platform } from '@tauri-apps/plugin-os';
 	import WindowsSelectionField from '../../../lib/forms/settings/WindowsSelectionField.svelte';
-	import { LocalDatabase } from '../../../lib/stores/databaseInitializer';
+	import { toast } from '../../../lib/cloud/libraries/overlays/notificationUtilities.svelte';
+	import { appState } from '../../../lib/managers/AppState.svelte';
+	import { errorIcon, successIcon } from '../../../lib/ui/svgs/IconSnippets.svelte';
 
 	const modalStore = getModalStore();
-	console.log('user', get(user));
-	let imprimanteMatricielle = get(user).settings.raw_printer;
-	let is_nine_pin = get(user).settings.is_nine_pin ?? true;
+	let imprimanteMatricielleP = new Promise(async (resolve, reject) => {
+		let { data: iM, error } = await appState.db.getRawPrinter();
+		if (error) {
+			console.log('error', error);
+			reject(error);
+		}
+		imprimanteMatricielle = iM.name;
+		pinNumber = JSON.parse(JSON.parse(iM.metadata).is_nine_pin);
+		console.log(pinNumber);
+		resolve(iM);
+	});
+
+	let imprimanteMatricielle = $state();
+	let pinNumber = $state();
+
 	async function changingLanguage(event) {
 		const lang = event.target.value;
 		if (lang === $locale) return;
@@ -28,10 +39,13 @@
 		if ($dictionnary[lang]) {
 			console.log('dictionnary already in cache', $dictionnary[lang]);
 			// On vérifie la version avec le serveur
-			const { data } = await supabase.from('translations').select('version').eq('code', lang);
+			const { data: versionList } = await supabase
+				.from('translations')
+				.select('version')
+				.eq('code', lang);
 			//Si le dictionnaire n'a pas de version, on le télécharge directement
 			if ($dictionnary[lang].version) {
-				if (data[0].version === $dictionnary[lang].version) {
+				if (versionList[0].version === $dictionnary[lang].version) {
 					locale.set(lang);
 					goto('/dashboard/settings');
 					return;
@@ -62,9 +76,8 @@
 	}
 
 	async function nukeUsersData() {
-		let db = new DBAdapter();
-		if (get(user).profil.offre !== 'cloud') {
-			await db.list('patients', [['user_id', $user.user.id]], {
+		if (appState.user.offre !== 'cloud') {
+			await db.list('patients', [['user_id', appState.user.id]], {
 				selectStatement: 'patient_id'
 			});
 		}
@@ -72,15 +85,16 @@
 		 * ? de "Nuke" les données puisque en supprimant l'utilisateur
 		 * ? ON DELETE CASCADE va s'occuper de tout nuker tout seul.
 		 */
-		patients.set([]);
-		let path = await appLocalDataDir();
 		try {
-			await remove(`${path}/settings.json`);
+			await remove(`settings.json`, { baseDir: BaseDirectory.AppLocalData });
 		} catch (error) {
 			console.log('error', error);
 		}
 		try {
-			await remove(`${path}/${$user.user.id}`, { recursive: true });
+			await remove(appState.user.id, {
+				baseDir: BaseDirectory.AppLocalData,
+				recursive: true
+			});
 		} catch (error) {
 			console.log('error', error);
 		}
@@ -89,21 +103,47 @@
 	}
 
 	async function changePrinter() {
-		console.log($user);
-		if (get(user).settings.raw_printer === imprimanteMatricielle) return;
-		let db = new LocalDatabase();
+		if ((await appState.db.getRawPrinter()) === imprimanteMatricielle) return;
 
-		await db.execute('UPDATE settings SET raw_printer = $1 WHERE uesr_id = $2', [
-			imprimanteMatricielle,
-			$user.user.id
-		]);
-		user.update((u) => {
-			u.settings.raw_printer = imprimanteMatricielle;
-			return u;
-		});
+		const { data: _, error } = await appState.db.execute(
+			'UPDATE appareils SET name = $1, metadata = $2 WHERE role = $3',
+			[imprimanteMatricielle, JSON.stringify({ is_nine_pin: pinNumber }), 'raw_printer']
+		);
 		modified.set(false);
+		if (!error) {
+			toast.trigger({
+				titre: 'Imprimante modifiée avec succès.',
+				description: 'Vos attestations seront désormais imprimées sur ' + imprimanteMatricielle,
+				leading: successIcon,
+				leadingCSS: 'size-6 text-green-400',
+				timeout: 3000
+			});
+		} else {
+			toast.trigger({
+				titre: 'Erreur!',
+				description: error,
+				leading: errorIcon,
+				leadingCSS: 'size-6 text-red-400',
+				timeout: 5000
+			});
+		}
 	}
 	let modified = writable(false);
+
+	$effect(() => {
+		imprimanteMatricielle;
+		pinNumber;
+		appState.db.getRawPrinter().then(({ data: value, error }) => {
+			if (
+				imprimanteMatricielle !== value.name ||
+				pinNumber !== JSON.parse(JSON.parse(value.metadata).is_nine_pin)
+			) {
+				modified.set(true);
+			} else {
+				modified.set(false);
+			}
+		});
+	});
 </script>
 
 <main class="flex h-full w-full flex-col items-start space-y-4 overflow-y-scroll">
@@ -111,39 +151,43 @@
 		<h1 class="text-lg text-surface-600 dark:text-surface-300">{$t('sidebar', 'settings')}</h1>
 		<p class="text-surface-400">{$t('settings', 'description')}</p>
 	</div>
-	<section class="flex flex-col items-start space-y-2">
-		<h2 class="text-secondary-500 dark:text-secondary-300">{$t('settings', 'printer')}</h2>
-		{#if platform() === 'windows'}
-			<WindowsSelectionField
-				cb={() => {
-					console.log('in cb');
+	{#await imprimanteMatricielleP then _}
+		<section class="flex flex-col items-start space-y-2">
+			<h2 class="text-secondary-500 dark:text-secondary-300">{$t('settings', 'printer')}</h2>
+			{#if platform() === 'windows'}
+				<WindowsSelectionField
+					cb={() => {
+						console.log('in cb');
 
-					modified.set(true);
-				}}
-				bind:printerField={imprimanteMatricielle} />
-		{:else}
-			<input
-				class="input"
-				type="text"
-				name="printer"
-				on:input={() => modified.set(true)}
-				bind:value={imprimanteMatricielle} />
-		{/if}
-		{#if $modified}
-			<button on:click={changePrinter} class="variant-outline-primary btn btn-sm"
-				>{$t('shared', 'save')}</button>
-		{/if}
-
-		<RadioFieldV2
-			name="is_nine_pin"
-			value={true}
-			inline
-			label={$t('printerSetup', 'pins.label')}
-			options={[
-				{ value: true, label: '9' },
-				{ value: false, label: '12/24' }
-			]} />
-	</section>
+						modified.set(true);
+					}}
+					bind:printerField={imprimanteMatricielle} />
+			{:else}
+				<input
+					class="input"
+					type="text"
+					name="printer"
+					oninput={() => modified.set(true)}
+					bind:value={imprimanteMatricielle} />
+			{/if}
+			<RadioFieldV2
+				name="is_nine_pin"
+				bind:value={pinNumber}
+				inline
+				label={$t('printerSetup', 'pins.label')}
+				change={() => modified.set(true)}
+				options={[
+					{ value: true, label: '9' },
+					{ value: false, label: '12/24' }
+				]} />
+			{#if $modified}
+				<button onclick={changePrinter} class="variant-outline-primary btn btn-sm"
+					>{$t('shared', 'save')}</button>
+			{/if}
+		</section>
+	{:catch error}
+		<p class="text-error-600">{error}</p>
+	{/await}
 	<section class="flex flex-col items-start space-y-2">
 		<h2 class="text-secondary-500 dark:text-secondary-300">{$t('settings', 'lang')}</h2>
 		<SelectFieldV2
@@ -157,17 +201,17 @@
 				{ value: 'DE', label: 'Deutsch' }
 			]} />
 	</section>
-	<section class="flex flex-col items-start space-y-2">
+	<!-- <section class="flex flex-col items-start space-y-2">
 		<h2 class="text-secondary-500 dark:text-secondary-300">{$t('settings', 'theme')}</h2>
 		<LightSwitch />
-	</section>
+	</section> -->
 	<section class="flex flex-col items-start space-y-2">
 		<h2 class="text-secondary-500 dark:text-secondary-300">{$t('settings', 'accountDeletion')}</h2>
 		<p class="dark:text-error-600">
 			{$t('settings', 'deletionWarning')}
 		</p>
 		<button
-			on:click={() =>
+			onclick={() =>
 				modalStore.trigger({
 					type: 'confirm',
 					title: $t('settings', 'alertTitle'),
@@ -177,10 +221,10 @@
 							console.log('supprimer mon compte');
 							let { data, error } = await supabase.from('user_messages').insert({
 								titre: 'Kiné Helper : nouvelle demande de Suppression du compte',
-								message: `from <${get(user).profil.nom + ' ' + get(user).profil.prenom}> ${
-									get(user).user.email
+								message: `from <${appState.user.nom + ' ' + appState.user.prenom}> ${
+									appState.user.email
 								} : \n Merci de supprimer mes données de votre serveur`,
-								user_id: $user.user.id
+								user_id: appState.user.id
 							});
 							console.log('data', data);
 							console.log('error', error);
