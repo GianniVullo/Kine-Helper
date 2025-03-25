@@ -45,16 +45,16 @@
 		<div class="flex items-center space-x-2">
 			<Select id="affichage" bind:value={display}>
 				{#snippet options()}
-					<option value="calendar">🗓️ Calendrier</option>
-					<option value="list">🗂️ Liste</option>
+					<option class="text-xs" value="calendar">🗓️ Calendrier</option>
+					<option class="text-xs" value="list">🗂️ Liste</option>
 				{/snippet}
 			</Select>
 		</div>
-		<BoutonSecondaireAvecIcone
+		<!-- <BoutonSecondaireAvecIcone
 			size="sm"
 			href={`/dashboard/patients/${patient.patient_id}/situation-pathologique/${sp.sp_id}/seances/create-bulk`}
 			inner={'Séances multiples'}
-			icon={addIcon} />
+			icon={addIcon} /> -->
 		<BoutonPrincipalAvecIcone
 			href={`/dashboard/patients/${patient.patient_id}/situation-pathologique/${sp.sp_id}/seances/create`}
 			size="sm"
@@ -69,4 +69,6 @@
 	<div class="mt-4 flex w-[90%] flex-col">
 		<EventCalendar bind:this={ec} {events} options={{}} />
 	</div>
+{:else}
+	Pas de séances pour l'instant
 {/if}

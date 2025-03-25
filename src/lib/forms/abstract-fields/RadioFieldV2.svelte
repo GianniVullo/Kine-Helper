@@ -8,6 +8,7 @@
 	export let inline = false;
 	export let value;
 	export let readOnly = false;
+	export let change = () => {};
 </script>
 
 <DefaultFieldWrapper>
@@ -15,7 +16,7 @@
 	<div class:pointer-events-none={readOnly}>
 		<RadioGroup display={inline ? undefined : 'flex-col'}>
 			{#each options as option, i (i)}
-				<RadioItem {required} on:change bind:group={value} {name} value={option.value}
+				<RadioItem {required} on:change={change} bind:group={value} {name} value={option.value}
 					>{option.label}</RadioItem>
 			{/each}
 		</RadioGroup>

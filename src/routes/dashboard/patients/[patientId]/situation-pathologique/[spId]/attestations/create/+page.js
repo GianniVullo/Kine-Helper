@@ -1,6 +1,7 @@
 import { appState } from '../../../../../../../../lib/managers/AppState.svelte.js';
 import { groupSeanceInAttestations } from '../../../../../../../../lib/cloud/components/forms/attestation/AttestationSchema.js';
 import dayjs from 'dayjs';
+import { error } from '@sveltejs/kit';
 /**
  *
  ** En fait, pour l'instant on ne fait pas "tarifer jusqu'ici"
@@ -55,7 +56,12 @@ export async function load({ url, parent }) {
 		sp,
 		patient
 	);
+	let { data: numero, error: storeError } = await appState.db.getItem('num_attestation');
+	if (storeError) {
+		error(500, { message: storeError });
+	}
 	return {
+		numero,
 		valeur_totale: valeur_totale.toFixed(2).replace('.', ','),
 		total_recu: total_recu.toFixed(2).replace('.', ','),
 		seances,

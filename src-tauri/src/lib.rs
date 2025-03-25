@@ -218,6 +218,12 @@ pub fn run() {
                             sql: include_str!("migrations/20250316133523_migrate_data_and_document_refonte.up.sql"),
                             kind: MigrationKind::Up,
                         },
+                        Migration {
+                            version: 15,
+                            description: "Adding a kv store in the db",
+                            sql: include_str!("migrations/20250325133523_kv_store.up.sql"),
+                            kind: MigrationKind::Up,
+                        },
                     ],
                 )
                 .build(),

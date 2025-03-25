@@ -77,9 +77,7 @@ async function getData(attestation) {
 		return { error: spError };
 	}
 	const situation_pathologique = situation_pathologiqueArray[0];
-	const { data: imprimanteArray, error: NoPrinter } = await appState.db.select(
-		"SELECT * FROM appareils WHERE role = 'raw_printer'"
-	);
+	const { data: imprimanteArray, error: NoPrinter } = await appState.db.getRawPrinter();
 	if (NoPrinter) {
 		return { error: NoPrinter };
 	}

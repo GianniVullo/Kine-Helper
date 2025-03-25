@@ -3,7 +3,7 @@
 
 	let { data } = $props();
 
-	let { sp, patient, seances, valeur_totale, total_recu, lines, prescription_id } = data;
+	let { sp, patient, seances, valeur_totale, total_recu, lines, prescription_id, numero } = data;
 </script>
 
-<AttestationForm {sp} {patient} {seances} {valeur_totale} {total_recu} {lines} {prescription_id} />
+<AttestationForm {sp} {patient} {seances} {valeur_totale} {total_recu} {lines} {prescription_id} {numero} />

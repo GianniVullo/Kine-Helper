@@ -1,7 +1,14 @@
 <script>
-	let { href = undefined, onclick = undefined, inner, size = 'base', children, ...rest } = $props();
-	const className =
-		'bg-indigo-600 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600';
+	let {
+		href = undefined,
+		onclick = undefined,
+		inner,
+		size = 'base',
+		children,
+		className = 'bg-indigo-600 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600',
+		...rest
+	} = $props();
+
 	const sizes = {
 		sm: ' rounded px-2 py-1',
 		base: ' rounded-md px-2.5 py-1.5',

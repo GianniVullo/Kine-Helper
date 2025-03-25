@@ -64,8 +64,9 @@
 			{/snippet}
 		</EmptyState>
 	{/if}
-	Je pense que ce serait une bonne idée d'avoir un objet qui gère les différents type de situation pathologique pour pouvoir afficher différentes notes comme, par exemple, la suggestion de Marc Leflot de prévenir l'utilisateur de si la demande d'accord arrive à échéance. 
+	En construction
+	<!-- Je pense que ce serait une bonne idée d'avoir un objet qui gère les différents type de situation pathologique pour pouvoir afficher différentes notes comme, par exemple, la suggestion de Marc Leflot de prévenir l'utilisateur de si la demande d'accord arrive à échéance. 
 
 	Ajouter des overview de la situation pathologique : Où on en est dans le traitement, dans la
-	facturation etc (bref toutes les données que je pensais compiler dans l'object sp)
+	facturation etc (bref toutes les données que je pensais compiler dans l'object sp) -->
 </div>

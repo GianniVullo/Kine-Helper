@@ -1,7 +1,6 @@
 <script>
-	import { fly, slide } from 'svelte/transition';
+	import { fly } from 'svelte/transition';
 	import { toast } from './notificationUtilities.svelte';
-	import { elasticOut, expoOut } from 'svelte/easing';
 </script>
 
 <!-- Global notification live region, render this permanently at the end of the document -->

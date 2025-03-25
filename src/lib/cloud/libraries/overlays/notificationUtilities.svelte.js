@@ -2,9 +2,6 @@ import { cloneDeep } from 'lodash';
 
 class Toast {
 	fired = $state([]);
-	/**
-	 * TODO Il faut que ce soit une liste ici qui permette de stacker les notifications
-	 */
 	components = [];
 
 	constructor(components) {

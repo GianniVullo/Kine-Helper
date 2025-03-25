@@ -1,5 +1,5 @@
 <script>
-	import { warningIcon } from '../../../../ui/svgs/IconSnippets.svelte';
+	import { errorIcon, warningIcon } from '../../../../ui/svgs/IconSnippets.svelte';
 
 	let {
 		id,
@@ -78,7 +78,7 @@
 			<div class="text-sm/6">
 				<label for={id} class="select-none font-medium text-gray-900">{checkboxLabel}</label>
 				{#if checkboxDescription}
-					<p id="{name}-description" class="text-gray-500 select-none cursor-default">
+					<p id="{name}-description" class="cursor-default select-none text-gray-500">
 						{@html checkboxDescription}
 					</p>
 				{/if}
@@ -111,17 +111,7 @@
 	{/if}
 	{#if error}
 		<div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
-			<svg
-				class="size-5 text-red-500"
-				viewBox="0 0 20 20"
-				fill="currentColor"
-				aria-hidden="true"
-				data-slot="icon">
-				<path
-					fill-rule="evenodd"
-					d="M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0Zm-8-5a.75.75 0 0 1 .75.75v4.5a.75.75 0 0 1-1.5 0v-4.5A.75.75 0 0 1 10 5Zm0 10a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z"
-					clip-rule="evenodd" />
-			</svg>
+			{@render errorIcon('size-5 text-red-500')}
 		</div>
 	{:else if warning && !error}
 		<div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">

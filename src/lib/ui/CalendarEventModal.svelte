@@ -66,7 +66,7 @@
 		<!--? Permet d'interagir avec l'objet Séance -->
 
 		<article class="mb-4">
-			{#if !seance.has_been_attested || !seance.attestation_id}
+			{#if !seance.has_been_attested && !seance.attestation_id}
 				<BoutonPrincipalAvecIcone
 					size="sm"
 					inner="Modifier"
@@ -82,7 +82,7 @@
 					{/snippet}
 
 					Modifier</BoutonPrincipalAvecIcone>
-				<BoutonSecondaireAvecIcone
+				<!-- <BoutonSecondaireAvecIcone
 					size="sm"
 					onclick={() => {
 						deletion = true;
@@ -91,7 +91,7 @@
 					{#snippet icon(cls)}
 						{@render euroIcon('text-secondary-500 size-5 -ml-0.5 mr-1.5')}
 					{/snippet}
-				</BoutonSecondaireAvecIcone>
+				</BoutonSecondaireAvecIcone> -->
 			{/if}
 			{#if !event.extendedProps.seance.has_been_attested}
 				<BoutonSecondaireAvecIcone
@@ -132,8 +132,13 @@
 							deletion = false;
 						}}
 						class="variant-outline btn btn-sm">{$t('patient.create', 'back')}</button>
-					<button onclick={() => {}} class="variant-filled-error btn btn-sm"
-						>{$t('shared', 'save')}</button>
+					<button
+						onclick={async () => {
+							await appState.db.delete('seances', [['seance_id', seance.seance_id]]);
+							drawer.close();
+						}}
+						class="variant-filled-error btn btn-sm"
+						>{$t('patients.detail', 'deleteModal.confirm')}</button>
 				</div>
 			</div>
 		{/if}
