@@ -26,6 +26,37 @@ export class DatabaseManager {
 		}
 	}
 
+	async setItem(key, value) {
+		return await this.execute(
+			`INSERT OR REPLACE 
+				INTO key_value (key, value) 
+				VALUES ($1, $2);`,
+			[key, value]
+		);
+	}
+
+	async getItem(key) {
+		return await this.select(`SELECT value FROM key_value WHERE key = $1`, [key]);
+	}
+
+	async deleteItem(key) {
+		return await this.execute(`DELETE FROM key_value WHERE key = $1`, [key]);
+	}
+
+	async getRawPrinter() {
+		const { data: rawprinterList, error } = await this.select(
+			"SELECT * FROM appareils WHERE role = 'raw_printer'",
+			[]
+		);
+		if (error) {
+			return { data: null, error };
+		}
+		if (rawprinterList.length === 0) {
+			return { data: null, error: null };
+		}
+		return { data: rawprinterList[0], error: null };
+	}
+
 	async update(table, filters, formData, key) {
 		let updateStmt = Object.keys(formData).reduce((acc, key, idx) => {
 			return `${acc}${idx > 0 ? ', ' : ''}${key} = $${idx + 1}`;
