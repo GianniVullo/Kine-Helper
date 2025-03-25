@@ -4,28 +4,30 @@
 	import { goto } from '$app/navigation';
 	import { t } from '../../i18n';
 	import { get } from 'svelte/store';
-	import { createUser } from '../../user-ops-handlers/users';
-	import { retrieveSettings } from '../../user-ops-handlers/settings';
+	import { createProfile } from '../../user-ops-handlers/users';
 	import { appState } from '../../managers/AppState.svelte';
 	let message = '';
 	let clazz = '';
 	export { clazz as class };
 	export let column = false;
 	let formSchema = {
-		isValid: isValid
+		isValid
 	};
-
-	console.log("appstate = ", appState);
-	
 
 	async function isValid({ formData, submitter }) {
 		console.log('in isValid with', formData);
 		submitter.innerHTML = get(t)('shared', 'loading');
 		formData.conventionne ??= false;
-		await createUser(formData);
-		await retrieveSettings({ user_id: appState.user.id });
+		await createProfile(formData);
+		const { data: rawPrinter, error } = await appState.db.getRawPrinter();
+		if (error) {
+			message = error;
+			clazz = 'text-red-500';
+			submitter.innerHTML = 'Enregistrer';
+			return;
+		}
 		submitter.innerHTML = 'OK';
-		appState.settings.raw_printer ? goto('/dashboard') : goto('/post-signup-forms/printer-setup');
+		rawPrinter ? goto('/dashboard') : goto('/post-signup-forms/printer-setup');
 	}
 </script>
 
@@ -37,7 +39,7 @@
 	<div class:md:flex-row={!column} class="flex flex-col">
 		<div class="w-full p-2 md:p-4 lg:p-8">
 			<SectionCard>
-				<input type="hidden" name="id" value={appState.user.id} />
+				<!-- <input type="hidden" name="id" value={appState.user.id} /> -->
 				<TextField
 					name="nom"
 					value={appState.user.nom ?? undefined}
@@ -71,11 +73,11 @@
 					required
 					placeholder={$t('form.postSignup', 'label.city')}
 					label={$t('form.postSignup', 'label.city')} />
-				<TextField
+				<!-- <TextField
 					name="gsm"
 					value={appState.user.gsm ?? undefined}
 					placeholder={$t('form.postSignup', 'label.cellPhone')}
-					label={$t('form.postSignup', 'label.cellPhone')} />
+					label={$t('form.postSignup', 'label.cellPhone')} /> -->
 			</SectionCard>
 		</div>
 		<div class="w-full p-2 md:p-4 lg:p-8">
