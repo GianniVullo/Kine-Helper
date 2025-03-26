@@ -1,36 +1,32 @@
-import { defineConfig } from 'vite';
-import { internalIpV4 } from 'internal-ip';
-import { sveltekit } from '@sveltejs/kit/vite';
-import { purgeCss } from 'vite-plugin-tailwind-purgecss';
+import { defineConfig } from "vite";
+import { sveltekit } from "@sveltejs/kit/vite";
+
 // @ts-expect-error process is a nodejs global
-const mobile = !!/android|ios/.exec(process.env.TAURI_ENV_PLATFORM);
+const host = process.env.TAURI_DEV_HOST;
 
 // https://vitejs.dev/config/
 export default defineConfig(async () => ({
-	plugins: [
-		sveltekit(),
-		purgeCss()
-	],
+  plugins: [sveltekit()],
 
-	// Vite options tailored for Tauri development and only applied in `tauri dev` or `tauri build`
-	//
-	// 1. prevent vite from obscuring rust errors
-	clearScreen: false,
-	// 2. tauri expects a fixed port, fail if that port is not available
-	server: {
-		host: mobile ? '0.0.0.0' : false,
-		port: 1420,
-		hmr: mobile
-			? {
-					protocol: 'ws',
-					host: await internalIpV4(),
-					port: 1421
-			  }
-			: undefined,
-		strictPort: true,
-		watch: {ignored: ["/src-tauri/"]}
-	},
-	// 3. to make use of `TAURI_DEBUG` and other env variables
-	// https://tauri.app/v1/api/config#buildconfig.beforedevcommand
-	envPrefix: ['VITE_', 'TAURI_'],
+  // Vite options tailored for Tauri development and only applied in `tauri dev` or `tauri build`
+  //
+  // 1. prevent vite from obscuring rust errors
+  clearScreen: false,
+  // 2. tauri expects a fixed port, fail if that port is not available
+  server: {
+    port: 1420,
+    strictPort: true,
+    host: host || false,
+    hmr: host
+      ? {
+          protocol: "ws",
+          host,
+          port: 1421,
+        }
+      : undefined,
+    watch: {
+      // 3. tell vite to ignore watching `src-tauri`
+      ignored: ["**/src-tauri/**"],
+    },
+  },
 }));
