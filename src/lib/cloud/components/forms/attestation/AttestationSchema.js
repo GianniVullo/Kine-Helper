@@ -440,7 +440,7 @@ export async function groupSeanceInAttestations(seancesToDealWith, sp, patient) 
 					patho_lourde_type: sp.patho_lourde_type,
 					patient,
 					gmfcs: sp.gmfcs,
-					volet_j: sp.volet_j,
+					volet_j: sp.metadata?.volet_j,
 					volet_h: sp.groupe_id === 5 && seance.duree === 3
 				}),
 				patient,

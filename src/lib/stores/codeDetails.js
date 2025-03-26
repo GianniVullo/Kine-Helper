@@ -1,6 +1,5 @@
 import { get } from 'svelte/store';
 import { t } from '../i18n/index';
-import dayjs from 'dayjs';
 
 export class Code {
 	constructor({
@@ -110,16 +109,16 @@ export async function figuringConventionOut(date, db) {
 }
 export function groupes() {
 	return [
-		get(t)('stores', 'code.grp1'),
-		get(t)('stores', 'code.grp2'),
-		get(t)('stores', 'code.grp3'),
-		get(t)('stores', 'code.grp4'),
-		get(t)('stores', 'code.grp5'),
-		get(t)('stores', 'code.grp6'),
-		get(t)('stores', 'code.grp7'),
-		get(t)('stores', 'code.grp8'),
-		get(t)('stores', 'code.grp9'),
-		get(t)('stores', 'code.grp10')
+		get(t)('stores', 'code.grp1'), // courante
+		get(t)('stores', 'code.grp2'), // lourde
+		get(t)('stores', 'code.grp3'), // seconde seance
+		get(t)('stores', 'code.grp4'), // grossesse et post-partum
+		get(t)('stores', 'code.grp5'), // fa
+		get(t)('stores', 'code.grp6'), // fb
+		get(t)('stores', 'code.grp7'), // palliatif à domicile
+		get(t)('stores', 'code.grp8'), // hopital de jour
+		get(t)('stores', 'code.grp9'), //// covid
+		get(t)('stores', 'code.grp10') // indemnité de déplacement
 	];
 }
 

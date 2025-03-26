@@ -232,10 +232,12 @@
 	</FormSection>
 	<FormSection titre="Information relative à la tarification">
 		<!--* Indemnité -->
-		<Field
-			field={checkboxesFields[0]}
-			error={formHandler.errors?.[checkboxesFields[0].name]}
-			bind:value={formHandler.form[checkboxesFields[0].name]} />
+		{#if sp.iieu_id === 3 || seance.lieu_id === 6}
+			<Field
+				field={checkboxesFields[0]}
+				error={formHandler.errors?.[checkboxesFields[0].name]}
+				bind:value={formHandler.form[checkboxesFields[0].name]} />
+		{/if}
 		<!--* Rapport écrit -->
 		{#await checkIfRapportEcrit then value}
 			<!-- promise was fulfilled -->

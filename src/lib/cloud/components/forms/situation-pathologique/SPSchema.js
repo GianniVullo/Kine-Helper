@@ -11,6 +11,7 @@ import { numericalString } from '../../../../utils/validationGenerics';
 import { modelingMetadata } from '../tarification-fields/tarifHelpers';
 
 const SEX = ['AMB', 'HOS', null, undefined];
+const DUREE_SS_FA = [-1, 0, 3];
 
 const user_id = v.uuid();
 const patient_id = v.uuid();
@@ -53,9 +54,14 @@ const tarif_no_show_custom = numericalString;
 
 const groupe_id = v.number('Veuillez choisir un groupe pathologique');
 const lieu_id = v.number('Veuillez choisir un lieu');
-const duree = v.nullish(v.number());
+const duree = v.pipe(
+	v.transform((input) => (!input ? null : input)),
+	v.nullish(v.number())
+);
 const patho_lourde_type = v.nullish(v.number());
 const gmfcs = v.nullish(v.number());
+const duree_ss_fa = v.nullish(v.picklist(DUREE_SS_FA));
+const volet_j = v.nullish(v.boolean());
 const amb_hos = v.nullish(v.picklist(SEX));
 
 export const validateurs = {
@@ -73,6 +79,8 @@ export const validateurs = {
 	patho_lourde_type,
 	gmfcs,
 	amb_hos,
+	duree_ss_fa,
+	volet_j,
 	supplements,
 	tarif_seance,
 	tarif_indemnite,
@@ -128,6 +136,14 @@ export const SPSchema = v.pipe(
 	),
 	v.transform((input) => {
 		modelingMetadata(input);
+		if (input.duree_ss_fa !== -1) {
+			input.metadata.duree_ss_fa = input.duree_ss_fa;
+		}
+		if (input.volet_j) {
+			input.metadata.volet_j = input.volet_j;
+		}
+		delete input.volet_j;
+		delete input.duree_ss_fa;
 		if (Object.keys(input.metadata).length === 0) {
 			input.metadata = null;
 		}

@@ -15,14 +15,7 @@
 	import { getTarificationInitialValues } from '../tarification-fields/tarifHelpers';
 
 	let { patient, sp, mode = 'create', tarifs, supplements } = $props();
-
-	function isItTheOne(value, id) {
-		const parsedMetadata = JSON.parse(value.metadata);
-		if (parsedMetadata) {
-			return parsedMetadata[id];
-		}
-	}
-console.log('sp', getTarificationInitialValues(sp, tarifs));
+	
 	let formHandler = new Formulaire({
 		validateurs,
 		schema: SPSchema,
@@ -32,6 +25,13 @@ console.log('sp', getTarificationInitialValues(sp, tarifs));
 			patient_id: sp?.patient_id ?? patient.patient_id,
 			sp_id: sp?.sp_id ?? crypto.randomUUID(),
 			created_at: sp?.created_at ?? dayjs().format('YYYY-MM-DD'),
+			volet_j: sp?.metadata?.volet_j ?? false,
+			duree_ss_fa: sp?.metadata?.duree_ss_fa ?? -1,
+			amb_hos: sp?.amb_hos,
+			gmfcs: sp?.gmfcs,
+			groupe_id: sp?.groupe_id,
+			lieu_id: sp?.lieu_id,
+			patho_lourde_type: sp?.patho_lourde_type,
 			...getTarificationInitialValues(sp, tarifs),
 			supplements: sp?.metadata?.supplements ?? []
 		},

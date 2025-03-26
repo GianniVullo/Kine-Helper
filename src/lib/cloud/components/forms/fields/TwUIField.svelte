@@ -76,7 +76,7 @@
 				</div>
 			</div>
 			<div class="text-sm/6">
-				<label for={id} class="select-none font-medium text-gray-900">{checkboxLabel}</label>
+				<label for={id} class="select-none font-medium text-gray-900">{@html checkboxLabel}</label>
 				{#if checkboxDescription}
 					<p id="{name}-description" class="cursor-default select-none text-gray-500">
 						{@html checkboxDescription}

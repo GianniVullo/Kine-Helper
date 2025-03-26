@@ -77,7 +77,7 @@ export async function assignCodes({
 				...queryCompilerArgs,
 				codeType: SECONDE_SEANCE,
 				groupe_id: 2,
-				duree: seance.duree
+				duree: sp.metadata?.duree_ss_fa ?? seance.duree
 			});
 
 			sqlAgreg = await sqlQueryCompiler({ ...queryCompilerArgs, codeType: SECONDE_SEANCE });

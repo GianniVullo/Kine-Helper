@@ -6,6 +6,7 @@
 	import { untrack } from 'svelte';
 	import RadioFieldV2 from '../../../../forms/abstract-fields/RadioFieldV2.svelte';
 	import PathologieLourdeFields from '../situation-pathologique/PathologieLourdeFields.svelte';
+	import Field from '../abstract-components/Field.svelte';
 
 	let { form = $bindable(), lieuOptions, errors, groupeOptions } = $props();
 
@@ -94,10 +95,10 @@
 	</div>
 {/if}
 <!--? DURÉE ID -->
-{#if typeof form.groupe_id == 'number' && typeof form.lieu_id == 'number' && form.groupe_id !== 1}
+{#if typeof form.groupe_id === 'number' && typeof form.lieu_id == 'number' && form.groupe_id !== 1}
 	<div class="col-span-full md:col-span-4">
 		<SimpleSelect
-			label={$t('form.generateur', 'duree.label')}
+			label={'Durée'}
 			name="duree"
 			bind:value={form.duree}
 			options={dureeOptions}
@@ -107,11 +108,48 @@
 				{@html errors.duree}
 			</p>
 		{/if}
+		{#if form.groupe_id === 5}
+			<p class="mt-2 text-sm text-gray-600">
+				Sélectionnez 45 minutes si votre situation pathologique est un drainage. Attention, ce
+				statut doit être validé par le médecin conseil.
+			</p>
+		{/if}
 	</div>
 {/if}
 
-<!--? Permet une seconde séance par jour -->
-<!--! cette histoire de seconde séance/jour le kiné doit savoi. kiné helper n'a pas besoin de cette innfo -->
+<!--? La durée de la seconde séance Fa -->
+{#if typeof form.groupe_id === 'number' && form.groupe_id === 4}
+	<div class="col-span-full md:col-span-4">
+		<SimpleSelect
+			label="Durée de la seconde séance"
+			name="duree"
+			bind:value={form.duree_ss_fa}
+			options={[
+				{ label: "Je n'effectue pas de secondes séances", value: -1 },
+				{ label: "J'effectue des secondes séances de 15 min", value: 0 },
+				{ label: "J'effectue des secondes séances de 30 min", value: 3 }
+			]}
+			placeholder="Choisissez une durée" />
+		{#if errors.duree}
+			<p class="mt-2 text-sm text-red-600" id="duree-error">
+				{@html errors.duree_ss_fa}
+			</p>
+		{/if}
+	</div>
+
+	<Field
+		field={{
+			id: 'volet_j',
+			name: 'volet_j',
+			inputType: 'checkbox',
+			checkboxLabel: 'La pathologie est un volet <span class="italic">j) Polytraumatisé</span>',
+			checkboxDescription:
+				'Cochez cette case si la pathologie est un volet j) Polytraumatisé, cela donne accès à 120 séances.',
+			outerCSS: 'sm:col-span-4',
+			innerCSS: ''
+		}}
+		bind:value={form.volet_j} />
+{/if}
 
 <!--? AMB/HOS (if lieu 5) -->
 {#if typeof form.groupe_id == 'number' && typeof form.lieu_id == 'number' && form.lieu_id === 7}
