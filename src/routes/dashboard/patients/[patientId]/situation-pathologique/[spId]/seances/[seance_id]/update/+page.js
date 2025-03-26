@@ -19,3 +19,14 @@ export async function load({ params }) {
 	const seance = new Seance(seanceRaw);
 	return { seance, ...gatheredTarif };
 }
+
+/** @type {import('./$types').EntryGenerator} */
+export function entries() {
+	return [
+		{
+			patientId: 'test-patient',
+			spId: '0b017e35-2b9a-4462-8723-fa2740af5ca2',
+			seance_id: '0b017e35-2b9a-4462-8723-fa2740af5ca2'
+		}
+	];
+}
