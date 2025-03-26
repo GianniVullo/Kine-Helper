@@ -99,6 +99,7 @@ export class NomenclatureArchitecture {
 	get seances_normales_executables() {
 		switch (this.groupe_id) {
 			// Pathologie courante
+			// TODO Ajouter un check up du nombre effectuer dans d'autres sp. Ce n'était pas urgent parce que les kinés sont sensés savoir mais maintenant il faut le faire. Mais attend parce que le problème c'est les demande de prolongation
 			case 0:
 				if ([4, 5, 8].includes(this.lieu_id)) {
 					// 20min

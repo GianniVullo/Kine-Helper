@@ -1,7 +1,7 @@
 {
   "name": "kine-helper",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.0.59",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -42,12 +42,12 @@
     "@skeletonlabs/tw-plugin": "^0.4.0",
     "@sveltejs/adapter-static": "^3.0.6",
     "@sveltejs/kit": "^2.7.3",
-    "@sveltejs/vite-plugin-svelte": "^4.0.0",
+    "@sveltejs/vite-plugin-svelte": "^5.0.3",
     "@tailwindcss/forms": "^0.5.9",
     "@tailwindcss/typography": "^0.5.15",
     "@tauri-apps/cli": "^2.2.7",
     "autoprefixer": "^10.4.16",
-    "eslint": "^8.56.0",
+    "eslint": "^9.23.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-svelte": "^2.36.0-next.13",
     "internal-ip": "^7.0.0",
@@ -55,10 +55,10 @@
     "prettier": "^3.2.5",
     "prettier-plugin-svelte": "^3.1.2",
     "prettier-plugin-tailwindcss": "^0.5.14",
-    "svelte": "^5.22.5",
+    "svelte": "^5.25.3",
     "tailwindcss": "^3.4.3",
-    "vite": "^5.0.3",
+    "vite": "^6.2.3",
     "vite-plugin-tailwind-purgecss": "^0.3.3",
-    "vitest": "^1.0.4"
+    "vitest": "^3.0.9"
   }
 }
