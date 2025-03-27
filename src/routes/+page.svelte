@@ -8,6 +8,7 @@
 	import { onDestroy } from 'svelte';
 	import { platform } from '@tauri-apps/plugin-os';
 	import { debug, error, info, trace, warn } from '@tauri-apps/plugin-log';
+	import { open } from '@tauri-apps/plugin-shell';
 
 	function registerShortcut(callback) {
 		window.addEventListener('keydown', function (event) {
@@ -91,8 +92,8 @@
 			{/if}
 			{#if selectedForm !== 'passwordReset'}
 				<button
-					onclick={() => {
-						selectedForm = 'passwordReset';
+					onclick={async () => {
+						await open('https://kine-helper.be/reset-password');
 					}}
 					class="text-gray-600 dark:text-gray-300">
 					{$t('login', 'controls.forgot')}</button>

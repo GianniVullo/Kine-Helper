@@ -4,6 +4,7 @@
 	import { SubmitButton, FormWrapper } from '../index';
 	import { t } from '../../i18n';
 	import { get } from 'svelte/store';
+	
 
 	let message = '';
 
@@ -11,7 +12,7 @@
 		const { data, error } = await supabase.auth.resetPasswordForEmail(
 			formData.email.toLowerCase(),
 			{
-				redirectTo: 'https://kine-helper.be/kine-helper-app/reset-password'
+				redirectTo: 'https://kine-helper.be/reset-password-token'
 			}
 		);
 		console.log(data, error);

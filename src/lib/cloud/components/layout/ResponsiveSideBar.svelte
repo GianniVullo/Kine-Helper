@@ -8,6 +8,7 @@
 	import SignOutIcon from '../../../ui/svgs/SignOutIcon.svelte';
 	import { getModalStore } from '@skeletonlabs/skeleton';
 	import BottomRightControlBar from './BottomRightControlBar.svelte';
+	import { open } from '@tauri-apps/plugin-shell';
 
 	let { children } = $props();
 

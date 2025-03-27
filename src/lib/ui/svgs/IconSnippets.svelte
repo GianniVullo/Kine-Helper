@@ -24,7 +24,8 @@
 		successIcon,
 		arrowRightIcon,
 		arrowBottomIcon,
-		errorIcon
+		errorIcon,
+		mailIcon
 	};
 </script>
 
@@ -377,5 +378,20 @@
 			fill-rule="evenodd"
 			d="M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0Zm-8-5a.75.75 0 0 1 .75.75v4.5a.75.75 0 0 1-1.5 0v-4.5A.75.75 0 0 1 10 5Zm0 10a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z"
 			clip-rule="evenodd" />
+	</svg>
+{/snippet}
+
+{#snippet mailIcon(cls)}
+	<svg
+		xmlns="http://www.w3.org/2000/svg"
+		fill="none"
+		viewBox="0 0 24 24"
+		stroke-width="1.5"
+		stroke="currentColor"
+		class={cls}>
+		<path
+			stroke-linecap="round"
+			stroke-linejoin="round"
+			d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
 	</svg>
 {/snippet}

@@ -1,8 +1,10 @@
 import * as v from 'valibot';
 import { t } from '../../../../i18n';
 import { get } from 'svelte/store';
-import { lock, userIcon } from '../../../../ui/svgs/IconSnippets.svelte';
+import { lock, mailIcon, userIcon } from '../../../../ui/svgs/IconSnippets.svelte';
 import { getModalStore } from '@skeletonlabs/skeleton';
+import { createUser } from '$lib/user-ops-handlers/users';
+import { toast } from '$lib/cloud/libraries/overlays/notificationUtilities.svelte';
 
 const email = v.pipe(
 	v.transform((input) =>
@@ -18,7 +20,7 @@ const password = v.pipe(
 		v.minLength(1, 'Please enter your password.'),
 		v.regex(
 			/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$/,
-			'You password must have 8 characters or more. Contains at least 1 upper case letter, one number and one special caracter'
+			'Your password must have 8 characters or more. Contains at least 1 upper case letter, one number and one special caracter'
 		)
 	)
 );
@@ -52,9 +54,15 @@ export const SignupSchema = v.pipe(
 
 export async function onValid(data) {
 	await createUser(data);
-	const modalStore = getModalStore();
-	modalStore.trigger({
-		body: get(t)('signup', 'emailConfirmation', { email: data.email })
+	const message = get(t)('signup', 'emailConfirmation', { email: data.email });
+	const title = message.split(' <br /><h5 class')[0];
+	const description = '<br /><h5 class' + message.split(' <br /><h5 class')[1];
+
+	toast.trigger({
+		leading: mailIcon,
+		leadingCSS: 'size-6 stroke-green-400',
+		title,
+		description
 	});
 }
 
