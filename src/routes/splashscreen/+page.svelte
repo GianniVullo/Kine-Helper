@@ -178,7 +178,7 @@
 </script>
 
 <div
-	class="flex min-h-screen items-center justify-center bg-gradient-to-br from-primary-500 to-secondary-500 dark:from-primary-700 dark:to-secondary-700">
+	class="flex min-h-screen items-center justify-center bg-gradient-to-br from-purple-500 to-secondary-500 dark:from-purple-700 dark:to-secondary-700">
 	<!--? CENTERED CARD -->
 	<div
 		style="height: 500px;"
@@ -200,7 +200,7 @@
 				<div class="flex items-center justify-between">
 					<h5>{$t('splash', 'loading', null, 'Loading the DOM')}</h5>
 					{@html domLoaded
-						? '<div style="margin: 4px;" class="border-secondary-500 text-4xl w-5 h-5 border-2 rounded-full animate-spin border-b-primary-500"></div>'
+						? '<div style="margin: 4px;" class="border-secondary-500 text-4xl w-5 h-5 border-2 rounded-full animate-spin border-b-purple-500"></div>'
 						: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-7 stroke-secondary-300 h-7"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>'}
 				</div>
 				<div class="flex items-center justify-between">
@@ -210,7 +210,7 @@
 							{#await updatePromise}
 								<div
 									style="margin: 5px;"
-									class="h-5 w-5 animate-spin rounded-full border-2 border-secondary-500 border-t-primary-500 text-4xl">
+									class="h-5 w-5 animate-spin rounded-full border-2 border-secondary-500 border-t-purple-500 text-4xl">
 								</div>
 							{:then value}
 								<svg
@@ -239,7 +239,7 @@
 							{#await langPromise}
 								<div
 									style="margin: 5px;"
-									class="h-5 w-5 animate-spin rounded-full border-2 border-secondary-500 border-t-primary-500 text-4xl">
+									class="h-5 w-5 animate-spin rounded-full border-2 border-secondary-500 border-t-purple-500 text-4xl">
 								</div>
 							{/await}
 						{:else}

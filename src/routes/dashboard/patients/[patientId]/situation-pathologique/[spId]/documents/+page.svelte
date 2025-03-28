@@ -1,6 +1,5 @@
 <script>
-	import { getModalStore } from '@skeletonlabs/skeleton';
-	import { PlusIcon } from '$lib/ui/svgs/index';
+	import { modalStore } from '$lib/cloud/libraries/overlays/modalUtilities.svelte';
 	import dayjs from 'dayjs';
 	import OpenIcon from '../../../../../../../lib/ui/svgs/OpenIcon.svelte';
 	import DeleteIcon from '../../../../../../../lib/ui/svgs/DeleteIcon.svelte';
@@ -13,8 +12,6 @@
 
 	let { data } = $props();
 	let { patient, sp } = data;
-
-	const modalStore = getModalStore();
 
 	let accords = getContext('accords');
 </script>

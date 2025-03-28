@@ -4,7 +4,7 @@ import { createSituationPathologique } from '../../../../user-ops-handlers/situa
 import { get } from 'svelte/store';
 import { goto, invalidate } from '$app/navigation';
 import { info, trace } from '@tauri-apps/plugin-log';
-import { getModalStore } from '@skeletonlabs/skeleton';
+
 import { appState } from '../../../../managers/AppState.svelte';
 import { tarifUnitValidator } from '../tarification-fields/tarifHelpers';
 

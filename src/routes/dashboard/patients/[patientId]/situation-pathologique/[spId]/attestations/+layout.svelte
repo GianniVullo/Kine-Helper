@@ -1,6 +1,6 @@
 <script>
 	import { t } from '../../../../../../../lib/i18n';
-	import { getModalStore } from '@skeletonlabs/skeleton';
+	import { modalStore } from '$lib/cloud/libraries/overlays/modalUtilities.svelte';
 	import SectionTitleWithTabs from '../../../../../../../lib/components/SectionTitleWithTabs.svelte';
 	import BoutonSecondaireAvecIcone from '../../../../../../../lib/components/BoutonSecondaireAvecIcone.svelte';
 	import { addIcon } from '../../../../../../../lib/ui/svgs/IconSnippets.svelte';
@@ -8,9 +8,9 @@
 	import BoutonPrincipalAvecIcone from '../../../../../../../lib/components/BoutonPrincipalAvecIcone.svelte';
 	import { goto } from '$app/navigation';
 	import { setContext } from 'svelte';
+	import FactureCreationModal from '$lib/ui/FactureCreationModal.svelte';
 
 	let { data, children } = $props();
-	const modalStore = getModalStore();
 
 	let { patient, sp } = data;
 
@@ -20,7 +20,7 @@
 
 	const documentSelectionModal = {
 		type: 'component',
-		component: 'factureCreation',
+		component: FactureCreationModal,
 		meta: { sp, patient, factures }
 	};
 
@@ -46,11 +46,15 @@
 	className="space-x-2"
 	{tabs}>
 	{#snippet actions()}
+	{#snippet factureCreationModal()}
+		<FactureCreationModal />
+	{/snippet}
 		<BoutonSecondaireAvecIcone
 			size="sm"
 			onclick={() => {
 				if (sp.attestations.length > 0) {
-					modalStore.trigger(documentSelectionModal);
+					modalStore.component = factureCreationModal;
+					modalStore.trigger({...documentSelectionModal, component: factureCreationModal});
 				} else {
 					modalStore.trigger({
 						title: 'Pas d\'attestations',

@@ -1,5 +1,5 @@
 <script>
-	import { popup } from '@skeletonlabs/skeleton';
+	// import { popup } from '@skeletonlabs/skeleton';
 	import InfoIcon from '../../ui/svgs/InfoIcon.svelte';
 	export let target;
 	export let placement = 'bottom';
@@ -14,7 +14,7 @@
 	};
 </script>
 
-<div class="flex">
+<!-- <div class="flex">
 	<slot />
 	<div use:popup={dejaFaitePopUp}>
 		<InfoIcon class="h-6 w-6" />
@@ -27,4 +27,4 @@
 			</div>
 		</div>
 	</div>
-</div>
+</div> -->

@@ -1,7 +1,7 @@
 <script>
 	import dayjs from 'dayjs';
 	import { OpenIcon, DeleteIcon, UpdateIcon, PlusIcon } from '$lib/ui/svgs/index';
-	import { getModalStore } from '@skeletonlabs/skeleton';
+	import { modalStore } from '$lib/cloud/libraries/overlays/modalUtilities.svelte';
 	import { t } from '../../../../../../../lib/i18n';
 	import {
 		deletePrescription,
@@ -11,7 +11,6 @@
 	import { page } from '$app/state';
 
 	let { data } = $props();
-	const modalStore = getModalStore();
 
 	let patient = $state(data.patient);
 	let sp = $state(data.sp);

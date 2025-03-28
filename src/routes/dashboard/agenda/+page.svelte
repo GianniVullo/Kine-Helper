@@ -1,4 +1,6 @@
-<script>
+
+En construction
+<!-- <script>
 	// import EventCalendar from '$lib/EventCalendar.svelte';
 	import dayjs from 'dayjs';
 	import { LocalDatabase } from '../../../lib/stores/databaseInitializer';
@@ -6,13 +8,12 @@
 	import Calendar from '@event-calendar/core';
 	import TimeGrid from '@event-calendar/time-grid';
 	import DayGrid from '@event-calendar/day-grid';
-	import { getModalStore } from '@skeletonlabs/skeleton';
+	import { modalStore } from '$lib/cloud/libraries/overlays/modalUtilities.svelte';
 	import { locale, t } from '../../../lib/i18n';
 	import { get } from 'svelte/store';
 	import { NomenclatureManager } from '../../../lib/utils/nomenclatureManager';
 	import { patients } from '../../../lib/stores/PatientStore';
 
-	const modalStore = getModalStore();
 
 	let plugins = [TimeGrid, DayGrid];
 	function handleClickOnEvent(info) {
@@ -125,4 +126,4 @@
 <div class="h-full p-4">
 	<h1 class="mb-4 text-lg text-surface-400">Agenda</h1>
 	<Calendar bind:this={ec} {plugins} options={base_options} />
-</div>
+</div> -->

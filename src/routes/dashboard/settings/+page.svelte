@@ -1,5 +1,5 @@
 <script>
-	import { getModalStore } from '@skeletonlabs/skeleton';
+	import { modalStore } from '$lib/cloud/libraries/overlays/modalUtilities.svelte';
 	import SelectFieldV2 from '../../../lib/forms/abstract-fields/SelectFieldV2.svelte';
 	import { writable } from 'svelte/store';
 	import { t, locale, dictionnary } from '../../../lib/i18n';
@@ -15,7 +15,6 @@
 	import { appState } from '../../../lib/managers/AppState.svelte';
 	import { errorIcon, successIcon } from '../../../lib/ui/svgs/IconSnippets.svelte';
 
-	const modalStore = getModalStore();
 	let imprimanteMatricielleP = new Promise(async (resolve, reject) => {
 		let { data: iM, error } = await appState.db.getRawPrinter();
 		if (error) {

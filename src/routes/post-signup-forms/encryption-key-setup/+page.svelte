@@ -1,13 +1,8 @@
 <script>
-	import { invoke } from '@tauri-apps/api/core';
+	import { modalStore } from '$lib/cloud/libraries/overlays/modalUtilities.svelte';
 	import { user } from '../../../lib';
-	import { get } from 'svelte/store';
-	import { generateEncryptionKeys } from '../../../lib/stores/strongHold';
 	import { writeText } from '@tauri-apps/plugin-clipboard-manager';
 	import { t } from '../../../lib/i18n';
-	import { getModalStore } from '@skeletonlabs/skeleton';
-
-	const modalStore = getModalStore();
 	import { goto } from '$app/navigation';
 
 	/**

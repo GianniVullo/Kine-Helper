@@ -1,6 +1,6 @@
 <script>
 	import { page } from '$app/state';
-	import { getModalStore } from '@skeletonlabs/skeleton';
+	import { modalStore } from '$lib/cloud/libraries/overlays/modalUtilities.svelte';
 	import { dropdownItem } from '../components/dropdowns/DropdownSnippets.svelte';
 	import { t } from '../i18n';
 	import { get } from 'svelte/store';
@@ -10,7 +10,6 @@
 	import BoutonPrincipalAvecIcone from '../components/BoutonPrincipalAvecIcone.svelte';
 	import Dropdown from '../components/dropdowns/Dropdown.svelte';
 
-	const modalStore = getModalStore();
 	const modal = () => ({
 		type: 'confirm',
 		title: get(t)('patients.detail', 'pdeleteModal.title'),

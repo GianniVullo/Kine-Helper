@@ -42,22 +42,32 @@ export async function assignCodes({
 		const seancesAlreadyTarifed = sp.seances.filter(
 			(seance) => seance.has_been_attested && seance.seance_type === 0
 		);
+		console.log('seancesAlreadyTarifed', seancesAlreadyTarifed);
+
+		// Définition du compteur et des limites
 		const seancesGeneree = seancesAlreadyTarifed.length + indexOfSeance;
-		if (seancesGeneree < architecture.seances_normales_executables - sp.deja_faites) {
+		console.log('seancesGeneree and indexOfSeance', seancesGeneree, indexOfSeance);
+		const normalCodeLimit = architecture.seances_normales_executables - sp.deja_faites;
+		console.log('normalCodeLimit', normalCodeLimit);
+		const depassementCodeLimit = architecture.seances_en_depassement_executables +
+		architecture.seances_normales_executables -
+		sp.deja_faites;
+		console.log('depassementCodeLimit', depassementCodeLimit);
+		const depassement2CodeLimit = architecture.seances_normales_executables +
+		architecture.seances_en_depassement_executables +
+		architecture.seances_en_surdepassement_executables -
+		sp.deja_faites;
+		console.log('depassement2CodeLimit', depassement2CodeLimit);
+		if (seancesGeneree < normalCodeLimit) {
 			sqlAgreg = await sqlQueryCompiler({ ...queryCompilerArgs, codeType: SEANCE_NORMALE });
 		} else if (
 			seancesGeneree <
-			architecture.seances_en_depassement_executables +
-				architecture.seances_normales_executables -
-				sp.deja_faites
+			depassementCodeLimit
 		) {
 			sqlAgreg = await sqlQueryCompiler({ ...queryCompilerArgs, codeType: DEPASSEMENT });
 		} else if (
 			seancesGeneree <
-			architecture.seances_normales_executables +
-				architecture.seances_en_depassement_executables +
-				architecture.seances_en_surdepassement_executables -
-				sp.deja_faites
+			depassement2CodeLimit
 		) {
 			sqlAgreg = await sqlQueryCompiler({ ...queryCompilerArgs, codeType: DEPASSEMENT2 });
 		}

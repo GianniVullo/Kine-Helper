@@ -1,6 +1,6 @@
 <script>
 	import { page } from '$app/state';
-	import { getModalStore } from '@skeletonlabs/skeleton';
+	import { modalStore } from '$lib/cloud/libraries/overlays/modalUtilities.svelte';
 	import { t } from '../i18n';
 	import { get } from 'svelte/store';
 	import { deleteSituationPathologique } from '../user-ops-handlers/situations_pathologiques';
@@ -23,7 +23,6 @@
 	import dayjs from 'dayjs';
 	import { goto } from '$app/navigation';
 
-	const modalStore = getModalStore();
 	const modal = {
 		type: 'confirm',
 		// Data
@@ -42,10 +41,7 @@
 			}
 		}
 	};
-	const documentSelectionModal = {
-		type: 'component',
-		component: 'documentSelection'
-	};
+
 	let { patient, currentSp } = $props();
 	let items = [
 		{

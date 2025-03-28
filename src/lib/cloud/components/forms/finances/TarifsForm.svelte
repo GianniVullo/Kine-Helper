@@ -8,7 +8,7 @@
 	import { appState } from '../../../../managers/AppState.svelte';
 	import DefaultTarifField from './DefaultTarifField.svelte';
 	import dayjs from 'dayjs';
-	import { getModalStore } from '@skeletonlabs/skeleton';
+	import { modalStore } from '$lib/cloud/libraries/overlays/modalUtilities.svelte';
 	import { get } from 'svelte/store';
 	import { t } from '../../../../i18n';
 	import TarifsListField from './TarifsListField.svelte';
@@ -94,7 +94,6 @@
 		onValid
 	});
 
-	const modalStore = getModalStore();
 	const modal = (element, elementType) => ({
 		type: 'confirm',
 		title: 'Confirmation',
@@ -256,4 +255,4 @@
 	<SubmitButton id="seance-submit" className="col-span-full" />
 </Form>
 
-{JSON.stringify(formHandler.form)}
+<!-- {JSON.stringify(formHandler.form)} -->

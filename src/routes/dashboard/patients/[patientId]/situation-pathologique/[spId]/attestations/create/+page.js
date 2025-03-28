@@ -56,10 +56,7 @@ export async function load({ url, parent }) {
 		sp,
 		patient
 	);
-	let { data: numero, error: storeError } = await appState.db.getItem('num_attestation');
-	if (storeError) {
-		error(500, { message: storeError });
-	}
+	let numero = await appState.db.getItem('num_attestation');
 	return {
 		numero,
 		valeur_totale: valeur_totale.toFixed(2).replace('.', ','),

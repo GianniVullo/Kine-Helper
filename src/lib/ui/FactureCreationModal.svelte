@@ -1,6 +1,5 @@
 <script>
-	// Stores
-	import { getModalStore } from '@skeletonlabs/skeleton';
+	import { modalStore } from '$lib/cloud/libraries/overlays/modalUtilities.svelte';
 	import { FormWrapper, SelectFieldV2, SubmitButton, RadioFieldV2 } from '../forms/index';
 	import dayjs from 'dayjs';
 	import { createFacture } from '../user-ops-handlers/documents';
@@ -11,7 +10,6 @@
 
 	export let parent;
 
-	const modalStore = getModalStore();
 	let formSchema = {
 		isValid,
 		validators: {}

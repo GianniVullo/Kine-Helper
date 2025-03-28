@@ -1,12 +1,11 @@
 <script>
-	import { getModalStore } from '@skeletonlabs/skeleton';
 	import dayjs from 'dayjs';
+	import { modalStore } from '$lib/cloud/libraries/overlays/modalUtilities.svelte';
 	import { patients } from '../stores/PatientStore';
 	import { page } from '$app/stores';
 	import { t } from '../i18n';
 	import { ManipulateurDeSeances } from '../utils/manipulateurDeSeances';
 
-	const modalStore = getModalStore();
 	// <!--*--> IDÉE GÉNÉRALE
 	// Pouvoir offrir une interface pour interagir avec les séances : modifier, déplacer dans le temps, supprimer, tarifier jusque là.
 

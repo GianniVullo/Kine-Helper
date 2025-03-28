@@ -1,5 +1,5 @@
 <script>
-	import { getModalStore } from '@skeletonlabs/skeleton';
+	import { modalStore } from '$lib/cloud/libraries/overlays/modalUtilities.svelte';
 	import dayjs from 'dayjs';
 	import { patients } from '../stores/PatientStore';
 	import { t } from '../i18n';
@@ -11,7 +11,6 @@
 	import { get } from 'svelte/store';
 	import { LocalDatabase } from '../stores/databaseInitializer';
 
-	const modalStore = getModalStore();
 	export let parent;
 
 	let { patient, sp } = page.data;

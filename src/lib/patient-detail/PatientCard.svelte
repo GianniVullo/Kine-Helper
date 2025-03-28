@@ -1,6 +1,6 @@
 <script>
 	// import HomeIcon from '../ui/svgs/HomeIcon.svelte'
-	import { ProgressRadial } from '@skeletonlabs/skeleton';
+	import ProgressRadial from '$lib/forms/ui/ProgressRadial.svelte';
 	import ConsultIcon from '../ui/svgs/ConsultIcon.svelte';
 	import { t } from '../i18n';
 
@@ -15,7 +15,7 @@
 	{#if loading}
 		<div class="mt-4 flex flex-col space-y-2">
 			<p class="text-surface-900">{$t('shared', 'loading')}</p>
-			<ProgressRadial width="w-12" />
+			<ProgressRadial />
 		</div>
 	{:else}
 		<div class="mt-1 flex items-start">

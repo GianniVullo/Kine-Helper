@@ -1,6 +1,6 @@
 <script>
 	import { t } from '../../../../../../../lib/i18n';
-	import { getModalStore } from '@skeletonlabs/skeleton';
+	import { modalStore } from '$lib/cloud/libraries/overlays/modalUtilities.svelte';
 	import SectionTitleWithTabs from '../../../../../../../lib/components/SectionTitleWithTabs.svelte';
 	import { addIcon } from '../../../../../../../lib/ui/svgs/IconSnippets.svelte';
 	import { page } from '$app/state';
@@ -9,7 +9,6 @@
 	import { setContext } from 'svelte';
 
 	let { data, children } = $props();
-	const modalStore = getModalStore();
 
 	let { patient, sp } = data;
 

@@ -6,18 +6,10 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import { patients } from '../../lib/stores/PatientStore';
-	import { get, writable } from 'svelte/store';
 	import dayjs from 'dayjs';
-	import { getModalStore } from '@skeletonlabs/skeleton';
-	import { fade } from 'svelte/transition';
-	import { onMount } from 'svelte';
-	import { fetch } from '@tauri-apps/plugin-http';
-	import { open } from '@tauri-apps/plugin-shell';
-	import { invoke } from '@tauri-apps/api/core';
 	import Calendar from '@event-calendar/core';
 	import TimeGrid from '../../lib/calendar-vkurko/timeGrid';
 
-	const modalStore = getModalStore();
 
 	let plugins = [TimeGrid];
 	let options = {

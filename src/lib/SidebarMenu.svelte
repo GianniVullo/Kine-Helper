@@ -1,14 +1,12 @@
 <script>
 	import logo from '$lib/assets/logo.png';
 	import { SignOutIcon, ChevronRightIcon, ChevronLeftIcon } from './ui/svgs/index';
-	import { getModalStore } from '@skeletonlabs/skeleton';
+	import { modalStore } from './cloud/libraries/overlays/modalUtilities.svelte';
 	import { supabase } from '../lib/stores/supabaseClient';
 	import { goto } from '$app/navigation';
 	import { t, locale } from '../lib/i18n/index';
 	import { get } from 'svelte/store';
 	import { open } from '@tauri-apps/plugin-shell';
-
-	const modalStore = getModalStore();
 
 	let menuItems = [
 		{
@@ -41,7 +39,7 @@
 		body: get(t)('sidebar', 'logout.confirm'),
 		buttonTextCancel: get(t)('shared', 'cancel'),
 		buttonTextConfirm: get(t)('shared', 'confirm'),
-		buttonPositive: 'variant-filled-primary',
+		buttonPositive: 'variant-filled-purple',
 		// TRUE if confirm pressed, FALSE if cancel pressed
 		response: async (r) => {
 			console.log(r);
@@ -61,7 +59,7 @@
 <aside
 	data-minimized={isMinimized}
 	class="isMinimized relative overflow-clip group left-0 top-0 z-10 h-24 border-b border-surface-400 bg-gradient-to-br from-surface-200 to-surface-100 p-6 text-white shadow-lg duration-200 ease-in-out data-[minimized=true]:from-surface-300 data-[minimized=true]:to-surface-200 data-[minimized=true]:p-0 dark:border-surface-800 dark:from-surface-700 dark:to-surface-800 dark:data-[minimized=true]:from-surface-700 dark:data-[minimized=true]:to-surface-800 md:h-full md:w-64 md:border-r data-[minimized=true]:md:h-full data-[minimized=true]:md:w-12">
-	<h2 class:mb-6={!isMinimized} class="text-xl font-medium text-primary-600 dark:text-primary-400">
+	<h2 class:mb-6={!isMinimized} class="text-xl font-medium text-purple-600 dark:text-purple-400">
 		{isMinimized ? '' : 'Kiné Helper'}
 	</h2>
 
@@ -96,7 +94,7 @@
 							viewBox="0 0 24 24"
 							stroke-width="1.5"
 							stroke="currentColor"
-							class="h-6 w-6 grow stroke-primary-500 group-data-[minimized=true]:h-8 group-data-[minimized=true]:w-8 group-data-[minimized=true]:stroke-primary-600 group-data-[minimized=true]:duration-200 group-data-[minimized=true]:hover:scale-105 group-data-[minimized=true]:hover:stroke-primary-700 dark:stroke-primary-200 group-data-[minimized=true]:dark:stroke-primary-400 group-data-[minimized=true]:dark:hover:stroke-primary-300">
+							class="h-6 w-6 grow stroke-purple-500 group-data-[minimized=true]:h-8 group-data-[minimized=true]:w-8 group-data-[minimized=true]:stroke-purple-600 group-data-[minimized=true]:duration-200 group-data-[minimized=true]:hover:scale-105 group-data-[minimized=true]:hover:stroke-purple-700 dark:stroke-purple-200 group-data-[minimized=true]:dark:stroke-purple-400 group-data-[minimized=true]:dark:hover:stroke-purple-300">
 							{@html item.svg}
 						</svg>
 						{#if !isMinimized}
@@ -111,7 +109,7 @@
 					class="flex rounded-lg px-4 py-2 text-surface-800 no-underline duration-200 ease-in hover:bg-gray-50 hover:bg-opacity-10 group-data-[minimized=true]:items-center group-data-[minimized=true]:px-2 dark:text-surface-200"
 					on:click={() => modalStore.trigger(modal)}>
 					<SignOutIcon
-						class="h-6 w-6 grow stroke-primary-500 group-data-[minimized=true]:h-8 group-data-[minimized=true]:w-8 group-data-[minimized=true]:stroke-primary-600 group-data-[minimized=true]:duration-200 group-data-[minimized=true]:hover:scale-105 group-data-[minimized=true]:hover:stroke-primary-700 dark:stroke-primary-200 group-data-[minimized=true]:dark:stroke-primary-400 group-data-[minimized=true]:dark:hover:stroke-primary-300" />
+						class="h-6 w-6 grow stroke-purple-500 group-data-[minimized=true]:h-8 group-data-[minimized=true]:w-8 group-data-[minimized=true]:stroke-purple-600 group-data-[minimized=true]:duration-200 group-data-[minimized=true]:hover:scale-105 group-data-[minimized=true]:hover:stroke-purple-700 dark:stroke-purple-200 group-data-[minimized=true]:dark:stroke-purple-400 group-data-[minimized=true]:dark:hover:stroke-purple-300" />
 					{#if !isMinimized}
 						<p class="ml-3 grow-[2]">{$t('sidebar', 'logout', null, "Log out")}</p>
 					{/if}
@@ -146,7 +144,7 @@
 						viewBox="0 0 24 24"
 						stroke-width="1.5"
 						stroke="currentColor"
-						class="h-6 w-6 grow stroke-primary-500 group-data-[minimized=true]:h-8 group-data-[minimized=true]:w-8 group-data-[minimized=true]:stroke-primary-600 group-data-[minimized=true]:duration-200 group-data-[minimized=true]:hover:scale-105 group-data-[minimized=true]:hover:stroke-primary-700 dark:stroke-primary-200 group-data-[minimized=true]:dark:stroke-primary-400 group-data-[minimized=true]:dark:hover:stroke-primary-300">
+						class="h-6 w-6 grow stroke-purple-500 group-data-[minimized=true]:h-8 group-data-[minimized=true]:w-8 group-data-[minimized=true]:stroke-purple-600 group-data-[minimized=true]:duration-200 group-data-[minimized=true]:hover:scale-105 group-data-[minimized=true]:hover:stroke-purple-700 dark:stroke-purple-200 group-data-[minimized=true]:dark:stroke-purple-400 group-data-[minimized=true]:dark:hover:stroke-purple-300">
 						<path
 							stroke-linecap="round"
 							stroke-linejoin="round"
@@ -163,7 +161,7 @@
 					class="flex w-full rounded-lg px-4 py-2 text-surface-800 no-underline duration-200 ease-in hover:bg-gray-50 hover:bg-opacity-10 group-data-[minimized=true]:items-center group-data-[minimized=true]:px-2 dark:text-surface-200"
 					on:click={() => modalStore.trigger(bugReportModal)}>
 					<div
-						class="h-6 w-6 flex grow items-center justify-center text-xl text-primary-500 group-data-[minimized=true]:w-full group-data-[minimized=true]:text-3xl group-data-[minimized=true]:text-primary-600 group-data-[minimized=true]:duration-200 group-data-[minimized=true]:hover:scale-105 group-data-[minimized=true]:hover:text-primary-700 dark:text-primary-200 group-data-[minimized=true]:dark:text-primary-400 group-data-[minimized=true]:dark:hover:text-primary-300 text-left">
+						class="h-6 w-6 flex grow items-center justify-center text-xl text-purple-500 group-data-[minimized=true]:w-full group-data-[minimized=true]:text-3xl group-data-[minimized=true]:text-purple-600 group-data-[minimized=true]:duration-200 group-data-[minimized=true]:hover:scale-105 group-data-[minimized=true]:hover:text-purple-700 dark:text-purple-200 group-data-[minimized=true]:dark:text-purple-400 group-data-[minimized=true]:dark:hover:text-purple-300 text-left">
 						?
 					</div>
 					{#if !isMinimized}
@@ -172,7 +170,7 @@
 				</button>
 			</li>
 			<div
-				class="absolute -bottom-8 -left-10 h-14 w-14 rounded-full bg-primary-600 opacity-25 duration-200 group-data-[minimized=false]:-left-44 group-data-[minimized=true]:hidden group-data-[minimized=false]:h-48 group-data-[minimized=false]:w-48 dark:opacity-60 md:relative group-data-[minimized=false]:md:bottom-6">
+				class="absolute -bottom-8 -left-10 h-14 w-14 rounded-full bg-purple-600 opacity-25 duration-200 group-data-[minimized=false]:-left-44 group-data-[minimized=true]:hidden group-data-[minimized=false]:h-48 group-data-[minimized=false]:w-48 dark:opacity-60 md:relative group-data-[minimized=false]:md:bottom-6">
 			</div>
 		</ul>
 	</nav>

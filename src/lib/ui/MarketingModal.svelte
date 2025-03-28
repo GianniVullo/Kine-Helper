@@ -1,6 +1,5 @@
 <script>
-	// Stores
-	import { getModalStore } from '@skeletonlabs/skeleton';
+	import { modalStore } from '$lib/cloud/libraries/overlays/modalUtilities.svelte';
 	import { t, locale } from '../i18n';
 	import { get } from 'svelte/store';
 	import { parse } from 'svelte/compiler';
@@ -8,7 +7,6 @@
 
 	export let parent;
 
-	const modalStore = getModalStore();
 	const pub = $modalStore[0]?.meta.pub;
 	// Base Classes
 	const cBase = 'card p-4 w-modal shadow-xl';

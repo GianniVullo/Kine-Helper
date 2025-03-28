@@ -36,7 +36,11 @@ export class DatabaseManager {
 	}
 
 	async getItem(key) {
-		return await this.select(`SELECT value FROM key_value WHERE key = $1`, [key]);
+		const {data, error}= await this.select(`SELECT value FROM key_value WHERE key = $1`, [key]);
+		if (error || !data?.[0]?.value) {
+			return null;
+		}
+		return data[0].value;
 	}
 
 	async deleteItem(key) {
@@ -128,7 +132,7 @@ export class DatabaseManager {
 			return { data: null, error: seancesError };
 		}
 		seances.map((seance) => {
-			seance.metadata = JSON.parse(seance.metadata);
+			typeof seance.metadata === 'string' && (seance.metadata = JSON.parse(seance.metadata));
 			typeof seance.indemnite === 'string' && (seance.indemnite = JSON.parse(seance.indemnite));
 			typeof seance.rapport_ecrit === 'string' &&
 				(seance.rapport_ecrit = JSON.parse(seance.rapport_ecrit));

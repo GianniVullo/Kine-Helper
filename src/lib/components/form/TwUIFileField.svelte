@@ -41,8 +41,8 @@
 
 		label1.innerHTML = 'Relâcher pour sélectionner ce(s) fichier(s)';
 		label2.innerHTML = '';
-		dropZone.classList.add('border-primary-500');
-		dropZone.classList.add('bg-primary-500/20');
+		dropZone.classList.add('border-purple-500');
+		dropZone.classList.add('bg-purple-500/20');
 		dropZone.classList.remove('border-dashed');
 	}
 	function changeStylesOnDragLeave(node) {
@@ -52,8 +52,8 @@
 
 		label1.innerHTML = 'Téléchargez un fichier';
 		label2.innerHTML = 'ou glissez-déposez un fichier';
-		dropZone.classList.remove('border-primary-500');
-		dropZone.classList.remove('bg-primary-500/20');
+		dropZone.classList.remove('border-purple-500');
+		dropZone.classList.remove('bg-purple-500/20');
 		dropZone.classList.add('border-dashed');
 	}
 </script>

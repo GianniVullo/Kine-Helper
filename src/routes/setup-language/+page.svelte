@@ -103,7 +103,7 @@
 						id={`inner-${item}`}
 						class="absolute left-[50%] top-[50%] hidden translate-x-[-50%] translate-y-[-50%] items-center justify-center duration-150">
 						<div
-							class="h-10 w-10 animate-spin rounded-full border-2 border-secondary-500 border-l-primary-500">
+							class="h-10 w-10 animate-spin rounded-full border-2 border-secondary-500 border-l-purple-500">
 						</div>
 					</div>
 					<div id={`inner-${item}`}>{item}</div></button>

@@ -2,7 +2,6 @@ import * as v from 'valibot';
 import { t } from '../../../../i18n';
 import { get } from 'svelte/store';
 import { lock, mailIcon, userIcon } from '../../../../ui/svgs/IconSnippets.svelte';
-import { getModalStore } from '@skeletonlabs/skeleton';
 import { createUser } from '$lib/user-ops-handlers/users';
 import { toast } from '$lib/cloud/libraries/overlays/notificationUtilities.svelte';
 

@@ -4,10 +4,8 @@
 	import { dev } from '$app/environment';
 	import { patients } from '../../lib/stores/PatientStore';
 	import dayjs from 'dayjs';
-	import { getModalStore } from '@skeletonlabs/skeleton';
 	import { appState } from '../../lib/managers/AppState.svelte';
 
-	const modalStore = getModalStore();
 
 	function getTodaysAppointments() {
 		// let today = "date('now')";

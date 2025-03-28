@@ -9,7 +9,7 @@ export class FactureMutuelle extends PDFGeneration {
 		super(formData.id, formData, patient, sp, 9, 'factures', formData);
 		const attestationsIds = attestations.map((a) => a.attestation_id);
 		let seances = sp.seances.filter((s) => attestationsIds.includes(s.attestation_id));
-		const has_intake = seances.some((s) => s.metadata.intake);
+		const has_intake = seances.some((s) => s.metadata?.intake);
 		const has_rapport_ecrit = seances.some((s) => s.rapport_ecrit);
 		const has_indemnite = seances.some((s) => s.indemnite);
 		console.log('has_intake', has_intake);

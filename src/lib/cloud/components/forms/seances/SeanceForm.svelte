@@ -24,12 +24,11 @@
 	import { page } from '$app/state';
 	import { t } from '../../../../i18n';
 	import SupplementField from '../tarification-fields/SupplementField.svelte';
-	import { getModalStore } from '@skeletonlabs/skeleton';
+	import { modalStore } from '$lib/cloud/libraries/overlays/modalUtilities.svelte';
 	import TarifsListField from '../finances/TarifsListField.svelte';
 	import dayjs from 'dayjs';
 	import { clock } from '../../../../ui/svgs/IconSnippets.svelte';
 
-	const modalStore = getModalStore();
 	let fromCalendarDate = page.url.searchParams.get('date');
 	let now = dayjs().format('YYYY-MM-DD');
 
@@ -50,7 +49,7 @@
 		duree: seance?.duree ?? sp.duree,
 		seanceType:
 			typeof seance?.seance_type === 'number' ? seanceTypes[seance.seance_type] : undefined,
-		lieu_id: seance?.lieu_id ?? sp.lieu_id,
+		lieu_id: seance?.lieu_id ?? sp?.lieu_id,
 		start: seance?.start,
 		duree_custom:
 			seance?.metadata?.duree_custom ?? defineDuree(sp.duree, sp.patho_lourde_type, sp.lieu_id),
@@ -75,7 +74,7 @@
 		...tarifMetadata,
 		supplements: seance?.metadata?.supplements ?? []
 	};
-	console.log('initialValues', initialValues);
+	console.log('splieud', sp.lieu_id === 3);
 	let formHandler = new Formulaire({
 		validateurs,
 		schema: SeanceSchema,
@@ -232,7 +231,7 @@
 	</FormSection>
 	<FormSection titre="Information relative à la tarification">
 		<!--* Indemnité -->
-		{#if sp.iieu_id === 3 || seance.lieu_id === 6}
+		{#if sp.lieu_id === 3 || seance?.lieu_id === 3}
 			<Field
 				field={checkboxesFields[0]}
 				error={formHandler.errors?.[checkboxesFields[0].name]}

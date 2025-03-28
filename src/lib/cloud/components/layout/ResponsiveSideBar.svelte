@@ -6,14 +6,13 @@
 	import { t, locale } from '$lib/i18n/index';
 	import { get } from 'svelte/store';
 	import SignOutIcon from '../../../ui/svgs/SignOutIcon.svelte';
-	import { getModalStore } from '@skeletonlabs/skeleton';
+	import { modalStore } from '$lib/cloud/libraries/overlays/modalUtilities.svelte';
 	import BottomRightControlBar from './BottomRightControlBar.svelte';
 	import { open } from '@tauri-apps/plugin-shell';
 
 	let { children } = $props();
 
 	let showDrawer = $state(false);
-	const modalStore = getModalStore();
 	let menuItems = [
 		{
 			name: get(t)('sidebar', 'dashboard'),

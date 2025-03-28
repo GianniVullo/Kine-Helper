@@ -3,13 +3,11 @@
 	import TimeGrid from '@event-calendar/time-grid';
 	import DayGrid from '@event-calendar/day-grid';
 	import index from '@event-calendar/interaction';
-	import { getModalStore } from '@skeletonlabs/skeleton';
 	import { locale, t } from './i18n';
 	import { get } from 'svelte/store';
 	import { drawer } from './cloud/libraries/overlays/drawerUtilities.svelte';
 	import CalendarEventModal from '../lib/ui/CalendarEventModal.svelte';
 
-	const modalStore = getModalStore();
 
 	let { events = undefined, eventSource = undefined, options, ec } = $props();
 
@@ -51,11 +49,11 @@
 			...theme,
 			// day: 'ec-day !bg-surface-100 dark:!bg-surface-800',
 			// body: 'ec-body h-96',
-			// button: 'btn btn-sm variant-filled-primary',
-			// buttonGroup: 'btn-group variant-filled-primary [&>*+*]:border-white',
+			// button: 'btn btn-sm variant-filled-purple',
+			// buttonGroup: 'btn-group variant-filled-purple [&>*+*]:border-white',
 			event:
-				'ec-event !text-primary-500 !bg-primary-50 hover:!bg-primary-100 hover:text-primary-700',
-			eventTitle: 'font-semibold text-primary-700',
+				'ec-event !text-purple-500 !bg-purple-50 hover:!bg-purple-100 hover:text-purple-700',
+			eventTitle: 'font-semibold text-purple-700',
 			toolbar:
 				'ec-toolbar flex space-y-2 sm:space-y-0 items-start sm:items-center flex-col sm:flex-row'
 			// timeGrid: 'ec-time-grid !h-20',

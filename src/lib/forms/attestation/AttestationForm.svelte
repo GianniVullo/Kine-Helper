@@ -56,7 +56,7 @@
 			{/if}
 			<p class="text-surface-400">
 				{$t('attestation.form', 'help')} "<a
-					class="text-primary-500 hover:underline dark:text-primary-400"
+					class="text-purple-500 hover:underline dark:text-purple-400"
 					href={`/dashboard/patients/${patient.patient_id}/situation-pathologique/${sp.sp_id}/update`}
 					>{$t('shared', 'pathologicalSituation')}</a
 				>"

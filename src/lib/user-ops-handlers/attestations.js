@@ -95,10 +95,11 @@ export async function createAttestation(data) {
 		let { data: factureAttestation, error: factureAttestationError } = await appState.db.insert(
 			'factures_attestations',
 			{
-				facture_id: facturePatient.id,
+				facture_id: data.facturePatient.id,
 				attestation_id: data.attestation.attestation_id
 			}
 		);
+		console.log('factureAttestation', factureAttestation);
 		if (factureAttestationError) {
 			return { error: factureAttestationError };
 		}
@@ -115,7 +116,7 @@ export async function createAttestation(data) {
 		let { data: factureAttestation, error: factureAttestationError } = await appState.db.insert(
 			'factures_attestations',
 			{
-				facture_id: factureMutuelle.id,
+				facture_id: data.factureMutuelle.id,
 				attestation_id: data.attestation.attestation_id
 			}
 		);
@@ -151,8 +152,10 @@ export async function createAttestation(data) {
 	// Mise à jour de num_attestation
 	let { data: numero, error: storeError } = await appState.db.setItem(
 		'num_attestation',
-		data.attestation.numero + 1
+		parseInt(data.attestation.numero) + 1
 	);
+	console.log('numeroQueryResult', numero);
+	
 	if (storeError) {
 		return { error: storeError };
 	}

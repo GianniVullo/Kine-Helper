@@ -232,7 +232,7 @@ async function getData(facture) {
 		[facture.id]
 	);
 	pseudoState.map((s) => {
-		s.metadata = JSON.parse(s.metadata);
+		typeof s.metadata === 'string' && (s.metadata = JSON.parse(s.metadata));
 		typeof s.indemnite === 'string' && (s.indemnite = JSON.parse(s.indemnite));
 		typeof s.rapport_ecrit === 'string' && (s.rapport_ecrit = JSON.parse(s.rapport_ecrit));
 	});
@@ -241,7 +241,6 @@ async function getData(facture) {
 		return { error: codesError };
 	}
 	let codes = new Map();
-	console.log('code_ids', code_ids);
 	for (const { code_id } of code_ids) {
 		const { data: code, error: codeError } = await appState.db.select(
 			'SELECT * FROM codes WHERE code_id = $1',
@@ -265,7 +264,7 @@ async function getData(facture) {
 		firstCode.duree,
 		firstCode.convention_id
 	];
-	if (pseudoState.some((s) => s.metadata.intake)) {
+	if (pseudoState.some((s) => s.metadata?.intake)) {
 		const { data: intakes, error: intakeError } = await appState.db.select(
 			'SELECT * FROM codes WHERE groupe = 0 AND lieu = $1 AND convention_id = $2 AND type = 6;',
 			[firstCode.lieu, firstCode.convention_id, 6]

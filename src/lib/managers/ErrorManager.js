@@ -1,4 +1,4 @@
-import { getModalStore } from '@skeletonlabs/skeleton';
+import { modalStore } from "$lib/cloud/libraries/overlays/modalUtilities.svelte";
 
 /**
  ** Error manager est responsable de déclencher les différentes actions en cas d'erreur :
@@ -12,7 +12,6 @@ class ErrorManager {
 	constructor() {}
 
 	displayErrorModal(errorMessage) {
-		const modalStore = getModalStore();
 		modalStore.trigger({
 			type: 'alert',
 			title: 'Erreur',

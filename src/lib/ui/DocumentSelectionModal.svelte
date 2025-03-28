@@ -1,6 +1,5 @@
 <script>
-	// Stores
-	import { getModalStore } from '@skeletonlabs/skeleton';
+	import { modalStore } from '$lib/cloud/libraries/overlays/modalUtilities.svelte';
 	import { FormWrapper, SubmitButton, RadioFieldV2 } from '../forms/index';
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
@@ -14,8 +13,6 @@
 	import { onMount } from 'svelte';
 
 	export let parent;
-
-	const modalStore = getModalStore();
 
 	const { accords } = $modalStore[0].meta;
 	const options = [

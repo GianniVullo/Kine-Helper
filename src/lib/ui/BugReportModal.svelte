@@ -1,6 +1,5 @@
 <script>
-	// Stores
-	import { getModalStore } from '@skeletonlabs/skeleton';
+	import { modalStore } from '$lib/cloud/libraries/overlays/modalUtilities.svelte';
 	import { FormWrapper, TextFieldV2, DefaultFieldWrapper, CheckboxFieldV2 } from '../forms/index';
 	import { user } from '../stores/UserStore';
 	import { get } from 'svelte/store';
@@ -9,8 +8,6 @@
 	import { t } from '../i18n';
 
 	export let parent;
-
-	const modalStore = getModalStore();
 
 	// Form Data
 	const request = {

@@ -3,7 +3,6 @@
 	import LoginForm from '../lib/cloud/components/forms/authentication/LoginForm.svelte';
 	import SignUpForm from '../lib/cloud/components/forms/authentication/SignUpForm.svelte';
 	import { t } from '../lib/i18n';
-	import { getToastStore } from '@skeletonlabs/skeleton';
 	import { goto } from '$app/navigation';
 	import { onDestroy } from 'svelte';
 	import { platform } from '@tauri-apps/plugin-os';
@@ -30,16 +29,15 @@
 		window.removeEventListener('keydown', shortcutHandler);
 	});
 
-	const toastStore = getToastStore();
 	let selectedForm = 'login';
 	let message = '';
 </script>
 
 <div
-	class="flex min-h-screen items-center justify-center bg-gradient-to-br from-primary-500 to-secondary-500 dark:from-primary-700 dark:to-secondary-700">
+	class="flex min-h-screen items-center justify-center bg-gradient-to-br from-purple-500 to-indigo-500">
 	<!--? CENTERED CARD -->
 	<div
-		class="card relative w-[350px] space-y-2 overflow-hidden px-6 py-4 dark:border dark:border-gray-400">
+		class="bg-white relative w-[350px] space-y-2 overflow-hidden px-6 py-4 dark:border dark:border-gray-400">
 		<div
 			class="absolute -right-16 -top-16 h-32 w-32 rounded-full bg-purple-600 opacity-25 dark:opacity-50">
 		</div>
@@ -50,7 +48,7 @@
 			<h2 class="mb-2 text-center text-2xl font-bold text-purple-600 dark:text-purple-400">
 				Kiné Helper
 			</h2>
-			<p class=" text-center text-sm text-gray-600 dark:text-gray-300">
+			<p class=" text-center text-sm text-gray-600">
 				{$t('login', 'subtitle')}
 			</p>
 		</div>
@@ -61,11 +59,11 @@
 				on:onSignupSuccess={(msg) => {
 					console.log(msg);
 					selectedForm = 'login';
-					toastStore.trigger({
-						autohide: false,
-						background: 'variant-filled',
-						message: msg.detail.message
-					});
+					// toastStore.trigger({
+					// 	autohide: false,
+					// 	background: 'variant-filled',
+					// 	message: msg.detail.message
+					// });
 				}} />
 		{:else}
 			<PasswordResetForm />
@@ -74,7 +72,7 @@
 			{#if selectedForm == 'login'}
 				<button
 					onclick={() => (selectedForm = 'signup')}
-					class="group text-gray-600 dark:text-gray-300"
+					class="group text-gray-600"
 					>{$t('login', 'controls.register.question')}
 					<span class="border-purple-500 text-base duration-200 group-hover:border-b"
 						>{$t('login', 'controls.register.link')}</span
@@ -82,7 +80,7 @@
 			{:else}
 				<button
 					onclick={() => (selectedForm = 'login')}
-					class="group text-gray-600 dark:text-gray-300"
+					class="group text-gray-600"
 					>{@html selectedForm == 'passwordReset'
 						? $t('login', 'controls.resetCancel')
 						: $t('login', 'controls.SignupCancel')}<span
@@ -95,7 +93,7 @@
 					onclick={async () => {
 						await open('https://kine-helper.be/reset-password');
 					}}
-					class="text-gray-600 dark:text-gray-300">
+					class="text-gray-600">
 					{$t('login', 'controls.forgot')}</button>
 			{/if}
 		</div>

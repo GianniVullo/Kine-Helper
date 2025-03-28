@@ -1,5 +1,5 @@
 <script>
-	import { Autocomplete, popup } from '@skeletonlabs/skeleton';
+	// import { Autocomplete, popup } from '@skeletonlabs/skeleton';
 	import DefaultFieldWrapper from './DefaultFieldWrapper.svelte';
 	export let query = '';
 	export let required = undefined;
@@ -40,6 +40,6 @@
 		data-popup="popupAutocomplete"
 		class="card hide-scrollbar max-h-48 w-full max-w-sm overflow-scroll bg-surface-300 p-4 shadow-lg dark:bg-surface-700"
 		tabindex="-1">
-		<Autocomplete bind:input={query} {options} on:selection={onOptionSelection} />
+		<!-- <Autocomplete bind:input={query} {options} on:selection={onOptionSelection} /> -->
 	</div>
 </DefaultFieldWrapper>

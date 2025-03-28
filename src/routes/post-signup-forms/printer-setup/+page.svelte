@@ -1,5 +1,5 @@
 <script>
-	import { getModalStore } from '@skeletonlabs/skeleton';
+	import { modalStore } from '$lib/cloud/libraries/overlays/modalUtilities.svelte';
 	import { open } from '@tauri-apps/plugin-shell';
 	import { FormWrapper, SubmitButton } from '../../../lib/forms/index';
 	import { goto } from '$app/navigation';
@@ -12,7 +12,6 @@
 	import { appState } from '../../../lib/managers/AppState.svelte';
 
 
-	const modalStore = getModalStore();
 	const modal = {
 		type: 'confirm',
 		title: get(t)('printerSetup', 'confirmModal.title'),
@@ -120,7 +119,7 @@
 		</FormWrapper>
 	</div>
 	<div class="mt-14 flex flex-col">
-		<h3 class="mb-4 text-2xl text-primary-600 dark:text-primary-500">
+		<h3 class="mb-4 text-2xl text-purple-600 dark:text-purple-500">
 			{$t('printerSetup', 'important')}
 		</h3>
 		<p>

@@ -1,11 +1,6 @@
 <script>
 	import '../app.css';
-	import { Toast, Modal } from '@skeletonlabs/skeleton';
-	import { initializeStores } from '@skeletonlabs/skeleton';
-	import { computePosition, autoUpdate, offset, shift, flip, arrow } from '@floating-ui/dom';
-	import { storePopup } from '@skeletonlabs/skeleton';
 	import DocumentSelectionModal from '../lib/ui/DocumentSelectionModal.svelte';
-	import { page } from '$app/stores';
 	import CalendarEventModal from '../lib/ui/CalendarEventModal.svelte';
 	import BugReportModal from '../lib/ui/BugReportModal.svelte';
 	import FactureCreationModal from '../lib/ui/FactureCreationModal.svelte';
@@ -15,20 +10,7 @@
 	import MarketingModal from '../lib/ui/MarketingModal.svelte';
 	import Drawer from '../lib/cloud/libraries/overlays/Drawer.svelte';
 	import Notification from '../lib/cloud/libraries/overlays/Notification.svelte';
-
-	initializeStores();
-
-	const modalRegistry = {
-		// Set a unique modal ID, then pass the component reference
-		bugReport: { ref: BugReportModal },
-		factureCreation: { ref: FactureCreationModal },
-		documentSelection: { ref: DocumentSelectionModal },
-		calendarEvent: { ref: CalendarEventModal },
-		multipleEventSelection: { ref: MultipleEventSelectionModal },
-		seanceCreationModal: { ref: SeanceCreationModal },
-		marketingModal: { ref: MarketingModal }
-		// ...
-	};
+	import Modal from '$lib/cloud/libraries/overlays/Modal.svelte';
 
 	onMount(() => {
 		const myEvent = new CustomEvent('svelteLoaded', {
@@ -36,12 +18,12 @@
 		});
 		document.dispatchEvent(myEvent);
 	});
-	storePopup.set({ computePosition, autoUpdate, offset, shift, flip, arrow });
 </script>
 
 <Notification />
 <Drawer />
-<Toast position="tr" rounded="rounded-lg" shadow="shadow-xl" />
-<Modal components={modalRegistry} />
+<Modal />
+<!-- <Toast position="tr" rounded="rounded-lg" shadow="shadow-xl" /> -->
+<!-- <Modal components={modalRegistry} /> -->
 
 <slot />

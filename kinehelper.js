@@ -95,6 +95,5 @@ export const kineHelper = {
 		"--color-surface-700": "55 68 107", // #37446b
 		"--color-surface-800": "44 54 86", // #2c3656
 		"--color-surface-900": "36 44 70", // #242c46
-		
 	}
 }

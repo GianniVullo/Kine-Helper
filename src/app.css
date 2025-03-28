@@ -1,10 +1,6 @@
 @import "tailwindcss";
-
-:root [data-theme='kine-helper'] {
-	--theme-rounded-base: 3px;
-	--theme-rounded-container: 5px;
-}
-
+@plugin '@tailwindcss/forms';
+@plugin '@tailwindcss/typography';
 /* .ec {
 	--ec-today-bg-color: #af2a2a;
 	--ec-list-day-bg-color: #af2a2a;

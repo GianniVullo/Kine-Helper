@@ -1,9 +1,9 @@
 <script>
 	import { beforeNavigate, goto } from '$app/navigation';
-	import { getModalStore } from '@skeletonlabs/skeleton';
+	import { modalStore } from '$lib/cloud/libraries/overlays/modalUtilities.svelte';
 
 	let { children } = $props();
-	const modalStore = getModalStore();
+	
 	beforeNavigate((event) => {
 		if (confirmedWantsToLeave || !formHandler.isTainted()) {
 			window.onbeforeunload = undefined;

@@ -1,5 +1,5 @@
 <script>
-	import { getModalStore } from '@skeletonlabs/skeleton';
+	import { modalStore } from '$lib/cloud/libraries/overlays/modalUtilities.svelte';
 	import { PlusIcon, PrinterIcon, UpdateIcon, DeleteIcon } from '$lib/ui/svgs/index';
 	import { page } from '$app/stores';
 	import dayjs from 'dayjs';
@@ -32,7 +32,6 @@
 
 	let { data } = $props();
 	let { patient, sp } = data;
-	const modalStore = getModalStore();
 	function prescription(prescriptionId) {
 		return sp.prescriptions.find((prescription) => prescription.prescription_id === prescriptionId);
 	}

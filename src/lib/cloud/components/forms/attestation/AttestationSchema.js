@@ -192,9 +192,9 @@ export async function onValid(data) {
 		trace('Engaging Attestation modification');
 		// <!--* UPDATE PROCEDURE -->
 		// TODO
-		await invalidate('patient:layout');
 		info('Attestation modified done Successfully');
 	}
+	await invalidate('patient:layout');
 
 	goto(
 		'/dashboard/patients/' +
@@ -432,7 +432,7 @@ export async function groupSeanceInAttestations(seancesToDealWith, sp, patient) 
 			const { data: code_seance, error: codeManagerError } = await assignCodes({
 				sp,
 				seance,
-				indexOfSeance: seances.indexOf(seance),
+				indexOfSeance: seancesToDealWith.indexOf(seance),
 				architecture: new NomenclatureArchitecture(patient, {
 					groupe_id: sp.groupe_id,
 					duree: seance.duree,
@@ -463,11 +463,11 @@ export async function groupSeanceInAttestations(seancesToDealWith, sp, patient) 
 			 **			- sinon on essaye de prendre dans les paramètres généraux (table tarif dans la db)
 			 **			- sinon on prends la valeur du code
 			 */
-			if (patient.bim || appState.user.conventionne) {
+			if (patient.bim || appState.user.conventionne || !seance?.metadata?.tarif_seance || !sp?.metadata?.tarif_seance) {
 				valeur_totale_seance += code_seance[0].honoraire;
 				total_recu_seance += computeTotalRecu(code_seance[0], patient);
 			} else {
-				let tarif = seance.metadata.tarif_seance || sp.metadata.tarif_seance;
+				let tarif = seance?.metadata?.tarif_seance || sp?.metadata?.tarif_seance;
 				if (!tarif) {
 					const { data: fetchedTarif, error: fetchError } = await appState.db.select(
 						`SELECT valeur FROM tarifs WHERE json_extract(metadata, '$.seance') is not null;`
@@ -515,7 +515,7 @@ export async function groupSeanceInAttestations(seancesToDealWith, sp, patient) 
 				}
 			}
 			metadataCode.kine = code_seance[0];
-			if (seance.metadata.intake) {
+			if (seance.metadata?.intake) {
 				const intake = convention.filter((c) => c.lieu === seance.lieu_id && c.type === INTAKE);
 				intake.length !== 1 && errorSvelte(500, { message: "Pas de code trouvé pour l'intake" });
 				console.log('intake = ', intake);
@@ -580,7 +580,7 @@ export async function groupSeanceInAttestations(seancesToDealWith, sp, patient) 
 				lineId++;
 			}
 			// TODO Ajouter les suppléments et aussi prendre en compte si il y a un tarif personnalisé
-			if (seance.metadata.supplements) {
+			if (seance.metadata?.supplements) {
 				for (const supplement_id of seance.metadata.supplements) {
 					const { data: supplements, error: supplError } = await appState.db.select(
 						`SELECT * FROM supplements WHERE id = $1;`,
@@ -595,7 +595,7 @@ export async function groupSeanceInAttestations(seancesToDealWith, sp, patient) 
 					total_recu_seance += supplementValue;
 				}
 			}
-			if (seance.metadata.supplements_ponctuels) {
+			if (seance.metadata?.supplements_ponctuels) {
 				for (const { valeur } of seance.metadata.supplements_ponctuels) {
 					const supplementValue = convertToFloat(valeur);
 					console.log('supplement_ponctuel_value = ', supplementValue);
@@ -607,6 +607,9 @@ export async function groupSeanceInAttestations(seancesToDealWith, sp, patient) 
 			total_recu += total_recu_seance;
 			console.log('valeur_totale = ', valeur_totale);
 			console.log('total_recu = ', total_recu);
+			if (!seance.metadata) {
+				seance.metadata = {};				
+			}
 			seance.metadata.codes = metadataCode;
 			seance.metadata.valeur_totale = valeur_totale_seance;
 			seance.metadata.total_recu = total_recu_seance;

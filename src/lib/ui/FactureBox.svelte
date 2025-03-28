@@ -1,6 +1,6 @@
 <script>
 	import { OpenIcon, DeleteIcon } from '$lib/ui/svgs/index';
-	import { getModalStore } from '@skeletonlabs/skeleton';
+	import { modalStore } from '$lib/cloud/libraries/overlays/modalUtilities.svelte';
 	import dayjs from 'dayjs';
 	import {
 		deleteFacture,
@@ -11,7 +11,6 @@
 	import { page } from '$app/state';
 	import { getContext } from 'svelte';
 
-	const modalStore = getModalStore();
 	let factures = getContext('factures');
 	console.log('factures in FactureBox', factures);
 	let { facture, patient, sp, className } = $props();

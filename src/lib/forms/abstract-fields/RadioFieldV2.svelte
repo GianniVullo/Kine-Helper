@@ -1,24 +1,13 @@
 <script>
+	import SimpleSelect from '$lib/cloud/components/forms/fields/SimpleSelect.svelte';
 	import DefaultFieldWrapper from './DefaultFieldWrapper.svelte';
-	import { RadioGroup, RadioItem } from '@skeletonlabs/skeleton';
-	export let options;
-	export let name;
-	export let required = undefined;
-	export let label;
-	export let inline = false;
-	export let value;
-	export let readOnly = false;
-	export let change = () => {};
+	
+	let { options, name, label, value = $bindable(), change, required, inline = false, readOnly } = $props();
+
 </script>
 
 <DefaultFieldWrapper>
-	<h3 class="select-none text-surface-500 dark:text-surface-300">{label}</h3>
-	<div class:pointer-events-none={readOnly}>
-		<RadioGroup display={inline ? undefined : 'flex-col'}>
-			{#each options as option, i (i)}
-				<RadioItem {required} on:change={change} bind:group={value} {name} value={option.value}
-					>{option.label}</RadioItem>
-			{/each}
-		</RadioGroup>
-	</div>
+		<div class:pointer-events-none={readOnly}>
+			<SimpleSelect bind:value={value} {label} {name} {options} onchange={change} />
+		</div>
 </DefaultFieldWrapper>
