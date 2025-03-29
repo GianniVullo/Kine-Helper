@@ -18,6 +18,7 @@ export async function createAttestation(data) {
 	 ** 	- Créer une attestation
 	 ** 	- Mettre à jour la prescription.jointe_a si attestation.porte_prescr
 	 ** 	- Mettre à jour les séances (has_been_attested)
+	 *TODO 	- Si la séance contient des tarifs avec un uuid, il faut hardcoder le tarif
 	 ** 	- Créer une facture si nécessaire
 	 ** 	- Créer le lien entre facture et attestation(s)
 	 ** 	- Imprimer l'attestation et/ou la facture
@@ -155,7 +156,7 @@ export async function createAttestation(data) {
 		parseInt(data.attestation.numero) + 1
 	);
 	console.log('numeroQueryResult', numero);
-	
+
 	if (storeError) {
 		return { error: storeError };
 	}

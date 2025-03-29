@@ -24,10 +24,11 @@
 	import { page } from '$app/state';
 	import { t } from '../../../../i18n';
 	import SupplementField from '../tarification-fields/SupplementField.svelte';
-	import { modalStore } from '$lib/cloud/libraries/overlays/modalUtilities.svelte';
 	import TarifsListField from '../finances/TarifsListField.svelte';
 	import dayjs from 'dayjs';
 	import { clock } from '../../../../ui/svgs/IconSnippets.svelte';
+	import { pushState } from '$app/navigation';
+	import Modal from '../../../libraries/overlays/Modal.svelte';
 
 	let fromCalendarDate = page.url.searchParams.get('date');
 	let now = dayjs().format('YYYY-MM-DD');
@@ -159,6 +160,19 @@
 		formHandler.setup();
 	});
 </script>
+
+<Modal
+	opened={page?.state?.modal?.display}
+	title={'Supprimer de ' + page?.state?.modal?.key}
+	body={`Êtes-vous sûr de vouloir supprimer ${page?.state?.modal?.nom ? '"' + page.state.modal.nom + '"' : 'cet élément'} ?`}
+	buttonTextConfirm="Supprimer"
+	buttonTextCancel="Annuler"
+	onAccepted={async () => {
+		formHandler.form[page?.state?.modal?.key] = formHandler.form[page?.state?.modal?.key].filter(
+			(tarif) => tarif.id !== page?.state?.modal?.id
+		);
+		history.back();
+	}} />
 
 <Form
 	title={formHandler.mode === 'create' ? 'Créer une Séance' : 'Modifier la séance'}
@@ -303,7 +317,10 @@
 				}}
 				removeButtonHandler={(custom_tarif) => (e) => {
 					e.preventDefault();
-					modalStore.trigger(modal(custom_tarif, 'supplements_ponctuels'));
+					pushState('', {
+						...page.state,
+						modal: { key: 'supplements_ponctuels', display: true, ...custom_tarif }
+					});
 				}} />
 		{/if}
 	</FormSection>

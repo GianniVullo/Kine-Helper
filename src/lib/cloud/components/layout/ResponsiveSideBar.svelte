@@ -1,14 +1,16 @@
 <script>
 	import { supabase } from '../../../stores/supabaseClient';
 	import logo from '$lib/assets/logo.png';
-	import { afterNavigate, goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import { t, locale } from '$lib/i18n/index';
 	import { get } from 'svelte/store';
 	import SignOutIcon from '../../../ui/svgs/SignOutIcon.svelte';
-	import { modalStore } from '$lib/cloud/libraries/overlays/modalUtilities.svelte';
 	import BottomRightControlBar from './BottomRightControlBar.svelte';
 	import { open } from '@tauri-apps/plugin-shell';
+	import BugReportModal from '../../../ui/BugReportModal.svelte';
+	import Modal from '../../libraries/overlays/Modal.svelte';
+	import { openModal } from '../../libraries/overlays/modalUtilities.svelte';
+	import { goto, afterNavigate } from '$app/navigation';
 
 	let { children } = $props();
 
@@ -40,27 +42,6 @@
 			svg: `<path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12a7.5 7.5 0 0015 0m-15 0a7.5 7.5 0 1115 0m-15 0H3m16.5 0H21m-1.5 0H12m-8.457 3.077l1.41-.513m14.095-5.13l1.41-.513M5.106 17.785l1.15-.964m11.49-9.642l1.149-.964M7.501 19.795l.75-1.3m7.5-12.99l.75-1.3m-6.063 16.658l.26-1.477m2.605-14.772l.26-1.477m0 17.726l-.26-1.477M10.698 4.614l-.26-1.477M16.5 19.794l-.75-1.299M7.5 4.205L12 12m6.894 5.785l-1.149-.964M6.256 7.178l-1.15-.964m15.352 8.864l-1.41-.513M4.954 9.435l-1.41-.514M12.002 12l-3.75 6.495" />`
 		}
 	];
-	const modal = {
-		type: 'confirm',
-		// Data
-		title: get(t)('shared', 'confirm'),
-		body: get(t)('sidebar', 'logout.confirm'),
-		buttonTextCancel: get(t)('shared', 'cancel'),
-		buttonTextConfirm: get(t)('shared', 'confirm'),
-		buttonPositive: 'variant-filled-primary',
-		// TRUE if confirm pressed, FALSE if cancel pressed
-		response: async (r) => {
-			console.log(r);
-			if (r) {
-				await supabase.auth.signOut();
-				goto('/');
-			}
-		}
-	};
-	const bugReportModal = {
-		type: 'component',
-		component: 'bugReport'
-	};
 
 	afterNavigate(() => {
 		page;
@@ -68,10 +49,44 @@
 	});
 </script>
 
+<Modal
+	opened={page.state?.modal?.name === 'signout'}
+	title="Déconnexion"
+	body={get(t)('sidebar', 'logout.confirm')}
+	buttonTextCancel={get(t)('shared', 'cancel')}
+	buttonTextConfirm={get(t)('shared', 'confirm')}
+	onAccepted={async () => {
+		await supabase.auth.signOut();
+		goto('/');
+	}} />
+<Modal
+	opened={page.state?.modal?.name === 'bugReport'}
+	title={get(t)('sidebar', 'bugReport')}
+	body={$t('bugModal', 'description')}>
+	<BugReportModal />
+</Modal>
+<Modal
+	opened={page.state?.modal?.name === 'docModal'}
+	title="Attention, vous aller être redirigé"
+	body={$t(
+		'sidebar',
+		'docModal.body',
+		null,
+		'Attention vous allez être redirigé vers le site de la documentation'
+	)}
+	buttonTextCancel={$t('shared', 'cancel')}
+	buttonTextConfirm="Consulter la documentation"
+	onAccepted={async () => {
+		await open(
+			$locale === 'FR' ? 'https://kine-helper.be/tutoriels' : 'https://kine-helper.be/nl/tutorials'
+		);
+		history.back();
+	}} />
+
 <div>
 	<!-- Off-canvas menu for mobile, show/hide based on off-canvas menu state. -->
 	<div
-		class="relative z-50 lg:hidden {!showDrawer ? 'pointer-events-none' : ''}"
+		class="relative z-40 lg:hidden {!showDrawer ? 'pointer-events-none' : ''}"
 		role="dialog"
 		aria-modal="true">
 		<!--
@@ -117,7 +132,7 @@
 			  To: "opacity-0"
 		  -->
 				<div
-					class="absolute left-full top-0 flex w-16 justify-center pt-5 duration-300 ease-in-out {showDrawer
+					class="absolute top-0 left-full flex w-16 justify-center pt-5 duration-300 ease-in-out {showDrawer
 						? 'opacity-100'
 						: 'opacity-0'}">
 					<button
@@ -182,7 +197,7 @@
 									<!--! Bouton pour se déconnecter -->
 									<li>
 										<button
-											onclick={() => modalStore.trigger(modal)}
+											onclick={() => openModal({ name: 'confirm' })}
 											class="group flex w-full gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-gray-700 hover:bg-gray-50 hover:text-indigo-600">
 											<span
 												class="flex size-6 shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-white text-[0.625rem] font-medium text-gray-400 group-hover:border-indigo-600 group-hover:text-indigo-600">
@@ -195,28 +210,7 @@
 									<!--! Bouton pour accéder à la documentation -->
 									<li>
 										<button
-											onclick={() =>
-												modalStore.trigger({
-													type: 'confirm',
-													title: $t('shared', 'confirm'),
-													body: $t(
-														'sidebar',
-														'docModal.body',
-														null,
-														'Attention vous allez être redirigé vers le site de la documentation'
-													),
-													buttonTextCancel: $t('shared', 'cancel'),
-													buttonTextConfirm: $t('shared', 'confirm'),
-													response: async (r) => {
-														if (r) {
-															await open(
-																$locale === 'FR'
-																	? 'https://kine-helper.be/tutoriels'
-																	: 'https://kine-helper.be/nl/tutorials'
-															);
-														}
-													}
-												})}
+											onclick={() => openModal({ name: 'docModal' })}
 											class="group flex w-full gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-gray-700 hover:bg-gray-50 hover:text-indigo-600">
 											<span
 												class="flex size-6 shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-white text-[0.625rem] font-medium text-gray-400 group-hover:border-indigo-600 group-hover:text-indigo-600">
@@ -239,7 +233,7 @@
 									<!--! Bouton pour signaler un bug/une seggestion -->
 									<li>
 										<button
-											onclick={() => modalStore.trigger(bugReportModal)}
+											onclick={() => openModal({ name: 'bugReport' })}
 											class="group flex w-full gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-gray-700 hover:bg-gray-50 hover:text-indigo-600">
 											<span
 												class="flex size-6 shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-white text-xs font-medium text-gray-400 group-hover:border-indigo-600 group-hover:text-indigo-600"
@@ -259,7 +253,7 @@
 	<!-- Static sidebar for desktop -->
 	<div class="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-72 lg:flex-col">
 		<!-- Sidebar component, swap this element with another sidebar if you like -->
-		<div class="flex grow flex-col gap-y-5 overflow-y-auto border-r border-gray-200 bg-white px-6">
+		<div class="flex grow flex-col gap-y-5 overflow-y-auto border-r border-gray-200 bg-gray-50 px-6">
 			<div class="flex h-16 shrink-0 items-center">
 				<img class="h-8 w-auto" src={logo} alt="Your Company" />
 			</div>
@@ -299,7 +293,7 @@
 							<!--! Bouton pour se déconnecter -->
 							<li>
 								<button
-									onclick={() => modalStore.trigger(modal)}
+									onclick={() => openModal({ name: 'signout' })}
 									class="group flex w-full gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-gray-700 hover:bg-gray-50 hover:text-indigo-600">
 									<span
 										class="flex size-6 shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-white text-[0.625rem] font-medium text-gray-400 group-hover:border-indigo-600 group-hover:text-indigo-600">
@@ -312,28 +306,7 @@
 							<!--! Bouton pour accéder à la documentation -->
 							<li>
 								<button
-									onclick={() =>
-										modalStore.trigger({
-											type: 'confirm',
-											title: $t('shared', 'confirm'),
-											body: $t(
-												'sidebar',
-												'docModal.body',
-												null,
-												'Attention vous allez être redirigé vers le site de la documentation'
-											),
-											buttonTextCancel: $t('shared', 'cancel'),
-											buttonTextConfirm: $t('shared', 'confirm'),
-											response: async (r) => {
-												if (r) {
-													await open(
-														$locale === 'FR'
-															? 'https://kine-helper.be/tutoriels'
-															: 'https://kine-helper.be/nl/tutorials'
-													);
-												}
-											}
-										})}
+									onclick={() => openModal({ name: 'docModal' })}
 									class="group flex w-full gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-gray-700 hover:bg-gray-50 hover:text-indigo-600">
 									<span
 										class="flex size-6 shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-white text-[0.625rem] font-medium text-gray-400 group-hover:border-indigo-600 group-hover:text-indigo-600">
@@ -356,7 +329,7 @@
 							<!--! Bouton pour signaler un bug/une seggestion -->
 							<li>
 								<button
-									onclick={() => modalStore.trigger(bugReportModal)}
+									onclick={() => openModal({ name: 'bugReport' })}
 									class="group flex w-full gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-gray-700 hover:bg-gray-50 hover:text-indigo-600">
 									<span
 										class="flex size-6 shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-white text-xs font-medium text-gray-400 group-hover:border-indigo-600 group-hover:text-indigo-600"
@@ -385,30 +358,48 @@
 
 	<div
 		class="sticky top-0 z-40 flex items-center gap-x-6 bg-white px-4 py-4 shadow-sm sm:px-6 lg:hidden">
-		<button
-			onclick={() => {
-				console.log(showDrawer);
-
-				showDrawer = true;
-				console.log(showDrawer);
-			}}
-			type="button"
-			class="-m-2.5 p-2.5 text-gray-700 lg:hidden">
-			<span class="sr-only">Open sidebar</span>
-			<svg
-				class="size-6"
-				fill="none"
-				viewBox="0 0 24 24"
-				stroke-width="1.5"
-				stroke="currentColor"
-				aria-hidden="true"
-				data-slot="icon">
-				<path
-					stroke-linecap="round"
-					stroke-linejoin="round"
-					d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-			</svg>
-		</button>
+		{#if !showDrawer}
+			<button
+				onclick={() => {
+					showDrawer = true;
+				}}
+				type="button"
+				class="-m-2.5 p-2.5 text-gray-700 lg:hidden">
+				<span class="sr-only">Open sidebar</span>
+				<svg
+					class="size-6"
+					fill="none"
+					viewBox="0 0 24 24"
+					stroke-width="1.5"
+					stroke="currentColor"
+					aria-hidden="true"
+					data-slot="icon">
+					<path
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+				</svg>
+			</button>
+		{:else}
+			<button
+				onclick={() => {
+					showDrawer = false;
+				}}
+				type="button"
+				class="-m-2.5 p-2.5">
+				<span class="sr-only">Close sidebar</span>
+				<svg
+					class="size-6 text-black"
+					fill="none"
+					viewBox="0 0 24 24"
+					stroke-width="1.5"
+					stroke="currentColor"
+					aria-hidden="true"
+					data-slot="icon">
+					<path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+				</svg>
+			</button>
+		{/if}
 		<div class="flex-1 text-sm/6 font-semibold text-gray-900">
 			{menuItems.find((p) => p.href === page.url.pathname)?.name}
 		</div>

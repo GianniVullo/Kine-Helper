@@ -1,26 +1,21 @@
 <script>
 	import { t } from '../../../../../../../lib/i18n';
-	import { modalStore } from '$lib/cloud/libraries/overlays/modalUtilities.svelte';
 	import SectionTitleWithTabs from '../../../../../../../lib/components/SectionTitleWithTabs.svelte';
 	import { addIcon } from '../../../../../../../lib/ui/svgs/IconSnippets.svelte';
 	import { page } from '$app/state';
 	import BoutonPrincipalAvecIcone from '../../../../../../../lib/components/BoutonPrincipalAvecIcone.svelte';
 	import { goto } from '$app/navigation';
 	import { setContext } from 'svelte';
+	import Modal from '../../../../../../../lib/cloud/libraries/overlays/Modal.svelte';
+	import { openModal } from '../../../../../../../lib/cloud/libraries/overlays/modalUtilities.svelte';
+	import DocumentSelectionModal from '../../../../../../../lib/ui/DocumentSelectionModal.svelte';
 
 	let { data, children } = $props();
 
 	let { patient, sp } = data;
 
 	let accords = $state(sp.accords);
-	console.log('accords In layuot', accords);
 	setContext('accords', accords);
-
-	const documentSelectionModal = {
-		type: 'component',
-		component: 'documentSelection',
-		meta: { accords }
-	};
 
 	const homeUrl = () =>
 		`/dashboard/patients/${patient.patient_id}/situation-pathologique/${sp.sp_id}`;
@@ -44,25 +39,30 @@
 	]);
 </script>
 
+<Modal
+	opened={page.state?.modal?.name === 'patientIncomplete'}
+	title="Patient incomplet"
+	body="Veuillez compléter les informations du patient avant de continuer."
+	buttonTextConfirm="Compléter les informations du patient"
+	onAccepted={() => {
+		goto(`/dashboard/patients/${patient.patient_id}/update`);
+	}} />
+
+<Modal
+	opened={page.state?.modal?.name === 'documentSelection'}
+	title="Sélectionner un document"
+	body="Veuillez sélectionner un document à ajouter.">
+	<DocumentSelectionModal {accords} />
+</Modal>
 <SectionTitleWithTabs titre="Documents" className="space-x-2" {tabs}>
 	{#snippet actions()}
 		<BoutonPrincipalAvecIcone
 			size="sm"
 			onclick={() => {
 				if (!patient.is_complete) {
-					modalStore.trigger({
-						type: 'confirm',
-						title: 'Patient incomplet',
-						body: 'Veuillez compléter les informations du patient avant de continuer.',
-						buttonTextConfirm: 'Compléter les informations du patient',
-						response: (r) => {
-							if (r) {
-								goto(`/dashboard/patients/${patient.patient_id}/update`);
-							}
-						}
-					});
+					openModal({ name: 'patientIncomplete' });
 				} else {
-					modalStore.trigger(documentSelectionModal);
+					openModal({ name: 'documentSelection' });
 				}
 			}}
 			inner={$t('document.list', 'accord')}

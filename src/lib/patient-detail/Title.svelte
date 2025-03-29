@@ -1,6 +1,5 @@
 <script>
 	import { page } from '$app/state';
-	import { modalStore } from '$lib/cloud/libraries/overlays/modalUtilities.svelte';
 	import { dropdownItem } from '../components/dropdowns/DropdownSnippets.svelte';
 	import { t } from '../i18n';
 	import { get } from 'svelte/store';
@@ -9,29 +8,15 @@
 	import BoutonSecondaireAvecIcone from '../components/BoutonSecondaireAvecIcone.svelte';
 	import BoutonPrincipalAvecIcone from '../components/BoutonPrincipalAvecIcone.svelte';
 	import Dropdown from '../components/dropdowns/Dropdown.svelte';
+	import Modal from '../cloud/libraries/overlays/Modal.svelte';
+	import { pushState } from '$app/navigation';
 
-	const modal = () => ({
-		type: 'confirm',
+	const modal = {
 		title: get(t)('patients.detail', 'pdeleteModal.title'),
 		body: get(t)('patients.detail', 'pdeleteModal.body'),
 		buttonTextConfirm: get(t)('shared', 'confirm'),
-		buttonTextCancel: get(t)('shared', 'cancel'),
-		modalClasses: {
-			buttonPositive: 'isModal'
-		},
-		response: async (r) => {
-			if (r) {
-				const { error } = await deletePatient(patient);
-				if (error) {
-					modalStore.trigger({
-						type: 'alert',
-						title: 'ERROR',
-						body: error
-					});
-				}
-			}
-		}
-	});
+		buttonTextCancel: get(t)('shared', 'cancel')
+	};
 
 	let { patient } = $props();
 	const homeUrl = () => {
@@ -39,6 +24,14 @@
 	};
 </script>
 
+<Modal
+	opened={page.state.modal === 'patientDeleteModal'}
+	{...modal}
+	onAccepted={async () => {
+		const { error } = await deletePatient(patient);
+		console.log('error', error);
+		history.back();
+	}} />
 <PageTitle srOnly="Résumé du patient">
 	{#snippet title()}
 		<div class="sm:flex sm:space-x-5">
@@ -63,7 +56,7 @@
 		</div>
 	{/snippet}
 	{#snippet actions()}
-		<div class="mt-5 flex justify-center sm:justify-start lg:ml-4 lg:mt-0">
+		<div class="mt-5 flex justify-center sm:justify-start lg:mt-0 lg:ml-4">
 			<span class="hidden sm:block">
 				<BoutonSecondaireAvecIcone href={homeUrl() + '/update'} inner="Modifier">
 					{#snippet icon(cls)}
@@ -99,7 +92,9 @@
 			</span>
 
 			<span class="ml-3 hidden sm:block">
-				<BoutonSecondaireAvecIcone onclick={() => modalStore.trigger(modal())} inner="Supprimer">
+				<BoutonSecondaireAvecIcone
+					onclick={() => pushState('', { ...page.state, modal: 'patientDeleteModal' })}
+					inner="Supprimer">
 					{#snippet icon(cls)}
 						<svg
 							xmlns="http://www.w3.org/2000/svg"
@@ -107,7 +102,7 @@
 							viewBox="0 0 24 24"
 							stroke-width="1.5"
 							stroke="currentColor"
-							class="-ml-0.5 mr-1.5 size-5 text-red-400">
+							class="mr-1.5 -ml-0.5 size-5 text-red-400">
 							<path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
 						</svg>
 					{/snippet}
@@ -142,7 +137,11 @@
 				{#snippet menuItems()}
 					{@render dropdownItem(homeUrl() + '/update', null, 'Modifier')}
 					{@render dropdownItem(homeUrl() + '/details', null, 'Détails')}
-					{@render dropdownItem(undefined, () => modalStore.trigger(modal()), 'Supprimer')}
+					{@render dropdownItem(
+						undefined,
+						() => pushState('', { ...page.state, modal: 'patientDeleteModal' }),
+						'Supprimer'
+					)}
 				{/snippet}
 			</Dropdown>
 		</div>

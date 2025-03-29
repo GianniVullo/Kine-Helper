@@ -1,12 +1,10 @@
 <script>
 	import { page } from '$app/state';
-	import { modalStore } from '$lib/cloud/libraries/overlays/modalUtilities.svelte';
 	import { t } from '../i18n';
 	import { get } from 'svelte/store';
 	import { deleteSituationPathologique } from '../user-ops-handlers/situations_pathologiques';
 	import PageTitle from '../components/PageTitle.svelte';
 	import BoutonPrincipalAvecIcone from '../components/BoutonPrincipalAvecIcone.svelte';
-	import BoutonSecondaireAvecIcone from '../components/BoutonSecondaireAvecIcone.svelte';
 	import Dropdown from '../components/dropdowns/Dropdown.svelte';
 	import {
 		dividerDropper,
@@ -21,25 +19,14 @@
 		calendarIcon
 	} from '../ui/svgs/IconSnippets.svelte';
 	import dayjs from 'dayjs';
-	import { goto } from '$app/navigation';
+	import { goto, pushState } from '$app/navigation';
+	import Modal from '../cloud/libraries/overlays/Modal.svelte';
 
 	const modal = {
-		type: 'confirm',
-		// Data
 		title: get(t)('patients.detail', 'deleteModal.title'),
 		body: get(t)('patients.detail', 'deleteModal.body'),
 		buttonTextConfirm: get(t)('shared', 'confirm'),
-		buttonTextCancel: get(t)('shared', 'cancel'),
-		buttonPositive: 'variant-filled-error',
-		response: async (r) => {
-			if (r) {
-				await deleteSituationPathologique({
-					sp_id: page.params.spId,
-					patient_id: page.params.patientId
-				});
-				goto('/dashboard/patients/' + page.params.patientId);
-			}
-		}
+		buttonTextCancel: get(t)('shared', 'cancel')
 	};
 
 	let { patient, currentSp } = $props();
@@ -75,6 +62,16 @@
 	];
 </script>
 
+<Modal
+	opened={page.state.modal === 'deleteSp'}
+	{...modal}
+	onAccepted={async () => {
+		await deleteSituationPathologique({
+			sp_id: page.params.spId,
+			patient_id: page.params.patientId
+		});
+		goto('/dashboard/patients/' + page.params.patientId);
+	}} />
 <PageTitle srOnly="Résumé de la situation pathologique">
 	{#snippet title()}
 		<div class="sm:flex sm:space-x-5">
@@ -88,7 +85,7 @@
 		</div>
 	{/snippet}
 	{#snippet actions()}
-		<div class="mt-5 flex justify-center sm:justify-start lg:ml-4 lg:mt-0">
+		<div class="mt-5 flex justify-center sm:justify-start lg:mt-0 lg:ml-4">
 			<Dropdown inner="Actions" className="ml-3">
 				{#snippet dropper(menuItems, menuState)}
 					{@render dividerDropper(menuItems, menuState)}
@@ -116,7 +113,7 @@
 						)}
 						{@render dropdownItemWithIcon(
 							undefined,
-							() => modalStore.trigger(modal),
+							() => pushState('', { ...page.state, modal: 'deleteSp' }),
 							'Supprimer',
 							deleteIcon
 						)}

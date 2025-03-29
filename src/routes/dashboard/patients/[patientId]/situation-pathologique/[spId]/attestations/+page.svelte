@@ -1,7 +1,6 @@
 <script>
-	import { modalStore } from '$lib/cloud/libraries/overlays/modalUtilities.svelte';
 	import { PlusIcon, PrinterIcon, UpdateIcon, DeleteIcon } from '$lib/ui/svgs/index';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import dayjs from 'dayjs';
 	import { patients } from '../../../../../../../lib/stores/PatientStore';
 	import { printAttestation } from '../../../../../../../lib/utils/rawPrinting';
@@ -29,6 +28,9 @@
 		markAsPaid,
 		updateAttestation
 	} from '../../../../../../../lib/user-ops-handlers/attestations';
+	import Modal from '../../../../../../../lib/cloud/libraries/overlays/Modal.svelte';
+	import { pushState } from '$app/navigation';
+	import { cloneDeep } from 'lodash';
 
 	let { data } = $props();
 	let { patient, sp } = data;
@@ -39,25 +41,10 @@
 	const attestations = $state(sp.attestations);
 
 	const printHandler = async (attestation) => {
-		modalStore.trigger({
-			title: $t('attestation.detail', 'printModal.title'),
-			body: $t('attestation.detail', 'printModal.body', {
-				date: dayjs(attestation.date).format('DD/MM/YYYY')
-			}),
-			buttonTextConfirm: $t('attestation.detail', 'printModal.confirm'),
-			buttonTextCancel: $t('shared', 'cancel'),
-			type: 'confirm',
-			response: async (response) => {
-				if (response) {
-					const { error } = await printAttestation(null, attestation);
-					if (error) {
-						modalStore.trigger({
-							title: 'Hmmm...',
-							body: `Error: ${error}`
-						});
-					}
-				}
-			}
+		console.log(attestation);
+		pushState('', {
+			...page.state,
+			modal: { name: 'printAttestation', attestation: cloneDeep($state.snapshot(attestation)) }
 		});
 	};
 
@@ -117,12 +104,27 @@
 
 <!-- TODO Devrais-je rajouter que l'attestation porte la prescription ?  -->
 
+<Modal
+	opened={page.state?.modal?.name === 'printAttestation'}
+	title={$t('attestation.detail', 'printModal.title')}
+	body={$t('attestation.detail', 'printModal.body', {
+		date: dayjs(page.state.modal.attestation.date).format('DD/MM/YYYY')
+	})}
+	buttonTextConfirm={$t('attestation.detail', 'printModal.confirm')}
+	buttonTextCancel={$t('shared', 'cancel')}
+	onAccepted={async () => {
+		const { error } = await printAttestation(null, page.state.modal.attestation);
+		if (error) {
+			console.log(error);
+		}
+	}} />
+
 {#if sp.attestations.length > 0}
 	<!--* ATTESTATIONS LIST -->
 	<CardTable>
 		{#snippet header()}
 			<th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Date</th>
-			<th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-0"
+			<th scope="col" class="py-3.5 pr-3 pl-4 text-left text-sm font-semibold text-gray-900 sm:pl-0"
 				>Total</th>
 			<th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
 				>Part personnelle</th>
@@ -134,10 +136,10 @@
 		{#snippet body()}
 			{#each attestations as attestation}
 				<tr>
-					<td class="whitespace-nowrap px-3 py-5 text-sm text-gray-500">
+					<td class="px-3 py-5 text-sm whitespace-nowrap text-gray-500">
 						{dayjs(attestation.date).format('DD/MM/YYYY')}
 					</td>
-					<td class="whitespace-nowrap py-5 pl-4 pr-3 text-sm sm:pl-0">
+					<td class="py-5 pr-3 pl-4 text-sm whitespace-nowrap sm:pl-0">
 						<div class="flex items-center">
 							<div class="ml-4">
 								<div class="font-medium text-gray-900">{patient.nom} {patient.prenom}</div>
@@ -149,11 +151,11 @@
 							</div>
 						</div>
 					</td>
-					<td class="whitespace-nowrap px-3 py-5 text-sm text-gray-500">
+					<td class="px-3 py-5 text-sm whitespace-nowrap text-gray-500">
 						<div class="text-gray-900">{patient.adresse}</div>
 						<div class="mt-1 text-gray-500">{patient.cp} {patient.localite}</div>
 					</td>
-					<td class="whitespace-nowrap px-3 py-5 text-sm text-gray-500">
+					<td class="px-3 py-5 text-sm whitespace-nowrap text-gray-500">
 						{#if patient.tiers_payant}
 							<div class="text-gray-900">
 								{@render iconBadge(
@@ -174,7 +176,7 @@
 						{/if}
 					</td>
 					<td
-						class="relative whitespace-nowrap py-5 pl-3 pr-4 text-left text-sm font-medium sm:pr-0">
+						class="relative py-5 pr-4 pl-3 text-left text-sm font-medium whitespace-nowrap sm:pr-0">
 						<Dropdown inner="actions" className="" id={attestation.attestation_id}>
 							{#snippet dropper(menuItems, menuState)}
 								<div

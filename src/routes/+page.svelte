@@ -3,11 +3,15 @@
 	import LoginForm from '../lib/cloud/components/forms/authentication/LoginForm.svelte';
 	import SignUpForm from '../lib/cloud/components/forms/authentication/SignUpForm.svelte';
 	import { t } from '../lib/i18n';
-	import { goto } from '$app/navigation';
+	import { goto, pushState } from '$app/navigation';
 	import { onDestroy } from 'svelte';
 	import { platform } from '@tauri-apps/plugin-os';
 	import { debug, error, info, trace, warn } from '@tauri-apps/plugin-log';
+	import FactureCreationModal from '../lib/ui/FactureCreationModal.svelte';
 	import { open } from '@tauri-apps/plugin-shell';
+	import Modal from '$lib/cloud/libraries/overlays/Modal.svelte';
+	import { page } from '$app/state';
+	import { successIcon, warningOutlineIcon } from '../lib/ui/svgs/IconSnippets.svelte';
 
 	function registerShortcut(callback) {
 		window.addEventListener('keydown', function (event) {
@@ -33,13 +37,17 @@
 	let message = '';
 </script>
 
+<button
+	onclick={() => {
+		pushState('', { ...page.state, modal: true });
+	}}>TEST</button>
 <div
 	class="flex min-h-screen items-center justify-center bg-gradient-to-br from-purple-500 to-indigo-500">
 	<!--? CENTERED CARD -->
 	<div
-		class="bg-white relative w-[350px] space-y-2 overflow-hidden px-6 py-4 dark:border dark:border-gray-400">
+		class="relative w-[350px] space-y-2 overflow-hidden bg-white px-6 py-4 dark:border dark:border-gray-400">
 		<div
-			class="absolute -right-16 -top-16 h-32 w-32 rounded-full bg-purple-600 opacity-25 dark:opacity-50">
+			class="absolute -top-16 -right-16 h-32 w-32 rounded-full bg-purple-600 opacity-25 dark:opacity-50">
 		</div>
 		<div
 			class="absolute -bottom-16 -left-16 h-32 w-32 rounded-full bg-sky-600 opacity-25 dark:opacity-60">
@@ -70,17 +78,13 @@
 		{/if}
 		<div class="card-footer mt-4 flex flex-col items-center justify-center space-y-2">
 			{#if selectedForm == 'login'}
-				<button
-					onclick={() => (selectedForm = 'signup')}
-					class="group text-gray-600"
+				<button onclick={() => (selectedForm = 'signup')} class="group text-gray-600"
 					>{$t('login', 'controls.register.question')}
 					<span class="border-purple-500 text-base duration-200 group-hover:border-b"
 						>{$t('login', 'controls.register.link')}</span
 					></button>
 			{:else}
-				<button
-					onclick={() => (selectedForm = 'login')}
-					class="group text-gray-600"
+				<button onclick={() => (selectedForm = 'login')} class="group text-gray-600"
 					>{@html selectedForm == 'passwordReset'
 						? $t('login', 'controls.resetCancel')
 						: $t('login', 'controls.SignupCancel')}<span

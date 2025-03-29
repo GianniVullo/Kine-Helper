@@ -1,6 +1,5 @@
 <script>
 	import { t } from '../../../../../../../lib/i18n';
-	import { modalStore } from '$lib/cloud/libraries/overlays/modalUtilities.svelte';
 	import SectionTitleWithTabs from '../../../../../../../lib/components/SectionTitleWithTabs.svelte';
 	import BoutonSecondaireAvecIcone from '../../../../../../../lib/components/BoutonSecondaireAvecIcone.svelte';
 	import { addIcon } from '../../../../../../../lib/ui/svgs/IconSnippets.svelte';
@@ -9,6 +8,8 @@
 	import { goto } from '$app/navigation';
 	import { setContext } from 'svelte';
 	import FactureCreationModal from '$lib/ui/FactureCreationModal.svelte';
+	import Modal from '../../../../../../../lib/cloud/libraries/overlays/Modal.svelte';
+	import { openModal } from '../../../../../../../lib/cloud/libraries/overlays/modalUtilities.svelte';
 
 	let { data, children } = $props();
 
@@ -17,12 +18,6 @@
 	let factures = $state(sp.factures);
 	console.log('factures In layuot', factures);
 	setContext('factures', factures);
-
-	const documentSelectionModal = {
-		type: 'component',
-		component: FactureCreationModal,
-		meta: { sp, patient, factures }
-	};
 
 	const homeUrl = () =>
 		`/dashboard/patients/${patient.patient_id}/situation-pathologique/${sp.sp_id}`;
@@ -41,34 +36,60 @@
 	]);
 </script>
 
+<Modal
+	opened={page.state.modal === 'factureCreationModal'}
+	title={$t('otherModal', 'fcreate.title')}>
+	<FactureCreationModal {sp} {patient} {factures} />
+</Modal>
+<Modal
+	opened={page.state.modal === 'noAttestation'}
+	title="Pas d'attestations"
+	body="Veuillez créer une attestation avant de continuer."
+	buttonTextCancel="none"
+	buttonTextConfirm="Ok" />
+<Modal
+	opened={page.state.modal === 'patientIncomplete'}
+	title="Patient incomplet"
+	,
+	body="Veuillez compléter les informations du patient avant de continuer."
+	buttonTextConfirm="Compléter les informations du patient"
+	onAccepted={() => {
+		goto(`/dashboard/patients/${patient.patient_id}/update`);
+	}} />
+<Modal
+	opened={page.state.modal === 'noPrescription'}
+	title="Pas de prescription"
+	body="Veuillez ajouter une prescription avant de continuer."
+	buttonTextConfirm="Ajouter une prescription"
+	onAccepted={() => {
+		goto(
+			`/dashboard/patients/${patient.patient_id}/situation-pathologique/${sp.sp_id}/prescriptions/create`
+		);
+	}} />
+<Modal
+	opened={page.state.modal === 'createSeance'}
+	title="Il n'y a pas de séance à attester"
+	body="Voulez-vous créer une nouvelle séance ?"
+	buttonTextConfirm="Créer une nouvelle séance"
+	buttonTextCancel="Annuler"
+	onAccepted={() => {
+		goto(
+			`/dashboard/patients/${patient.patient_id}/situation-pathologique/${sp.sp_id}/seances/create`
+		);
+	}} />
+
 <SectionTitleWithTabs
 	titre={$t('form.generateur', 'tarification.title')}
 	className="space-x-2"
 	{tabs}>
 	{#snippet actions()}
-	{#snippet factureCreationModal()}
-		<FactureCreationModal />
-	{/snippet}
 		<BoutonSecondaireAvecIcone
 			size="sm"
 			onclick={() => {
 				if (sp.attestations.length > 0) {
-					modalStore.component = factureCreationModal;
-					modalStore.trigger({...documentSelectionModal, component: factureCreationModal});
+					openModal({ name: 'factureCreationModal' });
 				} else {
-					modalStore.trigger({
-						title: 'Pas d\'attestations',
-						body: 'Veuillez créer une attestation avant de continuer.',
-						buttonTextConfirm: 'Ok',
-						response: (r) => {
-							if (r) {
-								goto(
-									`/dashboard/patients/${patient.patient_id}/situation-pathologique/${sp.sp_id}/attestations/create`
-								);
-							}
-						},
-						type: 'alert'
-					});
+					openModal({ name: 'noAttestation' });
 				}
 			}}
 			inner={$t('attestation.detail', 'bill')}
@@ -80,46 +101,11 @@
 					buttonTextCancel: 'annuler'
 				};
 				if (!patient.is_complete) {
-					modalStore.trigger({
-						title: 'Patient incomplet',
-						body: 'Veuillez compléter les informations du patient avant de continuer.',
-						buttonTextConfirm: 'Compléter les informations du patient',
-						response: (r) => {
-							if (r) {
-								goto(`/dashboard/patients/${patient.patient_id}/update`);
-							}
-						},
-						...modal
-					});
+					openModal({ name: 'patientIncomplete' });
 				} else if (sp.prescriptions.length === 0) {
-					modalStore.trigger({
-						title: 'Pas de prescription',
-						body: 'Veuillez ajouter une prescription avant de continuer.',
-						buttonTextConfirm: 'Ajouter une prescription',
-						response: (r) => {
-							if (r) {
-								goto(
-									`/dashboard/patients/${patient.patient_id}/situation-pathologique/${sp.sp_id}/prescriptions/create`
-								);
-							}
-						},
-						...modal
-					});
-					
+					openModal({ name: 'noPrescription' });
 				} else if (sp.seances.filter((seance) => !seance.has_been_attested).length === 0) {
-					modalStore.trigger({
-						buttonTextConfirm: 'Créer une nouvelle séance',
-						title: "Il n'y a pas de séance à attester",
-						body: 'Voulez-vous créer une nouvelle séance ?',
-						response: (r) => {
-							if (r) {
-								goto(
-									`/dashboard/patients/${patient.patient_id}/situation-pathologique/${sp.sp_id}/seances/create`
-								);
-							}
-						},
-						...modal
-					});
+					openModal({ name: 'createSeance' });
 				} else {
 					goto(
 						`/dashboard/patients/${patient.patient_id}/situation-pathologique/${sp.sp_id}/attestations/create`
@@ -127,7 +113,7 @@
 				}
 			}}
 			size="sm"
-			className="ml-3 inline-flex items-center bg-indigo-600 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+			className="ml-3 inline-flex items-center bg-indigo-600 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500  focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
 			inner="Attestation"
 			icon={addIcon} />
 	{/snippet}

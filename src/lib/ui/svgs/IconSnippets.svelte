@@ -26,7 +26,8 @@
 		arrowRightIcon,
 		arrowBottomIcon,
 		errorIcon,
-		mailIcon
+		mailIcon,
+		stopIcon
 	};
 </script>
 
@@ -204,7 +205,7 @@
 				stroke-linejoin="round"
 				d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
 		</svg>
-		<span class="absolute right-2.5 top-0 block size-2 rounded-full bg-green-400 ring-2 ring-white"
+		<span class="absolute top-0 right-2.5 block size-2 rounded-full bg-green-400 ring-2 ring-white"
 		></span>
 	</span>
 {/snippet}
@@ -223,7 +224,7 @@
 				stroke-linejoin="round"
 				d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Z" />
 		</svg>
-		<span class="absolute right-2.5 top-0 block size-2 rounded-full bg-green-400 ring-2 ring-white"
+		<span class="absolute top-0 right-2.5 block size-2 rounded-full bg-green-400 ring-2 ring-white"
 		></span>
 	</span>
 {/snippet}
@@ -241,7 +242,7 @@
 				stroke-linejoin="round"
 				d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
 		</svg>
-		<span class="absolute right-2.5 top-0 block size-2 rounded-full bg-red-400 ring-2 ring-white"
+		<span class="absolute top-0 right-2.5 block size-2 rounded-full bg-red-400 ring-2 ring-white"
 		></span>
 	</span>
 {/snippet}
@@ -260,7 +261,7 @@
 				stroke-linejoin="round"
 				d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Z" />
 		</svg>
-		<span class="absolute right-2.5 top-0 block size-2 rounded-full bg-red-400 ring-2 ring-white"
+		<span class="absolute top-0 right-2.5 block size-2 rounded-full bg-red-400 ring-2 ring-white"
 		></span>
 	</span>
 {/snippet}
@@ -320,9 +321,19 @@
 {/snippet}
 
 {#snippet warningOutlineIcon(cls)}
-<svg class={cls} fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon">
-	<path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
-  </svg>
+	<svg
+		class={cls}
+		fill="none"
+		viewBox="0 0 24 24"
+		stroke-width="1.5"
+		stroke="currentColor"
+		aria-hidden="true"
+		data-slot="icon">
+		<path
+			stroke-linecap="round"
+			stroke-linejoin="round"
+			d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
+	</svg>
 {/snippet}
 
 {#snippet listIcon(cls)}
@@ -402,3 +413,17 @@
 			d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
 	</svg>
 {/snippet}
+
+{#snippet stopIcon(cls)}
+	<svg
+		xmlns="http://www.w3.org/2000/svg"
+		width="24"
+		height="24"
+		viewBox="0 0 24 24"
+		fill="none"
+		stroke="currentColor"
+		stroke-width="2"
+		stroke-linecap="round"
+		stroke-linejoin="round"
+		class={cls}><circle cx="12" cy="12" r="10" /><path d="m4.9 4.9 14.2 14.2" /></svg
+	>{/snippet}

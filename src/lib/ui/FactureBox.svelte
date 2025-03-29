@@ -1,6 +1,5 @@
 <script>
 	import { OpenIcon, DeleteIcon } from '$lib/ui/svgs/index';
-	import { modalStore } from '$lib/cloud/libraries/overlays/modalUtilities.svelte';
 	import dayjs from 'dayjs';
 	import {
 		deleteFacture,
@@ -10,16 +9,29 @@
 	import { t } from '../i18n';
 	import { page } from '$app/state';
 	import { getContext } from 'svelte';
+	import Modal from '../cloud/libraries/overlays/Modal.svelte';
+	import { pushState } from '$app/navigation';
 
 	let factures = getContext('factures');
 	console.log('factures in FactureBox', factures);
 	let { facture, patient, sp, className } = $props();
 </script>
 
+<Modal
+	opened={page.state.modal === 'deleteFacture'}
+	title={$t('shared', 'confirm')}
+	body={$t('otherModal', 'facture.delete', {
+		date: dayjs(facture.date).format('DD/MM/YYYY')
+	})}
+	onAccepted={async () => {
+		await deleteFacture(facture);
+		factures.splice(factures.indexOf(facture), 1);
+		history.back();
+	}} />
 <div
-	class="flex flex-col justify-between rounded-lg border border-surface-400 px-4 py-2 shadow duration-200 hover:bg-surface-100 dark:hover:bg-surface-800/50">
+	class="border-surface-400 hover:bg-surface-100 dark:hover:bg-surface-800/50 flex flex-col justify-between rounded-lg border px-4 py-2 shadow duration-200">
 	<div class="flex items-center space-x-4 {className}">
-		<h5 class="pointer-events-none select-none text-secondary-800 dark:text-secondary-200">
+		<h5 class="text-secondary-800 dark:text-secondary-200 pointer-events-none select-none">
 			{@html $t('otherModal', 'facture.title', {
 				type:
 					facture.type === 'patient'
@@ -36,22 +48,10 @@
                 class="h-5 w-5 stroke-surface-600 dark:stroke-surface-200" /></button> -->
 			<button
 				onclick={async () => {
-					modalStore.trigger({
-						title: $t('shared', 'confirm'),
-						body: $t('otherModal', 'facture.delete', {
-							date: dayjs(facture.date).format('DD/MM/YYYY')
-						}),
-						type: 'confirm',
-						response: async (response) => {
-							if (response) {
-								await deleteFacture(facture);
-								factures.splice(factures.indexOf(facture), 1);
-							}
-						}
-					});
+					pushState('', { ...page.state, modal: 'deleteFacture' });
 				}}
 				class="variant-outline-error btn-icon btn-icon-sm"
-				><DeleteIcon class="h-5 w-5 stroke-surface-600 dark:stroke-surface-200" /></button>
+				><DeleteIcon class="stroke-surface-600 dark:stroke-surface-200 h-5 w-5" /></button>
 			<button
 				onclick={async () => {
 					console.log('open facture');
@@ -62,7 +62,7 @@
 				><OpenIcon class="h-5 w-5" /></button>
 		</div>
 	</div>
-	<div class="flex flex-col text-surface-800 dark:text-surface-100">
+	<div class="text-surface-800 dark:text-surface-100 flex flex-col">
 		<h5 class="">
 			<span class="text-surface-400">{$t('sp.detail', 'attestations')} :</span>
 		</h5>

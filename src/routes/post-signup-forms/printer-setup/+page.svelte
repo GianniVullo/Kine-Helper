@@ -1,5 +1,4 @@
 <script>
-	import { modalStore } from '$lib/cloud/libraries/overlays/modalUtilities.svelte';
 	import { open } from '@tauri-apps/plugin-shell';
 	import { FormWrapper, SubmitButton } from '../../../lib/forms/index';
 	import { goto } from '$app/navigation';
@@ -10,7 +9,8 @@
 	import RadioFieldV2 from '../../../lib/forms/abstract-fields/RadioFieldV2.svelte';
 	import WindowsSelectionField from '../../../lib/forms/settings/WindowsSelectionField.svelte';
 	import { appState } from '../../../lib/managers/AppState.svelte';
-
+	import Modal from '../../../lib/cloud/libraries/overlays/Modal.svelte';
+	import { openModal } from '../../../lib/cloud/libraries/overlays/modalUtilities.svelte';
 
 	const modal = {
 		type: 'confirm',
@@ -54,13 +54,18 @@
 	}
 </script>
 
+<Modal
+	opened={page.state?.modal?.name === 'confirmExitPrinterConfig'}
+	title={get(t)('printerSetup', 'confirmModal.title')}
+	body={get(t)('printerSetup', 'confirmModal.body')} />
+
 <main class="p-10">
 	<h1 class="text-surface-900 dark:text-surface-400">
 		{$t('printerSetup', 'title')}
 	</h1>
-	<div class="mb-4 mt-4 flex flex-col items-start">
+	<div class="mt-4 mb-4 flex flex-col items-start">
 		{#if platformName === 'windows'}
-			<h5 class="text-xl text-secondary-700 dark:text-secondary-200">
+			<h5 class="text-secondary-700 dark:text-secondary-200 text-xl">
 				{$t('shared', 'for')} windows
 			</h5>
 			<p class="text-surface-700 dark:text-surface-200">
@@ -72,7 +77,7 @@
 				)}
 			</p>
 		{:else}
-			<h5 class="text-xl text-secondary-700 dark:text-secondary-200">
+			<h5 class="text-secondary-700 dark:text-secondary-200 text-xl">
 				{$t('shared', 'for')} macOs
 			</h5>
 			<p class="text-surface-700 dark:text-surface-200">
@@ -82,7 +87,7 @@
 					null,
 					'Veuillez suivre les étapes de configuration reprises dans ce tutoriel pour configurer votre imprimante matricielle :'
 				)}
-				<button class="variant-glass btn btn-sm" on:click={gotoKineHelperbeMacOs}>
+				<button class="variant-glass btn btn-sm" onclick={gotoKineHelperbeMacOs}>
 					{$t('printerSetup', 'tutoAccess', null, 'Accéder au tutoriel')}
 				</button>
 			</p>
@@ -96,7 +101,7 @@
 			class="group/form mt-4 flex max-w-sm flex-col items-start justify-start space-y-4"
 			{formSchema}>
 			<TextFieldV2
-				class="input min-w-[24rem] max-w-sm {platformName === 'windows' ? '!hidden' : ''}"
+				class="input max-w-sm min-w-[24rem] {platformName === 'windows' ? '!hidden' : ''}"
 				labelClass={platformName === 'windows' ? '!hidden' : ''}
 				value={printerField}
 				label={$t('printerSetup', 'label.printer')}
@@ -113,7 +118,12 @@
 			<div class="flex w-full justify-between">
 				<SubmitButton class="!self-start" />
 				<button
-					on:click|preventDefault={() => modalStore.trigger(modal)}
+					onclick={(e) => {
+						e.preventDefault();
+						openModal({
+							name: 'confirmExitPrinterConfig'
+						});
+					}}
 					class="variant-outline-secondary btn">{$t('printerSetup', 'ignore')}</button>
 			</div>
 		</FormWrapper>

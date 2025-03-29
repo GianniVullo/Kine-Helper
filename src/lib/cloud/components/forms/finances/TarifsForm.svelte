@@ -6,12 +6,15 @@
 	import { onMount } from 'svelte';
 	import SubmitButton from '../../../../forms/ui/SubmitButton.svelte';
 	import { appState } from '../../../../managers/AppState.svelte';
+	import { page } from '$app/state';
 	import DefaultTarifField from './DefaultTarifField.svelte';
 	import dayjs from 'dayjs';
-	import { modalStore } from '$lib/cloud/libraries/overlays/modalUtilities.svelte';
 	import { get } from 'svelte/store';
 	import { t } from '../../../../i18n';
 	import TarifsListField from './TarifsListField.svelte';
+	import Modal from '../../../libraries/overlays/Modal.svelte';
+	import { pushState } from '$app/navigation';
+	import { openModal } from '../../../libraries/overlays/modalUtilities.svelte';
 
 	let now = dayjs().format('YYYY-MM-DD');
 
@@ -94,32 +97,23 @@
 		onValid
 	});
 
-	const modal = (element, elementType) => ({
-		type: 'confirm',
-		title: 'Confirmation',
-		body: `Voulez-vous vraiment supprimer ${element.nom} ?`,
-		buttonTextConfirm: get(t)('shared', 'confirm'),
-		buttonTextCancel: get(t)('shared', 'cancel'),
-		modalClasses: {
-			buttonPositive: 'isModal'
-		},
-		response: async (r) => {
-			console.log('the element = ', element);
-
-			if (r) {
-				formHandler.form[elementType] = formHandler.form[elementType].filter(
-					(s) => s.id != element.id
-				);
-			}
-		}
-	});
-
-	//! attention, que se passe-t-il lorsque l'utilisateur change son tarifs au cours de l'année ? Il faut par exemple que le tarifs qui était considéré comme le tarifs par défaut pour séance devienne un tarif custom. Ou alors il faut que chaque séance porte une valeure définitive non liée à l'objet tarif por ne pas que les valeurs monétaires soient toutes faussées lors du changement. Une fois la séance tarifée elle ne doit plus pouvoir changer de tarif.
-
 	onMount(() => {
 		formHandler.setup();
 	});
 </script>
+
+<Modal
+	opened={page?.state?.modal?.name === 'tarifs' || page?.state?.modal?.name === 'supplements'}
+	title={'Supprimer de ' + page?.state?.modal?.name}
+	body={`Êtes-vous sûr de vouloir supprimer ${page?.state?.modal?.nom ? '"' + page.state.modal.nom + '"' : 'cet élément'} ?`}
+	buttonTextConfirm="Supprimer"
+	buttonTextCancel="Annuler"
+	onAccepted={async () => {
+		formHandler.form[page?.state?.modal?.name] = formHandler.form[page?.state?.modal?.name].filter(
+			(tarif) => tarif.id !== page?.state?.modal?.id
+		);
+		history.back();
+	}} />
 
 <Form title="Gérer vos tarifs" message={formHandler.message}>
 	{#if !appState.user.conventionne}
@@ -215,7 +209,8 @@
 				}}
 				removeButtonHandler={(custom_tarif) => (e) => {
 					e.preventDefault();
-					modalStore.trigger(modal(custom_tarif, 'tarifs'));
+					console.log('custom_tarif', custom_tarif);
+					openModal({ name: 'tarifs', id: custom_tarif.id, nom: custom_tarif.nom });
 				}}>
 				<p class="mt-3 text-sm/6 text-gray-600">
 					Les tarifs personnalisés vous permettent de définir rapidement les prixs de vos actes
@@ -249,7 +244,7 @@
 			}}
 			removeButtonHandler={(custom_tarif) => (e) => {
 				e.preventDefault();
-				modalStore.trigger(modal(custom_tarif, 'supplements'));
+				openModal({ name: 'supplements', id: custom_tarif.id, nom: custom_tarif.nom });
 			}} />
 	</FormSection>
 	<SubmitButton id="seance-submit" className="col-span-full" />

@@ -1,5 +1,4 @@
 <script>
-	import { modalStore } from '$lib/cloud/libraries/overlays/modalUtilities.svelte';
 	import { FormWrapper, SelectFieldV2, SubmitButton, RadioFieldV2 } from '../forms/index';
 	import dayjs from 'dayjs';
 	import { createFacture } from '../user-ops-handlers/documents';
@@ -8,13 +7,12 @@
 	import { get } from 'svelte/store';
 	import { invalidate } from '$app/navigation';
 
-	export let parent;
+	let { sp, patient, factures } = $props();
 
 	let formSchema = {
 		isValid,
 		validators: {}
 	};
-	const { sp, patient, factures } = $modalStore[0].meta;
 
 	// let factures = getContext('factures');
 	console.log('factures in factureCreationModal', factures);
@@ -73,34 +71,26 @@
 		await createFacture(facture, attestationsIds);
 		factures.push(facture);
 		invalidate('patient:layout');
-		modalStore.close();
+		history.back();
 	}
-	// Base Classes
-	const cBase = 'card p-4 w-modal shadow-xl space-y-4';
-	const cHeader = 'text-2xl font-bold';
 </script>
 
-{#if $modalStore[0]}
-	<div class="modal-example-form {cBase}">
-		<header class={cHeader}>{$t('otherModal', 'fcreate.title')}</header>
-		<FormWrapper {formSchema}>
-			<RadioFieldV2
-				bind:value={factureType}
-				label={$t('otherModal', 'doc.type')}
-				name="docType"
-				required
-				{options} />
-			{#if attestations}
-				<SelectFieldV2
-					label={$t('otherModal', 'fcreate.label')}
-					multiple
-					bind:value={attestationsIds}
-					name="attestationIds"
-					required
-					options={attestations} />
-			{/if}
-			<DateField label={$t('otherModal', 'fcreate.date')} name="date" bind:value={dateFactu} />
-			<SubmitButton>{$t('shared', 'confirm')}</SubmitButton>
-		</FormWrapper>
-	</div>
-{/if}
+<FormWrapper {formSchema}>
+	<RadioFieldV2
+		bind:value={factureType}
+		label={$t('otherModal', 'doc.type')}
+		name="docType"
+		required
+		{options} />
+	{#if attestations}
+		<SelectFieldV2
+			label={$t('otherModal', 'fcreate.label')}
+			multiple
+			bind:value={attestationsIds}
+			name="attestationIds"
+			required
+			options={attestations} />
+	{/if}
+	<DateField label={$t('otherModal', 'fcreate.date')} name="date" bind:value={dateFactu} />
+	<SubmitButton>{$t('shared', 'confirm')}</SubmitButton>
+</FormWrapper>
