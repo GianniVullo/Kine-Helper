@@ -49,9 +49,7 @@
 			date: attestation?.date ?? lines[lines.length - 1].date,
 			prescription_id: attestation?.prescription_id ?? prescription_id,
 			attestation_id: attestation?.attestation_id ?? crypto.randomUUID(),
-			porte_prescr:
-				attestation?.porte_prescr ??
-				sp.attestations?.reduce((a, b) => a || b.porte_prescr, []).length === 0,
+			porte_prescr: attestation?.porte_prescr ?? !sp.attestations?.some((a) => a.porte_prescr),
 			has_been_printed: attestation?.has_been_printed ?? false,
 			numero_etablissement: attestation?.numero_etablissement,
 			service: attestation?.service,
