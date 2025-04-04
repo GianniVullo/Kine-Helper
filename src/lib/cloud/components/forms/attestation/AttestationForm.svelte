@@ -63,7 +63,8 @@
 			lines,
 			seances: seances.map((s) => ({
 				seance_id: s.seance_id,
-				code_id: s.metadata.codes.kine.code_id
+				code_id: s.metadata.codes.kine.code_id,
+				metadata: s.metadata
 			})),
 			generateFacturePatient: patient.ticket_moderateur,
 			printFacturePatient: patient.ticket_moderateur,

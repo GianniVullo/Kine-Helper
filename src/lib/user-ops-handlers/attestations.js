@@ -65,6 +65,8 @@ export async function createAttestation(data) {
 
 	console.log('caseStatements', caseStatements);
 
+	// Il faut remplacer les tarifs et suppléments par une valeur "metadata.valeur_totale" qui additionne le prix de la séance + le prix des suppléments
+	// cette addition doit être réalisée dans AttestationSchema et metadata doit être updaté ici
 	let sqlQuery = `
 		UPDATE seances
 			SET 
@@ -79,6 +81,16 @@ export async function createAttestation(data) {
 	let { data: seances, error: seancesError } = await appState.db.execute(sqlQuery, [
 		data.attestation.attestation_id
 	]);
+	for (const { metadata, seance_id } of data.seances) {
+		let { data: metadataUpdateStatus, error: metadataUpdateError } = await appState.db.execute(
+			"UPDATE seances SET metadata = json_insert(COALESCE(metadata, '{}'), '$.valeur_totale', $1) WHERE seance_id = $2",
+			[metadata.valeur_totale, seance_id]
+		);
+		if (metadataUpdateError) {
+			return { error: metadataUpdateError };
+		}
+		console.log('metadataUpdateStatus', metadataUpdateStatus);
+	}
 	if (seancesError) {
 		return { error: seancesError };
 	}

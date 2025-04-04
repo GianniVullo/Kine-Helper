@@ -75,7 +75,11 @@ const lines = v.array(
 const seances = v.array(
 	v.object({
 		seance_id: v.uuid(),
-		code_id: v.uuid()
+		code_id: v.uuid(),
+		metadata: v.object({
+			valeur_totale: v.number(),
+			total_recu: v.number()
+		})
 	})
 );
 
@@ -83,9 +87,8 @@ const tiers_payant = v.optional(v.boolean());
 const ticket_moderateur = v.optional(v.boolean());
 const bim = v.optional(v.boolean());
 const numero = v.pipe(
-	v.transform((input) => (input?.length === 0 ? null : input)),
-	v.string('Ce champ est obligatoire'),
-	v.digits('Ce champ doit être un nombre')
+	v.number('Ce champ est obligatoire'),
+	v.integer('Ce champ doit être un nombre')
 );
 
 export const validateurs = {
@@ -362,7 +365,7 @@ export const fieldSchema = [
 	{
 		id: 'numero',
 		name: 'numero',
-		inputType: 'text',
+		inputType: 'number',
 		titre: 'Numéro de l attestation',
 		outerCSS: 'col-span-full sm:col-span-2',
 		innerCSS: ''
@@ -463,11 +466,22 @@ export async function groupSeanceInAttestations(seancesToDealWith, sp, patient) 
 			 **			- sinon on essaye de prendre dans les paramètres généraux (table tarif dans la db)
 			 **			- sinon on prends la valeur du code
 			 */
-			if (patient.bim || appState.user.conventionne || !seance?.metadata?.tarif_seance || !sp?.metadata?.tarif_seance) {
+			if (
+				patient.bim ||
+				appState.user.conventionne ||
+				!seance?.metadata?.t_s ||
+				!sp?.metadata?.t_s ||
+				!seance?.metadata?.t_sec ||
+				!sp?.metadata?.t_sec
+			) {
 				valeur_totale_seance += code_seance[0].honoraire;
 				total_recu_seance += computeTotalRecu(code_seance[0], patient);
 			} else {
-				let tarif = seance?.metadata?.tarif_seance || sp?.metadata?.tarif_seance;
+				let tarif =
+					seance?.metadata?.t_s ||
+					sp?.metadata?.t_s ||
+					!seance?.metadata?.t_sec ||
+					!sp?.metadata?.t_sec;
 				if (!tarif) {
 					const { data: fetchedTarif, error: fetchError } = await appState.db.select(
 						`SELECT valeur FROM tarifs WHERE json_extract(metadata, '$.seance') is not null;`
@@ -580,8 +594,8 @@ export async function groupSeanceInAttestations(seancesToDealWith, sp, patient) 
 				lineId++;
 			}
 			// TODO Ajouter les suppléments et aussi prendre en compte si il y a un tarif personnalisé
-			if (seance.metadata?.supplements) {
-				for (const supplement_id of seance.metadata.supplements) {
+			if (seance.metadata?.ss) {
+				for (const supplement_id of seance.metadata.ss) {
 					const { data: supplements, error: supplError } = await appState.db.select(
 						`SELECT * FROM supplements WHERE id = $1;`,
 						[supplement_id]
@@ -595,8 +609,8 @@ export async function groupSeanceInAttestations(seancesToDealWith, sp, patient) 
 					total_recu_seance += supplementValue;
 				}
 			}
-			if (seance.metadata?.supplements_ponctuels) {
-				for (const { valeur } of seance.metadata.supplements_ponctuels) {
+			if (seance.metadata?.ss_p) {
+				for (const { valeur } of seance.metadata.ss_p) {
 					const supplementValue = convertToFloat(valeur);
 					console.log('supplement_ponctuel_value = ', supplementValue);
 					valeur_totale_seance += supplementValue;
@@ -608,7 +622,7 @@ export async function groupSeanceInAttestations(seancesToDealWith, sp, patient) 
 			console.log('valeur_totale = ', valeur_totale);
 			console.log('total_recu = ', total_recu);
 			if (!seance.metadata) {
-				seance.metadata = {};				
+				seance.metadata = {};
 			}
 			seance.metadata.codes = metadataCode;
 			seance.metadata.valeur_totale = valeur_totale_seance;
