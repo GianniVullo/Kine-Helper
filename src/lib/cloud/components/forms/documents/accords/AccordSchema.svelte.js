@@ -1,4 +1,4 @@
-import { uuid, pipe, string, boolean, transform, isoDate, integer, object } from 'valibot';
+import { uuid, pipe, string, boolean, transform, isoDate, integer, object, number } from 'valibot';
 import { t } from '../../../../../i18n';
 import { goto, invalidate } from '$app/navigation';
 import { info, trace } from '@tauri-apps/plugin-log';
@@ -18,7 +18,8 @@ const metadata = object({
 	doc: string()
 });
 const buildable = boolean();
-const situation = integer();
+const notification = boolean();
+const situation = pipe(number("Veuillez choisir une situation pathologique"), integer("Veuillez choisir une situation pathologique"));
 
 export const validateurs = {
 	id,
@@ -28,12 +29,20 @@ export const validateurs = {
 	date,
 	metadata,
 	situation,
-	buildable
+	buildable,
+	notification
 };
 
 export const AccordSchema = pipe(
 	object({
 		...validateurs
+	}),
+	transform((input) => {
+		if (input?.metadata?.doc === 'B') {
+			input.metadata.notification = input.notification;
+		}
+		delete input.notification;
+		return input;
 	})
 );
 

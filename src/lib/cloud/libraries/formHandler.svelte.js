@@ -36,6 +36,8 @@ export class Formulaire {
 	onError;
 	onValid;
 	isAsynchronous;
+	// Scrollable : l'id de l'élément scrollable si c'est null ça window.scrollToTop
+	scrollable;
 
 	constructor({
 		schema,
@@ -46,7 +48,8 @@ export class Formulaire {
 		onValid,
 		onError,
 		mode = 'create',
-		isAsynchronous = false
+		isAsynchronous = false,
+		scrollable
 	}) {
 		trace('Constructing the Formulaire instance with ' + Object.keys(validateurs).join(', '));
 		this.submiter = submiter;
@@ -56,8 +59,7 @@ export class Formulaire {
 		this.isAsynchronous = isAsynchronous;
 		for (const fieldName of Object.keys(validateurs)) {
 			trace('Registering ' + fieldName);
-			this.form[fieldName] =
-				initialValues?.[fieldName] ?? validateurs[fieldName].default ?? null;
+			this.form[fieldName] = initialValues?.[fieldName] ?? validateurs[fieldName].default ?? null;
 			this.errors[fieldName] = false;
 			this.initialValues[fieldName] = initialValues?.[fieldName] ?? null;
 		}
@@ -72,6 +74,7 @@ export class Formulaire {
 		$effect(() => {
 			this.evaluateAndValidate(this.form);
 		});
+		this.scrollable = scrollable;
 		console.log('initialValues', this.initialValues);
 	}
 
@@ -123,7 +126,11 @@ export class Formulaire {
 	defaultOnError(data) {
 		console.log('in onError with ', data);
 		this.extractErrorForSchema(data);
-		window.scrollTo({ top: 0, behavior: 'smooth' });
+		if (this.scrollable) {
+			document.getElementById(this.scrollable).scrollTo({ top: 0, behavior: 'smooth' });
+		} else {
+			window.scrollTo({ top: 0, behavior: 'smooth' });
+		}
 	}
 
 	extractErrorForSchema(validationState) {
