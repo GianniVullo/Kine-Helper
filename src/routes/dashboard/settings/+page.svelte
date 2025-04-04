@@ -25,7 +25,7 @@
 			reject(error);
 		}
 		imprimanteMatricielle = iM.name;
-		pinNumber = JSON.parse(JSON.parse(iM.metadata).is_nine_pin);
+		pinNumber = iM.metadata.is_nine_pin;
 		console.log(pinNumber);
 		resolve(iM);
 	});

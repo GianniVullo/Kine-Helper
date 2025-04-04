@@ -165,7 +165,7 @@ export function modelingMetadata(input) {
 	}
 	if (input.tarif_seconde_seance || input.tarif_seconde_seance_custom) {
 		input.metadata.tarif_seconde_seance =
-			input.t_s ?? input.tarif_seconde_seance_custom;
+			input.t_sec ?? input.tarif_seconde_seance_custom;
 	}
 	if (input.tarif_intake || input.tarif_intake_custom) {
 		input.metadata.t_in = input.tarif_intake ?? input.tarif_intake_custom;

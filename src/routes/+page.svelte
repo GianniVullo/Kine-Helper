@@ -7,11 +7,7 @@
 	import { onDestroy } from 'svelte';
 	import { platform } from '@tauri-apps/plugin-os';
 	import { debug, error, info, trace, warn } from '@tauri-apps/plugin-log';
-	import FactureCreationModal from '../lib/ui/FactureCreationModal.svelte';
 	import { open } from '@tauri-apps/plugin-shell';
-	import Modal from '$lib/cloud/libraries/overlays/Modal.svelte';
-	import { page } from '$app/state';
-	import { successIcon, warningOutlineIcon } from '../lib/ui/svgs/IconSnippets.svelte';
 
 	function registerShortcut(callback) {
 		window.addEventListener('keydown', function (event) {
@@ -37,10 +33,6 @@
 	let message = '';
 </script>
 
-<button
-	onclick={() => {
-		pushState('', { ...page.state, modal: true });
-	}}>TEST</button>
 <div
 	class="flex min-h-screen items-center justify-center bg-gradient-to-br from-purple-500 to-indigo-500">
 	<!--? CENTERED CARD -->

@@ -36,7 +36,7 @@ export class DatabaseManager {
 	}
 
 	async getItem(key) {
-		const {data, error}= await this.select(`SELECT value FROM key_value WHERE key = $1`, [key]);
+		const { data, error } = await this.select(`SELECT value FROM key_value WHERE key = $1`, [key]);
 		if (error || !data?.[0]?.value) {
 			return null;
 		}
@@ -58,6 +58,7 @@ export class DatabaseManager {
 		if (rawprinterList.length === 0) {
 			return { data: null, error: null };
 		}
+		rawprinterList[0].metadata = JSON.parse(rawprinterList[0].metadata);
 		return { data: rawprinterList[0], error: null };
 	}
 
@@ -367,3 +368,18 @@ export class DatabaseManager {
 }
 
 export const db = new DatabaseManager();
+
+export function safeBooleanJsonParse(jsonString) {
+	if (typeof jsonString === 'string') {
+		try {
+			return JSON.parse(jsonString);
+		} catch (e) {
+			console.error('Error parsing JSON string:', e);
+			return null;
+		}
+	} else if (typeof jsonString === 'number') {
+		// If it's a number, return it as is
+		return jsonString ? true : false;
+	}
+	return null;
+}

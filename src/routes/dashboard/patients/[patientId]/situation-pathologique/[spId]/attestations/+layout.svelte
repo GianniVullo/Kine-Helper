@@ -37,18 +37,18 @@
 </script>
 
 <Modal
-	opened={page.state.modal === 'factureCreationModal'}
+	opened={page.state.modal?.name === 'factureCreationModal'}
 	title={$t('otherModal', 'fcreate.title')}>
 	<FactureCreationModal {sp} {patient} {factures} />
 </Modal>
 <Modal
-	opened={page.state.modal === 'noAttestation'}
+	opened={page.state.modal?.name === 'noAttestation'}
 	title="Pas d'attestations"
 	body="Veuillez créer une attestation avant de continuer."
 	buttonTextCancel="none"
 	buttonTextConfirm="Ok" />
 <Modal
-	opened={page.state.modal === 'patientIncomplete'}
+	opened={page.state.modal?.name === 'patientIncomplete'}
 	title="Patient incomplet"
 	,
 	body="Veuillez compléter les informations du patient avant de continuer."
@@ -57,7 +57,7 @@
 		goto(`/dashboard/patients/${patient.patient_id}/update`);
 	}} />
 <Modal
-	opened={page.state.modal === 'noPrescription'}
+	opened={page.state.modal?.name === 'noPrescription'}
 	title="Pas de prescription"
 	body="Veuillez ajouter une prescription avant de continuer."
 	buttonTextConfirm="Ajouter une prescription"
@@ -67,7 +67,7 @@
 		);
 	}} />
 <Modal
-	opened={page.state.modal === 'createSeance'}
+	opened={page.state.modal?.name === 'createSeance'}
 	title="Il n'y a pas de séance à attester"
 	body="Voulez-vous créer une nouvelle séance ?"
 	buttonTextConfirm="Créer une nouvelle séance"

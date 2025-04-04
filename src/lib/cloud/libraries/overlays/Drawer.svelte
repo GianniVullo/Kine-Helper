@@ -53,7 +53,7 @@
 						!page.state.drawer && 'translate-x-full',
 						page.state.drawer && 'translate-x-0'
 					]}>
-					<div class="flex h-full flex-col overflow-y-scroll bg-white shadow-xl">
+					<div id="right-drawer" class="flex h-full flex-col overflow-y-scroll bg-white shadow-xl">
 						<div class="bg-gray-50 px-4 py-6 sm:px-6">
 							<div class="flex items-start justify-between space-x-3">
 								<div class="space-y-1">

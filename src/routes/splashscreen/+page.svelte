@@ -7,10 +7,11 @@
 	import { get, writable } from 'svelte/store';
 	import { appLocalDataDir } from '@tauri-apps/api/path';
 	import { exists, writeTextFile, BaseDirectory } from '@tauri-apps/plugin-fs';
-	import { read_file } from "../../lib/utils/fsAccessor";
+	import { read_file } from '../../lib/utils/fsAccessor';
 	import { blur } from 'svelte/transition';
 	import { cubicOut } from 'svelte/easing';
 	import { supabase } from '../../lib';
+	import Spiner from '../../lib/cloud/components/layout/Spiner.svelte';
 
 	// <!--* Idée de ce composant -->
 	// Ici il faut attendre que le Dom soit complètement chargé pour éviter tout flickering.
@@ -25,9 +26,9 @@
 			return status;
 		});
 	}
-	let domLoaded = false;
-	let updatePromise;
-	let langPromise;
+	let domLoaded = $state(false);
+	let updatePromise = $state();
+	let langPromise = $state();
 	let contentSize;
 	let indexOfContentDownload;
 	onMount(() => {
@@ -178,13 +179,13 @@
 </script>
 
 <div
-	class="flex min-h-screen items-center justify-center bg-gradient-to-br from-purple-500 to-secondary-500 dark:from-purple-700 dark:to-secondary-700">
+	class="flex min-h-screen items-center justify-center bg-gradient-to-br from-purple-500 to-indigo-500 dark:from-purple-700 dark:to-indigo-700">
 	<!--? CENTERED CARD -->
 	<div
 		style="height: 500px;"
-		class="card relative w-[350px] space-y-2 overflow-hidden px-6 py-4 dark:border dark:border-gray-400">
+		class="relative w-[350px] space-y-2 overflow-hidden bg-gray-50 px-6 py-4 dark:border dark:border-gray-400">
 		<div
-			class="absolute -right-16 -top-16 h-32 w-32 rounded-full bg-purple-600 opacity-25 dark:opacity-50">
+			class="absolute -top-16 -right-16 h-32 w-32 rounded-full bg-purple-600 opacity-25 dark:opacity-50">
 		</div>
 		<div
 			class="absolute -bottom-16 -left-16 h-32 w-32 rounded-full bg-sky-600 opacity-25 dark:opacity-60">
@@ -199,9 +200,21 @@
 			<div id="status" class="mt-10 flex flex-col justify-center space-y-2 text-lg">
 				<div class="flex items-center justify-between">
 					<h5>{$t('splash', 'loading', null, 'Loading the DOM')}</h5>
-					{@html domLoaded
-						? '<div style="margin: 4px;" class="border-secondary-500 text-4xl w-5 h-5 border-2 rounded-full animate-spin border-b-purple-500"></div>'
-						: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-7 stroke-secondary-300 h-7"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>'}
+					{#if domLoaded}
+						<Spiner />
+					{:else}
+						<svg
+							xmlns="http://www.w3.org/2000/svg"
+							fill="none"
+							viewBox="0 0 24 24"
+							stroke-width="1.5"
+							stroke="currentColor"
+							class="h-7 w-7 stroke-indigo-300"
+							><path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
+					{/if}
 				</div>
 				<div class="flex items-center justify-between">
 					<h5>{$t('splash', 'update', null, 'Looking for updates')}</h5>
@@ -210,7 +223,7 @@
 							{#await updatePromise}
 								<div
 									style="margin: 5px;"
-									class="h-5 w-5 animate-spin rounded-full border-2 border-secondary-500 border-t-purple-500 text-4xl">
+									class="border-secondary-500 h-5 w-5 animate-spin rounded-full border-2 border-t-purple-500 text-4xl">
 								</div>
 							{:then value}
 								<svg
@@ -219,7 +232,7 @@
 									viewBox="0 0 24 24"
 									stroke-width="1.5"
 									stroke="currentColor"
-									class="h-7 w-7 stroke-secondary-300"
+									class="stroke-secondary-300 h-7 w-7"
 									><path
 										stroke-linecap="round"
 										stroke-linejoin="round"
@@ -239,7 +252,7 @@
 							{#await langPromise}
 								<div
 									style="margin: 5px;"
-									class="h-5 w-5 animate-spin rounded-full border-2 border-secondary-500 border-t-purple-500 text-4xl">
+									class="border-secondary-500 h-5 w-5 animate-spin rounded-full border-2 border-t-purple-500 text-4xl">
 								</div>
 							{/await}
 						{:else}
@@ -248,10 +261,10 @@
 					{/key}
 				</div>
 				<div class="flex flex-col">
-					<h5 class="mb-1 text-surface-600 dark:text-surface-200">
+					<h5 class="text-surface-600 dark:text-surface-200 mb-1">
 						{$t('splash', 'status', null, 'Status')}
 					</h5>
-					<ul class="ml-2 flex flex-col text-sm text-surface-700 dark:text-surface-300">
+					<ul class="text-surface-700 dark:text-surface-300 ml-2 flex flex-col text-sm">
 						{#each $loadingStatus as status, idx (idx)}
 							<li transition:blur={{ duration: 500, easing: cubicOut }}>{status}</li>
 						{/each}

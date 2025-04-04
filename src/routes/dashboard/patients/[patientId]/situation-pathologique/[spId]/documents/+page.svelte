@@ -12,6 +12,7 @@
 	import { page } from '$app/state';
 	import { openModal } from '../../../../../../../lib/cloud/libraries/overlays/modalUtilities.svelte';
 	import { cloneDeep } from 'lodash';
+	import { invalidate } from '$app/navigation';
 
 	let { data } = $props();
 	let { patient, sp } = data;
@@ -28,6 +29,8 @@
 	onAccepted={async () => {
 		await deleteAccord(page.state.modal.accord);
 		accords.splice(accords.indexOf(page.state.modal.accord), 1);
+		await invalidate('patient:layout');
+		history.back();
 	}} />
 
 <div class="ml-2 flex flex-col space-y-4">

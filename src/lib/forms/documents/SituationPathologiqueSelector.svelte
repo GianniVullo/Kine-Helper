@@ -2,7 +2,8 @@
 	import { t } from '../../i18n';
 	import { get } from 'svelte/store';
 
-	export let aOrB;
+	let { aOrB, value = $bindable(), error } = $props();
+
 	let annexeAOptions = {
 		[get(t)('annexeA', 'a.title')]: [
 			{
@@ -121,22 +122,25 @@
 		},
 		[get(t)('annexeB', 'h')]: { value: 7 }
 	};
-	export let value;
 </script>
 
-<h5 class="my-2 select-none text-surface-500 dark:text-surface-300">
+<h5 class="text-surface-500 dark:text-surface-300 my-2 select-none">
 	{$t('form.annexeA', 'validation.sp')}
 </h5>
+
+{#if error}
+	<p class="text-sm text-red-500">{error}</p>
+{/if}
 {#each Object.entries(aOrB === 'A' ? annexeAOptions : annexeBOptions) as item, idx}
 	<div class="flex flex-col">
 		{#if Array.isArray(item[1])}
 			<div class="mb-4 flex flex-col space-y-4">
 				<h5>{item[0]}</h5>
-				<div class="flex flex-col space-y-4 pl-5 pr-10">
+				<div class="flex flex-col space-y-4 pr-10 pl-5">
 					{#each item[1] as subItem, idx}
 						<label
 							class:!text-sm={value && value !== subItem.value}
-							class="flex cursor-pointer rounded-lg border px-2 py-2 text-surface-300 duration-200 has-[:checked]:border-2 has-[:checked]:border-secondary-400 has-[:checked]:bg-surface-700 has-[:checked]:text-lg has-[:checked]:text-surface-100 dark:border-surface-400 dark:hover:bg-surface-800"
+							class="text-surface-300 has-[:checked]:border-secondary-400 has-[:checked]:bg-surface-700 has-[:checked]:text-surface-100 dark:border-surface-400 dark:hover:bg-surface-800 flex cursor-pointer rounded-lg border px-2 py-2 duration-200 has-[:checked]:border-2 has-[:checked]:text-lg"
 							for={item[0].substring(0, 2) + idx.toString()}>
 							<input
 								class="invisible"
@@ -153,7 +157,7 @@
 		{:else}
 			<label
 				for={aOrB === 'A' ? annexeAIdx[idx] : item[0].substring(0, 2)}
-				class="mb-4 flex cursor-pointer rounded-lg border px-2 py-2 pl-5 pr-10 text-surface-300 duration-200 has-[:checked]:border-2 has-[:checked]:!border-secondary-400 has-[:checked]:bg-surface-700 has-[:checked]:text-lg has-[:checked]:text-surface-100 dark:border-surface-400 dark:hover:bg-surface-800">
+				class="text-surface-300 has-[:checked]:!border-secondary-400 has-[:checked]:bg-surface-700 has-[:checked]:text-surface-100 dark:border-surface-400 dark:hover:bg-surface-800 mb-4 flex cursor-pointer rounded-lg border px-2 py-2 pr-10 pl-5 duration-200 has-[:checked]:border-2 has-[:checked]:text-lg">
 				<div>{@html item[0]}</div>
 				<input
 					class="invisible"

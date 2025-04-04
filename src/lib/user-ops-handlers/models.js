@@ -1,3 +1,4 @@
+import { safeBooleanJsonParse } from '../cloud/database';
 import { appState } from '../managers/AppState.svelte';
 
 export class Patient {
@@ -40,10 +41,10 @@ export class Patient {
 		this.sexe = sexe;
 		this.mutualite = mutualite;
 		this.num_affilie = num_affilie;
-		this.tiers_payant = JSON.parse(tiers_payant);
-		this.ticket_moderateur = JSON.parse(ticket_moderateur);
-		this.bim = JSON.parse(bim);
-		this.actif = actif ? JSON.parse(actif) : true;
+		this.tiers_payant = safeBooleanJsonParse(tiers_payant);
+		this.ticket_moderateur = safeBooleanJsonParse(ticket_moderateur);
+		this.bim = safeBooleanJsonParse(bim);
+		this.actif = actif ? safeBooleanJsonParse(actif) : true;
 		this.numero_etablissement = numero_etablissement;
 		this.service = service;
 		this.situations_pathologiques = [];
