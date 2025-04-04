@@ -1,9 +1,35 @@
-import { invoke } from '@tauri-apps/api/core';
 import { appState } from '../managers/AppState.svelte';
 
 export async function printAttestation(lines, attestation) {
 	const { patient, prescription, situation_pathologique, imprimante, error } =
 		await getData(attestation);
+
+	if (!lines) {
+		const { data: seances, error: seancesError } = await appState.db.select(
+			`SELECT seances.date, codes.code_reference 
+			FROM seances 
+			LEFT JOIN codes ON codes.code_id = seances.code_id 
+			WHERE seances.attestation_id = $1`,
+			[attestation.attestation_id]
+		);
+		lines = seances
+		console.log('seances', seances);
+		if (seancesError) {
+			return { error: seancesError };
+		}
+		console.log('lines', lines);
+		
+	}
+	console.log(
+		'printAttestation with lines, attestation, patient, prescription, situation_pathologique, imprimante :',
+		lines,
+		attestation,
+		patient,
+		prescription,
+		situation_pathologique,
+		imprimante,
+		error
+	);
 	if (error) {
 		return { error };
 	}
@@ -39,7 +65,7 @@ export async function printAttestation(lines, attestation) {
 			adresse: appState.user.adresse,
 			cp: `${appState.user.cp}`,
 			localite: appState.user.localite,
-			numero_bce: appState.user.numero_bce
+			numero_bce: appState.user.bce
 		},
 		situation_pathologique: {
 			numero_etablissement:
@@ -48,7 +74,7 @@ export async function printAttestation(lines, attestation) {
 		}
 	};
 	console.log('formData in RawPrinter ==', formData);
-	// return await invoke('print_attestation', { printerName: imprimante.name, formData });
+	return await invoke('print_attestation', { printerName: imprimante.name, formData });
 	return { error: null };
 }
 
@@ -77,11 +103,10 @@ async function getData(attestation) {
 		return { error: spError };
 	}
 	const situation_pathologique = situation_pathologiqueArray[0];
-	const { data: imprimanteArray, error: NoPrinter } = await appState.db.getRawPrinter();
+	const { data: imprimante, error: NoPrinter } = await appState.db.getRawPrinter();
 	if (NoPrinter) {
 		return { error: NoPrinter };
 	}
-	const imprimante = imprimanteArray[0];
 
 	return { patient, prescription, situation_pathologique, imprimante };
 }
