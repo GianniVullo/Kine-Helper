@@ -13,8 +13,11 @@
 	import { Formulaire } from '../../../libraries/formHandler.svelte';
 	import { appState } from '../../../../managers/AppState.svelte';
 	import { onMount } from 'svelte';
+	import Field from '../abstract-components/Field.svelte';
+	import { get } from 'svelte/store';
 
 	let { prescription, patient, sp, mode = 'create', title } = $props();
+	console.log('Prescription', prescription);
 
 	let fieldSchemaMode = fieldSchema(mode);
 
@@ -40,11 +43,29 @@
 </script>
 
 <Form title={title ?? $t('prescription.create', 'title')} message={formHandler.message}>
-	<FormSection
-		titre="Informations générales"
-		fields={fieldSchemaMode}
-		bind:form={formHandler.form}
-		errors={formHandler.errors} />
+	<FormSection titre="Informations générales">
+		{#each fieldSchemaMode as field}
+			<Field
+				{field}
+				error={formHandler.errors[field.name]}
+				bind:value={formHandler.form[field.name]} />
+		{:else}
+			Il n'y a aucun champs à afficher
+		{/each}
+		<Field
+			field={{
+				id: 'file',
+				name: 'file',
+				inputType: 'file',
+				titre: `${get(t)('form.prescription', 'copy.label')}${mode === 'update' && prescription.file_name ? `<br /> <span class="text-sm text-gray-400">Actuellement dans la base de donnée : </span><span class ="text-gray-500 text-sm">${prescription.prescripteurNom} ${prescription.prescripteurPrenom} - ${dayjs(prescription.date).format('DD-MM-YYYY')}.${prescription.file_name}</span>` : ''}`,
+				outerCSS: 'sm:col-span-full',
+				help:
+					mode === 'update'
+						? 'Attention, si vous uploadez un nouveau fichier la copie de la prescription précédemment enregistrée sera écrasée'
+						: undefined
+				// innerCSS: ''
+			}} />
+	</FormSection>
 	<SubmitButton id="sp-submit" className="col-span-full" />
 </Form>
 

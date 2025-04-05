@@ -209,16 +209,4 @@ export const fieldSchema = (mode) => [
 		outerCSS: 'col-span-full',
 		innerCSS: ''
 	},
-	{
-		id: 'file',
-		name: 'file',
-		inputType: 'file',
-		titre: get(t)('form.prescription', 'copy.label'),
-		outerCSS: 'sm:col-span-full',
-		help:
-			mode === 'update'
-				? 'Si vous uploadez un nouveau fichier la copie de la prescription précédemment enregistrée sera écrasée'
-				: undefined
-		// innerCSS: ''
-	}
 ];

@@ -22,7 +22,7 @@
 	</div>
 {:else if field.inputType === 'file'}
 	<div class={field.outerCSS}>
-		<label for={field.id} class="block text-sm/6 font-medium text-gray-900">{field.titre}</label>
+		<label for={field.id} class="block text-sm/6 font-medium text-gray-900">{@html field.titre}</label>
 		<TwUiFileField
 			id={field.id}
 			name={field.name}
