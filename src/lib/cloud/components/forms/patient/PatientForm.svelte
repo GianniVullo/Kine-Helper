@@ -7,6 +7,7 @@
 	import { onMount } from 'svelte';
 	import SubmitButton from '../../../../forms/ui/SubmitButton.svelte';
 	import { appState } from '../../../../managers/AppState.svelte';
+	import EidReader from '../../../libraries/EIDReader.svelte';
 
 	let { patient, mode = 'create' } = $props();
 
@@ -14,7 +15,7 @@
 		validateurs,
 		schema: PatientSchema,
 		submiter: '#patient-submit',
-		initialValues: patient ?? {
+		initialValues: {
 			user_id: appState.user.id,
 			patient_id: crypto.randomUUID(),
 			tiers_payant: false,
@@ -31,6 +32,13 @@
 </script>
 
 <Form title="Création d'un nouveau patient" message={formHandler.message}>
+	<EidReader
+		dataReceiver={(data) => {
+			console.log('data', data);
+			for (const field of Object.keys(data)) {
+				formHandler.form[field] = data[field];
+			}
+		}} />
 	{#each fieldSchema as { titre, description, fields }}
 		<FormSection
 			{titre}

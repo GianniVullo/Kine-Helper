@@ -1,5 +1,6 @@
 mod appstate;
 mod cryptage;
+mod eid_reader;
 mod nomenclature;
 mod printer;
 mod stability_corrections;
@@ -21,6 +22,7 @@ use cryptage::{
     decrypt_string, does_private_key_exist, encrypt_string, from_base64_to_bytes,
     from_bytes_to_base64, generate_encryption_key, setup_stronghold_key,
 };
+use eid_reader::get_eid_data;
 use stability_corrections::file_system_correction::perform_fs_stability_patch;
 use std::sync::Mutex;
 use std::{
@@ -240,6 +242,7 @@ pub fn run() {
             from_base64_to_bytes,
             from_bytes_to_base64,
             setup_stronghold_key,
+            get_eid_data,
             convention_decompression,
             #[cfg(any(target_os = "macos", target_os = "linux", target_os = "windows"))]
             print_attestation,

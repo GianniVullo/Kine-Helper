@@ -32,8 +32,8 @@ const date_naissance = v.pipe(
 const sexe = v.nullable(v.picklist(SEX));
 const adresse = v.pipe(v.nullable(v.string()));
 const cp = v.nullable(
-	v.transform((input) => (typeof input == 'number' ? `${input}` : input)),
 	v.pipe(
+		v.transform((input) => (typeof input == 'number' ? `${input}` : input)),
 		v.string(),
 		v.length(4, 'Veuillez entrer seulement 4 chiffres svp'),
 		v.digits('Ce champ ne peut contenir que des chiffres')
@@ -45,8 +45,8 @@ const tiers_payant = v.pipe(v.optional(v.boolean()));
 const ticket_moderateur = v.pipe(v.optional(v.boolean()));
 const bim = v.pipe(v.optional(v.boolean()));
 const mutualite = v.nullable(
-	v.transform((input) => (typeof input == 'number' ? `${input}` : input)),
 	v.pipe(
+		v.transform((input) => (typeof input == 'number' ? `${input}` : input)),
 		v.string(),
 		v.length(3, "Veuillez entrer seulement l'identifiant à 3 chiffres de la mutualité"),
 		v.digits('Ce champ ne peut contenir que des chiffres')
@@ -89,30 +89,8 @@ export const validateurs = {
 
 export const PatientSchema = v.pipe(
 	v.object({
-		// Id
-		user_id,
-		patient_id,
-		nom,
-		prenom,
-		niss,
-		date_naissance,
-		sexe,
-		adresse,
-		cp,
-		localite,
-		// Assurabilité
-		num_affilie,
-		tiers_payant,
-		ticket_moderateur,
-		bim,
-		mutualite,
-		//// numero_etablissement,
-		//// service,
-		// Contact
-		tel,
-		gsm,
-		email
-	})
+		...validateurs
+	}),
 );
 
 export async function onValid(data) {
