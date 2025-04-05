@@ -58,11 +58,12 @@ export async function createPrescription(data, file) {
 
 	let file_name;
 	if (file) {
-		file_name = `${data.prescription_id}.${file.name.split('.').pop()}`;
+		const fileExtension = file.name.split('.').pop();
+		file_name = `${data.prescription_id}.${fileExtension}`;
 		const filePath = prescriptionPath();
 		data.prescripteur = JSON.stringify(data.prescripteur);
 		let fsError = await save_to_disk(filePath, file_name, Array.from(await file.bytes()));
-		data.file_name = file_name;
+		data.file_name = fileExtension;
 		delete data.file;
 		if (fsError) {
 			return { data: prescription, error: fsError };
@@ -102,7 +103,7 @@ export async function deletePrescription(prescription) {
 
 export async function openPrescription(prescription) {
 	let path = prescriptionPath();
-	const completePath = `${path}/${prescription.file_name}`;
+	const completePath = `${path}/${prescription.prescription_id}.${prescription.file_name}`;
 	let exist = await file_exists(completePath);
 	if (!exist) {
 		return { error: 'File does not exist' };

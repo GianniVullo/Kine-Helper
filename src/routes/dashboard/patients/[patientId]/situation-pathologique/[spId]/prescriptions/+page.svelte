@@ -88,11 +88,14 @@
 									onclick={async (e) => {
 										if (prescription.file_name) {
 											e.target.disabled = true;
-											let error = await openPrescription(prescription);
+											let { error } = await openPrescription(prescription);
 											console.log('the error', error);
 											e.target.disabled = false;
+											if (error) {
+												openModal({ name: 'noFile' });
+											}
 										} else {
-											openModal({ name: noFile });
+											openModal({ name: 'noFile' });
 										}
 									}}
 									class="variant-filled btn-icon btn-icon-sm dark:variant-filled"
