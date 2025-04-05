@@ -23,6 +23,10 @@ export class FacturePatient extends PDFGeneration {
 		this.sp = sp;
 		this.attestations = attestations;
 		this.codes = codes;
+		this.seances = this.sp.seances.filter((s) =>
+			this.attestations.map((a) => a.attestation_id).includes(s.attestation_id)
+		);
+		this.seances.sort((a, b) => (dayjs(a.date).isBefore(dayjs(b.date)) ? -1 : 1));
 	}
 
 	buildPdf() {
@@ -50,27 +54,27 @@ export class FacturePatient extends PDFGeneration {
 			this.yPosition.update(10);
 			this.addParagraph('', { fontWeight: 'bold' });
 			this.yPosition.update(1);
-			if (this.attestations.reduce((acc, att) => acc || att.with_indemnity, false)) {
+			if (this.seances.reduce((acc, att) => acc || att.indemnite, false)) {
 				this.addParagraph(
 					`(I) = ${get(t)('pdfs', 'facture.ind')} (code ${
-						this.codes.get('indemnites')[0].code_reference
+						this.codes.get('indemnite').code_reference
 					})`,
 					{ fontSize: 8 }
 				);
 			}
 			if (
-				this.attestations.reduce((acc, att) => acc || att.with_rapport, false) &&
+				this.seances.reduce((acc, att) => acc || att.rapport_ecrit, false) &&
 				this.codes.get('rapports').length > 0
 			) {
 				this.addParagraph(
 					`(R) = ${get(t)('sp.update', 'label.rapport_ecrit')} (code ${
-						this.codes.get('rapports')[0].code_reference
+						this.codes.get('rapports').code_reference
 					})`,
 					{ fontSize: 8 }
 				);
 			}
-			if (this.attestations.reduce((acc, att) => acc || att.with_intake, false)) {
-				this.addParagraph(`(Intake) - (code ${this.codes.get('intake')[0].code_reference})`, {
+			if (this.seances.reduce((acc, att) => acc || att.metadata?.intake, false)) {
+				this.addParagraph(`(Itk) = Intake (code ${this.codes.get('intake').code_reference})`, {
 					fontSize: 8
 				});
 			}
@@ -86,23 +90,23 @@ export class FacturePatient extends PDFGeneration {
 			'shared',
 			'next'
 		)}) :`;
-		for (const attestation of this.attestations) {
-			console.log('Dans buildDetail, attestation, this.sp', attestation, this.sp);
-			let seances = this.sp.seances.filter((s) => s.attestation_id === attestation.attestation_id);
-			for (const protoSeance of seances) {
-				let seance = protoSeance.obj ?? protoSeance;
-				let seance_ref = '';
-				let seance_date = dayjs(seance.date).format('DD-MM-YYYY');
-				seance_ref += this.codes.get(seance.code_id).code_reference;
-				console.log('seance in buildDetail', seance);
-				if (seance.rapport_ecrit) {
-					seance_ref += ' (R)';
-				}
-				if (seance.indemnite) {
-					seance_ref += ' (I)';
-				}
-				lignes.push({ Code: seance_ref, Date: seance_date });
+		for (const protoSeance of this.seances) {
+			console.log('protoSeance', protoSeance);
+			let seance = protoSeance.obj ?? protoSeance;
+			let seance_ref = '';
+			let seance_date = dayjs(seance.date).format('DD-MM-YYYY');
+			seance_ref += this.codes.get(seance.code_id).code_reference;
+			console.log('seance in buildDetail', seance);
+			if (seance.rapport_ecrit) {
+				seance_ref += ' (R)';
 			}
+			if (seance.indemnite) {
+				seance_ref += ' (I)';
+			}
+			if (seance.metadata?.intake) {
+				seance_ref += ' (Itk)';
+			}
+			lignes.push({ Code: seance_ref, Date: seance_date });
 		}
 		this.fullWidthTable(lignes.slice(0, lignes.length > 10 ? 10 : lignes.length), [
 			'Code',

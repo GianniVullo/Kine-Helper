@@ -31,34 +31,34 @@
 
 	let { patient, currentSp } = $props();
 	let items = [
-		{
-			name: get(t)('patients.detail', 'attestation'),
-			href: `/dashboard/patients/${patient.patient_id}/situation-pathologique/${currentSp.sp_id}/attestations/create`,
-			condition:
-				currentSp?.seances.filter((seance) => {
-					return (
-						dayjs(dayjs(seance.date).format('YYYY-MM-DD')).isBefore(dayjs()) &&
-						!seance.attestation_id
-					);
-				}).length > 0,
-			icon: euroIcon
-		},
-		{
-			name: get(t)('patients.detail', 'prescription'),
-			href:
-				`/dashboard/patients/${patient.patient_id}/situation-pathologique/${currentSp.sp_id}` +
-				'/prescriptions/create',
-			condition: true,
-			icon: pagePlusIcon
-		},
-		{
-			name: get(t)('patients.detail', 'prestations'),
-			href:
-				`/dashboard/patients/${patient.patient_id}/situation-pathologique/${currentSp.sp_id}` +
-				'/generateurs/create',
-			condition: true,
-			icon: calendarIcon
-		}
+		// {
+		// 	name: get(t)('patients.detail', 'attestation'),
+		// 	href: `/dashboard/patients/${patient.patient_id}/situation-pathologique/${currentSp.sp_id}/attestations/create`,
+		// 	condition:
+		// 		currentSp?.seances.filter((seance) => {
+		// 			return (
+		// 				dayjs(dayjs(seance.date).format('YYYY-MM-DD')).isBefore(dayjs()) &&
+		// 				!seance.attestation_id
+		// 			);
+		// 		}).length > 0,
+		// 	icon: euroIcon
+		// },
+		// {
+		// 	name: get(t)('patients.detail', 'prescription'),
+		// 	href:
+		// 		`/dashboard/patients/${patient.patient_id}/situation-pathologique/${currentSp.sp_id}` +
+		// 		'/prescriptions/create',
+		// 	condition: true,
+		// 	icon: pagePlusIcon
+		// },
+		// {
+		// 	name: get(t)('patients.detail', 'prestations'),
+		// 	href:
+		// 		`/dashboard/patients/${patient.patient_id}/situation-pathologique/${currentSp.sp_id}` +
+		// 		'/generateurs/create',
+		// 	condition: true,
+		// 	icon: calendarIcon
+		// }
 	];
 </script>
 

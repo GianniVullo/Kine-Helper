@@ -3,4 +3,4 @@
     let { data } = $props();
 </script>
 
-BONJOUR LES DÉTAILS!!
+En construction

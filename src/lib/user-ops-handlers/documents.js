@@ -70,8 +70,8 @@ export async function getFactureMutuellePDFHandler(facture) {
 export async function createFacture(data, attestation_ids, produce_pdf = true) {
 	console.log('in createFacture with data, attestation_ids :', data, attestation_ids);
 	/**
-	 ** - Enregistré une facture
-	 ** - Lié les attestations à la facture
+	 ** - Enregistrer une facture
+	 ** - Lier les attestations à la facture
 	 ** - Produire un PDF
 	 */
 

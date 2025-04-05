@@ -25,48 +25,23 @@ function evalTarifDefaultValue(metadata, key, subKey, tarifs) {
 
 export function getTarificationInitialValues(sp, tarifs, seance) {
 	return {
-		tarif_seance: evalTarifDefaultValue(
-			seance?.metadata ?? sp?.metadata,
-			't_s',
-			'id',
-			tarifs
-		),
-		tarif_indemnite: evalTarifDefaultValue(
-			seance?.metadata ?? sp?.metadata,
-			't_id',
-			'id',
-			tarifs
-		),
+		tarif_seance: evalTarifDefaultValue(seance?.metadata ?? sp?.metadata, 't_s', 'id', tarifs),
+		tarif_indemnite: evalTarifDefaultValue(seance?.metadata ?? sp?.metadata, 't_id', 'id', tarifs),
 		tarif_rapport_ecrit: evalTarifDefaultValue(
 			seance?.metadata ?? sp?.metadata,
 			't_re',
 			'id',
 			tarifs
 		),
-		tarif_consultatif: evalTarifDefaultValue(
-			seance?.metadata ?? sp?.metadata,
-			't_c',
-			'id',
-			tarifs
-		),
+		tarif_consultatif: evalTarifDefaultValue(seance?.metadata ?? sp?.metadata, 't_c', 'id', tarifs),
 		tarif_seconde_seance: evalTarifDefaultValue(
 			seance?.metadata ?? sp?.metadata,
 			't_sec',
 			'id',
 			tarifs
 		),
-		tarif_intake: evalTarifDefaultValue(
-			seance?.metadata ?? sp?.metadata,
-			't_in',
-			'id',
-			tarifs
-		),
-		tarif_no_show: evalTarifDefaultValue(
-			seance?.metadata ?? sp?.metadata,
-			't_ns',
-			'id',
-			tarifs
-		),
+		tarif_intake: evalTarifDefaultValue(seance?.metadata ?? sp?.metadata, 't_in', 'id', tarifs),
+		tarif_no_show: evalTarifDefaultValue(seance?.metadata ?? sp?.metadata, 't_ns', 'id', tarifs),
 		tarif_seance_custom: evalTarifDefaultValue(
 			seance?.metadata ?? sp?.metadata,
 			't_s',
@@ -157,15 +132,13 @@ export function modelingMetadata(input) {
 		input.metadata.t_id = input.tarif_indemnite ?? input.tarif_indemnite_custom;
 	}
 	if (input.tarif_rapport_ecrit || input.tarif_rapport_ecrit_custom) {
-		input.metadata.tarif_rapport_ecrit =
-			input.t_re ?? input.tarif_rapport_ecrit_custom;
+		input.metadata.t_re = input.tarif_rapport_ecrit ?? input.tarif_rapport_ecrit_custom;
 	}
 	if (input.tarif_consultatif || input.tarif_consultatif_custom) {
 		input.metadata.t_c = input.tarif_consultatif ?? input.tarif_consultatif_custom;
 	}
 	if (input.tarif_seconde_seance || input.tarif_seconde_seance_custom) {
-		input.metadata.tarif_seconde_seance =
-			input.t_sec ?? input.tarif_seconde_seance_custom;
+		input.metadata.t_sec = input.tarif_seconde_seance ?? input.tarif_seconde_seance_custom;
 	}
 	if (input.tarif_intake || input.tarif_intake_custom) {
 		input.metadata.t_in = input.tarif_intake ?? input.tarif_intake_custom;
@@ -176,6 +149,7 @@ export function modelingMetadata(input) {
 	if (input.supplements.length > 0) {
 		input.metadata.ss = input.supplements;
 	}
+	
 	delete input.supplements;
 	delete input.tarif_seance;
 	delete input.tarif_indemnite;
