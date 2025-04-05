@@ -15,8 +15,8 @@ export async function createSituationPathologique(data) {
 	return await appState.db.insert('situations_pathologiques', data);
 }
 
-export async function editSituationPathologique(data) {
-	return await appState.db.update('situations_pathologiques', [['sp_id', data.sp_id]], data);
+export async function editSituationPathologique(data, sp_id) {
+	return await appState.db.update('situations_pathologiques', [['sp_id', sp_id]], data);
 }
 
 export async function deleteSituationPathologique(data) {

@@ -9,6 +9,8 @@ import { goto, invalidate } from '$app/navigation';
 import { info, trace, error as errorLog } from '@tauri-apps/plugin-log';
 import { numericalString } from '../../../../utils/validationGenerics';
 import { modelingMetadata } from '../tarification-fields/tarifHelpers';
+import { filtrerLesChampsAUpdater } from '../../../database';
+import { cloneDeep } from 'lodash';
 
 const SEX = ['AMB', 'HOS', null, undefined];
 const DUREE_SS_FA = [-1, 0, 3];
@@ -146,6 +148,8 @@ export const SPSchema = v.pipe(
 		delete input.duree_ss_fa;
 		if (Object.keys(input.metadata).length === 0) {
 			input.metadata = null;
+		} else {
+			input.metadata = JSON.stringify(input.metadata);
 		}
 		return input;
 	})
@@ -166,14 +170,15 @@ export async function onValid(data) {
 	} else {
 		trace('Engaging sp modification');
 		// <!--* UPDATE PROCEDURE -->
-		const { error } = await editSituationPathologique(data);
+		const updatedFields = filtrerLesChampsAUpdater(this.touched, cloneDeep(data));
+		const { error } = await editSituationPathologique(updatedFields, data.sp_id);
 		if (error) {
 			errorLog('Error while updating SP', error);
 			this.message = error;
 			return;
 		}
 		await invalidate('patient:layout');
-		info('Patient modified done Successfully');
+		info('sp modified done Successfully');
 	}
 
 	goto('/dashboard/patients/' + data.patient_id + '/situation-pathologique/' + data.sp_id);
