@@ -226,6 +226,12 @@ pub fn run() {
                             sql: include_str!("migrations/20250325133523_kv_store.up.sql"),
                             kind: MigrationKind::Up,
                         },
+                        Migration {
+                            version: 16,
+                            description: "Adding the history node",
+                            sql: include_str!("migrations/20250406133523_history_nodes.up.sql"),
+                            kind: MigrationKind::Up,
+                        },
                     ],
                 )
                 .build(),
