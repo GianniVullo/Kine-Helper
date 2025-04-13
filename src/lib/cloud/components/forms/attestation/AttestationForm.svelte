@@ -1,4 +1,6 @@
 <script>
+  import AttestationPreview from './AttestationPreview.svelte';
+
 	import { Formulaire } from '../../../libraries/formHandler.svelte';
 	import {
 		AttestationSchema,
@@ -137,19 +139,7 @@
 	</FormSection>
 	<FormSection titre="Prévisualisation de l'attestation">
 		<div class="col-span-full">
-			<CardTable
-				headerItems={['Ordre', 'type', 'Date', 'Code', 'Valeur totale', 'Part personnelle']}
-				bodyItems={lines.map((s) => [
-					{ content: s.id },
-					{ content: s.description },
-					{ content: s.date },
-					{ content: s.code.code_reference },
-					{ content: s.valeur_totale.toFixed(2).replace('.', ',') },
-					{ content: s.total_recu.toFixed(2).replace('.', ',') }
-				])}
-				onclick={() => {
-					console.log('clicked');
-				}} />
+			<AttestationPreview {lines}></AttestationPreview>
 		</div>
 	</FormSection>
 	<SubmitButton id="attestation-submit" className="col-span-full" />

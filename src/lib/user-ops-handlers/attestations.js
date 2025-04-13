@@ -6,6 +6,8 @@ import { user } from '../stores/UserStore';
 import { appState } from '../managers/AppState.svelte';
 import { printAttestation } from '../utils/rawPrinting';
 import { getFactureMutuellePDFHandler, getFacturePatientPDFHandler } from './documents';
+import dayjs from 'dayjs';
+import { groupSeanceInAttestations } from '../cloud/components/forms/attestation/AttestationSchema';
 
 function setupAttestationOpsHandler() {
 	const opsHandler = new UserOperationsHandler();
@@ -228,5 +230,115 @@ export async function markAsPaid(data, factureType) {
 	);
 	if (attestationError) {
 		return { error: attestationError };
+	}
+}
+
+export async function* attestationGenerator(sp, patient) {
+	// D'abord il faut préparer les données
+	// Il faut grouper les séances par prescription et par date. ensuite il faut itérer au travers de l'objet créé
+	let seanceParPrescriptionEtDate = {};
+	let attestationNumber = 0;
+	const dates = sp.seances
+		.filter((s) => !s.has_been_attested && !s.attestation_id && s.seance_type !== 3)
+		.map((s) => new Date(s.date));
+
+	const minDate = new Date(Math.min(...dates));
+	const maxDate = new Date(Math.max(...dates));
+	const { data: rows } = await appState.db.select(
+		`SELECT
+			c.convention_id,
+			c.created_at,
+			json_group_array(
+				json_object(
+				'code_id', codes.code_id,
+				'code_reference', codes.code_reference,
+				'groupe', codes.groupe,
+				'type', codes.type,
+				'duree', codes.duree,
+				'lieu', codes.lieu,
+				'amb_hos', codes.amb_hos,
+				'lourde_type', codes.lourde_type,
+				'drainage', codes.drainage,
+				'honoraire', codes.honoraire,
+				'coefficient', codes.coefficient,
+				'remboursement', codes.remboursement,
+				'valeur', codes.valeur
+				)
+			) AS codes
+		FROM conventions c
+		LEFT JOIN codes ON codes.convention_id = c.convention_id
+		WHERE date(c.created_at) <= $1
+		AND NOT EXISTS (
+			SELECT 1 FROM conventions c2
+			WHERE date(c2.created_at) > date(c.created_at)
+			AND date(c2.created_at) <= $2
+		)
+		GROUP BY c.convention_id
+		ORDER BY c.created_at DESC;`,
+		[maxDate, minDate]
+	);
+	const conventions = rows.map((row) => ({
+		convention_id: row.convention_id,
+		created_at: row.created_at,
+		codes: JSON.parse(row.codes)
+	}));
+	let numero = await appState.db.getItem('num_attestation');
+	for (const seance of sp.seances) {
+		if (seance.has_been_attested || seance.attestation_id) continue;
+		if (seance.seance_type === 3) {
+			// TODO Set the valeur
+			await appState.db.update(`UPDATE seances SET has_been_attested = true WHERE id = $1;`, [
+				seance.id
+			]);
+			continue;
+		}
+		let seance_category = `${seance.prescription_id}-${dayjs(seance.date).year()}`;
+		if (!seanceParPrescriptionEtDate[seance_category]) {
+			seanceParPrescriptionEtDate[seance_category] = [];
+		}
+		seanceParPrescriptionEtDate[seance_category].push(seance);
+	}
+	for (const [_, groupeDeSeance] of Object.entries(seanceParPrescriptionEtDate)) {
+		const s0 = groupeDeSeance[groupeDeSeance.length - 1];
+		console.log('conventions', conventions);
+		const { seances, valeur_totale, total_recu, lines } = await groupSeanceInAttestations(
+			groupeDeSeance,
+			sp,
+			patient,
+			conventions
+		);
+		let nextAttestation = {
+			user_id: appState.user.id,
+			patient_id: s0.patient_id,
+			sp_id: s0.sp_id,
+			created_at: s0.date,
+			date: lines[lines.length - 1].date,
+			prescription_id: s0.prescription_id,
+			attestation_id: crypto.randomUUID(),
+			porte_prescr: !sp.attestations?.some((a) => a.porte_prescr),
+			has_been_printed: false,
+			numero_etablissement: sp?.numero_etablissement,
+			service: sp?.service,
+			total_recu,
+			valeur_totale,
+			mutuelle_paid: false,
+			patient_paid: false,
+			tiers_payant: patient.tiers_payant,
+			ticket_moderateur: patient.ticket_moderateur,
+			bim: patient.bim,
+			lines,
+			seances: seances.map((s) => ({
+				seance_id: s.seance_id,
+				code_id: s.metadata.codes.kine.code_id,
+				metadata: s.metadata
+			})),
+			generateFacturePatient: patient.ticket_moderateur,
+			printFacturePatient: patient.ticket_moderateur,
+			generateFactureMutuelle: patient.tiers_payant,
+			printFactureMutuelle: patient.tiers_payant,
+			numero: numero + attestationNumber
+		};
+		attestationNumber++;
+		yield nextAttestation;
 	}
 }

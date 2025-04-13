@@ -5,7 +5,7 @@ import { goto, invalidate } from '$app/navigation';
 import { info, trace } from '@tauri-apps/plugin-log';
 import { figuringConventionOut } from '../../../../stores/codeDetails';
 import { appState } from '../../../../managers/AppState.svelte';
-import { assignCodes } from '../../../../managers/CodeManager';
+import { assignCodes, assignCodes2 } from '../../../../managers/CodeManager';
 import { NomenclatureArchitecture } from '../../../../utils/nomenclatureManager';
 import { convertToFloat, uuidRegex } from '../../../../utils/validationGenerics';
 import { error as errorSvelte } from '@sveltejs/kit';
@@ -390,7 +390,17 @@ export const fieldSchema = [
 	}
 ];
 
-export async function groupSeanceInAttestations(seancesToDealWith, sp, patient) {
+export async function groupSeanceInAttestations(seancesToDealWith, spArg, patientArg, conventions) {
+	let sp = spArg;
+	let patient = patientArg;
+	if (!sp) {
+		sp = await appState.db.retrieve_sp(seancesToDealWith[0].sp_id);
+	}
+	if (!patient) {
+		patient = await appState.db.select('SELECT * FROM patients WHERE patient_id = $1;', [
+			seancesToDealWith[0].patient_id
+		]);
+	}
 	let linesAvailable = 20;
 	let lineId = 1;
 	let valeur_totale = 0;
@@ -399,7 +409,8 @@ export async function groupSeanceInAttestations(seancesToDealWith, sp, patient) 
 	let lines = [];
 	for (const seance of seancesToDealWith) {
 		console.log('Seance = ', seance);
-
+		console.log('SP', sp);
+		console.log('Patient', patient);
 		let linesTaken = 1;
 		if (linesAvailable >= linesTaken) {
 			/**
@@ -411,12 +422,11 @@ export async function groupSeanceInAttestations(seancesToDealWith, sp, patient) 
 			 */
 			let valeur_totale_seance = 0;
 			let total_recu_seance = 0;
-			let { data: convention, error } = await figuringConventionOut(seance.date, appState.db);
-			console.log('convention = ', convention);
-			convention = convention.map((c) => {
-				c.remboursement = JSON.parse(c.remboursement);
-				return c;
-			});
+			console.log('seance.date = ', seance.date);
+			console.log('conventions = ', conventions);
+			let convention = conventions.find(
+				(convention) => new Date(convention.created_at) <= new Date(seance.date)
+			).codes;
 			console.log('convention = ', convention);
 
 			/**
@@ -428,16 +438,13 @@ export async function groupSeanceInAttestations(seancesToDealWith, sp, patient) 
 			 **		- On passe à la suite
 			 *
 			 * */
-			if (error) {
-				errorSvelte(500, { message: error });
-			}
 			const metadataCode = {};
-			const { data: code_seance, error: codeManagerError } = await assignCodes({
+			const code_seance = assignCodes2({
 				sp,
 				seance,
 				indexOfSeance: seancesToDealWith.indexOf(seance),
 				architecture: new NomenclatureArchitecture(patient, {
-					groupe_id: sp.groupe_id,
+					groupe_id: sp.groupe_id ?? seance.groupe_id,
 					duree: seance.duree,
 					lieu_id: seance.lieu_id,
 					patho_lourde_type: sp.patho_lourde_type,
@@ -447,16 +454,11 @@ export async function groupSeanceInAttestations(seancesToDealWith, sp, patient) 
 					volet_h: sp.groupe_id === 5 && seance.duree === 3
 				}),
 				patient,
-				convention_id: convention[0].convention_id,
+				convention,
 				seancesGeneree: sp.seances.filter((s) => s.has_been_attested).length
 			});
-
-			if (codeManagerError) {
-				console.error(codeManagerError);
-				errorSvelte(500, { message: codeManagerError });
-			}
-			code_seance.length !== 1 &&
-				errorSvelte(500, { message: 'Pas de code trouvé pour la séance' });
+			console.log('code_seance = ', code_seance);
+			!code_seance && errorSvelte(500, { message: 'Pas de code trouvé pour la séance' });
 			/**
 			 ** ici On ajoute les valeurs dans valeur_totale_seance et total_recu_seance
 			 ** 	- Si le patient est BIM ou le kiné conventionné on prends la valeur du code
@@ -474,8 +476,8 @@ export async function groupSeanceInAttestations(seancesToDealWith, sp, patient) 
 				!seance?.metadata?.t_sec ||
 				!sp?.metadata?.t_sec
 			) {
-				valeur_totale_seance += code_seance[0].honoraire;
-				total_recu_seance += computeTotalRecu(code_seance[0], patient);
+				valeur_totale_seance += code_seance.honoraire;
+				total_recu_seance += computeTotalRecu(code_seance, patient);
 			} else {
 				let tarif =
 					seance?.metadata?.t_s ||
@@ -520,17 +522,18 @@ export async function groupSeanceInAttestations(seancesToDealWith, sp, patient) 
 					//? Réponse : Apparemment ce n'est pas précisé clairement donc les kinés ont le droit, si ils sont déconventionnés d'avoir des suppléments même si le patient est tiers payant
 					if (patient.tiers_payant) {
 						// donc ici il faut retirer l'intervention mutuelle du tarif
-						total_recu_seance += tarif - computeTotalRecu(code_seance[0], patient);
+						total_recu_seance += tarif - computeTotalRecu(code_seance, patient);
 					}
 					total_recu_seance += tarif;
 				} else {
-					valeur_totale_seance += code_seance[0].honoraire;
-					total_recu_seance += computeTotalRecu(code_seance[0], patient);
+					valeur_totale_seance += code_seance.honoraire;
+					total_recu_seance += computeTotalRecu(code_seance, patient);
 				}
 			}
-			metadataCode.kine = code_seance[0];
+			metadataCode.kine = code_seance;
 			if (seance.metadata?.intake) {
 				const intake = convention.filter((c) => c.lieu === seance.lieu_id && c.type === INTAKE);
+				console.log('intake = ', intake);
 				intake.length !== 1 && errorSvelte(500, { message: "Pas de code trouvé pour l'intake" });
 				console.log('intake = ', intake);
 				valeur_totale_seance += intake[0].honoraire;
@@ -574,8 +577,9 @@ export async function groupSeanceInAttestations(seancesToDealWith, sp, patient) 
 			}
 			if (seance.indemnite) {
 				const indemnite = convention.filter(
-					(c) => c.code_reference === indmeniteCategory[sp.groupe_id]
+					(c) => c.code_reference === indmeniteCategory[sp.groupe_id ?? seance.groupe_id]
 				);
+
 				indemnite.length !== 1 &&
 					errorSvelte(500, { message: "Pas de code trouvé pour l'indemnité" });
 				valeur_totale_seance += indemnite[0].honoraire;
@@ -632,7 +636,7 @@ export async function groupSeanceInAttestations(seancesToDealWith, sp, patient) 
 				id: lineId,
 				description: 'Séance',
 				date: seance.date,
-				code: code_seance[0],
+				code: code_seance,
 				valeur_totale: valeur_totale_seance,
 				total_recu: total_recu_seance,
 				seance_id: seance.seance_id
@@ -649,7 +653,7 @@ const PART_PERSO = 'part_personnelle';
 const INTER_MUTUELLE = 'intervention';
 
 function queryBuilder(bim) {
-	return `_${bim ? 'pref' : 'no_pref'}_${appState.user.conventionne ? 'conv' : 'no_conv'}`;
+	return `_${bim ? 'pref' : 'nopref'}_${appState.user.conventionne ? 'conv' : 'noconv'}`;
 }
 
 function computeTotalRecu(code, patient) {
@@ -669,6 +673,11 @@ function computeTotalRecu(code, patient) {
 	const query = queryBuilder(patient.bim);
 	console.log('query = ', query);
 	const part_personnelle_du_patient = code.honoraire - code.remboursement[INTER_MUTUELLE + query];
-	console.log('part_personnelle_du_patient = ', part_personnelle_du_patient);
+	console.log(
+		'part_personnelle_du_patient = ',
+		part_personnelle_du_patient,
+		code.honoraire,
+		code.remboursement[INTER_MUTUELLE + query]
+	);
 	return part_personnelle_du_patient;
 }
