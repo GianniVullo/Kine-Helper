@@ -5,7 +5,7 @@
 <fieldset class={outerCSS}>
 	<legend class="text-sm/6 font-semibold text-gray-900">{label}</legend>
 	<p class="mt-1 text-sm/6 text-gray-600">{description}</p>
-	<div class="mt-6 space-y-6 sm:flex sm:items-center sm:space-x-10 sm:space-y-0">
+	<div class="mt-6 space-y-6 sm:flex sm:items-center sm:space-y-0 sm:space-x-10">
 		{#each options as { id, name, value, label }}
 			<div class="flex items-center">
 				<input

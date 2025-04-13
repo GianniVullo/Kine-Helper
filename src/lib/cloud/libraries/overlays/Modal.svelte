@@ -26,7 +26,7 @@
 		buttonTextCancelCSS,
 		title,
 		body,
-		...rest
+		className = 'sm:max-w-lg'
 	} = $props();
 	const modalRegistry = {
 		// Set a unique modal ID, then pass the component reference
@@ -71,7 +71,10 @@
               To: "opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
           -->
 				<div
-					class="relative transform overflow-hidden rounded-lg bg-white px-4 pt-5 pb-4 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6"
+					class={[
+						'relative transform overflow-hidden rounded-lg bg-white px-4 pt-5 pb-4 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:p-6',
+						className
+					]}
 					in:scale={{ duration: 300, easing: cubicOut, start: 0.95 }}
 					out:fly={{ duration: 200, easing: cubicIn, y: 16 }}>
 					<div class="absolute top-0 right-0 hidden pt-4 pr-4 sm:block">

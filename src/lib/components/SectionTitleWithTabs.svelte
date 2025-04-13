@@ -2,13 +2,18 @@
 	import Select from './form/Select.svelte';
 	import { page } from '$app/stores';
 
-	let { titre, actions, tabs } = $props();
+	let { titre, soustitre, actions, tabs, className } = $props();
 </script>
 
-<div class="relative w-full border-b border-gray-200 pb-5 sm:pb-0">
+<div class={['relative w-full border-b border-gray-200 pb-5 sm:pb-0', className]}>
 	<div class="md:flex md:items-center md:justify-between">
-		<h3 class="text-base font-semibold text-gray-900">{titre}</h3>
-		<div class="mt-3 flex md:absolute md:right-0 md:top-3 md:mt-0">
+		<div class="flex flex-col">
+			<h3 class="text-base font-semibold text-gray-900">{titre}</h3>
+			{#if soustitre}
+				<p class="mt-1 text-sm text-gray-500">{soustitre}</p>
+			{/if}
+		</div>
+		<div class="mt-3 flex md:absolute md:top-3 md:right-0 md:mt-0">
 			{@render actions()}
 		</div>
 	</div>
@@ -41,13 +46,21 @@
 		<div class="hidden sm:block">
 			<nav class="-mb-px flex space-x-8">
 				<!-- Current: "border-indigo-500 text-indigo-600", Default: "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700" -->
-				{#each tabs as { href, nom, actif }}
-					<a
-						{href}
-						class="whitespace-nowrap border-b-2 px-1 pb-4 text-sm font-medium {actif
-							? 'border-indigo-500 text-indigo-600'
-							: 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'}"
-						>{nom}</a>
+				{#each tabs as { href, nom, actif, onclick }}
+					{#if onclick}
+						<button
+							class="border-b-2 px-1 pb-4 text-sm font-medium whitespace-nowrap {actif
+								? 'border-indigo-500 text-indigo-600'
+								: 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'}"
+							{onclick}>{nom}</button>
+					{:else}
+						<a
+							{href}
+							class="border-b-2 px-1 pb-4 text-sm font-medium whitespace-nowrap {actif
+								? 'border-indigo-500 text-indigo-600'
+								: 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'}"
+							>{nom}</a>
+					{/if}
 				{/each}
 			</nav>
 		</div>

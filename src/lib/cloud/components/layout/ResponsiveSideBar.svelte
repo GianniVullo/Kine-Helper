@@ -15,7 +15,7 @@
 	let { children } = $props();
 
 	let showDrawer = $state(false);
-	let menuItems = [
+	let menuItems = $derived([
 		{
 			name: get(t)('sidebar', 'dashboard'),
 			href: '/dashboard',
@@ -29,7 +29,8 @@
 		{
 			name: get(t)('sidebar', 'patients'),
 			href: '/dashboard/patients',
-			svg: `<path stroke-linecap="round" stroke-linejoin="round" d="M17.982 18.725A7.488 7.488 0 0012 15.75a7.488 7.488 0 00-5.982 2.975m11.963 0a9 9 0 10-11.963 0m11.963 0A8.966 8.966 0 0112 21a8.966 8.966 0 01-5.982-2.275M15 9.75a3 3 0 11-6 0 3 3 0 016 0z" />`
+			svg: `<path stroke-linecap="round" stroke-linejoin="round" d="M17.982 18.725A7.488 7.488 0 0012 15.75a7.488 7.488 0 00-5.982 2.975m11.963 0a9 9 0 10-11.963 0m11.963 0A8.966 8.966 0 0112 21a8.966 8.966 0 01-5.982-2.275M15 9.75a3 3 0 11-6 0 3 3 0 016 0z" />`,
+			active: page.route.id.includes('patients')
 		},
 		{
 			name: 'Finances',
@@ -41,7 +42,7 @@
 			href: '/dashboard/settings',
 			svg: `<path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12a7.5 7.5 0 0015 0m-15 0a7.5 7.5 0 1115 0m-15 0H3m16.5 0H21m-1.5 0H12m-8.457 3.077l1.41-.513m14.095-5.13l1.41-.513M5.106 17.785l1.15-.964m11.49-9.642l1.149-.964M7.501 19.795l.75-1.3m7.5-12.99l.75-1.3m-6.063 16.658l.26-1.477m2.605-14.772l.26-1.477m0 17.726l-.26-1.477M10.698 4.614l-.26-1.477M16.5 19.794l-.75-1.299M7.5 4.205L12 12m6.894 5.785l-1.149-.964M6.256 7.178l-1.15-.964m15.352 8.864l-1.41-.513M4.954 9.435l-1.41-.514M12.002 12l-3.75 6.495" />`
 		}
-	];
+	]);
 
 	afterNavigate(() => {
 		page;
@@ -156,7 +157,7 @@
 				</div>
 
 				<!-- Sidebar component, swap this element with another sidebar if you like -->
-				<div class="flex grow flex-col gap-y-5 overflow-y-auto bg-white px-6 pb-2">
+				<div class="flex grow flex-col gap-y-5 overflow-y-auto bg-gray-100 px-6 pb-2">
 					<div class="flex h-16 shrink-0 items-center">
 						<img class="h-8 w-auto" src={logo} alt="Kiné Helper" />
 					</div>
@@ -251,10 +252,10 @@
 	</div>
 
 	<!-- Static sidebar for desktop -->
-	<div class="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-72 lg:flex-col">
+	<div id="main-sidebar" class="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-72 lg:flex-col">
 		<!-- Sidebar component, swap this element with another sidebar if you like -->
 		<div
-			class="flex grow flex-col gap-y-5 overflow-y-auto border-r border-gray-200 bg-gray-50 px-6">
+			class="flex grow flex-col gap-y-5 overflow-y-auto border-r border-gray-200 bg-gray-300/60 px-6">
 			<div class="flex h-16 shrink-0 items-center">
 				<img class="h-8 w-auto" src={logo} alt="Your Company" />
 			</div>
@@ -262,16 +263,16 @@
 				<ul role="list" class="flex flex-1 flex-col gap-y-7">
 					<li>
 						<ul role="list" class="-mx-2 space-y-1">
-							{#each menuItems as { href, svg, name }}
-								<li>
+							{#each menuItems as { href, svg, name, active }}
+								<li aria-current={active ? 'page' : undefined}>
 									<a
 										{href}
-										class="group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold {page.url
-											.pathname === href
+										class="group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold {active ||
+										page.url.pathname === href
 											? 'bg-gray-50 text-indigo-600'
 											: 'text-gray-700 hover:bg-gray-50 hover:text-indigo-600'}">
 										<svg
-											class="size-6 shrink-0 {page.url.pathname === href
+											class="size-6 shrink-0 {active || page.url.pathname === href
 												? 'bg-gray-50 text-indigo-600'
 												: 'text-gray-400 group-hover:text-indigo-600'}"
 											fill="none"
