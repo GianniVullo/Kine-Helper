@@ -1,10 +1,6 @@
-
-En construction
-<!-- <script>
+<script>
 	// import EventCalendar from '$lib/EventCalendar.svelte';
 	import dayjs from 'dayjs';
-	import { LocalDatabase } from '../../../lib/stores/databaseInitializer';
-	import { user } from '../../../lib/stores/UserStore';
 	import Calendar from '@event-calendar/core';
 	import TimeGrid from '@event-calendar/time-grid';
 	import DayGrid from '@event-calendar/day-grid';
@@ -12,8 +8,7 @@ En construction
 	import { locale, t } from '../../../lib/i18n';
 	import { get } from 'svelte/store';
 	import { NomenclatureManager } from '../../../lib/utils/nomenclatureManager';
-	import { patients } from '../../../lib/stores/PatientStore';
-
+	import { appState } from '../../../lib/managers/AppState.svelte';
 
 	let plugins = [TimeGrid, DayGrid];
 	function handleClickOnEvent(info) {
@@ -38,16 +33,23 @@ En construction
 	});
 
 	async function queryMonthEvents(start, end) {
-		let db = new LocalDatabase();
-		let seances = await db.select(
+		let { data: seances, error } = await appState.db.select(
 			'SELECT * from seances WHERE date BETWEEN date($1) AND date($2) AND user_id = $3',
-			[dayjs(start).format('YYYY-MM-DD'), dayjs(end).format('YYYY-MM-DD'), $user.user.id]
+			[dayjs(start).format('YYYY-MM-DD'), dayjs(end).format('YYYY-MM-DD'), appState.user.id]
 		);
+		if (error) {
+			console.error(error);
+		}
 		let nomeclatureManager = new NomenclatureManager();
 		let events = [];
 		const durations = await nomeclatureManager.durationGuesser(seances);
 		for (const seance of seances) {
-			const patient = $patients.find((p) => p.patient_id === seance.patient_id);
+			const { data: patientList, error } = await appState.db.select(
+				'SELECT * from patients WHERE patient_id = $1',
+				[seance.patient_id]
+			);
+			let patient = patientList[0];
+			console.log('patient', patient);
 			events.push({
 				id: seance.seance_id,
 				// resourceIds: '',
@@ -124,6 +126,6 @@ En construction
 </script>
 
 <div class="h-full p-4">
-	<h1 class="mb-4 text-lg text-surface-400">Agenda</h1>
+	<h1 class="text-surface-400 mb-4 text-lg">Agenda</h1>
 	<Calendar bind:this={ec} {plugins} options={base_options} />
-</div> -->
+</div>

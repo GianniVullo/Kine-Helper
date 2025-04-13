@@ -54,6 +54,18 @@ export class Patient {
 		return this.nom && this.niss && this.adresse && this.cp && this.localite && this.mutualite;
 	}
 
+	get missing_fields() {
+		const fields = {
+			Nom: this.nom && this.nom.length > 0,
+			Niss: this.niss && this.niss.length > 0,
+			Adresse: this.adresse && this.adresse.length > 0,
+			'Code postal': typeof this.cp === 'number',
+			Localite: this.localite && this.localite.length > 0,
+			Mutualité: typeof this.mutualite == 'number'
+		};
+		return Object.keys(fields).filter((key) => !fields[key]);
+	}
+
 	addSP(sp) {
 		this.situations_pathologiques.push(new SituationPathologique(sp));
 	}

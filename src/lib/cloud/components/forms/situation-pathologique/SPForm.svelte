@@ -70,6 +70,7 @@
 
 	$effect(() => {
 		const lpG = lieuxParGroupe[formHandler.form.groupe_id];
+		console.log('lpG', lpG);
 		if (typeof formHandler.form.groupe_id === 'number' && mode === 'create') {
 			untrack(() => {
 				formHandler.form.lieu_id = undefined;
@@ -80,7 +81,7 @@
 						value: index,
 						id: `lieu${index}`
 					}))
-					.filter((_, index) => lpG[0] === '*' || lpG.includes(index));
+					.filter((_, index) => lpG?.[0] === '*' || lpG?.includes(index));
 				formHandler.form.duree = undefined;
 				formHandler.form.patho_lourde_type = undefined;
 				formHandler.form.amb_hos = undefined;
@@ -95,7 +96,7 @@
 						value: index,
 						id: `lieu${index}`
 					}))
-					.filter((_, index) => lpG[0] === '*' || lpG.includes(index));
+					.filter((_, index) => lpG?.[0] === '*' || lpG?.includes(index));
 			});
 		}
 	});
