@@ -7,9 +7,10 @@ use windows::Win32::Graphics::Printing::{
     ClosePrinter, EndDocPrinter, EndPagePrinter, OpenPrinterA, StartDocPrinterA, StartPagePrinter,
     WritePrinter, DOC_INFO_1A, PRINTER_ALL_ACCESS, PRINTER_DEFAULTSA,
 };
+use tauri::AppHandle;
 
 #[tauri::command]
-pub fn print_attestation(printer_name: &str, form_data: DocumentFormData) {
+pub fn print_attestation(_app_handle: AppHandle, printer_name: &str, form_data: DocumentFormData) {
     println!("In the print_attestation fn with {}", printer_name);
     let printer_name = CString::new(printer_name).unwrap();
     let mut printer_handle = HANDLE(0);

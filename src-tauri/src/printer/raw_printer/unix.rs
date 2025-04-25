@@ -2,10 +2,11 @@ use crate::printer::{escp::build_document, form_data_modeling::DocumentFormData}
 use std::fs::File;
 use std::io::Write;
 use std::path::Path;
-use std::process::Command;
+use tauri::AppHandle;
+use tauri_plugin_shell::ShellExt;
 
 #[tauri::command]
-pub fn print_attestation(printer_name: String, form_data: DocumentFormData) -> () {
+pub fn print_attestation(app_handle: AppHandle, printer_name: String, form_data: DocumentFormData) -> () {
     // Create a file with raw ESC/P commands
     //! ATTENTION à Remettre le bon chemin avec le path_resolver()
     let file_path = Path::new(
@@ -17,17 +18,21 @@ pub fn print_attestation(printer_name: String, form_data: DocumentFormData) -> (
 
     file.write_all(&doc_bytes).expect("Failed to write to file");
     // Construct the lp command
-    let output = Command::new("lp")
-        .arg("-d")
-        .arg(printer_name)
-        .arg(file_path.to_str().unwrap())
-        .output()
-        .expect("Failed to execute command");
-
+    let shell = app_handle.shell();
+    let output = tauri::async_runtime::block_on(async move {
+        shell
+            .command("lp")
+            .arg("-d")
+            .arg(printer_name)
+            .arg(file_path.to_str().unwrap())
+            .output()
+            .await
+            .unwrap()
+    });
     if output.status.success() {
-        println!("Print job sent successfully.");
+        println!("Result: {:?}", String::from_utf8(output.stdout));
     } else {
-        eprintln!("Error: {}", String::from_utf8_lossy(&output.stderr));
+        println!("Exit with code: {}", output.status.code().unwrap());
     }
 
     // // Clean up

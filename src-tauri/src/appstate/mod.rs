@@ -1,6 +1,5 @@
-use std::sync::Mutex;
-
 use serializers::{Session, User};
+use std::sync::Mutex;
 
 mod serializers;
 
