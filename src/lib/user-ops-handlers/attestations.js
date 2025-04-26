@@ -161,7 +161,6 @@ export async function createAttestation(data) {
 		if (factureMutuelleError) {
 			return { error: factureMutuelleError };
 		}
-		fact;
 	}
 
 	// Mise à jour de num_attestation

@@ -32,6 +32,7 @@ export async function load({ url, parent }) {
 	for (const seance of sp.seances) {
 		if (seance.has_been_attested || seance.attestation_id) continue;
 		if (seance.seance_type === 3) {
+			// TODO Set the valeur (L'amende)
 			await appState.db.update(`UPDATE seances SET has_been_attested = true WHERE id = $1;`, [
 				seance.id
 			]);

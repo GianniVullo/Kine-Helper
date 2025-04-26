@@ -3,7 +3,9 @@
 	import { page } from '$app/state';
 	import BoutonPrincipal from '../../../../components/BoutonPrincipal.svelte';
 	import { appState } from '../../../../managers/AppState.svelte';
+	import { mutualites } from '../../../../stores/codeDetails';
 	import Modal from '../../../libraries/overlays/Modal.svelte';
+	import CheckboxGroup from '../../forms/fields/CheckboxGroup.svelte';
 	import TwuiRadioGroupWithDescription from '../../forms/fields/TWUIRadioGroupWithDescription.svelte';
 	import ComboBox from '../../ui/ComboBox.svelte';
 
@@ -27,16 +29,10 @@
 	let showOptions = $state(false);
 	const factureFilterOptions = [
 		{
-			label: 'Tiers-payant',
+			label: 'Par mutuelle',
 			description:
-				'Créer des attestations pour tous les patients tiers-payants qui ont encore des séances non-attestées.',
-			value: 'tp'
-		},
-		{
-			label: 'Non tiers-payant',
-			description:
-				'Créer des attestations pour tous les patients non tiers-payants qui ont encore des séances non-attestées.',
-			value: 'ntp'
+				'Choisissez les mutuelles pour lesquelles vous souhaitez créer des attestations.',
+			value: 'mut'
 		},
 		{
 			label: 'Sélectionner un patient',
@@ -44,13 +40,20 @@
 			value: 'patient'
 		}
 	];
+	let selectedMut = $state([]);
 	let selectedOption = $state('patient');
+	$effect(() => {
+		console.log('selectedMut', selectedMut);
+	});
 </script>
 
-<Modal title="Créer sélectivement des attestations" opened={page.state.modal?.name == 'FacturePar'}>
-	<div class="mt-10 mb-5 flex flex-col space-y-4">
+<Modal
+	title="Créer sélectivement des attestations"
+	body="Par mutualités ou pour un patient unique."
+	opened={page.state.modal?.name == 'FacturePar'}>
+	<div class="mt-5 mb-5 flex flex-col space-y-4">
 		<TwuiRadioGroupWithDescription options={factureFilterOptions} bind:group={selectedOption} />
-		
+
 		{#if selectedOption == 'patient'}
 			<ComboBox
 				label="Uniquement pour"
@@ -69,11 +72,33 @@
 					});
 				}} />
 		{:else}
+			{#await new Promise(async (resolve) => {
+				const res = await appState.db.select('SELECT DISTINCT p.mutualite FROM seances s JOIN patients p ON p.patient_id = s.patient_id WHERE s.has_been_attested = 0');
+				let filteredMut = Object.entries(mutualites).filter(([key, _]) => {
+					return res.data.some((mut) => {
+						return key == String(mut.mutualite).substring(0, 1) + '00';
+					});
+				});
+				resolve(filteredMut);
+			}) then filteredMut}
+				<div class="flex flex-col">
+					<h5 class="mb-4 block text-base/6 font-medium text-gray-900">Facturer par mutualité</h5>
+					<CheckboxGroup
+						label="Sélectionner les mutualités"
+						bind:group={selectedMut}
+						options={filteredMut.map(([id, mutuelle]) => ({
+							id: id,
+							name: mutuelle.name,
+							label: mutuelle.name
+						}))} />
+				</div>
+			{/await}
+
 			<BoutonPrincipal
 				className="mt-5"
 				inner="Créer des attestations"
 				onclick={() => {
-					goto('/dashboard/finances/facturation-' + selectedOption);
+					goto('/dashboard/finances/facturation-' + selectedMut.join(','));
 				}} />
 		{/if}
 	</div>

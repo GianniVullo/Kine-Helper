@@ -424,9 +424,9 @@ export async function groupSeanceInAttestations(seancesToDealWith, spArg, patien
 			let total_recu_seance = 0;
 			console.log('seance.date = ', seance.date);
 			console.log('conventions = ', conventions);
-			let convention = conventions.find(
-				(convention) => new Date(convention.created_at) <= new Date(seance.date)
-			).codes;
+			let convention =
+				conventions?.find((convention) => new Date(convention.created_at) <= new Date(seance.date))
+					.codes || (await figuringConventionOut(seance.date, appState.db)).data;
 			console.log('convention = ', convention);
 
 			/**

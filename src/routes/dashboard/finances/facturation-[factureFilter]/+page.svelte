@@ -17,19 +17,11 @@
 	import Modal from '../../../../lib/cloud/libraries/overlays/Modal.svelte';
 	import AttestationPreview from '../../../../lib/cloud/components/forms/attestation/AttestationPreview.svelte';
 	import Field from '../../../../lib/cloud/components/forms/abstract-components/Field.svelte';
+	import { mutualites } from '../../../../lib/stores/codeDetails';
 
 	/** @type {{ data: import('./$types').PageData }} */
 	let { data } = $props();
 	console.log('data', data);
-	let mutualites = {
-		100: { name: 'Mutualité chrétienne' },
-		200: { name: 'Mutualité neutre' },
-		300: { name: 'Solidaris' },
-		400: { name: 'Mutualités Libérales' },
-		500: { name: 'Partenamut' },
-		600: { name: 'CAAMI' },
-		900: { name: 'HR Rail' }
-	};
 
 	const attestationsParMutualite = groupBy(data.patients, (pA) => {
 		let stuff = mutualites[String(pA.patient.mutualite).substring(0, 1) + '00'].name;

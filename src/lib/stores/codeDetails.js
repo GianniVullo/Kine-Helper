@@ -1,6 +1,15 @@
 import { get } from 'svelte/store';
 import { t } from '../i18n/index';
 
+export const mutualites = {
+	100: { name: 'Mutualité chrétienne' },
+	200: { name: 'Mutualité neutre' },
+	300: { name: 'Solidaris' },
+	400: { name: 'Mutualités Libérales' },
+	500: { name: 'Partenamut' },
+	600: { name: 'CAAMI' },
+	900: { name: 'HR Rail' }
+};
 export class Code {
 	constructor({
 		code_id,

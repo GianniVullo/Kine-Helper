@@ -93,3 +93,8 @@ async function getAttestationsFromPatient(patient) {
 	}
 	return attestations;
 }
+
+/** @type {import('./$types').EntryGenerator} */
+export function entries() {
+	return [{ factureFilter: 'all' }];
+}
