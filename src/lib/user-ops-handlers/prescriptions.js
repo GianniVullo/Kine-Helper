@@ -4,13 +4,6 @@ import { appState } from '../managers/AppState.svelte';
 import { trace } from '@tauri-apps/plugin-log';
 import { page } from '$app/state';
 
-//* ça a l'air con mtn mais je suis sûr que ça va payer à un moment
-function setupPrescriptionOpsHandler() {
-	const opsHandler = new UserOperationsHandler();
-	//* Modifier le handler ici pour que ça colle à l'opération : les erreurs possibles, les tâches intermédiaires par exemple.
-	return opsHandler;
-}
-
 export async function updatePrescription(data, file) {
 	// TODO 1 : Il faut enregistrer le filename en fait car il faut pouvoir supprimer l'ancienne prescription même si l'extension de fichier n'est pas le même.
 	// TODO 2 Implement the saveFile with supabase API
@@ -57,18 +50,26 @@ export async function createPrescription(data, file) {
 	}
 
 	let file_name;
-	if (file) {
+	if (file && !data.scans) {
 		const fileExtension = file.name.split('.').pop();
 		file_name = `${data.prescription_id}.${fileExtension}`;
 		const filePath = prescriptionPath();
 		data.prescripteur = JSON.stringify(data.prescripteur);
 		let fsError = await save_to_disk(filePath, file_name, Array.from(await file.bytes()));
-		data.file_name = fileExtension;
+		data.file_name = { ext: fileExtension };
 		delete data.file;
 		if (fsError) {
 			return { data: prescription, error: fsError };
 		}
 	}
+	
+	if (data.scans) {
+		data.file_name = {ext: 'avif', n_p: data.scans};
+		delete data.scans;
+		delete data.file;
+
+	}
+	
 	const { data: prescription, error } = await appState.db.insert('prescriptions', data);
 	if (error) {
 		return { data: null, error };
@@ -115,7 +116,7 @@ export async function openPrescription(prescription) {
 	return { data: null, error: null };
 }
 
-function prescriptionPath() {
+export function prescriptionPath() {
 	const { patient, sp } = page.data;
 	return `${appState.user.id}/patient${
 		patient.patient_id

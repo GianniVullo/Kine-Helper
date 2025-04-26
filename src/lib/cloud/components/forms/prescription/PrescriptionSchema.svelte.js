@@ -16,7 +16,7 @@ const prescription_id = v.pipe(v.optional(v.string()), v.uuid());
 const created_at = v.isoDate();
 const date = v.pipe(
 	v.transform((input) => (input?.length === 0 ? null : input)),
-	v.nonNullable(v.isoDate('Ce champ est obligatoire'),'Ce champ est obligatoire')
+	v.nonNullable(v.isoDate('Ce champ est obligatoire'), 'Ce champ est obligatoire')
 );
 const jointe_a = v.nullable(v.isoDate());
 const nombre_seance = v.nullable(v.number());
@@ -39,10 +39,17 @@ const prescripteurInami = v.pipe(
 	v.nonEmpty('Veuillez insérer le n°INAMI du prescripteur')
 );
 const file = v.pipe(
-	v.transform((input) => (input?.length === 0 ? null : input[0])),
-	v.nullable(v.file()),
-	v.transform((input) => (input?.length === 0 ? null : input[0]))
+	v.transform((input) => {
+		console.log('input validateur', input);
+		return input?.length === 0 ? null : input?.[0];
+	}),
+	v.nullish(v.file()),
+	v.transform((input) => {
+		console.log('input validateur', input);
+		return input?.length === 0 ? null : input?.[0];
+	})
 );
+const scans = v.number(v.integer());
 const file_name = v.nullable(v.string());
 export const validateurs = {
 	user_id,
@@ -58,12 +65,13 @@ export const validateurs = {
 	prescripteurPrenom,
 	prescripteurInami,
 	file,
-	file_name
+	file_name,
+	scans
 };
 
 export const PrescriptionSchema = v.pipe(
 	v.object({
-		...validateurs,
+		...validateurs
 	}),
 	v.transform((input) => {
 		input.prescripteur = {
@@ -75,6 +83,7 @@ export const PrescriptionSchema = v.pipe(
 		delete input.prescripteurNom;
 		delete input.prescripteurPrenom;
 		delete input.prescripteurInami;
+		delete input.scans;
 		return input;
 	})
 );
@@ -208,5 +217,5 @@ export const fieldSchema = (mode) => [
 		help: get(t)('form.prescription', 'jointe_a.help'),
 		outerCSS: 'col-span-full',
 		innerCSS: ''
-	},
+	}
 ];
