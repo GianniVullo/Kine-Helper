@@ -13,7 +13,7 @@ import { appState } from './AppState.svelte';
 import { supabase } from '../stores/supabaseClient';
 import { tick } from 'svelte';
 
-export class PromiseQueue {
+class PromiseQueue {
 	operations = $state([]);
 	errorList = $derived(this.operations.map((operation) => operation.error));
 	running = $state(false);
@@ -86,7 +86,6 @@ export class PromiseQueue {
 
 class HistoryManager {
 	promiseQueue = new PromiseQueue();
-	constructor(parameters) {}
 
 	async sendToRemoteDB(table, action, data) {
 		/**
@@ -102,9 +101,9 @@ class HistoryManager {
 		 **
 		 */
 		const p_data = await this.payloadBuilder(table, action, data);
-		const { data: order_number, error } = await supabase.rpc('insert_history_node', {
-			p_data
-		});
+		console.log('p_data', p_data);
+		const { data: order_number, error } = await supabase.rpc('insert_history_node', p_data);
+		console.log('order_number', order_number);
 		const { error: comparingError } = await this.compareHistory(order_number);
 		if (comparingError) {
 			console.error('Error comparing history:', comparingError);
@@ -189,9 +188,7 @@ class HistoryManager {
 	 * @param {{}} data - Les données associées à l'action
 	 */
 	async payloadBuilder(table, action, data) {
-		const encryptedPayload = await this.encrypt({
-			data
-		});
+		const encryptedPayload = await this.encrypt(data);
 		return {
 			table,
 			action,
@@ -230,10 +227,28 @@ class HistoryManager {
 
 	async encrypt(data) {
 		for (const column of Object.keys(data)) {
-			data[column] = await invoke('encrypt_string', {
-				input: data[column]
-			});
+			console.log('column', column);
+			console.log('data[column]', data[column]);
+			if (
+				typeof data[column] === 'boolean' ||
+				typeof data[column] === 'object' ||
+				Array.isArray(data[column])
+			) {
+				data[column] = await invoke('encrypt_string', {
+					input: JSON.stringify(data[column]),
+					userId: appState.user.id
+				});
+			} else if (typeof data[column == 'string']) {
+				data[column] = await invoke('encrypt_string', {
+					input: data[column],
+					userId: appState.user.id
+				});
+			} else {
+				data[column] = null;
+			}
 		}
+		data.user_id = appState.user.id;
+		return data;
 	}
 
 	async decrypt(data) {
@@ -246,4 +261,19 @@ class HistoryManager {
 		}
 		return data;
 	}
+
+	async buildAndTreatHistory(table, action, data) {
+		console.log('buildAndTreatHistory', table, action, data);
+		const task = {
+			table,
+			action,
+			date: new Date(),
+			promesse: () => this.sendToRemoteDB(table, action, data)
+		};
+		console.log('task', task);
+
+		return this.promiseQueue.add(task);
+	}
 }
+
+export const historyManager = new HistoryManager();

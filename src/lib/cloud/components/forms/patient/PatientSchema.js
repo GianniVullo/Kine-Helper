@@ -4,6 +4,7 @@ import { createPatient, updatePatient } from '../../../../user-ops-handlers/pati
 import { get } from 'svelte/store';
 import { goto, invalidate } from '$app/navigation';
 import { info, trace } from '@tauri-apps/plugin-log';
+import { historyManager } from '../../../../managers/HistoryManager.svelte';
 
 const SEX = ['F', 'M'];
 
@@ -107,6 +108,7 @@ export async function onValid(data) {
 	} else {
 		trace('Engaging Patient modification');
 		// <!--* UPDATE PROCEDURE -->
+		
 		const { error } = await updatePatient(data);
 		if (error) {
 			return (this.message = error.message);
@@ -115,7 +117,13 @@ export async function onValid(data) {
 		info('Patient modified done Successfully');
 	}
 
-	goto('/dashboard/patients/' + data.patient_id);
+	historyManager.buildAndTreatHistory(
+		'patients',
+		this.mode === 'create' ? 'insert' : 'update',
+		data
+	)
+
+	goto('/dashboard/patients/' + this.form.patient_id);
 }
 
 const identificationFields = [

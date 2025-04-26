@@ -1,7 +1,7 @@
 <script>
 	import { page } from '$app/state';
 	import dayjs from 'dayjs';
-	import { PromiseQueue } from '../../../managers/HistoryManager.svelte';
+	import { historyManager } from '../../../managers/HistoryManager.svelte';
 	import {
 		ArrowCircle,
 		errorIcon,
@@ -11,14 +11,12 @@
 	import Modal from '../../libraries/overlays/Modal.svelte';
 	import { openModal } from '../../libraries/overlays/modalUtilities.svelte';
 	import BoutonPrincipal from '../../../components/BoutonPrincipal.svelte';
-
-	const promiseQueue = new PromiseQueue();
 </script>
 
 <!-- <button
 	class="fixed top-0 right-0 m-2 rounded bg-blue-500 p-2 text-white"
 	onclick={() => {
-		promiseQueue.add({
+		historyManager.promiseQueue.add({
 			table: 'Patients',
 			action: 'Update',
 			date: dayjs().format('HH:mm'),
@@ -39,7 +37,7 @@
 <button
 	class="fixed top-0 right-20 m-2 rounded bg-red-500 p-2 text-white"
 	onclick={() => {
-		promiseQueue.add({
+		historyManager.promiseQueue.add({
 			table: 'Séances',
 			action: 'Delete',
 			date: dayjs().format('HH:mm'),
@@ -60,13 +58,13 @@
 	opened={page.state.modal?.name === 'cloudModal'}
 	title="Cloud Synchronisation"
 	body={'<p>État des opérations de synchronisation avec votre Cloud.' +
-		`<br />Opération(s) en cours : ${promiseQueue.operations.filter((p) => p.status === 'pending').length}<br/>Opération(s) terminé(es) avec succès : ${promiseQueue.operations.filter((p) => p.status === 'fulfilled').length}</p>`}>
+		`<br />Opération(s) en cours : ${historyManager.promiseQueue.operations.filter((p) => p.status === 'pending').length}<br/>Opération(s) terminé(es) avec succès : ${historyManager.promiseQueue.operations.filter((p) => p.status === 'fulfilled').length}</p>`}>
 	<div class="mt-5 mb-3 flow-root">
 		<ul role="list" class="mb-3 max-h-96 overflow-y-scroll">
-			{#each promiseQueue.operations as { id, table, action, date, status }, index}
+			{#each historyManager.promiseQueue.operations as { id, table, action, date, status }, index}
 				<li>
 					<div class="relative pb-8">
-						{#if index + 1 !== promiseQueue.operations.length}
+						{#if index + 1 !== historyManager.promiseQueue.operations.length}
 							<span class="absolute top-4 left-4 -ml-px h-full w-0.5 bg-gray-200" aria-hidden="true"
 							></span>
 						{/if}
@@ -126,9 +124,9 @@
 
 <div class="fixed right-0 bottom-0 h-8 rounded-tl-lg bg-black/80 px-2 py-1 text-white md:w-96">
 	<div class="flex items-center text-sm">
-		{#if promiseQueue.running}
+		{#if historyManager.promiseQueue.running}
 			{@render bottomHtml('Synchronisation Cloud...', 'pending')}
-		{:else if promiseQueue.operations.some((op) => op.status === 'rejected')}
+		{:else if historyManager.promiseQueue.operations.some((op) => op.status === 'rejected')}
 			{@render bottomHtml('Erreur de synchronisation Cloud', 'error')}
 		{:else}
 			{@render bottomHtml('Cloud synchronisé!', 'completed')}
