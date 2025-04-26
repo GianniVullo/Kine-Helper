@@ -1,5 +1,5 @@
 import { appState } from '../managers/AppState.svelte';
-
+import { invoke } from '@tauri-apps/api/core';
 export async function printAttestation(lines, attestation) {
 	const { patient, prescription, situation_pathologique, imprimante, error } =
 		await getData(attestation);
@@ -38,10 +38,10 @@ export async function printAttestation(lines, attestation) {
 		patient: {
 			nom: patient.nom,
 			prenom: patient.prenom,
-			mutualite: patient.mutualite,
+			mutualite: `${patient.mutualite}`,
 			niss: patient.niss,
 			adresse: patient.adresse,
-			cp: patient.cp,
+			cp: `${patient.cp}`,
 			localite: patient.localite
 		},
 		prescription: {

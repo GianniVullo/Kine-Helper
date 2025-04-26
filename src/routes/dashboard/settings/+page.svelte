@@ -1,6 +1,5 @@
 <script>
 	import SelectFieldV2 from '../../../lib/forms/abstract-fields/SelectFieldV2.svelte';
-	import { writable } from 'svelte/store';
 	import { t, locale, dictionnary } from '../../../lib/i18n';
 	import { supabase } from '../../../lib';
 	import { readTextFile, remove, writeTextFile, BaseDirectory } from '@tauri-apps/plugin-fs';
@@ -17,6 +16,8 @@
 	import { openModal } from '../../../lib/cloud/libraries/overlays/modalUtilities.svelte';
 	import { page } from '$app/state';
 	import Field from '../../../lib/cloud/components/forms/abstract-components/Field.svelte';
+	import { untrack } from 'svelte';
+	import PageTitle from '../../../lib/cloud/components/layout/PageTitle.svelte';
 
 	let imprimanteMatricielleP = new Promise(async (resolve, reject) => {
 		let { data: iM, error } = await appState.db.getRawPrinter();
@@ -134,19 +135,19 @@
 
 	let confirmDeletionText = $state('');
 
-	const btnBaseCSS = 'inline-flex w-full justify-center rounded-md  px-3 py-2 text-sm font-semibold text-white shadow-xs  sm:w-auto';
+	const btnBaseCSS =
+		'inline-flex w-full justify-center rounded-md  px-3 py-2 text-sm font-semibold text-white shadow-xs  sm:w-auto';
 
 	$effect(() => {
 		imprimanteMatricielle;
 		pinNumber;
 		appState.db.getRawPrinter().then(({ data: value, error }) => {
-			if (
-				imprimanteMatricielle !== value.name ||
-				pinNumber !== JSON.parse(JSON.parse(value.metadata).is_nine_pin)
-			) {
-				modified = true;
+			console.log('imprimanteMatricielle', value);
+
+			if (imprimanteMatricielle !== value.name || pinNumber !== value.metadata.is_nine_pin) {
+				untrack(() => (modified = true));
 			} else {
-				modified = false;
+				untrack(() => (modified = false));
 			}
 		});
 	});
@@ -206,19 +207,13 @@
 			<button
 				type="submit"
 				disabled={!confirmDeletionText}
-				class={[
-					btnBaseCSS,
-					'bg-red-600 hover:bg-red-500'
-				]}>Supprimer mon compte</button>
+				class={[btnBaseCSS, 'bg-red-600 hover:bg-red-500']}>Supprimer mon compte</button>
 		</div>
 	</form>
 </Modal>
 
 <main class="flex h-full w-full flex-col items-start space-y-4 overflow-y-scroll">
-	<div>
-		<h1 class="text-surface-600 dark:text-surface-300 text-lg">{$t('sidebar', 'settings')}</h1>
-		<p class="text-surface-400">{$t('settings', 'description')}</p>
-	</div>
+	<PageTitle titre={$t('sidebar', 'settings')} />
 	{#await imprimanteMatricielleP then _}
 		<section class="flex flex-col items-start space-y-2">
 			<h2 class="text-secondary-500 dark:text-secondary-300">{$t('settings', 'printer')}</h2>
@@ -253,7 +248,6 @@
 					{ value: false, label: '12/24' }
 				]} />
 			{#if modified}
-			
 				<button onclick={changePrinter} class={[btnBaseCSS, 'bg-indigo-600 hover:bg-indigo-500']}
 					>{$t('shared', 'save')}</button>
 			{/if}
@@ -285,10 +279,8 @@
 		</p>
 		<button
 			onclick={() => openModal({ name: 'deleteAccount' })}
-			class={[
-				btnBaseCSS,
-				'bg-red-600 hover:bg-red-500'
-			]}>{$t('settings', 'deletionConfirm')}</button>
+			class={[btnBaseCSS, 'bg-red-600 hover:bg-red-500']}
+			>{$t('settings', 'deletionConfirm')}</button>
 	</section>
 	<section class="flex flex-col items-start space-y-2">
 		<!-- <h2 class="text-secondary-500 dark:text-secondary-300">{$t('settings', 'profile')}</h2> -->

@@ -42,7 +42,10 @@
 <Modal
 	opened={page.state?.modal?.name === 'patientIncomplete'}
 	title="Patient incomplet"
-	body="Veuillez compléter les informations du patient avant de continuer."
+	body={'Kiné Helper a besoin que vous complétiez les champs suivant avant de continuer. ' +
+		'<ul class="mt-3 text-gray-900 font-medium space-y-2">' +
+		page.state?.modal?.fields.map((field) => `<li>- ${field}</li>`) +
+		'</ul>'}
 	buttonTextConfirm="Compléter les informations du patient"
 	onAccepted={() => {
 		goto(`/dashboard/patients/${patient.patient_id}/update`);
@@ -60,7 +63,7 @@
 			size="sm"
 			onclick={() => {
 				if (!patient.is_complete) {
-					openModal({ name: 'patientIncomplete' });
+					openModal({ name: 'patientIncomplete', fields: patient.missing_fields });
 				} else {
 					openModal({ name: 'documentSelection' });
 				}

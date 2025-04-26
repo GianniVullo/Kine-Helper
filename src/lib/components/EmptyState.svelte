@@ -11,7 +11,7 @@
 
 <div class="text-center {className}">
 	{#if icon}
-		{@render icon()}
+		{@render icon("mx-auto size-12 text-gray-400")}
 	{:else}
 		<svg
 			class="mx-auto size-12 text-gray-400"
@@ -35,9 +35,9 @@
 		<button
 			{onclick}
 			type="button"
-			class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
+			class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
 			<svg
-				class="-ml-0.5 mr-1.5 size-5"
+				class="mr-1.5 -ml-0.5 size-5"
 				viewBox="0 0 20 20"
 				fill="currentColor"
 				aria-hidden="true"

@@ -71,8 +71,7 @@ export async function updatePatient(data) {
 export async function deletePatient(data) {
 	trace('deleting patient');
 	const { error } = await appState.db.delete('patients', [
-		['patient_id', data.patient_id],
-		['user_id', appState.user.id]
+		['patient_id', data.patient_id]
 	]);
 	return { error };
 }

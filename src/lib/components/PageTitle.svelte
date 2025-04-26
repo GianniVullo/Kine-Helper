@@ -9,7 +9,7 @@
 			<!--* Title -->
             {@render title()}
 			<!--* Actions -->
-            {@render actions()}
+            {@render actions?.()}
 		</div>
 	</div>
 </div>

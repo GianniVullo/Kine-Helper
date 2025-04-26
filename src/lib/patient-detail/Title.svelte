@@ -9,7 +9,7 @@
 	import BoutonPrincipalAvecIcone from '../components/BoutonPrincipalAvecIcone.svelte';
 	import Dropdown from '../components/dropdowns/Dropdown.svelte';
 	import Modal from '../cloud/libraries/overlays/Modal.svelte';
-	import { pushState } from '$app/navigation';
+	import { pushState, goto } from '$app/navigation';
 
 	const modal = {
 		title: get(t)('patients.detail', 'pdeleteModal.title'),
@@ -30,7 +30,7 @@
 	onAccepted={async () => {
 		const { error } = await deletePatient(patient);
 		console.log('error', error);
-		history.back();
+		goto('/dashboard/patients');
 	}} />
 <PageTitle srOnly="Résumé du patient">
 	{#snippet title()}

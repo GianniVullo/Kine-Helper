@@ -3,7 +3,6 @@ import { invoke } from '@tauri-apps/api/core';
 import { file_exists } from '../utils/fsAccessor';
 import { appState } from '../managers/AppState.svelte';
 
-//* Aïe aïe je ne sais vraiment pas encore décider si j'ai besoin de faire ça ? À priori oui car la mise-à-jour de ces données va éventuellement avoir besoin de suivre les autres outils
 export async function createUser(data) {
 	const { data: _, error } = await supabase.auth.signUp({
 		email: data.email.toLowerCase(),
