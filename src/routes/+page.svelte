@@ -9,6 +9,8 @@
 	import { debug, error, info, trace, warn } from '@tauri-apps/plugin-log';
 	import { open } from '@tauri-apps/plugin-shell';
 
+	export let data;
+
 	function registerShortcut(callback) {
 		window.addEventListener('keydown', function (event) {
 			const isMac = platform() === 'macos';
@@ -31,8 +33,12 @@
 
 	let selectedForm = 'login';
 	let message = '';
+	onDestroy(() => {
+		data.unlisten();
+	});
 </script>
 
+<!-- <AvailableScanners /> -->
 <div
 	class="flex min-h-screen items-center justify-center bg-gradient-to-br from-purple-500 to-indigo-500">
 	<!--? CENTERED CARD -->

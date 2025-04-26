@@ -1,11 +1,22 @@
 <script>
 	import { t } from '../../lib/i18n';
 	import { LocalDatabase } from '../../lib/stores/databaseInitializer';
-	import { dev } from '$app/environment';
 	import { patients } from '../../lib/stores/PatientStore';
 	import dayjs from 'dayjs';
 	import { appState } from '../../lib/managers/AppState.svelte';
+	import PageTitle from '../../lib/cloud/components/layout/PageTitle.svelte';
+	import EmptyState from '../../lib/components/EmptyState.svelte';
+	import {
+		calendarIcon,
+		cogIcon,
+		euroIcon,
+		user,
+		userIcon
+	} from '../../lib/ui/svgs/IconSnippets.svelte';
+	import { goto } from '$app/navigation';
+	import { create } from '@tauri-apps/plugin-fs';
 
+	let { data } = $props();
 
 	function getTodaysAppointments() {
 		// let today = "date('now')";
@@ -29,131 +40,100 @@
 			);
 		});
 	}
+	let actionRapides = [
+		{
+			icon: userIcon,
+			titre: 'Nouveau patient',
+			description: 'Créez un nouveau patient',
+			href: '/dashboard/patients/create',
+			className: 'bg-pink-500 text-white'
+		},
+		{
+			icon: euroIcon,
+			titre: `Vous avez ${data.total} séances à facturer`,
+			description: "Accédez à l'onglet finance pour produire vos attestations et factures",
+			href: '/dashboard/finances',
+			className: 'bg-yellow-500 text-white'
+		},
+		{
+			icon: cogIcon,
+			titre: 'Paramètres',
+			description: 'Gérez vos paramètres de compte',
+			href: '/dashboard/settings',
+			className: 'bg-blue-500 text-white'
+		},
+		{
+			icon: calendarIcon,
+			titre: 'Consultez vos rendez-vous',
+			description: "Accédez à l'onglet agenda pour consulter vos rendez-vous",
+			href: '/dashboard/agenda',
+			className: 'bg-green-500 text-white'
+		}
+	];
 </script>
 
-<main class="flex h-[80vh] w-full flex-col">
-	<header class="flex basis-1/12 flex-col">
-		<h1 class="text-xl text-surface-400">{$t('sidebar', 'dashboard')}</h1>
-		<p>
-			{$t('dashboard', 'description')}
-		</p>
-	</header>
-	{#if dev}
-		<div class=""><a class="variant-filled btn" href="/dashboard/debug">DEBUG</a></div>
-	{/if}
-	<article class="flex h-full w-full">
-		<section class="relative my-4 flex basis-10/12 flex-col rounded-xl p-4">
-			<h2 class="absolute left-1 top-1 text-sm text-surface-400">
-				{$t('dashboard', 'infos')}
-			</h2>
-			<div class="mt-4 flex h-[70%] basis-1/2">
-				<div
-					class="relative flex basis-1/4 overflow-y-scroll rounded-lg border border-surface-500 bg-white/50 p-2 shadow-inner dark:bg-black/20">
-					<h3 class="absolute left-1 top-1 text-sm text-surface-400">
-						{$t('dashboard', 'todaysAppointment')} ({$t('dashboard', 'featureComingSoon')})
-					</h3>
-					<div class="mt-4 flex flex-col">
-						<!-- {#await getTodaysAppointments()}
-							{$t('shared', 'loading')}
-						{:then seances}
-							{#if seances.length === 0}
-								{$t('dashboard', 'todayEmpty')}
-							{:else}
-								<div class="mt-2 flex flex-col space-y-2">
-									{#each seances as { patient, seance }}
-										<button
-											on:click={() => {
-												modalStore.trigger({
-													type: 'component',
-													component: 'calendarEvent',
-													meta: {
-														event: { extendedProps: { seance } }
-													}
-												});
-											}}
-											class="flex w-full items-start justify-start rounded-lg border border-surface-900 bg-secondary-500/10 px-2 py-1 shadow duration-200 hover:scale-105 dark:bg-secondary-900/50">
-											<h5 class="w-60 truncate text-left">
-												{dayjs(seance.date).format('HH:mm')}
-												{patient.nom + ' ' + patient.prenom}
-											</h5>
-										</button>
-									{/each}
-								</div>
-							{/if}
-						{/await} -->
-					</div>
-				</div>
-				<div class="flex basis-3/4">
-					<div
-						class="relative mx-1 flex w-full basis-1/2 overflow-y-scroll rounded-lg border border-surface-500 bg-white/50 p-2 shadow-inner dark:bg-black/20">
-						<h3 class="absolute left-1 top-1 text-sm text-surface-400">
-							{$t('dashboard', 'unpaidAttest')}
-							({$t('dashboard', 'featureComingSoon')})
-						</h3>
-						<div class="mt-4 flex w-full flex-col items-start space-y-1 p-2"></div>
-					</div>
-					<div
-						class="relative mx-1 flex w-full basis-1/2 overflow-y-scroll rounded-lg border border-surface-500 bg-white/50 p-2 shadow-inner dark:bg-black/20">
-						<h3 class="absolute left-1 top-1 text-sm text-surface-400">
-							{$t('dashboard', 'community')} ({$t('dashboard', 'projectComingSoon')})
-						</h3>
-						<div class="mt-4 flex w-full flex-col items-start space-y-1 p-2">
-							{$t('dashboard', 'communityDescription')}
-						</div>
-					</div>
-				</div>
-			</div>
-			<div
-				class="relative mt-2 flex h-[30%] basis-1/2 flex-col rounded-lg border border-surface-500 bg-white/50 px-2 pb-2 pt-6 shadow-inner dark:bg-black/20">
-				<h3 class="absolute left-1 top-1 text-sm text-surface-400">
-					{$t('dashboard', 'ads')}
-				</h3>
-				<div class="relative mt-4 flex w-full snap-x overflow-x-scroll">
-					<div class="mt-4 flex flex-col space-y-4">
-						<p class="">
-							{$t('dashboard', 'adsDescription')}
-						</p>
+<PageTitle titre={$t('sidebar', 'dashboard')} />
 
-						<!-- {#await marketingPromise then ads}
-						{#if ads}
-							<div class="">
-								<img
-									class="h-auto max-w-[600px]"
-									src={`https://admin-console.kine-helper.be/api/get-img?id=${
-										ads[$currentIndex]?.id
-									}&lang=${$locale.toLowerCase()}`}
-									alt="" />
-								<button
-									on:click={() => {
-										modalStore.trigger({
-											type: 'component',
-											component: 'marketingModal',
-											meta: { pub: ads[$currentIndex] }
-										});
-									}}
-									class="variant-filled-primary btn btn-sm bottom-0 left-0 mt-2"
-									>{$t('otherModal', 'more', null, 'En savoir plus')}</button>
-								<button
-									on:click={async () => {
-										await open(ads[$currentIndex]?.landing_page_url);
-									}}
-									class="variant-filled-primary btn btn-sm bottom-0 left-0 mt-2"
-									>{$t('otherModal', 'ourOffer', null, 'Consulter nos offres')}</button>
-							</div>
-						{/if}
-					{/await} -->
+<!-- On peut aussi créer un raccourci à "Nouveau patient" -->
+
+{#if data.noPatientYet}
+	<EmptyState
+		icon={userIcon}
+		className="mt-20"
+		titre="Vous n'avez pas encore créé de patients"
+		description="Commencez par créer votre premier patient"
+		onclick={() => {
+			goto('/dashboard/patients/create');
+		}}
+		buttonText="Patient" />
+{:else}
+	<h2 class="mt-20 text-base font-semibold text-gray-900">Actions rapides</h2>
+	<p class="mt-1 text-sm text-gray-500">
+		Utilisez les actions rapides ci-dessous pour démarrer rapidement votre session.
+	</p>
+	<ul role="list" class="mt-6 divide-y divide-gray-200 border-t border-b border-gray-200">
+		{#each actionRapides as { icon, titre, description, href, onclick, className }}
+			<li>
+				<div class="group relative flex items-start space-x-3 py-4">
+					<div class="shrink-0">
+						<span class={['inline-flex size-10 items-center justify-center rounded-lg', className]}>
+							{@render icon('size-6 text-white')}
+						</span>
+					</div>
+					<div class="min-w-0 flex-1">
+						<div class="text-sm font-medium text-gray-900">
+							{#if onclick}
+								<button {onclick}>{titre}</button>
+							{:else}
+								<a {href}>
+									<span class="absolute inset-0" aria-hidden="true"></span>
+									{titre}
+								</a>
+							{/if}
+						</div>
+						<p class="text-sm text-gray-500">{description}</p>
+					</div>
+					<div class="shrink-0 self-center">
+						<svg
+							class="size-5 text-gray-400 group-hover:text-gray-500"
+							viewBox="0 0 20 20"
+							fill="currentColor"
+							aria-hidden="true"
+							data-slot="icon">
+							<path
+								fill-rule="evenodd"
+								d="M8.22 5.22a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06-1.06L11.94 10 8.22 6.28a.75.75 0 0 1 0-1.06Z"
+								clip-rule="evenodd" />
+						</svg>
 					</div>
 				</div>
-			</div>
-		</section>
-		<section
-			class="relative mx-1 my-4 basis-2/12 rounded-xl border border-secondary-500 bg-white/50 p-4 shadow-inner dark:bg-black/20">
-			<h3 class="absolute left-1 top-1 text-sm text-surface-400">
-				{$t('dashboard', 'logs')} ({$t('dashboard', 'featureComingSoon')})
-			</h3>
-			<p class="mt-8">
-				{$t('dashboard', 'logsDescription')}
-			</p>
-		</section>
-	</article>
-</main>
+			</li>
+		{/each}
+	</ul>
+	<!-- <div class="mt-6 flex">
+		<a href="#" class="text-sm font-medium text-indigo-600 hover:text-indigo-500">
+			Or start from an empty project
+			<span aria-hidden="true"> &rarr;</span>
+		</a>
+	</div> -->
+{/if}

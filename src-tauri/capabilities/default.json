@@ -35,6 +35,13 @@
             }
           ],
           "sidecar": false
+        },
+        {
+          "name": "lpstat",
+          "cmd": "lpstat",
+          "args": [
+            "-p"
+          ]
         }
       ]
     },

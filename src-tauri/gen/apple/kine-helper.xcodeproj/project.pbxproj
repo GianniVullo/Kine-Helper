@@ -12,6 +12,7 @@
 		36069C21CE8F02ADF56CCC73 /* libkine_helper_lib.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1FE6F5EE5E344197399227D5 /* libkine_helper_lib.a */; };
 		495EB8699D1C8960181333F2 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 537203427C5E1849C9B7853F /* Security.framework */; };
 		53837F5B066BC0637A8371AF /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BFE645D5988918BC2B7AB937 /* QuartzCore.framework */; };
+		7EBC697BA82BA678A0336C9F /* libkine_helper_lib.a in Resources */ = {isa = PBXBuildFile; fileRef = 556034123BACF438FDAA51FC /* libkine_helper_lib.a */; };
 		998F5D115DABFD2CB118530C /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = A93A63AAAF34F5DDE8280F5D /* LaunchScreen.storyboard */; };
 		A08DD32417616C3231902D2F /* assets in Resources */ = {isa = PBXBuildFile; fileRef = A2E152A9D8E3DCC31410F3C4 /* assets */; };
 		A9E2BFC5AFA03B31F6DDAF4F /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F1BB105DBF10495F3A5F5071 /* WebKit.framework */; };
@@ -25,46 +26,94 @@
 		015A1050644ECC1156071757 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
 		02783FF20C95E4BFADADD96E /* 20240318145714_9pin.down.sql */ = {isa = PBXFileReference; path = 20240318145714_9pin.down.sql; sourceTree = "<group>"; };
 		03AB90C65AE42F36A049DEC4 /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = System/Library/Frameworks/Metal.framework; sourceTree = SDKROOT; };
+		076C881E2FD4986BFF0E409B /* 20250216165602_tarifs_metadata.up.sql */ = {isa = PBXFileReference; path = 20250216165602_tarifs_metadata.up.sql; sourceTree = "<group>"; };
+		0853382D5FA50E9D5139E3DD /* 20250119121051_tarifs_et_supplement.up.sql */ = {isa = PBXFileReference; path = 20250119121051_tarifs_et_supplement.up.sql; sourceTree = "<group>"; };
 		09A7186FC5E784D04C602D4B /* 20240305190432_renamepatient.down.sql */ = {isa = PBXFileReference; path = 20240305190432_renamepatient.down.sql; sourceTree = "<group>"; };
 		0B58B9796A30EF209DEF9AD0 /* nomenclature.rs */ = {isa = PBXFileReference; path = nomenclature.rs; sourceTree = "<group>"; };
 		0C2983010021B3DC606DCD1B /* 20240220193637_docType.up.sql */ = {isa = PBXFileReference; path = 20240220193637_docType.up.sql; sourceTree = "<group>"; };
+		1623B84A4344B34A6DF9B2F4 /* 20250316133523_migrate_data_and_document_refonte.up.sql */ = {isa = PBXFileReference; path = 20250316133523_migrate_data_and_document_refonte.up.sql; sourceTree = "<group>"; };
+		1A1DE62240A6715BBEC5429A /* 20250119121051_tarifs_et_supplement.down.sql */ = {isa = PBXFileReference; path = 20250119121051_tarifs_et_supplement.down.sql; sourceTree = "<group>"; };
+		1A84E08C2B5CBAE2F4BD5055 /* 20250406133523_history_nodes.down.sql */ = {isa = PBXFileReference; path = 20250406133523_history_nodes.down.sql; sourceTree = "<group>"; };
+		1DC543039B1417B70CEE5C0E /* mod.rs */ = {isa = PBXFileReference; path = mod.rs; sourceTree = "<group>"; };
 		1FE6F5EE5E344197399227D5 /* libkine_helper_lib.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libkine_helper_lib.a; sourceTree = "<group>"; };
+		2041957C0BC5E5CC69F1F0E9 /* ideas for cloud.sql */ = {isa = PBXFileReference; path = "ideas for cloud.sql"; sourceTree = "<group>"; };
+		214D3E46B4F9316E5F454663 /* serializers.rs */ = {isa = PBXFileReference; path = serializers.rs; sourceTree = "<group>"; };
 		21CBBF6BA6FA4E1F87169EEE /* 20240321080003_sp_with_group.down.sql */ = {isa = PBXFileReference; path = 20240321080003_sp_with_group.down.sql; sourceTree = "<group>"; };
 		232F8EC1B80B7EFE6CF027D8 /* 20240321080003_sp_with_group.up.sql */ = {isa = PBXFileReference; path = 20240321080003_sp_with_group.up.sql; sourceTree = "<group>"; };
+		2447016B45ECB064791971C8 /* ImageCaptureConstants.rs */ = {isa = PBXFileReference; path = ImageCaptureConstants.rs; sourceTree = "<group>"; };
 		250411F0B252D9352303E827 /* unix.rs */ = {isa = PBXFileReference; path = unix.rs; sourceTree = "<group>"; };
 		2BF2AA7E8F6E107AF69563FB /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
+		2C44663C92B87A085EE79F8C /* 20250217165602_refonte_documents.up.sql */ = {isa = PBXFileReference; path = 20250217165602_refonte_documents.up.sql; sourceTree = "<group>"; };
 		383B1F1BC2AD2D7BEF655430 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		38658CE3AF9BAE4983B9BCDA /* Poursuite_documents.sql */ = {isa = PBXFileReference; path = Poursuite_documents.sql; sourceTree = "<group>"; };
+		3F5B4A030020BA57A184AEB7 /* mod.rs */ = {isa = PBXFileReference; path = mod.rs; sourceTree = "<group>"; };
 		406DC30A8CE716615E6F3ECD /* kine-helper_iOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "kine-helper_iOS.entitlements"; sourceTree = "<group>"; };
+		4196D5B60DCE1054FCE2116F /* 20250216165021_appareils.down.sql */ = {isa = PBXFileReference; path = 20250216165021_appareils.down.sql; sourceTree = "<group>"; };
 		497DDC941250C041CB8B82EB /* mod.rs */ = {isa = PBXFileReference; path = mod.rs; sourceTree = "<group>"; };
 		49FDFF1170371B6AC30671F4 /* 20240309173246_kine.up.sql */ = {isa = PBXFileReference; path = 20240309173246_kine.up.sql; sourceTree = "<group>"; };
 		50AC68498223D00917E2DB9C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		535ECF83C13499D83C604338 /* 20240318145714_9pin.up.sql */ = {isa = PBXFileReference; path = 20240318145714_9pin.up.sql; sourceTree = "<group>"; };
 		537203427C5E1849C9B7853F /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
+		556034123BACF438FDAA51FC /* libkine_helper_lib.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libkine_helper_lib.a; sourceTree = "<group>"; };
 		57E4EC663D86FB1F846FC454 /* mod.rs */ = {isa = PBXFileReference; path = mod.rs; sourceTree = "<group>"; };
+		5933DD635DB2661543EF6D72 /* ImageCapturePlatform.rs */ = {isa = PBXFileReference; path = ImageCapturePlatform.rs; sourceTree = "<group>"; };
+		593C963A3C0D27036BF051C7 /* state.rs */ = {isa = PBXFileReference; path = state.rs; sourceTree = "<group>"; };
+		594F0724E72013F4ABB49050 /* browser_delegate.rs */ = {isa = PBXFileReference; path = browser_delegate.rs; sourceTree = "<group>"; };
+		5B9BB6F6557295EB85F654CD /* mod.rs */ = {isa = PBXFileReference; path = mod.rs; sourceTree = "<group>"; };
+		5F112502BE147A89ADE87A5B /* 20250325133523_kv_store.down.sql */ = {isa = PBXFileReference; path = 20250325133523_kv_store.down.sql; sourceTree = "<group>"; };
+		6228B98E6FCC43735911F940 /* scanner_delegate.rs */ = {isa = PBXFileReference; path = scanner_delegate.rs; sourceTree = "<group>"; };
 		640D0387C42C9FFDC8E4504E /* 20240307202642_typo2.down.sql */ = {isa = PBXFileReference; path = 20240307202642_typo2.down.sql; sourceTree = "<group>"; };
+		654DC77CED4F2C68EFA7E4FA /* ICDevice.rs */ = {isa = PBXFileReference; path = ICDevice.rs; sourceTree = "<group>"; };
 		66FA5483EBFB54D055F5BFD6 /* lib.rs */ = {isa = PBXFileReference; path = lib.rs; sourceTree = "<group>"; };
 		76D6298416DB233F52C83F11 /* escp.rs */ = {isa = PBXFileReference; path = escp.rs; sourceTree = "<group>"; };
+		78285A507541FC8A1C350BB9 /* 20250217165602_refonte_documents.down.sql */ = {isa = PBXFileReference; path = 20250217165602_refonte_documents.down.sql; sourceTree = "<group>"; };
+		7C9F12EB52AAF213D5723B30 /* mod.rs */ = {isa = PBXFileReference; path = mod.rs; sourceTree = "<group>"; };
+		7E5A97AFC5502A22653E0563 /* mod.rs */ = {isa = PBXFileReference; path = mod.rs; sourceTree = "<group>"; };
+		7F57D0F1A77F103EC5A0AF42 /* 20250421133523_prescription_file_name.up.sql */ = {isa = PBXFileReference; path = 20250421133523_prescription_file_name.up.sql; sourceTree = "<group>"; };
+		80EF6AB7E2537DED027730E0 /* 20250306133523_seance_completion.up.sql */ = {isa = PBXFileReference; path = 20250306133523_seance_completion.up.sql; sourceTree = "<group>"; };
+		8670C2233B2542E69A9CBB81 /* 20250225195209_sp_amb_hos.down.sql */ = {isa = PBXFileReference; path = 20250225195209_sp_amb_hos.down.sql; sourceTree = "<group>"; };
 		8827991054070C271902F34B /* 20240906062350_rename_patients_kine_id.up.sql */ = {isa = PBXFileReference; path = 20240906062350_rename_patients_kine_id.up.sql; sourceTree = "<group>"; };
 		994EE6C3BBB362EF30A00FFD /* 20231204175351_conventions.down.sql */ = {isa = PBXFileReference; path = 20231204175351_conventions.down.sql; sourceTree = "<group>"; };
 		9D58B76F52AA723806D787CD /* kine-helper_iOS.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = "kine-helper_iOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		9E054AB515BFFDB50FE6DD2B /* 20250406133523_history_nodes.up.sql */ = {isa = PBXFileReference; path = 20250406133523_history_nodes.up.sql; sourceTree = "<group>"; };
+		A01D73875037A81B3E527E96 /* read_data.rs */ = {isa = PBXFileReference; path = read_data.rs; sourceTree = "<group>"; };
 		A2E152A9D8E3DCC31410F3C4 /* assets */ = {isa = PBXFileReference; lastKnownFileType = folder; path = assets; sourceTree = SOURCE_ROOT; };
+		A7C5B2F6A25DEAF918122C7D /* ICDeviceBrowser.rs */ = {isa = PBXFileReference; path = ICDeviceBrowser.rs; sourceTree = "<group>"; };
 		A93A63AAAF34F5DDE8280F5D /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
 		AF350B8D67CC8B241B74ECF0 /* 20240220173643_mutuelle_paid_attestation.down.sql */ = {isa = PBXFileReference; path = 20240220173643_mutuelle_paid_attestation.down.sql; sourceTree = "<group>"; };
+		B222708E2D33F85019554D44 /* mod.rs */ = {isa = PBXFileReference; path = mod.rs; sourceTree = "<group>"; };
+		B2B97D3ACFACE5E950D1E2D6 /* ICScannerFunctionalUnits.rs */ = {isa = PBXFileReference; path = ICScannerFunctionalUnits.rs; sourceTree = "<group>"; };
 		B2D0390B2EEBDE88C8481B9B /* 20240906062350_rename_patients_kine_id.down.sql */ = {isa = PBXFileReference; path = 20240906062350_rename_patients_kine_id.down.sql; sourceTree = "<group>"; };
+		B6022F18F6453DE1FF0B8BBC /* 20250216165602_tarifs_metadata.down.sql */ = {isa = PBXFileReference; path = 20250216165602_tarifs_metadata.down.sql; sourceTree = "<group>"; };
+		B6FB764B8F2C2A865BA31645 /* 20250421133523_prescription_file_name.down.sql */ = {isa = PBXFileReference; path = 20250421133523_prescription_file_name.down.sql; sourceTree = "<group>"; };
 		B8B5B643CB892DA7278A07E0 /* 20231204175351_conventions.up.sql */ = {isa = PBXFileReference; path = 20231204175351_conventions.up.sql; sourceTree = "<group>"; };
+		B971433B830E2D93D855DF55 /* database_migrations.rs */ = {isa = PBXFileReference; path = database_migrations.rs; sourceTree = "<group>"; };
 		BBE5B71708D40C9AF3A98BEC /* bindings.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = bindings.h; sourceTree = "<group>"; };
 		BC8BEF0F3A3CAAFDB34823FE /* 20240220193637_docType.down.sql */ = {isa = PBXFileReference; path = 20240220193637_docType.down.sql; sourceTree = "<group>"; };
 		BFE645D5988918BC2B7AB937 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		C0F2CE574D1F3AD49D173679 /* 20240305190432_renamepatient.up.sql */ = {isa = PBXFileReference; path = 20240305190432_renamepatient.up.sql; sourceTree = "<group>"; };
+		C245C1F8CCED2353CF02AC18 /* ICScannerDevice.rs */ = {isa = PBXFileReference; path = ICScannerDevice.rs; sourceTree = "<group>"; };
+		C4572F800A6E347E0C726A9F /* 20250325133523_kv_store.up.sql */ = {isa = PBXFileReference; path = 20250325133523_kv_store.up.sql; sourceTree = "<group>"; };
+		C72C45EA8537A0141E10E8B6 /* get_card.rs */ = {isa = PBXFileReference; path = get_card.rs; sourceTree = "<group>"; };
 		C94F1D1C03CCD68C5ED3592C /* 20240309173246_kine.down.sql */ = {isa = PBXFileReference; path = 20240309173246_kine.down.sql; sourceTree = "<group>"; };
 		CEE6AC6954B67C8C74422011 /* main.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = main.mm; sourceTree = "<group>"; };
+		CF79818C224543C665CBD2D4 /* file_system_correction.rs */ = {isa = PBXFileReference; path = file_system_correction.rs; sourceTree = "<group>"; };
+		D2648187F4C8CAC150E89343 /* 20250306133523_seance_completion.down.sql */ = {isa = PBXFileReference; path = 20250306133523_seance_completion.down.sql; sourceTree = "<group>"; };
+		D324AAB9C7F704B11779B79F /* mod.rs */ = {isa = PBXFileReference; path = mod.rs; sourceTree = "<group>"; };
+		D7AEF8A9BB61F3DFDFF738F6 /* 20250216165021_appareils.up.sql */ = {isa = PBXFileReference; path = 20250216165021_appareils.up.sql; sourceTree = "<group>"; };
 		D9BC64E1185AECAC98772F9C /* 20240220173643_mutuelle_paid_attestation.up.sql */ = {isa = PBXFileReference; path = 20240220173643_mutuelle_paid_attestation.up.sql; sourceTree = "<group>"; };
 		DB9B92E9F27E0A5CA0FC98AB /* 20240307202642_typo2.up.sql */ = {isa = PBXFileReference; path = 20240307202642_typo2.up.sql; sourceTree = "<group>"; };
+		DC299C25542CBCF7D3D0DBEB /* image_compression.rs */ = {isa = PBXFileReference; path = image_compression.rs; sourceTree = "<group>"; };
 		DC30C5DA5021990032261DA7 /* main.rs */ = {isa = PBXFileReference; path = main.rs; sourceTree = "<group>"; };
+		E048D7C8FFBF4B5DE45129AA /* mod.rs */ = {isa = PBXFileReference; path = mod.rs; sourceTree = "<group>"; };
+		E3B832E39E637B7479BC7DAD /* 20250225195209_sp_amb_hos.up.sql */ = {isa = PBXFileReference; path = 20250225195209_sp_amb_hos.up.sql; sourceTree = "<group>"; };
+		E6B23244EA9427AA06E73926 /* ICScannerBandData.rs */ = {isa = PBXFileReference; path = ICScannerBandData.rs; sourceTree = "<group>"; };
 		EC5924F04E237B326DC8CCEE /* windows.rs */ = {isa = PBXFileReference; path = windows.rs; sourceTree = "<group>"; };
 		EFD7228C4E826E6709496700 /* MetalKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MetalKit.framework; path = System/Library/Frameworks/MetalKit.framework; sourceTree = SDKROOT; };
 		F0C6CFC03982923605DC8DCA /* form_data_modeling.rs */ = {isa = PBXFileReference; path = form_data_modeling.rs; sourceTree = "<group>"; };
 		F1BB105DBF10495F3A5F5071 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
+		F1E2070389B2F45B0CCB6F65 /* 20250316133523_migrate_data_and_document_refonte.down.sql */ = {isa = PBXFileReference; path = 20250316133523_migrate_data_and_document_refonte.down.sql; sourceTree = "<group>"; };
+		FDD3D507DF78E44FF6638FB0 /* eid_reader_resources.rs */ = {isa = PBXFileReference; path = eid_reader_resources.rs; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -86,6 +135,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		04EBBBAD018EB00FA22904B9 /* stability_corrections */ = {
+			isa = PBXGroup;
+			children = (
+				CF79818C224543C665CBD2D4 /* file_system_correction.rs */,
+				3F5B4A030020BA57A184AEB7 /* mod.rs */,
+			);
+			path = stability_corrections;
+			sourceTree = "<group>";
+		};
 		064824536DA2E2AD7166DA0E = {
 			isa = PBXGroup;
 			children = (
@@ -109,24 +167,93 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		214794760E5C2EA8EDA406B6 /* ImageCaptureCore */ = {
+			isa = PBXGroup;
+			children = (
+				654DC77CED4F2C68EFA7E4FA /* ICDevice.rs */,
+				A7C5B2F6A25DEAF918122C7D /* ICDeviceBrowser.rs */,
+				E6B23244EA9427AA06E73926 /* ICScannerBandData.rs */,
+				C245C1F8CCED2353CF02AC18 /* ICScannerDevice.rs */,
+				B2B97D3ACFACE5E950D1E2D6 /* ICScannerFunctionalUnits.rs */,
+				2447016B45ECB064791971C8 /* ImageCaptureConstants.rs */,
+				5933DD635DB2661543EF6D72 /* ImageCapturePlatform.rs */,
+				B222708E2D33F85019554D44 /* mod.rs */,
+			);
+			path = ImageCaptureCore;
+			sourceTree = "<group>";
+		};
 		3486A45B261F9010619110EA /* src */ = {
 			isa = PBXGroup;
 			children = (
+				B971433B830E2D93D855DF55 /* database_migrations.rs */,
 				66FA5483EBFB54D055F5BFD6 /* lib.rs */,
 				DC30C5DA5021990032261DA7 /* main.rs */,
 				0B58B9796A30EF209DEF9AD0 /* nomenclature.rs */,
+				3B867C0621452949AC366B6D /* apple_api */,
+				4C2E859E509D67CB3F4EA825 /* appstate */,
+				84DE37D0F1C3213EDC9F0BE9 /* cloud */,
+				9060F5B1DCD17E7EECB6A6D5 /* cryptage */,
+				50D520FD4C8934231737BCA6 /* eid_reader */,
 				ABA05B91C1E92FF52A223034 /* migrations */,
 				A49BCA8CA58C0AB38195BB2A /* printer */,
+				04EBBBAD018EB00FA22904B9 /* stability_corrections */,
 			);
 			name = src;
 			path = ../../src;
 			sourceTree = "<group>";
 		};
+		3B867C0621452949AC366B6D /* apple_api */ = {
+			isa = PBXGroup;
+			children = (
+				5B9BB6F6557295EB85F654CD /* mod.rs */,
+				593C963A3C0D27036BF051C7 /* state.rs */,
+				8D773A0ADD11EBE4A9641FD9 /* image_capture_core */,
+			);
+			path = apple_api;
+			sourceTree = "<group>";
+		};
+		3DCC52653CBE66C9567A0714 /* arm64-sim */ = {
+			isa = PBXGroup;
+			children = (
+				4262B047F02C727C2CC650DC /* debug */,
+			);
+			path = "arm64-sim";
+			sourceTree = "<group>";
+		};
+		4262B047F02C727C2CC650DC /* debug */ = {
+			isa = PBXGroup;
+			children = (
+				556034123BACF438FDAA51FC /* libkine_helper_lib.a */,
+			);
+			path = debug;
+			sourceTree = "<group>";
+		};
+		4C2E859E509D67CB3F4EA825 /* appstate */ = {
+			isa = PBXGroup;
+			children = (
+				E048D7C8FFBF4B5DE45129AA /* mod.rs */,
+				214D3E46B4F9316E5F454663 /* serializers.rs */,
+			);
+			path = appstate;
+			sourceTree = "<group>";
+		};
 		4C38385DBDC78E0E5AEE55D4 /* Externals */ = {
 			isa = PBXGroup;
 			children = (
+				3DCC52653CBE66C9567A0714 /* arm64-sim */,
 			);
 			path = Externals;
+			sourceTree = "<group>";
+		};
+		50D520FD4C8934231737BCA6 /* eid_reader */ = {
+			isa = PBXGroup;
+			children = (
+				FDD3D507DF78E44FF6638FB0 /* eid_reader_resources.rs */,
+				C72C45EA8537A0141E10E8B6 /* get_card.rs */,
+				D324AAB9C7F704B11779B79F /* mod.rs */,
+				A01D73875037A81B3E527E96 /* read_data.rs */,
+			);
+			path = eid_reader;
 			sourceTree = "<group>";
 		};
 		66252B881F9FBBFBFD04F1F3 /* kine-helper_iOS */ = {
@@ -162,6 +289,34 @@
 				BDFD175F68F73C698818DE01 /* kine-helper */,
 			);
 			path = Sources;
+			sourceTree = "<group>";
+		};
+		84DE37D0F1C3213EDC9F0BE9 /* cloud */ = {
+			isa = PBXGroup;
+			children = (
+				DC299C25542CBCF7D3D0DBEB /* image_compression.rs */,
+				1DC543039B1417B70CEE5C0E /* mod.rs */,
+			);
+			path = cloud;
+			sourceTree = "<group>";
+		};
+		8D773A0ADD11EBE4A9641FD9 /* image_capture_core */ = {
+			isa = PBXGroup;
+			children = (
+				594F0724E72013F4ABB49050 /* browser_delegate.rs */,
+				7E5A97AFC5502A22653E0563 /* mod.rs */,
+				6228B98E6FCC43735911F940 /* scanner_delegate.rs */,
+				214794760E5C2EA8EDA406B6 /* ImageCaptureCore */,
+			);
+			path = image_capture_core;
+			sourceTree = "<group>";
+		};
+		9060F5B1DCD17E7EECB6A6D5 /* cryptage */ = {
+			isa = PBXGroup;
+			children = (
+				7C9F12EB52AAF213D5723B30 /* mod.rs */,
+			);
+			path = cryptage;
 			sourceTree = "<group>";
 		};
 		A49BCA8CA58C0AB38195BB2A /* printer */ = {
@@ -211,6 +366,28 @@
 				232F8EC1B80B7EFE6CF027D8 /* 20240321080003_sp_with_group.up.sql */,
 				B2D0390B2EEBDE88C8481B9B /* 20240906062350_rename_patients_kine_id.down.sql */,
 				8827991054070C271902F34B /* 20240906062350_rename_patients_kine_id.up.sql */,
+				1A1DE62240A6715BBEC5429A /* 20250119121051_tarifs_et_supplement.down.sql */,
+				0853382D5FA50E9D5139E3DD /* 20250119121051_tarifs_et_supplement.up.sql */,
+				4196D5B60DCE1054FCE2116F /* 20250216165021_appareils.down.sql */,
+				D7AEF8A9BB61F3DFDFF738F6 /* 20250216165021_appareils.up.sql */,
+				B6022F18F6453DE1FF0B8BBC /* 20250216165602_tarifs_metadata.down.sql */,
+				076C881E2FD4986BFF0E409B /* 20250216165602_tarifs_metadata.up.sql */,
+				78285A507541FC8A1C350BB9 /* 20250217165602_refonte_documents.down.sql */,
+				2C44663C92B87A085EE79F8C /* 20250217165602_refonte_documents.up.sql */,
+				8670C2233B2542E69A9CBB81 /* 20250225195209_sp_amb_hos.down.sql */,
+				E3B832E39E637B7479BC7DAD /* 20250225195209_sp_amb_hos.up.sql */,
+				D2648187F4C8CAC150E89343 /* 20250306133523_seance_completion.down.sql */,
+				80EF6AB7E2537DED027730E0 /* 20250306133523_seance_completion.up.sql */,
+				F1E2070389B2F45B0CCB6F65 /* 20250316133523_migrate_data_and_document_refonte.down.sql */,
+				1623B84A4344B34A6DF9B2F4 /* 20250316133523_migrate_data_and_document_refonte.up.sql */,
+				5F112502BE147A89ADE87A5B /* 20250325133523_kv_store.down.sql */,
+				C4572F800A6E347E0C726A9F /* 20250325133523_kv_store.up.sql */,
+				1A84E08C2B5CBAE2F4BD5055 /* 20250406133523_history_nodes.down.sql */,
+				9E054AB515BFFDB50FE6DD2B /* 20250406133523_history_nodes.up.sql */,
+				B6FB764B8F2C2A865BA31645 /* 20250421133523_prescription_file_name.down.sql */,
+				7F57D0F1A77F103EC5A0AF42 /* 20250421133523_prescription_file_name.up.sql */,
+				2041957C0BC5E5CC69F1F0E9 /* ideas for cloud.sql */,
+				38658CE3AF9BAE4983B9BCDA /* Poursuite_documents.sql */,
 			);
 			path = migrations;
 			sourceTree = "<group>";
@@ -222,6 +399,20 @@
 				68D56EA1F85065B4539DD87B /* bindings */,
 			);
 			path = "kine-helper";
+			sourceTree = "<group>";
+		};
+		"TEMP_BEC7D202-CD7F-47AE-81D8-3143D6228A2C" /* x86_64 */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = x86_64;
+			sourceTree = "<group>";
+		};
+		"TEMP_D34DE2FD-7DAE-44C7-A899-81F29BFEA0EE" /* arm64 */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = arm64;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -241,6 +432,8 @@
 			dependencies = (
 			);
 			name = "kine-helper_iOS";
+			packageProductDependencies = (
+			);
 			productName = "kine-helper_iOS";
 			productReference = 9D58B76F52AA723806D787CD /* kine-helper_iOS.app */;
 			productType = "com.apple.product-type.application";
@@ -269,6 +462,8 @@
 				en,
 			);
 			mainGroup = 064824536DA2E2AD7166DA0E;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 54;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -285,6 +480,7 @@
 				CF1EB00843F9FE86B15A1EEA /* Assets.xcassets in Resources */,
 				998F5D115DABFD2CB118530C /* LaunchScreen.storyboard in Resources */,
 				A08DD32417616C3231902D2F /* assets in Resources */,
+				7EBC697BA82BA678A0336C9F /* libkine_helper_lib.a in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
