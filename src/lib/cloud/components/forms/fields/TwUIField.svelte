@@ -18,6 +18,7 @@
 		value = $bindable(),
 		checkboxLabel = undefined,
 		onchange,
+		oninput,
 		checkboxDescription = undefined,
 		constraints
 	} = $props();
@@ -76,9 +77,9 @@
 				</div>
 			</div>
 			<div class="text-sm/6">
-				<label for={id} class="select-none font-medium text-gray-900">{@html checkboxLabel}</label>
+				<label for={id} class="font-medium text-gray-900 select-none">{@html checkboxLabel}</label>
 				{#if checkboxDescription}
-					<p id="{name}-description" class="cursor-default select-none text-gray-500">
+					<p id="{name}-description" class="cursor-default text-gray-500 select-none">
 						{@html checkboxDescription}
 					</p>
 				{/if}
@@ -107,7 +108,8 @@
 			{placeholder}
 			bind:value
 			{...constraints}
-			{onchange} />
+			{onchange}
+			{oninput} />
 	{/if}
 	{#if error}
 		<div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">

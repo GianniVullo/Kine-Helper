@@ -27,10 +27,10 @@
 		}
 	];
 
-	let factureType;
-	let dateFactu;
+	let factureType = $state();
+	let dateFactu = $state();
 	// We've created a custom submit function to pass the response and close the modal.
-	let attestationsIds = [];
+	let attestationsIds = $state([]);
 	let attestations = sp.attestations.map((att) => {
 		return {
 			value: att.attestation_id,
@@ -60,15 +60,15 @@
 			user_id: sp.user_id,
 			patient_id: patient.patient_id,
 			sp_id: sp.sp_id,
-			date: dateFactu,
-			type: factureType,
+			date: $state.snapshot(dateFactu),
+			type: $state.snapshot(factureType),
 			total:
 				factureType === 'patient'
 					? totalValeurRecue.toFixed(2).replace('.', ',')
 					: totalRemboursement.toFixed(2).replace('.', ',')
 		};
 		console.log('Sending facture and AttestationIds to createFacture', facture, attestationsIds);
-		await createFacture(facture, attestationsIds);
+		await createFacture(facture, $state.snapshot(attestationsIds));
 		factures.push(facture);
 		invalidate('patient:layout');
 		history.back();

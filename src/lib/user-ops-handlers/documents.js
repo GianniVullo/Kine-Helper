@@ -252,12 +252,12 @@ async function getData(facture) {
 		}
 		codes.set(code[0].code_id, code[0]);
 	}
-	const pseudoCodeQuery =
+	let pseudoCodeQuery =
 		'SELECT * FROM codes WHERE groupe = $1 AND lieu = $2 AND lourde_type = $3 AND duree = $4 AND convention_id = $5 AND type = $6';
 	const firstCode = codes.get(code_ids[0].code_id);
 	console.log('codes', codes);
 	console.log('firstCode', firstCode);
-	const pseudoCodeQueryArgs = [
+	let pseudoCodeQueryArgs = [
 		firstCode.groupe,
 		firstCode.lieu,
 		firstCode.lourde_type,
@@ -277,7 +277,13 @@ async function getData(facture) {
 		codes.set('intake', intakes[0]);
 	}
 	if (pseudoState.some((s) => s.rapport_ecrit)) {
+		console.log('in rapport_ecrit with', pseudoCodeQueryArgs);
+		pseudoCodeQuery =
+			'SELECT * FROM codes WHERE groupe = $1 AND lieu = $2 AND convention_id = $3 AND type = $4';
+		pseudoCodeQueryArgs[2] = null;
+		pseudoCodeQueryArgs[3] = null;
 		pseudoCodeQueryArgs.push(3);
+		pseudoCodeQueryArgs = pseudoCodeQueryArgs.filter((arg) => arg !== null);
 		const { data: rapports, error: rapportError } = await appState.db.select(
 			pseudoCodeQuery,
 			pseudoCodeQueryArgs
@@ -286,6 +292,7 @@ async function getData(facture) {
 			console.error('rapportError', rapportError);
 			return { error: rapportError };
 		}
+		console.log('rapports', rapports);
 		codes.set('rapport', rapports[0]);
 	}
 	if (pseudoState.some((s) => s.indemnite)) {

@@ -12,13 +12,12 @@ export async function printAttestation(lines, attestation) {
 			WHERE seances.attestation_id = $1`,
 			[attestation.attestation_id]
 		);
-		lines = seances
+		lines = seances;
 		console.log('seances', seances);
 		if (seancesError) {
 			return { error: seancesError };
 		}
 		console.log('lines', lines);
-		
 	}
 	console.log(
 		'printAttestation with lines, attestation, patient, prescription, situation_pathologique, imprimante :',
@@ -50,7 +49,7 @@ export async function printAttestation(lines, attestation) {
 					? JSON.parse(prescription.prescripteur)
 					: prescription.prescripteur,
 			date: prescription.date,
-			jointe_a: attestation.porte_prescr ? '' : prescription.jointe_a
+			jointe_a: attestation.porte_prescr ? '' : (prescription.jointe_a ?? '')
 		},
 		attestation: {
 			porte_prescr: attestation.porte_prescr,
@@ -74,8 +73,8 @@ export async function printAttestation(lines, attestation) {
 		}
 	};
 	console.log('formData in RawPrinter ==', formData);
-	return await invoke('print_attestation', { printerName: imprimante.name, formData });
-	return { error: null };
+	let _res = await invoke('print_attestation', { printerName: imprimante.name, formData });
+	return { error: null, data: _res };
 }
 
 async function getData(attestation) {

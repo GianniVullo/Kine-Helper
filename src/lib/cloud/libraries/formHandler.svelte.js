@@ -83,6 +83,9 @@ export class Formulaire {
 		let formEl = document.querySelector(this.formElement);
 		formEl.onsubmit = async (e) => {
 			e.preventDefault();
+			if (e.submitter.id !== this.submiter) {
+				return;
+			}
 			submitButton.disabled = true;
 			await this.validateAndTerminate();
 			submitButton.disabled = false;

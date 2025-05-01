@@ -3,7 +3,7 @@
 	import TwUiFileField from '../fields/TwUIFileField.svelte';
 	import TwUiRadioGroup from '../fields/TwUIRadioGroup.svelte';
 	import SimpleSelect from '../fields/SimpleSelect.svelte';
-	let { field, value = $bindable(), error, warning } = $props();
+	let { field, value = $bindable(), error, warning, onchange, oninput } = $props();
 </script>
 
 {#if field.inputType === 'radio'}
@@ -22,7 +22,8 @@
 	</div>
 {:else if field.inputType === 'file'}
 	<div class={field.outerCSS}>
-		<label for={field.id} class="block text-sm/6 font-medium text-gray-900">{@html field.titre}</label>
+		<label for={field.id} class="block text-sm/6 font-medium text-gray-900"
+			>{@html field.titre}</label>
 		<TwUiFileField
 			id={field.id}
 			name={field.name}
@@ -59,6 +60,8 @@
 			removeArrows={field.removeArrows}
 			trailing={field.trailing}
 			readonly={field.readonly}
+			{onchange}
+			{oninput}
 			{warning}
 			bind:value
 			{error} />

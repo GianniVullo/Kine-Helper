@@ -6,6 +6,7 @@ import { goto } from '$app/navigation';
 import { lock, userIcon } from '../../../../ui/svgs/IconSnippets.svelte';
 import { appState } from '../../../../managers/AppState.svelte';
 import { trace, error as errorLog, info } from '@tauri-apps/plugin-log';
+import { checkAndUpdateConventions } from '../../../../stores/conventionStore';
 
 const email = v.pipe(
 	v.transform((input) =>
@@ -50,6 +51,15 @@ export async function onValid(data) {
 		}
 	}
 	info('Successfully logged user in');
+
+	// Mettre à jour les conventions
+	const { data: updatingConvention, error: conventionUpdateError } =
+		await checkAndUpdateConventions(this.message, appState.db);
+	console.log('Updating conventions : ', updatingConvention);
+	if (conventionUpdateError) {
+		errorLog('Error while updating conventions : ', conventionUpdateError);
+		return (this.message = conventionUpdateError);
+	}
 
 	trace('Fetching local user data');
 	let { data: kine, error: kineError } = await appState.db.select(

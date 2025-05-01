@@ -17,10 +17,10 @@
 <form
 	{id}
 	{action}
-	class="mt-10 flex flex-col items-start"
+	class="mt-10 flex flex-col items-start w-full"
 	method="POST"
 	enctype={multipart ? undefined : 'multipart/form-data'}>
-	<div class="space-y-12">
+	<div class="space-y-12 w-full">
 		{@render children()}
 	</div>
 </form>

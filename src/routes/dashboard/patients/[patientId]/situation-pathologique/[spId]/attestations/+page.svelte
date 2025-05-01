@@ -78,7 +78,9 @@
 				]
 			: []),
 		{
-			onclick: (attestation) => async () => await printHandler(attestation),
+			onclick: (attestation) => async () => {
+				await printHandler(attestation);
+			},
 			icon: (_) => printerIcon,
 			inner: (_) => 'Imprimer'
 		}
@@ -113,10 +115,12 @@
 	buttonTextConfirm={$t('attestation.detail', 'printModal.confirm')}
 	buttonTextCancel={$t('shared', 'cancel')}
 	onAccepted={async () => {
+		console.log(page.state.modal.attestation);
 		const { error } = await printAttestation(null, page.state.modal.attestation);
 		if (error) {
 			console.log(error);
 		}
+		history.back();
 	}} />
 
 {#if sp.attestations.length > 0}

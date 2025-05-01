@@ -1,13 +1,6 @@
 <script>
 	import { warningOutlineIcon } from '$lib/ui/svgs/IconSnippets.svelte';
-	import BugReportModal from '$lib/ui/BugReportModal.svelte';
-	import FactureCreationModal from '$lib/ui/FactureCreationModal.svelte';
-	import DocumentSelectionModal from '$lib/ui/DocumentSelectionModal.svelte';
-	import CalendarEventModal from '$lib/ui/CalendarEventModal.svelte';
-	import MultipleEventSelectionModal from '$lib/ui/MultipleEventSelectionModal.svelte';
-	import SeanceCreationModal from '$lib/ui/SeanceCreationModal.svelte';
 	import { t } from '../../../i18n';
-	import MarketingModal from '$lib/ui/MarketingModal.svelte';
 	import { fade, fly, scale } from 'svelte/transition';
 	import { cubicIn, cubicOut } from 'svelte/easing';
 
@@ -28,16 +21,6 @@
 		body,
 		className = 'sm:max-w-lg'
 	} = $props();
-	const modalRegistry = {
-		// Set a unique modal ID, then pass the component reference
-		bugReport: { ref: BugReportModal },
-		factureCreation: { ref: FactureCreationModal },
-		documentSelection: { ref: DocumentSelectionModal },
-		calendarEvent: { ref: CalendarEventModal },
-		multipleEventSelection: { ref: MultipleEventSelectionModal },
-		seanceCreationModal: { ref: SeanceCreationModal },
-		marketingModal: { ref: MarketingModal }
-	};
 </script>
 
 <div class="relative z-50" aria-labelledby="modal-title" role="dialog" aria-modal="true">

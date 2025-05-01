@@ -21,11 +21,11 @@
 {#if href}
 	<a {href} class={className + sizes[size]}>
 		{@render icon(iconClassName)}
-		{inner}
+		{@html inner}
 	</a>
 {:else}
 	<button {onclick} class={className + sizes[size]}>
 		{@render icon(iconClassName)}
-		{inner}
+		{@html inner}
 	</button>
 {/if}

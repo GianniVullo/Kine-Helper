@@ -64,7 +64,7 @@ export class FacturePatient extends PDFGeneration {
 			}
 			if (
 				this.seances.reduce((acc, att) => acc || att.rapport_ecrit, false) &&
-				this.codes.get('rapports').length > 0
+				this.codes.get('rapports')?.length > 0
 			) {
 				this.addParagraph(
 					`(R) = ${get(t)('sp.update', 'label.rapport_ecrit')} (code ${

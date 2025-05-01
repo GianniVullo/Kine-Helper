@@ -13,7 +13,6 @@
 	import { pushState } from '$app/navigation';
 
 	let factures = getContext('factures');
-	console.log('factures in FactureBox', factures);
 	let { facture, patient, sp, className } = $props();
 </script>
 
