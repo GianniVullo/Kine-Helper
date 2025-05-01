@@ -11,6 +11,7 @@ import { convertToFloat, uuidRegex } from '../../../../utils/validationGenerics'
 import { error as errorSvelte } from '@sveltejs/kit';
 import { indmeniteCategory, INTAKE, RAPPORT_ECRIT } from '../../../../stores/codeDetails';
 import { createAttestation } from '../../../../user-ops-handlers/attestations';
+import dayjs from 'dayjs';
 
 const user_id = v.uuid();
 const patient_id = v.uuid();
@@ -412,6 +413,10 @@ export async function groupSeanceInAttestations(seancesToDealWith, spArg, patien
 		console.log('SP', sp);
 		console.log('Patient', patient);
 		let linesTaken = 1;
+		if (seance.metadata?.intake) linesTaken++;
+		if (seance.rapport_ecrit) linesTaken++;
+		if (seance.indemnite) linesTaken++;
+		if (seance.metadata?.ss) linesTaken += seance.metadata.ss.length;
 		if (linesAvailable >= linesTaken) {
 			/**
 			 ** Assignation de la nomeclature :
@@ -455,7 +460,15 @@ export async function groupSeanceInAttestations(seancesToDealWith, spArg, patien
 				}),
 				patient,
 				convention,
-				seancesGeneree: sp.seances.filter((s) => s.has_been_attested).length
+				// Pour les seances générées c'est important de filtrer par année pour les sp qui se redémarre chaque année.
+				seancesGeneree: sp.seances.filter((s) => {
+					switch (sp.groupe_id) {
+						case (0, 5):
+							return s.has_been_attested && dayjs(s.date).year() === dayjs().year();
+						default:
+							return s.has_been_attested;
+					}
+				}).length
 			});
 			console.log('code_seance = ', code_seance);
 			!code_seance && errorSvelte(500, { message: 'Pas de code trouvé pour la séance' });
@@ -539,7 +552,6 @@ export async function groupSeanceInAttestations(seancesToDealWith, spArg, patien
 				valeur_totale_seance += intake[0].honoraire;
 				total_recu_seance += computeTotalRecu(intake[0], patient);
 				metadataCode.intake = intake[0];
-				linesTaken++;
 				lines.push({
 					id: lineId,
 					description: 'Intake',
@@ -552,18 +564,21 @@ export async function groupSeanceInAttestations(seancesToDealWith, spArg, patien
 				lineId++;
 			}
 			if (seance.rapport_ecrit) {
+				console.log(
+					'seance.rapport_ecrit = ',
+					convention.filter((c) => c.type === RAPPORT_ECRIT)
+				);
+				console.log('seance.données =', seance.lieu_id, seance.groupe_id);
+
 				const rapport_ecrit = convention.filter(
 					(c) =>
-						c.type === RAPPORT_ECRIT &&
-						c.lieu_id === seance.lieu_id &&
-						c.groupe_id === seance.groupe_id
+						c.type === RAPPORT_ECRIT && c.lieu === seance.lieu_id && c.groupe === seance.groupe_id
 				);
 				rapport_ecrit.length !== 1 &&
 					errorSvelte(500, { message: 'Pas de code trouvé pour le rapport écrit' });
 				valeur_totale_seance += rapport_ecrit[0].honoraire;
 				total_recu_seance += computeTotalRecu(rapport_ecrit[0], patient);
 				metadataCode.rapport_ecrit = rapport_ecrit[0];
-				linesTaken++;
 				lines.push({
 					id: lineId,
 					description: 'Rapport écrit',
@@ -585,7 +600,6 @@ export async function groupSeanceInAttestations(seancesToDealWith, spArg, patien
 				valeur_totale_seance += indemnite[0].honoraire;
 				total_recu_seance += computeTotalRecu(indemnite[0], patient);
 				metadataCode.indemnite = indemnite[0];
-				linesTaken++;
 				lines.push({
 					id: lineId,
 					description: 'Indemnité',
