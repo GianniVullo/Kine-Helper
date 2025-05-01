@@ -11,6 +11,9 @@
 	import Modal from '../../../../../../../lib/cloud/libraries/overlays/Modal.svelte';
 	import { openModal } from '../../../../../../../lib/cloud/libraries/overlays/modalUtilities.svelte';
 	import { cloneDeep } from 'lodash';
+	import SectionTitle from '../../../../../../../lib/components/SectionTitle.svelte';
+	import BoutonPrincipalAvecIcone from '../../../../../../../lib/components/BoutonPrincipalAvecIcone.svelte';
+	import CardTable from '../../../../../../../lib/components/CardTable.svelte';
 
 	let { data } = $props();
 
@@ -36,99 +39,115 @@
 	title={$t('prescription.list', 'alertModal.title')}
 	body={$t('prescription.list', 'alertModal.body')} />
 
-{#if sp.prescriptions.length > 0}
-	<div class="ml-2 flex flex-col items-start justify-start space-y-4">
-		<div class="flex flex-col justify-between">
-			<h5 class="text-surface-500 dark:text-surface-400 text-lg">
-				{$t('prescription.list', 'title', { date: dayjs(sp.created_at).format('DD/MM/YYYY') })}
-			</h5>
-			<div class="flex">
-				<a
-					href={`/dashboard/patients/${patient.patient_id}/situation-pathologique/${sp.sp_id}/prescriptions/create`}
-					class="variant-outline-secondary btn btn-sm my-2 flex">
-					<PlusIcon class="stroke-surface-600 dark:stroke-surface-300 h-4 w-4" />
-					<span class="text-surface-500 dark:text-surface-400 text-sm"
-						>{$t('prescription.list', 'add')}</span
-					></a>
-			</div>
-		</div>
+<SectionTitle titre="Prescriptions">
+	{#snippet actions()}
+		<BoutonPrincipalAvecIcone
+			href={`/dashboard/patients/${patient.patient_id}/situation-pathologique/${sp.sp_id}/prescriptions/create`}
+			size="sm"
+			icon={PlusIcon}
+			inner={`&nbsp;${$t('prescription.list', 'add')}`} />
+	{/snippet}
+</SectionTitle>
 
-		<div class="flex flex-wrap items-start justify-start">
+{#if sp.prescriptions.length > 0}
+	<CardTable>
+		{#snippet header()}
+			<th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Date</th>
+			<th scope="col" class="py-3.5 pr-3 pl-4 text-left text-sm font-semibold text-gray-900 sm:pl-0"
+				>Prescripteur</th>
+			<th scope="col" class="py-3.5 pr-3 pl-4 text-left text-sm font-semibold text-gray-900 sm:pl-0"
+				>Nombre</th>
+			<th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+				><span class="sr-only">Supprimer</span></th>
+			<th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+				><span class="sr-only">Modifier</span></th>
+			<th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+				><span class="sr-only">Ouvrir</span></th>
+		{/snippet}
+		{#snippet body()}
 			{#each sp.prescriptions as prescription}
-				<!--* PRESCRIPTION BOX  -->
-				<div
-					class="border-surface-400 hover:bg-surface-100 dark:hover:bg-surface-800/50 mr-2 mb-2 flex flex-col justify-between rounded-lg border px-4 py-2 shadow duration-200">
-					<!--* Header -->
-					<div class="mb-2 flex items-center justify-between space-x-4">
-						<h5 class="text-secondary-800 dark:text-secondary-200 pointer-events-none select-none">
-							{$t('prescription.list', 'card.title', {
-								date: dayjs(prescription.date).format('DD/MM/YYYY')
-							})}
-						</h5>
-						<!--? Prescription CONTROLS  -->
-						<div class="flex space-x-2">
-							<a
-								href={`/dashboard/patients/${patient.patient_id}/situation-pathologique/${sp.sp_id}/prescriptions/${prescription.prescription_id}/update`}
-								class="variant-outline-warning btn-icon btn-icon-sm"
-								><UpdateIcon class="stroke-surface-600 dark:stroke-surface-200 h-5 w-5" /></a>
-							{#if sp.seances.filter((s) => s.prescription_id === prescription.prescription_id).length === 0}
-								<button
-									onclick={async () => {
-										openModal({
-											name: 'deletePrescription',
-											prescription: cloneDeep($state.snapshot(prescription))
-										});
-									}}
-									class="variant-outline-error btn-icon btn-icon-sm"
-									><DeleteIcon
-										class="stroke-surface-600 dark:stroke-surface-200 h-5 w-5" /></button>
-							{/if}
-							{#if prescription.file_name}
-								<button
-									onclick={async (e) => {
-										if (prescription.file_name) {
-											e.target.disabled = true;
-											let { error } = await openPrescription(prescription);
-											console.log('the error', error);
-											e.target.disabled = false;
-											if (error) {
-												openModal({ name: 'noFile' });
-											}
-										} else {
+				{@const hasNoSeancesAttached =
+					sp.seances.filter((s) => s.prescription_id === prescription.prescription_id).length === 0}
+
+				<tr>
+					<td class="px-3 py-5 text-sm whitespace-nowrap text-gray-500">
+						{dayjs(prescription.date).format('DD/MM/YYYY')}
+					</td>
+					<td class="px-3 py-5 text-sm whitespace-nowrap text-gray-500">
+						<div class="text-gray-900">
+							{prescription.prescripteur.nom}
+							{prescription.prescripteur.prenom}
+						</div>
+						<div class="mt-1 text-gray-500">{prescription.prescripteur.inami}</div>
+					</td>
+					<td class="px-3 py-5 text-sm whitespace-nowrap text-gray-500">
+						{prescription.nombre_seance}
+						{$t('patients.detail', 'prestations')}
+					</td>
+					<td
+						class={{
+							'relative py-5 pr-4 pl-3 text-sm font-medium whitespace-nowrap sm:pr-0': true,
+							'text-left': !hasNoSeancesAttached,
+							'text-right': hasNoSeancesAttached
+						}}>
+						{#if hasNoSeancesAttached}
+							<button
+								onclick={() => {
+									openModal({
+										name: 'deletePrescription',
+										prescription: cloneDeep($state.snapshot(prescription))
+									});
+								}}
+								class="mr-4 text-red-600 hover:text-red-900">
+								Supprimer<span class="sr-only">, {patient.nom} {patient.prenom}</span>
+							</button>
+						{:else}
+							<p class="font-normal">Ne peux pas être supprimée</p>
+						{/if}
+					</td>
+					<td
+						class="relative cursor-pointer py-5 pr-4 pl-3 text-right text-sm font-medium whitespace-nowrap sm:pr-0">
+						<a
+							href={`/dashboard/patients/${patient.patient_id}/situation-pathologique/${sp.sp_id}/prescriptions/${prescription.prescription_id}/update`}
+							class="mr-4 text-yellow-600 hover:text-yellow-900">
+							Modifier<span class="sr-only">, {patient.nom} {patient.prenom}</span>
+						</a>
+					</td>
+
+					<td
+						class={{
+							'relative py-5 pr-4 pl-3 text-sm font-medium whitespace-nowrap sm:pr-0': true,
+							'text-right': prescription.file_name,
+							'text-left': !prescription.file_name
+						}}>
+						{#if prescription.file_name}
+							<button
+								onclick={async (e) => {
+									if (prescription.file_name) {
+										e.target.disabled = true;
+										let { error } = await openPrescription(prescription);
+										console.log('the error', error);
+										e.target.disabled = false;
+										if (error) {
 											openModal({ name: 'noFile' });
 										}
-									}}
-									class="variant-filled btn-icon btn-icon-sm dark:variant-filled"
-									><OpenIcon class="h-5 w-5" /></button>
-							{:else}
-								<button class="variant-filled btn-icon btn-icon-sm dark:variant-filled" disabled>
-									<OpenIcon class="h-5 w-5" />
-								</button>
-							{/if}
-						</div>
-					</div>
-					<!--* Body -->
-					<div class="text-surface-800 dark:text-surface-100 flex flex-col">
-						<h5 class="text-secondary-500">
-							{@html $t('prescription.list', 'card.subtitle', {
-								prescripteurFullName: `${prescription.prescripteur.nom} ${prescription.prescripteur.prenom}`
-							})} <br />
-						</h5>
-						<p class="text-surface-400 mb-1">{prescription.prescripteur.inami}</p>
-						<h5 class="text-surface-700 dark:text-surface-300">
-							<span class="text-surface-800 dark:text-surface-200 font-medium"
-								>{prescription.nombre_seance}</span>
-							{$t('patients.detail', 'prestations')}
-							<br />
-							<span class="text-surface-800 dark:text-surface-200 font-medium"
-								>{prescription.seance_par_semaine}</span>
-							{$t('prescription.list', 'card.timesPerWeek')}.
-						</h5>
-					</div>
-				</div>
+									} else {
+										openModal({ name: 'noFile' });
+									}
+								}}
+								class="mr-4 text-indigo-600 hover:text-indigo-900">
+								Ouvrir<span class="sr-only">, {patient.nom} {patient.prenom}</span>
+							</button>
+						{:else}
+							<p class="mr-4 text-gray-400">
+								Pas de fichier<span class="sr-only">, {patient.nom} {patient.prenom}</span>
+							</p>
+						{/if}
+					</td>
+				</tr>
 			{/each}
-		</div>
-	</div>
+		{/snippet}
+	</CardTable>
 {:else}
-	<p>{$t('prescription.list', 'empty')}</p>
+	<p class="mt-5">{$t('prescription.list', 'empty')}</p>
 {/if}
