@@ -14,10 +14,9 @@
 	import BoutonPrincipal from '../../../../components/BoutonPrincipal.svelte';
 	import TwUiFileField from '../fields/TwUIFileField.svelte';
 	import { page } from '$app/state';
-	import AvailableScanners from '../../../libraries/imageCapture/apple/AvailableScanners.svelte';
-	import { fade, fly } from 'svelte/transition';
+	import AvailableScanners from '../../../libraries/imageCapture/desktop/AvailableScanners.svelte';
+	import { fly } from 'svelte/transition';
 	import { arrowRightIcon } from '../../../../ui/svgs/IconSnippets.svelte';
-	import { cubicIn } from 'svelte/easing';
 
 	let {
 		value = $bindable(),
@@ -138,8 +137,8 @@
 						/**
 						 * TODO : créer un Viewer pour le filed ici
 						 */
-						console.log('file', file);
-						new File(event.payload, documentName, { type: 'image/avif' });
+						console.log('file', bytes);
+						new File(bytes, documentName, { type: 'image/avif' });
 						scans++;
 					}}
 					onerror={() => {

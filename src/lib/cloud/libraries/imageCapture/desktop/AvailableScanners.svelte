@@ -10,77 +10,11 @@
 	import { invoke } from '@tauri-apps/api/core';
 	import { ArrowCircle, successIcon } from '../../../../ui/svgs/IconSnippets.svelte';
 	import { appState } from '../../../../managers/AppState.svelte';
+	import { ScannerAPI } from '../desktop.svelte';
 
 	let { afterScan, documentName, documentPath, onerror } = $props();
 
-	let availableScanners = $state([]);
-
-	let unlisten;
-	let unlistenScanProgress;
-	let unlistenRemovedDevice;
-	let unlistenScanError;
-	let unlistenScan;
-
-	onDestroy(() => {
-		if (unlisten) unlisten();
-		if (unlistenScan) unlistenScan();
-		if (unlistenScanProgress) unlistenScanProgress();
-		if (unlistenRemovedDevice) unlistenRemovedDevice();
-		if (unlistenScanError) unlistenScanError();
-	});
-
-	function setupScannerSearch() {
-		return new Promise(async (resolve, reject) => {
-			if (!unlisten) {
-				unlisten = await listen('added_device', async (event) => {
-					console.log('Scanner found:', event.payload);
-					const iterationDone = event.payload.endsWith('-end');
-					const scanner = iterationDone ? event.payload.replace('-end', '') : event.payload;
-					if (!availableScanners.includes(scanner)) {
-						availableScanners.push(scanner);
-					}
-					if (iterationDone) {
-						clearTimeout();
-						if (platform() === 'macos') {
-							// await invoke('stop_browsing');
-						}
-						if (availableScanners.length === 1) {
-							selectedScanner = availableScanners[0];
-						}
-						resolve();
-					}
-					console.log(event);
-				});
-			}
-			if (!unlistenRemovedDevice) {
-				unlistenRemovedDevice = await listen('removed_device', async (event) => {
-					console.log('Scanner removed:', event.payload);
-					const scanner = event.payload;
-					availableScanners = availableScanners.filter((s) => s !== scanner);
-					if (availableScanners.length === 0) {
-						selectedScanner = null;
-					}
-				});
-			}
-			availableScanners = [];
-			defaultScanner = await appState.db.getItem('defaultScanner');
-			try {
-				let res = await invoke('get_scanners');
-				if (res.length > 0) {
-					availableScanners = res;
-					if (availableScanners.length === 1) {
-						selectedScanner = availableScanners[0];
-					}
-					resolve();
-				}
-			} catch (error) {
-				reject(error);
-			}
-		});
-	}
-	let defaultScanner = $state();
-	let searchForScanners = $state(setupScannerSearch());
-	let selectedScanner = $state();
+	let scannerAPI = new ScannerAPI();
 
 	let stepIndex = $state(0);
 </script>
@@ -91,7 +25,7 @@
 	scan terminé, le fichier sera automatiquement ajouté à la prescription.
 </p>
 {#if stepIndex === 0}
-	{#await searchForScanners}
+	{#await scannerAPI.lookingForScanners()}
 		<div class="flex">
 			{@render ArrowCircle('size-6 text-gray-500 animate-spin')}
 			<p>looking for scanners...</p>
@@ -99,7 +33,7 @@
 	{:then _}
 		recherche terminée
 	{:catch error}
-		{#if availableScanners.length === 0}
+		{#if scannerAPI.scanners.length === 0}
 			<p>{error}</p>
 		{/if}
 	{/await}
@@ -108,30 +42,30 @@
 	<ul
 		role="list"
 		class="mb-5 divide-y divide-gray-100 overflow-hidden bg-white shadow-xs ring-1 ring-gray-900/5 sm:rounded-xl">
-		{#each availableScanners as scanner}
+		{#each scannerAPI.scanners as scanner}
 			<button
 				onclick={(e) => {
 					e.preventDefault();
-					selectedScanner = scanner;
+					scannerAPI.selectedScanner = scanner;
 				}}
 				class="relative flex w-full justify-between gap-x-6 px-4 py-5 hover:bg-gray-50 sm:px-6">
 				<p
 					class={[
 						'text-left text-sm/6 font-semibold',
-						selectedScanner === scanner ? 'text-indigo-700' : 'text-gray-900'
+						scannerAPI.selectedScanner === scanner ? 'text-indigo-700' : 'text-gray-900'
 					]}>
 					<span class="absolute inset-x-0 -top-px bottom-0"></span>
 					{scanner}
 				</p>
 				<div class="flex shrink-0 items-center gap-x-4">
 					<div class="flex sm:flex-col sm:items-end">
-						{#if scanner === defaultScanner}
+						{#if scanner === scannerAPI.defaultScanner}
 							<span
 								class="inline-flex items-center rounded-md bg-gray-100 px-2 py-1 text-xs font-medium text-gray-600"
 								>Default scanner</span>
 						{/if}
 					</div>
-					{#if selectedScanner === scanner}
+					{#if scannerAPI.selectedScanner === scanner}
 						{@render successIcon('size-6 flex-none text-indigo-700')}
 					{:else}
 						<svg
@@ -154,34 +88,18 @@
 			</div>
 		{/each}
 	</ul>
-	{#if selectedScanner}
+	{#if scannerAPI.selectedScanner}
 		<BoutonPrincipal
 			onclick={async (e) => {
 				e.preventDefault();
 				e.target.disabled = true;
 				console.log(
 					'sending scan request with scanner:',
-					selectedScanner,
+					scannerAPI.selectedScanner,
 					documentName,
 					documentPath
 				);
-				unlistenScan = await listen('scan_done', async (event) => {
-					console.log('Scan done:', event.payload);
-					afterScan(event.payload);
-				});
-				unlistenScanProgress = await listen('scanner_session_opened', async (event) => {
-					console.log('Scanner session opened:', event.payload);
-				});
-				unlistenScanError = await listen('scan_error', (event) => {
-					onerror(event.payload);
-				});
-				let status = await invoke('get_scan', {
-					scanOpsRelatedInfo: {
-						scanner_name: $state.snapshot(selectedScanner),
-						document_name: documentName,
-						document_path: documentPath
-					}
-				});
+				await scannerAPI.scan(documentName, documentPath, afterScan, onerror);
 				stepIndex = 1;
 			}}
 			inner="Lancer le scan" />
