@@ -1,6 +1,8 @@
-
 #[cfg(target_os = "macos")]
 mod apple_api;
+
+#[cfg(target_os = "windows")]
+mod windows_api;
 
 mod appstate;
 mod cloud;
@@ -24,10 +26,10 @@ use std::thread::sleep;
 use apple_api::state::ScanOperation;
 
 #[cfg(any(target_os = "macos", target_os = "linux"))]
-use printer::raw_printer::unix::print_attestation;
+use printer::{pdf_printer::unix::print_pdf, raw_printer::unix::print_attestation};
 
 #[cfg(target_os = "windows")]
-use printer::raw_printer::windows::print_attestation;
+use printer::{pdf_printer::windows::print_pdf, raw_printer::windows::print_attestation};
 
 #[cfg(any(target_os = "macos", target_os = "linux", target_os = "windows"))]
 use printers::{common::base::printer::Printer, get_printers};
@@ -181,6 +183,8 @@ pub fn run() {
             get_scanners,
             #[cfg(target_os = "macos")]
             get_scan,
+            #[cfg(any(target_os = "macos", target_os = "linux", target_os = "windows"))]
+            print_pdf,
             #[cfg(target_os = "macos")]
             stop_browsing,
         ])
