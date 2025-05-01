@@ -3,7 +3,6 @@ import { t } from '../../../../../i18n';
 import { goto, invalidate } from '$app/navigation';
 import { info, trace } from '@tauri-apps/plugin-log';
 import { createAnnexe } from '../../../../../user-ops-handlers/documents';
-import { drawer } from '../../../../libraries/overlays/drawerUtilities.svelte';
 
 const id = uuid();
 const user_id = uuid();
@@ -60,9 +59,7 @@ export async function onValid(data) {
 		// TODO
 		info('Attestation modified done Successfully');
 	}
-
-	drawer.drawer.meta.accords.push(data);
-	drawer.close();
+	history.back();
 }
 
 export const fieldSchema = [

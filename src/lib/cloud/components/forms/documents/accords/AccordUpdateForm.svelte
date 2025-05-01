@@ -10,7 +10,6 @@
 	import SituationPathologiqueSelector from '../../../../../forms/documents/SituationPathologiqueSelector.svelte';
 	import dayjs from 'dayjs';
 	import { isoDate, object, string, uuid } from 'valibot';
-	import { drawer } from '../../../../libraries/overlays/drawerUtilities.svelte';
 	import { arrowRightIcon, arrowBottomIcon } from '../../../../../ui/svgs/IconSnippets.svelte';
 	import { filtrerLesChampsAUpdater } from '../../../../database';
 
@@ -47,7 +46,7 @@
 			for (const field of Object.keys(data)) {
 				accord[field] = data[field];
 			}
-			drawer.close();
+			history.back();
 		},
 		mode
 	});
