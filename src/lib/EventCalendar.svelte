@@ -1,17 +1,11 @@
 <script>
-	import Calendar from '@event-calendar/core';
-	import TimeGrid from '@event-calendar/time-grid';
-	import DayGrid from '@event-calendar/day-grid';
-	import index from '@event-calendar/interaction';
+	import { Calendar, TimeGrid, DayGrid, Interaction } from '@event-calendar/core';
 	import { locale, t } from './i18n';
 	import { get } from 'svelte/store';
-	import { drawer } from './cloud/libraries/overlays/drawerUtilities.svelte';
-	import CalendarEventModal from '../lib/ui/CalendarEventModal.svelte';
 
+	let { events = undefined, eventSource = undefined, options, ec = $bindable() } = $props();
 
-	let { events = undefined, eventSource = undefined, options, ec } = $props();
-
-	let plugins = [TimeGrid, DayGrid, index];
+	let plugins = [TimeGrid, DayGrid, Interaction];
 	let base_options = {
 		allDaySlot: false,
 		view: 'dayGridMonth',
@@ -30,7 +24,7 @@
 		// 	});
 		// },
 		firstDay: 1,
-		slotHeight: 50,
+		// slotHeight: 50,
 		buttonText: {
 			close: get(t)('shared', 'close'),
 			dayGridMonth: get(t)('shared', 'month'),
@@ -51,11 +45,12 @@
 			// body: 'ec-body h-96',
 			// button: 'btn btn-sm variant-filled-purple',
 			// buttonGroup: 'btn-group variant-filled-purple [&>*+*]:border-white',
-			event:
-				'ec-event !text-purple-500 !bg-purple-50 hover:!bg-purple-100 hover:text-purple-700',
+			event: 'ec-event !text-purple-500 !bg-purple-50 hover:!bg-purple-100 hover:text-purple-700',
 			eventTitle: 'font-semibold text-purple-700',
 			toolbar:
-				'ec-toolbar flex space-y-2 sm:space-y-0 items-start sm:items-center flex-col sm:flex-row'
+				'ec-toolbar flex space-y-2 sm:space-y-0 items-start sm:items-center flex-col sm:flex-row',
+			eventBody: 'ec-event-body !flex-row',
+			eventTime: 'ec-event-time !mr-2'
 			// timeGrid: 'ec-time-grid !h-20',
 			// time: 'ec-time !h-20',
 			// line: 'ec-line'
@@ -79,28 +74,8 @@
 		...options
 	};
 	function handleClickOnEvent(info) {
-		drawer.trigger({
-			title: 'Votre séance',
-			description: 'Panel de contrôle de votre rendez-vous.',
-			component: CalendarEventModal,
-			meta: {
-				event: info.event,
-				component: ec
-			}
-		});
-		// console.log(info);
-		// const modal = {
-		// 	type: 'component',
-		// 	component: 'calendarEvent',
-		// 	meta: {
-		// 		event: info.event,
-		// 		component: ec
-		// 	}
-		// };
-		// console.log('now trigger');
-
-		// modalStore.trigger({ type: 'alert', message: 'Hello world' });
+		console.log('eventClick', info);
 	}
 </script>
 
-<Calendar {plugins} options={base_options} />
+<Calendar bind:this={ec} {plugins} options={base_options} />
