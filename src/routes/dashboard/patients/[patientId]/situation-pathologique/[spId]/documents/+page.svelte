@@ -6,19 +6,26 @@
 	import { t } from '../../../../../../../lib/i18n';
 	import { getContext } from 'svelte';
 	import { deleteAccord, getAccordPDF } from '../../../../../../../lib/user-ops-handlers/documents';
-	import { drawer } from '../../../../../../../lib/cloud/libraries/overlays/drawerUtilities.svelte';
 	import AccordUpdateForm from '../../../../../../../lib/cloud/components/forms/documents/accords/AccordUpdateForm.svelte';
 	import Modal from '../../../../../../../lib/cloud/libraries/overlays/Modal.svelte';
 	import { page } from '$app/state';
 	import { openModal } from '../../../../../../../lib/cloud/libraries/overlays/modalUtilities.svelte';
 	import { cloneDeep } from 'lodash';
 	import { invalidate } from '$app/navigation';
+	import Drawer from '../../../../../../../lib/cloud/libraries/overlays/Drawer.svelte';
 
 	let { data } = $props();
 	let { patient, sp } = data;
 
 	let accords = getContext('accords');
 </script>
+
+<Drawer
+	opened={page.state.drawer?.name === 'accordUpdate'}
+	title="Mettre à jour l'annexe"
+	description="Panel de contrôle de votre annexe.">
+	<AccordUpdateForm {patient} {sp} mode="update" accord={page.state.drawer?.accord} />
+</Drawer>
 
 <Modal
 	opened={page.state?.modal?.name === 'deleteAccord'}
@@ -52,10 +59,9 @@
 								<button
 									onclick={() => {
 										console.log('accord in update button', accord);
-										drawer.trigger({
-											title: "Mettre à jour l'annexe",
-											component: AccordUpdateForm,
-											props: { patient, sp, mode: 'update', accord }
+										openDrawer({
+											name: 'accordUpdate',
+											accord: cloneDeep($state.snapshot(accord))
 										});
 									}}
 									class="variant-outline-warning btn-icon btn-icon-sm"

@@ -3,13 +3,13 @@
 	import { page } from '$app/state';
 	import { t } from '../i18n';
 	import { get } from 'svelte/store';
-	import { drawer } from '../cloud/libraries/overlays/drawerUtilities.svelte';
-	import AccordForm from '../cloud/components/forms/documents/accords/AccordForm.svelte';
+	import { openDrawer } from '../cloud/libraries/overlays/drawerUtilities.svelte';
 	import Form from '../cloud/components/forms/abstract-components/Form.svelte';
 	import { Formulaire } from '../cloud/libraries/formHandler.svelte';
 	import { length, object, pipe, string } from 'valibot';
 	import { onMount } from 'svelte';
 	import { replaceState } from '$app/navigation';
+	import { cloneDeep } from 'lodash';
 
 	let { accords } = $props();
 	const options = [
@@ -18,21 +18,16 @@
 	];
 
 	function onValid(data) {
-		console.log(data);
+		console.log('in onValid', data);
+		console.log('accords', accords);
 		replaceState('', {
 			...page.state,
 			modal: undefined
 		});
-		drawer.trigger({
-			title: `Création d'${data.docType === 'A' ? 'une Annexe A' : 'une Annexe B'}`,
-			description: 'Panel de contrôle de votre Annexe.',
-			component: AccordForm,
-			props: {
-				patient: page.data.patient,
-				sp: page.data.sp,
-				docType: data.docType
-			},
-			meta: { accords }
+		openDrawer({
+			name: 'accordCreate',
+			accord: cloneDeep($state.snapshot(accords)),
+			docType: data.docType
 		});
 	}
 
@@ -41,6 +36,7 @@
 	};
 
 	let formHandler = new Formulaire({
+		formElement: '#select-accord-type-form',
 		validateurs,
 		schema: object({
 			docType: string()
@@ -58,7 +54,7 @@
 	});
 </script>
 
-<Form message={formHandler.message}>
+<Form id="select-accord-type-form" message={formHandler.message}>
 	<div class="col-span-full">
 		<RadioFieldV2
 			bind:value={formHandler.form.docType}

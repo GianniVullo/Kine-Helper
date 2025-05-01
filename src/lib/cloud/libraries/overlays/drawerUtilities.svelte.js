@@ -1,32 +1,14 @@
-import { pushState } from '$app/navigation';
 import { page } from '$app/state';
-
-class Drawer {
-	drawer = $state({
-		title: 'Panel title',
-		description: 'Get started by filling in the information below to create your new project.',
-		component: '',
-		meta: undefined
-	});
-	components = [];
-	component;
-
-	constructor(components) {
-		if (components) {
-			this.components = components;
-		}
-	}
-
-	trigger(component) {
-		this.drawer = component;
-
-		pushState('', { ...page.state, drawer: true });
-	}
-
-	close() {
-		history.back();
-		this.drawer = {};
+import { pushState, replaceState } from '$app/navigation';
+/**
+ *
+ * @param {{name: string}} drawer
+ */
+export function openDrawer(drawer) {
+	if (page.state.drawer) {
+		replaceState('', { ...page.state, drawer });
+	} else {
+		pushState('', { ...page.state, drawer });
 	}
 }
 
-export const drawer = new Drawer();

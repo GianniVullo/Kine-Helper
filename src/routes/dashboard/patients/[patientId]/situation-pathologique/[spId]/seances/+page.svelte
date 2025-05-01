@@ -9,6 +9,11 @@
 	import EventCalendar from '../../../../../../../lib/EventCalendar.svelte';
 	import CardTable from '../../../../../../../lib/components/CardTable.svelte';
 	import { toast } from '../../../../../../../lib/cloud/libraries/overlays/notificationUtilities.svelte';
+	import CalendarEventModal from '../../../../../../../lib/ui/CalendarEventModal.svelte';
+	import { openDrawer } from '../../../../../../../lib/cloud/libraries/overlays/drawerUtilities.svelte';
+	import { page } from '$app/state';
+	import Drawer from '../../../../../../../lib/cloud/libraries/overlays/Drawer.svelte';
+	import { cloneDeepWith, cloneDeep } from 'lodash';
 
 	let { data } = $props();
 	let { patient, sp } = data;
@@ -37,8 +42,15 @@
 	});
 
 	let display = $state('calendar');
-	let ec;
+	let ec =$state();
 </script>
+
+<Drawer
+	opened={page.state.drawer?.name === 'seanceCalendarDetail'}
+	title="Votre séance"
+	description="Panel de contrôle de votre rendez-vous.">
+	<CalendarEventModal event={page.state.drawer?.event} seance={page.state.drawer?.seance} {ec} />
+</Drawer>
 
 <SectionTitle titre="Séances" className="space-x-2">
 	{#snippet actions()}
@@ -50,15 +62,15 @@
 				{/snippet}
 			</Select>
 		</div>
-		<!-- <BoutonSecondaireAvecIcone
+		<BoutonSecondaireAvecIcone
 			size="sm"
-			href={`/dashboard/patients/${patient.patient_id}/situation-pathologique/${sp.sp_id}/seances/create-bulk`}
+			href={`/dashboard/patients/${patient.patient_id}/situation-pathologique/${sp.sp_id}/seances/create-multiple`}
 			inner={'Séances multiples'}
-			icon={addIcon} /> -->
+			icon={addIcon} />
 		<BoutonPrincipalAvecIcone
 			href={`/dashboard/patients/${patient.patient_id}/situation-pathologique/${sp.sp_id}/seances/create`}
 			size="sm"
-			className="ml-3 inline-flex items-center bg-indigo-600 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+			className="ml-3 inline-flex items-center bg-indigo-600 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
 			inner="Séance"
 			icon={addIcon} />
 	{/snippet}
@@ -67,7 +79,23 @@
 {#if sp.seances.length > 0}
 	<!--* Séances Agenda -->
 	<div class="mt-4 flex w-[90%] flex-col">
-		<EventCalendar bind:this={ec} {events} options={{}} />
+		<EventCalendar
+			bind:ec
+			{events}
+			options={{
+				eventClick(info) {
+					console.log('eventClick', info);
+					const event = cloneDeepWith(info.event, (value) => {
+						value.extendedProps.seance = { ...value.extendedProps.seance };
+						return value;
+					});
+					openDrawer({
+						name: 'seanceCalendarDetail',
+						event: event,
+						seance: event.extendedProps.seance
+					});
+				}
+			}} />
 	</div>
 {:else}
 	Pas de séances pour l'instant

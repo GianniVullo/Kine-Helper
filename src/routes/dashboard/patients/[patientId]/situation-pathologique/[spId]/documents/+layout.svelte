@@ -9,6 +9,8 @@
 	import Modal from '../../../../../../../lib/cloud/libraries/overlays/Modal.svelte';
 	import { openModal } from '../../../../../../../lib/cloud/libraries/overlays/modalUtilities.svelte';
 	import DocumentSelectionModal from '../../../../../../../lib/ui/DocumentSelectionModal.svelte';
+	import Drawer from '../../../../../../../lib/cloud/libraries/overlays/Drawer.svelte';
+	import AccordForm from '../../../../../../../lib/cloud/components/forms/documents/accords/AccordForm.svelte';
 
 	let { data, children } = $props();
 
@@ -38,6 +40,17 @@
 		}
 	]);
 </script>
+
+<Drawer
+	opened={page.state.drawer?.name === 'accordCreate'}
+	title={`Création d'${page.state.drawer?.docType === 'A' ? 'une Annexe A' : 'une Annexe B'}`}
+	description="Panel de contrôle de votre Annexe.">
+	<AccordForm
+		{patient}
+		{sp}
+		docType={page.state.drawer?.docType}
+		accord={page.state.drawer?.accord} />
+</Drawer>
 
 <Modal
 	opened={page.state?.modal?.name === 'patientIncomplete'}

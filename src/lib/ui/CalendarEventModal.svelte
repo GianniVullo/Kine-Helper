@@ -1,146 +1,154 @@
 <script>
-	import dayjs from 'dayjs';
-	import { goto } from '$app/navigation';
 	import { t } from '../i18n';
 	import { appState } from '../managers/AppState.svelte';
 	import { retrievePatient } from '../user-ops-handlers/patients';
 	import { retrieveSituationPathologique } from '../user-ops-handlers/situations_pathologiques';
 
 	import BoutonPrincipalAvecIcone from '../components/BoutonPrincipalAvecIcone.svelte';
-	import { drawer } from '../cloud/libraries/overlays/drawerUtilities.svelte';
-	import { editIcon, euroIcon } from './svgs/IconSnippets.svelte';
+	import { editIcon } from './svgs/IconSnippets.svelte';
 	import BoutonSecondaireAvecIcone from '../components/BoutonSecondaireAvecIcone.svelte';
+	import BoutonPrincipal from "../components/BoutonPrincipal.svelte";
 
-	let event = drawer?.drawer?.meta?.event;
-	let seance = event.extendedProps.seance;
+	let { event, seance, ec } = $props();
+
 	let deletion = $state(false);
-
-	let medicalContext = new Promise(async (resolve) => {
-		await appState.init({});
-		let { data: patient, error } = await retrievePatient({ patient_id: seance.patient_id });
-		if (error) {
-			/**
-			 * TODO Need to add proper error handling here, not critical tho as it should never break fataly here (users can still access the responsiveSidebar and reset the state)
-			 */
-			console.error(error);
-		}
-		if (!patient) {
-			patient = 'none';
-		}
-
-		let sp;
-		const { data, error: err2 } = await retrieveSituationPathologique({ sp_id: seance.sp_id });
-		if (err2) {
-			/**
-			 * TODO Need to add proper error handling here, not critical tho as it should never break fataly here (users can still access the responsiveSidebar and reset the state)
-			 */
-			console.error(err2);
-		}
-		sp = data;
-		if (!sp) {
-			sp = 'none';
-		}
-
-		resolve({ patient, sp });
-	});
 </script>
 
-{#await medicalContext then { patient, sp }}
-	<div class="">
-		<!--* Titre -->
+{#if seance}
+	{#await new Promise(async (resolve, reject) => {
+		if (seance) {
+			await appState.init({});
+			let { data: patient, error } = await retrievePatient({ patient_id: seance.patient_id });
+			if (error) {
+				/**
+				 * TODO Need to add proper error handling here, not critical tho as it should never break fataly here (users can still access the responsiveSidebar and reset the state)
+				 */
+				console.error(error);
+			}
+			if (!patient) {
+				patient = 'none';
+			}
 
-		<header class="mb-1 flex items-center justify-start">
-			<div class="flex w-full flex-col items-baseline justify-between">
-				<div class="flex items-center justify-start">
-					<h1 class="mr-4 text-base">
-						{`${patient.nom} ${patient?.prenom ?? '?'}`}
-					</h1>
+			let sp;
+			const { data, error: err2 } = await retrieveSituationPathologique({ sp_id: seance.sp_id });
+			if (err2) {
+				/**
+				 * TODO Need to add proper error handling here, not critical tho as it should never break fataly here (users can still access the responsiveSidebar and reset the state)
+				 */
+				console.error(err2);
+			}
+			sp = data;
+			if (!sp) {
+				sp = 'none';
+			}
+
+			resolve({ patient, sp });
+		} else {
+			reject('No Seance yet');
+		}
+	}) then { patient, sp }}
+		<div class="">
+			<!--* Titre -->
+
+			<header class="mb-1 flex items-center justify-start">
+				<div class="flex w-full flex-col items-baseline justify-between">
+					<div class="flex items-center justify-start">
+						<h1 class="mr-4 text-base">
+							{`${patient.nom} ${patient?.prenom ?? '?'}`}
+						</h1>
+					</div>
+					<h5 class="text-sm text-gray-500">
+						le {seance.date} à {seance.start}
+					</h5>
 				</div>
-				<h5 class="text-sm text-gray-500">
-					le {seance.date} à {seance.start}
-				</h5>
-			</div>
-		</header>
+			</header>
 
-		<!--* SUBHEADER SECTION -->
-		<!--? Permet d'interagir avec l'objet Séance -->
+			<!--* SUBHEADER SECTION -->
+			<!--? Permet d'interagir avec l'objet Séance -->
 
-		<article class="mb-4">
-			{#if !seance.has_been_attested && !seance.attestation_id}
-				<BoutonPrincipalAvecIcone
-					size="sm"
-					inner="Modifier"
-					href={'/dashboard/patients/' +
-						seance.patient_id +
-						'/situation-pathologique/' +
-						seance.sp_id +
-						'/seances/' +
-						seance.seance_id +
-						'/update'}>
-					{#snippet icon(cls)}
-						{@render editIcon('text-yellow-500 size-5 -ml-0.5 mr-1.5')}
-					{/snippet}
+			<article class="mb-4">
+				{#if !seance.has_been_attested && !seance.attestation_id}
+					<BoutonPrincipalAvecIcone
+						size="sm"
+						inner="Modifier"
+						href={'/dashboard/patients/' +
+							seance.patient_id +
+							'/situation-pathologique/' +
+							seance.sp_id +
+							'/seances/' +
+							seance.seance_id +
+							'/update'}>
+						{#snippet icon(cls)}
+							{@render editIcon('text-yellow-500 size-5 -ml-0.5 mr-1.5')}
+						{/snippet}
 
-					Modifier</BoutonPrincipalAvecIcone>
-				<!-- <BoutonSecondaireAvecIcone
-					size="sm"
-					onclick={() => {
-						deletion = true;
-					}}
-					inner={$t('otherModal', 'calendarcontrols.bill')}>
-					{#snippet icon(cls)}
-						{@render euroIcon('text-secondary-500 size-5 -ml-0.5 mr-1.5')}
-					{/snippet}
-				</BoutonSecondaireAvecIcone> -->
-			{/if}
-			{#if !event.extendedProps.seance.has_been_attested}
-				<BoutonSecondaireAvecIcone
-					size="sm"
-					className="inline-flex items-center bg-white text-sm font-medium text-red-900 shadow-sm ring-1 ring-inset ring-red-300 hover:bg-red-50 duration-500 self-end"
-					onclick={() => {
-						deletion = true;
-					}}
-					inner={$t('patients.detail', 'deleteModal.confirm')}>
-					{#snippet icon(cls)}
-						<svg
-							xmlns="http://www.w3.org/2000/svg"
-							fill="none"
-							viewBox="0 0 24 24"
-							stroke-width="1.5"
-							stroke="currentColor"
-							class="-ml-0.5 mr-1.5 size-5 text-red-400">
-							<path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
-						</svg>
-					{/snippet}
-				</BoutonSecondaireAvecIcone>
-			{/if}
-		</article>
-
-		<!--* BODY SECTION -->
-		<!--? Donne des informations sur la séance et permet sa manipulation -->
-
-		<!--? Changement de la date et de l'heure -->
-		{#if deletion}
-			<!--? Suppression de la séance -->
-			<div class="flex flex-col items-start justify-start space-y-4">
-				<p class="text-surface-500 dark:text-surface-300">
-					{$t('otherModal', 'calendar.delete')}
-				</p>
-				<div class="mt-2 flex items-end justify-end space-x-2">
-					<button
+						Modifier</BoutonPrincipalAvecIcone>
+					<!-- <BoutonSecondaireAvecIcone
+						size="sm"
 						onclick={() => {
-							deletion = false;
+							deletion = true;
 						}}
-						class="variant-outline btn btn-sm">{$t('patient.create', 'back')}</button>
-					<button
-						onclick={async () => {
-							await appState.db.delete('seances', [['seance_id', seance.seance_id]]);
-							drawer.close();
+						inner={$t('otherModal', 'calendarcontrols.bill')}>
+						{#snippet icon(cls)}
+							{@render euroIcon('text-secondary-500 size-5 -ml-0.5 mr-1.5')}
+						{/snippet}
+					</BoutonSecondaireAvecIcone> -->
+				{/if}
+				{#if !event.extendedProps.seance.has_been_attested}
+					<BoutonSecondaireAvecIcone
+						size="sm"
+						className="inline-flex items-center bg-white text-sm font-medium text-red-900 shadow-sm ring-1 ring-inset ring-red-300 hover:bg-red-50 duration-500 self-end"
+						onclick={() => {
+							deletion = true;
 						}}
-						class="variant-filled-error btn btn-sm"
-						>{$t('patients.detail', 'deleteModal.confirm')}</button>
+						inner={$t('patients.detail', 'deleteModal.confirm')}>
+						{#snippet icon(cls)}
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								fill="none"
+								viewBox="0 0 24 24"
+								stroke-width="1.5"
+								stroke="currentColor"
+								class="mr-1.5 -ml-0.5 size-5 text-red-400">
+								<path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+							</svg>
+						{/snippet}
+					</BoutonSecondaireAvecIcone>
+				{/if}
+			</article>
+
+			<!--* BODY SECTION -->
+			<!--? Donne des informations sur la séance et permet sa manipulation -->
+
+			<!--? Changement de la date et de l'heure -->
+			{#if deletion}
+				<!--? Suppression de la séance -->
+				<div class="flex flex-col items-start justify-start space-y-4">
+					<p class="text-surface-500 dark:text-surface-300">
+						{$t('otherModal', 'calendar.delete')}
+					</p>
+					<div class="mt-2 flex items-end justify-end space-x-2">
+						<button
+							onclick={() => {
+								deletion = false;
+							}}
+							class="variant-outline btn btn-sm">{$t('patient.create', 'back')}</button>
+						<BoutonPrincipal
+							onclick={async () => {
+								await appState.db.delete('seances', [['seance_id', seance.seance_id]]);
+								console.log(ec);
+								
+								ec.removeEventById(seance.seance_id);
+								history.back();
+							}}
+							size="sm"
+							color="error"
+							>{$t('patients.detail', 'deleteModal.confirm')}</BoutonPrincipal>
+					</div>
 				</div>
-			</div>
-		{/if}
-	</div>
-{/await}
+			{/if}
+		</div>
+	{:catch error}
+		{error}
+	{/await}
+{/if}
