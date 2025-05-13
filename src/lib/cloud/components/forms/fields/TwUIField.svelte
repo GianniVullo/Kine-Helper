@@ -24,7 +24,7 @@
 	} = $props();
 </script>
 
-<div class="mt-2 {inputType !== 'textarea' ? 'relative rounded-md shadow-sm' : ''}">
+<div class={['mt-2', inputType === 'text' && 'relative rounded-md']}>
 	{#if leading}
 		<div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-1">
 			{@render leading(leadingCSS)}

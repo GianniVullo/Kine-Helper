@@ -96,7 +96,7 @@
 
 <StatsOverview />
 
-<SectionTitleWithTabs className="mt-5" titre={$t('form.generateur', 'tarification.title')} {tabs}>
+<!-- <SectionTitleWithTabs className="mt-5" titre={$t('form.generateur', 'tarification.title')} {tabs}>
 	{#snippet actions()}
 		<div class="flex space-x-2">
 			<BoutonSecondaireAvecIcone
@@ -125,5 +125,6 @@
 		</div>
 	{/snippet}
 </SectionTitleWithTabs>
+ -->
 
-Facture par tiers-payant facture Par Mutuelle facture Pour patient
+ <p class="my-5">En construction : à venir un générateur d'attestations et de factures par mutuelle</p>

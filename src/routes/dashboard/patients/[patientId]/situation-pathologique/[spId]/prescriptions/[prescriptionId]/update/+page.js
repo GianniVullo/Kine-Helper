@@ -3,6 +3,9 @@ import { error } from '@sveltejs/kit';
 
 /** @type {import('./$types').PageLoad} */
 export async function load({ params }) {
+	if (!appState.db) {
+		await appState.init({});
+	}
 	let { data: prescription, error } = await appState.db.select(
 		'SELECT * FROM prescriptions WHERE prescription_id = $1',
 		[params.prescriptionId]
