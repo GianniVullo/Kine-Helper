@@ -1,3 +1,4 @@
+import dayjs from 'dayjs';
 import {
 	SEANCE_NORMALE,
 	DEPASSEMENT,
@@ -40,9 +41,14 @@ export function assignCodes2({
 	let groupe_id;
 	let duree;
 	if (seance.seance_type === SEANCE_KINE) {
-		const seancesAlreadyTarifed = sp.seances.filter(
-			(seance) => seance.has_been_attested && seance.seance_type === 0
-		);
+		const seancesAlreadyTarifed = sp.seances.filter((s) => {
+			switch (sp.groupe_id) {
+				case (0, 5):
+					return s.has_been_attested && dayjs(s.date).year() === dayjs().year() && seance.seance_type === 0;
+				default:
+					return s.has_been_attested && s.seance_type === 0;
+			}
+		});
 		console.log('seancesAlreadyTarifed', seancesAlreadyTarifed);
 
 		// Définition du compteur et des limites
