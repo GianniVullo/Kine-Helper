@@ -3,6 +3,7 @@ import { file_exists, remove_file, save_to_disk, open_file } from '../utils/fsAc
 import { appState } from '../managers/AppState.svelte';
 import { trace } from '@tauri-apps/plugin-log';
 import { page } from '$app/state';
+import { appLocalDataDir } from '@tauri-apps/api/path';
 
 export async function updatePrescription(data, file) {
 	// TODO 1 : Il faut enregistrer le filename en fait car il faut pouvoir supprimer l'ancienne prescription même si l'extension de fichier n'est pas le même.
@@ -12,8 +13,33 @@ export async function updatePrescription(data, file) {
 		console.log('there is a file');
 
 		const filePath = prescriptionPath();
+		const fileExtension = file.name.split('.').pop();
+		const fileName = `${data.prescription_id}.${fileExtension}`;
+
+		if (data.file_name) {
+			let delError = await remove_file(filePath + '/' + data.file_name, { recursive: true });
+			if (delError) {
+				return { error: delError };
+			}
+		}
+		let fsError = await save_to_disk(filePath, fileName, Array.from(await file.bytes()));
+
+		if (fsError) {
+			console.log('ERRor! ', fsError);
+			return { data, error: fsError };
+		}
+		data.file_name = { ext: fileExtension };
+		delete data.file;
+	}
+
+	if (Array.isArray(data.froms) && data.froms.length > 0) {
+		data.file_name = { ext: 'avif', n_p: data.froms.length };
+
+		const applocaldataDir = await appLocalDataDir();
+		const filePath = prescriptionPath();
 		const fileName = `${data.prescription_id}.${file.name.split('.').pop()}`;
 
+		console.log('the froms', data.froms);
 		if (data.file_name) {
 			let delError = await remove_file(filePath + '/' + data.file_name, { recursive: true });
 			if (delError) {
@@ -21,14 +47,23 @@ export async function updatePrescription(data, file) {
 			}
 			data.file_name = fileName;
 		}
-		let fsError = await save_to_disk(filePath, fileName, Array.from(await file.bytes()));
-		console.log('ERRor! ', fsError);
 
-		if (fsError) {
-			return { data, error: fsError };
+		for (const from of data.froms) {
+			console.log('the from', from);
+			await appState.queue.addToQueue({
+				label: 'Compressing prescription scan',
+				job: 'CompressAndSendPrescription',
+				data: {
+					file_path: `${applocaldataDir}/${prescriptionPath()}`,
+					file_name: data.prescription_id + '.avif',
+					from
+				}
+			});
 		}
-		data.file_name = fileName;
+		delete data.file;
 	}
+	delete data.froms;
+
 	const { error } = await appState.db.update(
 		'prescriptions',
 		[
@@ -50,7 +85,7 @@ export async function createPrescription(data, file) {
 	}
 
 	let file_name;
-	if (file && !data.scans) {
+	if (file) {
 		const fileExtension = file.name.split('.').pop();
 		file_name = `${data.prescription_id}.${fileExtension}`;
 		const filePath = prescriptionPath();
@@ -62,14 +97,28 @@ export async function createPrescription(data, file) {
 			return { data: prescription, error: fsError };
 		}
 	}
-	
-	if (data.scans) {
-		data.file_name = {ext: 'avif', n_p: data.scans};
-		delete data.scans;
-		delete data.file;
 
+	if (Array.isArray(data.froms)) {
+		data.file_name = { ext: 'avif', n_p: data.froms.length };
+		const applocaldataDir = await appLocalDataDir();
+		console.log('the froms', data.froms);
+		for (const from of data.froms) {
+			console.log('the from', from);
+			await appState.queue.addToQueue({
+				label: 'Compressing prescription scan',
+				job: 'CompressAndSendPrescription',
+				data: {
+					file_path: `${applocaldataDir}/${prescriptionPath()}`,
+					file_name: data.prescription_id + '.avif',
+					from
+				}
+			});
+		}
+		delete data.file;
 	}
-	
+	delete data.froms;
+	console.log('the data', data);
+
 	const { data: prescription, error } = await appState.db.insert('prescriptions', data);
 	if (error) {
 		return { data: null, error };
@@ -103,8 +152,13 @@ export async function deletePrescription(prescription) {
 }
 
 export async function openPrescription(prescription) {
+	if (typeof prescription.file_name === 'string') {
+		prescription.file_name = JSON.parse(prescription.file_name);
+	}
+	console.log('the prescription', prescription);
 	let path = prescriptionPath();
-	const completePath = `${path}/${prescription.prescription_id}.${prescription.file_name}`;
+	const completePath = `${path}/${prescription.prescription_id}.${prescription.file_name.ext}`;
+	console.log('the complete path', completePath);
 	let exist = await file_exists(completePath);
 	if (!exist) {
 		return { error: 'File does not exist' };

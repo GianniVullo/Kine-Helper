@@ -19,6 +19,8 @@ mod stability_corrections;
 use apple_api::{get_scan, get_scanners, stop_browsing};
 use appstate::AppState;
 
+use cloud::jobs::Job;
+use cloud::queue::{enqueue_job, run_queue, QueueState};
 use nomenclature::convention_decompression;
 use std::thread::sleep;
 
@@ -126,6 +128,9 @@ async fn get_printer() -> Vec<LocalPrinter> {
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    let (tx, rx) = tokio::sync::mpsc::channel::<Job>(100);
+    let queue_state = QueueState { sender: tx };
+
     tauri::Builder::default()
         .plugin(
             tauri_plugin_log::Builder::new()
@@ -138,6 +143,8 @@ pub fn run() {
             app.handle()
                 .plugin(tauri_plugin_updater::Builder::new().build())?;
             app.manage(Mutex::new(AppState::default()));
+            app.manage(queue_state);
+            tauri::async_runtime::spawn(run_queue(rx, app.handle().clone()));
 
             #[cfg(target_os = "macos")]
             app.manage(std::sync::Arc::new(Mutex::new(None::<ScanOperation>)));
@@ -145,9 +152,6 @@ pub fn run() {
             // Ici je corrige le problème de stabilité du file système le prblm prevenait du faire que j'ai utilisé des variables que les utilisateurs peuvent modifier pour nommer le file system de Kiné Helper. En conséquence lorsque les utilisateurs modifient une de ces variables, le file system se désynchronise d'avec KH qui recrée une nouvelle structure perdant ansi l'accès à toutes les données précédentes. example: si le nom du patient était modifié l'utilisateur perdait l'accès au dossier du patient qui portait son nom.
             perform_fs_stability_patch(app);
             Ok(())
-        })
-        .on_menu_event(|app, event| {
-            println!("Menu event: {:?}", event);
         })
         .plugin(tauri_plugin_os::init())
         .plugin(tauri_plugin_shell::init())
@@ -187,6 +191,7 @@ pub fn run() {
             print_pdf,
             #[cfg(target_os = "macos")]
             stop_browsing,
+            enqueue_job
         ])
         .build(tauri::generate_context!())
         .expect("error while building tauri application")

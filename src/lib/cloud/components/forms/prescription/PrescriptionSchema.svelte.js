@@ -49,8 +49,9 @@ const file = v.pipe(
 		return input?.length === 0 ? null : input?.[0];
 	})
 );
-const scans = v.number(v.integer());
-const file_name = v.nullable(v.string());
+// const scans = v.number(v.integer());
+const froms = v.nullish(v.array(v.string()));
+const file_name = v.nullish(v.string());
 export const validateurs = {
 	user_id,
 	patient_id,
@@ -66,7 +67,8 @@ export const validateurs = {
 	prescripteurInami,
 	file,
 	file_name,
-	scans
+	froms,
+	// scans
 };
 
 export const PrescriptionSchema = v.pipe(

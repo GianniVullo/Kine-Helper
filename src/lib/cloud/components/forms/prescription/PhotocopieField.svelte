@@ -17,10 +17,14 @@
 	import AvailableScanners from '../../../libraries/imageCapture/desktop/AvailableScanners.svelte';
 	import { fly } from 'svelte/transition';
 	import { arrowRightIcon } from '../../../../ui/svgs/IconSnippets.svelte';
+	import { goto } from '$app/navigation';
+	import { readFile } from '@tauri-apps/plugin-fs';
+	import dayjs from 'dayjs';
 
 	let {
 		value = $bindable(),
-		scans = $bindable(),
+		// scans = $bindable(),
+		froms = $bindable(),
 		mode,
 		prescription,
 		error,
@@ -133,13 +137,25 @@
 				<AvailableScanners
 					{documentName}
 					{documentPath}
-					afterScan={(bytes) => {
+					afterScan={async (from) => {
 						/**
 						 * TODO : créer un Viewer pour le filed ici
 						 */
-						console.log('file', bytes);
-						new File(bytes, documentName, { type: 'image/avif' });
-						scans++;
+						console.log('from = ', from);
+						try {
+							const file = await readFile(from);
+							const blob = new Blob([file]);
+							srcimg = URL.createObjectURL(blob);
+						} catch (error) {
+							console.error('Error reading file: ', error);
+							srcimg = 'Error ' + error;
+						}
+						if (Array.isArray(froms)) {
+							froms.push(from);
+						} else {
+							froms = [from];
+						}
+						gotoStep(2);
 					}}
 					onerror={() => {
 						gotoStep(4);
@@ -153,14 +169,28 @@
 			class="absolute h-full w-full">
 			{@render gotoStepButton(0, 'Retour à la sélection')}
 			{#if srcimg}
-				<button
-					class=""
-					onclick={(e) => {
-						e.preventDefault();
-						openModal({
-							name: 'previewImage'
-						});
-					}}><img src={srcimg} alt="" class="h-56" /></button>
+				{#if srcimg === 'Error'}
+					<p class="text-red-500">Erreur lors de la lecture du fichier</p>
+				{:else if srcimg === 'tiff'}
+					<p class="text-indigo-500">
+						Le fichier est au format TIFF, Il ne peut pas être affiché ici. <br />
+					</p>
+					<BoutonPrincipal
+						inner="Ouvrir le fichier pour contrôler son intégrité"
+						onclick={(e) => {
+							e.preventDefault();
+							goto(documentPath);
+						}} />
+				{:else}
+					<button
+						class=""
+						onclick={(e) => {
+							e.preventDefault();
+							openModal({
+								name: 'previewImage'
+							});
+						}}><img src={srcimg} alt="" class="h-56" /></button>
+				{/if}
 			{/if}
 		</div>
 	{:else if stepIndex === 3}

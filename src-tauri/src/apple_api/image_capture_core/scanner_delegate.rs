@@ -9,7 +9,7 @@ use objc2::rc::autoreleasepool;
 use objc2::DefinedClass;
 use objc2::{define_class, msg_send, rc::Retained, AllocAnyThread};
 use objc2_foundation::{NSError, NSObject, NSObjectProtocol, NSPoint, NSRect, NSSize, NSURL};
-use std::cell::RefCell;
+use std::fs::remove_file;
 use std::sync::{Arc, Mutex};
 use tauri::{AppHandle, Emitter};
 
@@ -104,13 +104,15 @@ define_class!(
                     println!("document_name: {:?}", document_name);
                     println!("document_path: {:?}", document_path);
                     if let Some(from) = unsafe { url.path() } {
-                        let bytes = tiff_to_avif(
-                            unsafe { from.to_str(pool) },
-                            &document_path,
-                            &document_name,
-                        );
+                        let from = unsafe { from.to_str(pool) };
+                        // let bytes = std::fs::read(from).unwrap();
+                        // let bytes = tiff_to_avif(&from, &document_path, &document_name);
+                        // remove_file(from).unwrap_or_else(|err| {
+                        //     // TODO use the log error here. I think it's not worth making the app panic for this error as it only failed to clean the scanned image from the picture folder.
+                        //     println!("Failed to remove file at {:?}: {:?}", from, err);
+                        // });
                         if let Some(emiter) = self.ivars().tauri_event_emiter.as_ref() {
-                            let _ = emiter.emit("scan_done", bytes);
+                            let _ = emiter.emit("scan_done", from);
                         }
                     }
                 }

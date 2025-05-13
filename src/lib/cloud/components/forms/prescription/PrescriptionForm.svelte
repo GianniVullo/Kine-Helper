@@ -64,7 +64,7 @@
 				documentName={formHandler.form.prescription_id}
 				{documentPath}
 				bind:value={formHandler.form.file}
-				bind:scans={formHandler.form.scans}
+				bind:froms={formHandler.form.froms}
 				error={formHandler.errors?.file} />
 		{/await}
 	</FormSection>

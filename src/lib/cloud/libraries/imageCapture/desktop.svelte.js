@@ -110,7 +110,7 @@ export class ScannerAPI {
 					document_path: documentPath
 				}
 			});
-			afterScan(scan);
+			await afterScan(scan);
 		} catch (error) {
 			onerror(error);
 		}
@@ -119,7 +119,7 @@ export class ScannerAPI {
 	async macos_get_scan(documentName, documentPath, afterScan, onerror) {
 		this.unlistenScan = await listen('scan_done', async (event) => {
 			console.log('Scan done:', event.payload);
-			afterScan(event.payload);
+			await afterScan(event.payload);
 		});
 		this.unlistenScanProgress = await listen('scanner_session_opened', async (event) => {
 			console.log('Scanner session opened:', event.payload);
@@ -127,7 +127,7 @@ export class ScannerAPI {
 		this.unlistenScanError = await listen('scan_error', (event) => {
 			onerror(event.payload);
 		});
-		let status = await invoke('get_scan', {
+		let _ = await invoke('get_scan', {
 			scanOpsRelatedInfo: {
 				scanner_name: $state.snapshot(this.selectedScanner),
 				document_name: documentName,
