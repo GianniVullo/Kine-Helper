@@ -4,10 +4,10 @@
 	import { check } from '@tauri-apps/plugin-updater';
 	import { relaunch } from '@tauri-apps/plugin-process';
 	import { onMount } from 'svelte';
-	import { get, writable } from 'svelte/store';
-	import { appLocalDataDir } from '@tauri-apps/api/path';
-	import { exists, writeTextFile, BaseDirectory } from '@tauri-apps/plugin-fs';
-	import { read_file } from '../../lib/utils/fsAccessor';
+	import { get } from 'svelte/store';
+	import { appLocalDataDir, BaseDirectory } from '@tauri-apps/api/path';
+	import { exists, writeTextFile } from '@tauri-apps/plugin-fs';
+	import { read_file, file_exists } from '../../lib/utils/fsAccessor';
 	import { blur } from 'svelte/transition';
 	import { cubicOut } from 'svelte/easing';
 	import { supabase } from '../../lib';
@@ -19,24 +19,19 @@
 	// Si une mise à jour est disponible, il faut télécharger et installer.
 	// Ensuite, il faut relancer l'application Ou poursuivre vers l'écran de login.
 
-	let loadingStatus = writable([]);
-	function pushToStatus(newStatus) {
-		loadingStatus.update((status) => {
-			status.push(newStatus);
-			return status;
-		});
-	}
+	let loadingStatus = $state([]);
 	let domLoaded = $state(false);
 	let updatePromise = $state();
 	let langPromise = $state();
 	let contentSize;
 	let indexOfContentDownload;
 	onMount(() => {
+		console.log('splashscreen mounted');
 		const myEvent = new CustomEvent('svelteLoaded', {
 			detail: { key: 'value' }
 		});
 		domLoaded = true;
-		pushToStatus(`${get(t)('splash', 'domLoaded', null, 'DOM loaded')}`);
+		loadingStatus.push(`${get(t)('splash', 'domLoaded', null, 'DOM loaded')}`);
 		// Dispatching the event from the document
 		document.dispatchEvent(myEvent);
 		updatePromise = lookingForUpdateAndInstallOrContinue();
@@ -51,7 +46,7 @@
 					// <!--? Si une MAJ est trouvée -->
 					if (update?.available) {
 						// <!--? ETAPE 1 : Update l'UI pour signaler le téléchargement -->
-						pushToStatus(
+						loadingStatus.push(
 							`${get(t)(
 								'splash',
 								'download',
@@ -65,19 +60,21 @@
 							.downloadAndInstall((progress) => {
 								if (progress.event === 'Started') {
 									contentSize = progress.data.contentLength;
-									pushToStatus('0 %');
-									indexOfContentDownload = $loadingStatus.indexOf('0 %');
+									loadingStatus.push('0 %');
+									indexOfContentDownload = loadingStatus.indexOf('0 %');
 								}
 								if (progress.event === 'Progress') {
-									$loadingStatus[indexOfContentDownload] =
+									loadingStatus[indexOfContentDownload] =
 										`${(progress.data.chunkLength / contentSize) * 100} %`;
 								}
 								if (progress.event === 'Finished') {
-									$loadingStatus[indexOfContentDownload] = 'DOWNLOAD COMPLETED !';
+									loadingStatus[indexOfContentDownload] = 'DOWNLOAD COMPLETED !';
 								}
 							})
 							.then(() => {
-								pushToStatus(`${get(t)('splash', 'done', null, 'Download done, restarting ...')}`);
+								loadingStatus.push(
+									`${get(t)('splash', 'done', null, 'Download done, restarting ...')}`
+								);
 								// <!--? ETAPE 3 : relancer l'application -->
 								relaunch();
 								resolve();
@@ -87,7 +84,7 @@
 							});
 					} else {
 						// <!--? Si aucune MAJ n'est trouvée -->
-						pushToStatus(`${get(t)('splash', 'uptodate', null, "App's up to date.")}`);
+						loadingStatus.push(`${get(t)('splash', 'uptodate', null, "App's up to date.")}`);
 						langPromise = new Promise(updateLang);
 						resolve();
 					}
@@ -95,7 +92,9 @@
 				.catch((e) => {
 					console.error(e);
 					// <!--? Si aucune MAJ n'est trouvée -->
-					pushToStatus(`${get(t)('splash', 'error', null, 'Error encountered, Retry later.')}`);
+					loadingStatus.push(
+						`${get(t)('splash', 'error', null, 'Error encountered, Retry later.')}`
+					);
 				});
 		});
 	}
@@ -104,7 +103,7 @@
 		console.log('updateLang');
 		// D'abord vérifier si le fichier /settings.json existe
 		let path = await appLocalDataDir();
-		let settingsExists = await exists(`${path}/settings.json`);
+		let settingsExists = await file_exists(`settings.json`);
 		console.log('settingsExists', settingsExists);
 		if (settingsExists) {
 			// Si oui
@@ -133,7 +132,9 @@
 			console.log('newVersion', newVersion);
 			if (newVersion > currentVersion) {
 				// Si la version est différente
-				pushToStatus(`${get(t)('splash', 'langDownload', null, 'Downloading new translations')}`);
+				loadingStatus.push(
+					`${get(t)('splash', 'langDownload', null, 'Downloading new translations')}`
+				);
 				// On télécharge le nouveaux dictionnaire
 				let newDictionnary = await queryDictionnary(settings.defaultLocale);
 				if (!newDictionnary) {
@@ -151,7 +152,9 @@
 					return d;
 				});
 				// On écrit le fichier sur le disque
-				await writeTextFile(`${path}/settings.json`, JSON.stringify(settings));
+				await writeTextFile(`settings.json`, JSON.stringify(settings), {
+					baseDir: BaseDirectory.AppLocalData
+				});
 			}
 			// On redirige vers la page de login.
 		} else {
@@ -225,7 +228,7 @@
 									style="margin: 5px;"
 									class="border-secondary-500 h-5 w-5 animate-spin rounded-full border-2 border-t-purple-500 text-4xl">
 								</div>
-							{:then value}
+							{:then _}
 								<svg
 									xmlns="http://www.w3.org/2000/svg"
 									fill="none"
@@ -238,7 +241,7 @@
 										stroke-linejoin="round"
 										d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
 							{:catch error}
-								<p>Error</p>
+								<p>{error}</p>
 							{/await}
 						{:else}
 							<p>-</p>
@@ -265,7 +268,7 @@
 						{$t('splash', 'status', null, 'Status')}
 					</h5>
 					<ul class="text-surface-700 dark:text-surface-300 ml-2 flex flex-col text-sm">
-						{#each $loadingStatus as status, idx (idx)}
+						{#each loadingStatus as status, idx (idx)}
 							<li transition:blur={{ duration: 500, easing: cubicOut }}>{status}</li>
 						{/each}
 					</ul>
