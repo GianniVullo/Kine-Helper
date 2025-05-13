@@ -5,7 +5,6 @@
 	import { t, locale } from '$lib/i18n/index';
 	import { get } from 'svelte/store';
 	import SignOutIcon from '../../../ui/svgs/SignOutIcon.svelte';
-	import BottomRightControlBar from './BottomRightControlBar.svelte';
 	import { open } from '@tauri-apps/plugin-shell';
 	import BugReportModal from '../../../ui/BugReportModal.svelte';
 	import Modal from '../../libraries/overlays/Modal.svelte';
@@ -417,7 +416,6 @@
 	<main class="py-10 lg:pl-72">
 		<div class="px-4 sm:px-6 lg:px-8">
 			{@render children?.()}
-			<BottomRightControlBar />
 		</div>
 	</main>
 </div>

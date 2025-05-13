@@ -76,6 +76,7 @@ pub fn does_private_key_exist(
         Err(_) => Ok(false),
     }
 }
+
 #[tauri::command]
 pub fn encrypt_string(
     app_handle: tauri::AppHandle,

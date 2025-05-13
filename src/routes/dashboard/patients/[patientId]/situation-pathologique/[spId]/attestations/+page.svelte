@@ -2,7 +2,6 @@
 	import { PlusIcon, PrinterIcon, UpdateIcon, DeleteIcon } from '$lib/ui/svgs/index';
 	import { page } from '$app/state';
 	import dayjs from 'dayjs';
-	import { patients } from '../../../../../../../lib/stores/PatientStore';
 	import { printAttestation } from '../../../../../../../lib/utils/rawPrinting';
 	import { fetchCodeDesSeances } from '../../../../../../../lib/utils/nomenclatureManager';
 	import FactureBox from '../../../../../../../lib/ui/FactureBox.svelte';

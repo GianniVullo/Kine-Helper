@@ -18,12 +18,6 @@ import { supabase } from '../stores/supabaseClient';
 import { user } from '../stores/UserStore';
 import { get } from 'svelte/store';
 
-function srcDir() {
-	if (platform() === 'windows') {
-		return BaseDirectory.Document;
-	}
-	return BaseDirectory.AppLocalData;
-}
 
 async function completePath() {
 	if (platform() === 'windows') {
@@ -98,7 +92,8 @@ export async function remove_file(path, { recursive = false }) {
 }
 
 export async function read_file(path) {
-	return await readFile(await pathFormat(path), { baseDir: srcDir() });
+	console.log('in read_file with ', path);
+	return await readFile(path, { baseDir: BaseDirectory.AppLocalData });
 }
 
 export async function open_file(path) {

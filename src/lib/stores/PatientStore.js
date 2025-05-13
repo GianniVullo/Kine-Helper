@@ -171,141 +171,141 @@ export class SituationPathologique {
 	}
 }
 
-function createPatientStore() {
-	console.log('Initialized $patients with ');
-	const { subscribe, update, set } = persisted('patients', [], {
-		storage: 'session' // 'session' for sessionStorage, defaults to 'local'
-	});
+// function createPatientStore() {
+// 	console.log('Initialized $patients with ');
+// 	const { subscribe, update, set } = persisted('patients', [], {
+// 		storage: 'session' // 'session' for sessionStorage, defaults to 'local'
+// 	});
 
-	const loading = writable(false);
+// 	const loading = writable(false);
 
-	function sortPatient() {
-		update((ps) => {
-			ps.sort((a, b) => {
-				if (a.nom > b.nom) {
-					return 1;
-				} else {
-					return -1;
-				}
-			});
-			return ps;
-		});
-	}
+// 	function sortPatient() {
+// 		update((ps) => {
+// 			ps.sort((a, b) => {
+// 				if (a.nom > b.nom) {
+// 					return 1;
+// 				} else {
+// 					return -1;
+// 				}
+// 			});
+// 			return ps;
+// 		});
+// 	}
 
-	function remove(patient_id) {
-		console.log('in patients.remove(id) with', patient_id);
-		update((ps) => {
-			console.log('in patients.remove(id)>update with ps length BEFORE', ps.length);
-			ps.splice(
-				ps.findIndex((p) => p.patient_id == patient_id),
-				1
-			);
-			console.log('in patients.remove(id)>update with ps length AFTER', ps.length);
-			return ps;
-		});
-	}
+// 	function remove(patient_id) {
+// 		console.log('in patients.remove(id) with', patient_id);
+// 		update((ps) => {
+// 			console.log('in patients.remove(id)>update with ps length BEFORE', ps.length);
+// 			ps.splice(
+// 				ps.findIndex((p) => p.patient_id == patient_id),
+// 				1
+// 			);
+// 			console.log('in patients.remove(id)>update with ps length AFTER', ps.length);
+// 			return ps;
+// 		});
+// 	}
 
-	function getPatient(patient_id) {
-		console.log('in getPatient() with', patient_id);
-		if (patient_id == 'test-patient') {
-			return defaultTestPatient();
-		}
-		return get({ subscribe }).find((p) => p.patient_id == patient_id);
-	}
+// 	function getPatient(patient_id) {
+// 		console.log('in getPatient() with', patient_id);
+// 		if (patient_id == 'test-patient') {
+// 			return defaultTestPatient();
+// 		}
+// 		return get({ subscribe }).find((p) => p.patient_id == patient_id);
+// 	}
 
-	function defaultTestPatient() {
-		return {
-			actif: true,
-			adresse: 'Rue du test heureux, 251',
-			bim: true,
-			cp: 6000,
-			created_at: '2023-08-25T17:50:11.422018+00:00',
-			date_naissance: '1969-07-17',
-			email: null,
-			gsm: null,
-			localite: 'Charleroi',
-			mutualite: 216,
-			niss: '12345612312',
-			nom: 'Test',
-			num_affilie: null,
-			numero_etablissement: null,
-			patient_id: 'test-patient',
-			prenom: 'patient',
-			service: null,
-			sexe: 'M',
-			situations_pathologiques: [
-				{
-					attestations: [
-						{
-							attestation_id: 'e549c550-f196-4274-8223-413e83b8f8d5',
-							created_at: '2023-08-25T17:50:11.753503+00:00',
-							date: '2022-12-23',
-							has_been_printed: true,
-							numero_etablissement: null,
-							patient_id: 'test-patient',
-							porte_prescr: true,
-							prescription_id: '14a74ea8-9fb6-4f5b-acee-7bf09bed5285',
-							service: null,
-							sp_id: '0b017e35-2b9a-4462-8723-fa2740af5ca2',
-							total_recu: 0,
-							valeur_totale: 247.7,
-							with_indemnity: true,
-							with_intake: false
-						}
-					],
-					created_at: '2023-08-25T17:50:11.555401+00:00',
-					generateurs_de_seances: [](0),
-					motif: 'Accident de moto',
-					numero_etablissement: null,
-					patient_id: 'test-patient',
-					plan_du_ttt: 'Rééducation de la hanche',
-					prescriptions: [
-						{
-							active: true,
-							created_at: '2023-08-25T17:50:11.657441+00:00',
-							date: '2022-11-03',
-							file_path: null,
-							jointe_a: '2022-11-24',
-							patient_id: 'test-patient',
-							prescripteur: { nom: '?', inami: '16764865-480', prenom: '?' },
-							prescription_id: '14a74ea8-9fb6-4f5b-acee-7bf09bed5285',
-							sp_id: '0b017e35-2b9a-4462-8723-fa2740af5ca2'
-						}
-					],
-					seances: [
-						{
-							attestation_id: 'e549c550-f196-4274-8223-413e83b8f8d5',
-							code_id: 'a3dada68-55cb-4a07-86b1-30c9d736c057',
-							created_at: '2023-08-25T17:50:11.839361+00:00',
-							description: 'null',
-							end: null,
-							has_been_attested: true,
-							patient_id: 'test-patient',
-							prescription_id: '14a74ea8-9fb6-4f5b-acee-7bf09bed5285',
-							seance_id: '530463af-2ca6-4811-aa9f-594c9938c03c',
-							sp_id: '0b017e35-2b9a-4462-8723-fa2740af5ca2',
-							start: null
-						}
-					],
-					service: null,
-					sp_id: '0b017e35-2b9a-4462-8723-fa2740af5ca2'
-				}
-			],
-			tel: null,
-			ticket_moderateur: false,
-			tiers_payant: true
-		};
-	}
+// 	function defaultTestPatient() {
+// 		return {
+// 			actif: true,
+// 			adresse: 'Rue du test heureux, 251',
+// 			bim: true,
+// 			cp: 6000,
+// 			created_at: '2023-08-25T17:50:11.422018+00:00',
+// 			date_naissance: '1969-07-17',
+// 			email: null,
+// 			gsm: null,
+// 			localite: 'Charleroi',
+// 			mutualite: 216,
+// 			niss: '12345612312',
+// 			nom: 'Test',
+// 			num_affilie: null,
+// 			numero_etablissement: null,
+// 			patient_id: 'test-patient',
+// 			prenom: 'patient',
+// 			service: null,
+// 			sexe: 'M',
+// 			situations_pathologiques: [
+// 				{
+// 					attestations: [
+// 						{
+// 							attestation_id: 'e549c550-f196-4274-8223-413e83b8f8d5',
+// 							created_at: '2023-08-25T17:50:11.753503+00:00',
+// 							date: '2022-12-23',
+// 							has_been_printed: true,
+// 							numero_etablissement: null,
+// 							patient_id: 'test-patient',
+// 							porte_prescr: true,
+// 							prescription_id: '14a74ea8-9fb6-4f5b-acee-7bf09bed5285',
+// 							service: null,
+// 							sp_id: '0b017e35-2b9a-4462-8723-fa2740af5ca2',
+// 							total_recu: 0,
+// 							valeur_totale: 247.7,
+// 							with_indemnity: true,
+// 							with_intake: false
+// 						}
+// 					],
+// 					created_at: '2023-08-25T17:50:11.555401+00:00',
+// 					generateurs_de_seances: [](0),
+// 					motif: 'Accident de moto',
+// 					numero_etablissement: null,
+// 					patient_id: 'test-patient',
+// 					plan_du_ttt: 'Rééducation de la hanche',
+// 					prescriptions: [
+// 						{
+// 							active: true,
+// 							created_at: '2023-08-25T17:50:11.657441+00:00',
+// 							date: '2022-11-03',
+// 							file_path: null,
+// 							jointe_a: '2022-11-24',
+// 							patient_id: 'test-patient',
+// 							prescripteur: { nom: '?', inami: '16764865-480', prenom: '?' },
+// 							prescription_id: '14a74ea8-9fb6-4f5b-acee-7bf09bed5285',
+// 							sp_id: '0b017e35-2b9a-4462-8723-fa2740af5ca2'
+// 						}
+// 					],
+// 					seances: [
+// 						{
+// 							attestation_id: 'e549c550-f196-4274-8223-413e83b8f8d5',
+// 							code_id: 'a3dada68-55cb-4a07-86b1-30c9d736c057',
+// 							created_at: '2023-08-25T17:50:11.839361+00:00',
+// 							description: 'null',
+// 							end: null,
+// 							has_been_attested: true,
+// 							patient_id: 'test-patient',
+// 							prescription_id: '14a74ea8-9fb6-4f5b-acee-7bf09bed5285',
+// 							seance_id: '530463af-2ca6-4811-aa9f-594c9938c03c',
+// 							sp_id: '0b017e35-2b9a-4462-8723-fa2740af5ca2',
+// 							start: null
+// 						}
+// 					],
+// 					service: null,
+// 					sp_id: '0b017e35-2b9a-4462-8723-fa2740af5ca2'
+// 				}
+// 			],
+// 			tel: null,
+// 			ticket_moderateur: false,
+// 			tiers_payant: true
+// 		};
+// 	}
 
-	return {
-		subscribe,
-		update,
-		set,
-		loading,
-		sortPatient,
-		remove,
-		getPatient
-	};
-}
+// 	return {
+// 		subscribe,
+// 		update,
+// 		set,
+// 		loading,
+// 		sortPatient,
+// 		remove,
+// 		getPatient
+// 	};
+// }
 
-export const patients = createPatientStore();
+// export const patients = createPatientStore();

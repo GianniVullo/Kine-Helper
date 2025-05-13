@@ -1,7 +1,6 @@
 <script>
 	import { modalStore } from '$lib/cloud/libraries/overlays/modalUtilities.svelte';
 	import dayjs from 'dayjs';
-	import { patients } from '../stores/PatientStore';
 	import { t } from '../i18n';
 	import { page } from '$app/state';
 	import { ManipulateurDeSeances } from '../utils/manipulateurDeSeances';

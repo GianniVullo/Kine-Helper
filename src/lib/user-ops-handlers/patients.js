@@ -1,7 +1,3 @@
-import DBAdapter from '$lib/user-ops-handlers/dbAdapter';
-import { get } from 'svelte/store';
-import { patients } from '../stores/PatientStore';
-import { user } from '../stores/UserStore';
 import { UserOperationsHandler } from './abstractHandler';
 import { appState } from '../managers/AppState.svelte';
 import { Patient, SituationPathologique } from './models';

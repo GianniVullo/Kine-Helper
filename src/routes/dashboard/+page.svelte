@@ -1,8 +1,5 @@
 <script>
 	import { t } from '../../lib/i18n';
-	import { LocalDatabase } from '../../lib/stores/databaseInitializer';
-	import { patients } from '../../lib/stores/PatientStore';
-	import dayjs from 'dayjs';
 	import { appState } from '../../lib/managers/AppState.svelte';
 	import PageTitle from '../../lib/cloud/components/layout/PageTitle.svelte';
 	import EmptyState from '../../lib/components/EmptyState.svelte';
@@ -18,28 +15,6 @@
 
 	let { data } = $props();
 
-	function getTodaysAppointments() {
-		// let today = "date('now')";
-		let today = `date('${dayjs().add(1, 'day').format('YYYY-MM-DD')}')`;
-		return new Promise(async (resolve) => {
-			let db = new LocalDatabase();
-			console.log('today', today);
-			const data = await db.select(
-				`SELECT * FROM seances WHERE date(date) = ${today} AND user_id = $1`,
-				[appState.user.id]
-			);
-			console.log('data', data);
-			data.sort((a, b) => dayjs(a.date).diff(dayjs(b.date)));
-			resolve(
-				data.map((seance) => {
-					return {
-						patient: $patients.find((patient) => patient.patient_id === seance.patient_id),
-						seance
-					};
-				})
-			);
-		});
-	}
 	let actionRapides = [
 		{
 			icon: userIcon,

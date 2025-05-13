@@ -3,7 +3,7 @@
 	import LoginForm from '../lib/cloud/components/forms/authentication/LoginForm.svelte';
 	import SignUpForm from '../lib/cloud/components/forms/authentication/SignUpForm.svelte';
 	import { t } from '../lib/i18n';
-	import { goto, pushState } from '$app/navigation';
+	import { goto } from '$app/navigation';
 	import { onDestroy } from 'svelte';
 	import { platform } from '@tauri-apps/plugin-os';
 	import { debug, error, info, trace, warn } from '@tauri-apps/plugin-log';

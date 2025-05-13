@@ -2,6 +2,7 @@
 	import '../app.css';
 	import { onMount } from 'svelte';
 	import Notification from '../lib/cloud/libraries/overlays/Notification.svelte';
+	import { onNavigate } from '$app/navigation';
 
 	onMount(() => {
 		const myEvent = new CustomEvent('svelteLoaded', {
@@ -10,7 +11,6 @@
 		document.dispatchEvent(myEvent);
 	});
 
-	import { onNavigate } from '$app/navigation';
 
 	onNavigate((navigation) => {
 		if (!document.startViewTransition) return;

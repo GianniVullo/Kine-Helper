@@ -1,8 +1,4 @@
 import { UserOperationsHandler } from './abstractHandler';
-import DBAdapter from '$lib/user-ops-handlers/dbAdapter';
-import { get } from 'svelte/store';
-import { patients } from '../stores/PatientStore';
-import { user } from '../stores/UserStore';
 import { appState } from '../managers/AppState.svelte';
 import { printAttestation } from '../utils/rawPrinting';
 import { getFactureMutuellePDFHandler, getFacturePatientPDFHandler } from './documents';
