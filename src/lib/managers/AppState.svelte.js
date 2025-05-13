@@ -8,6 +8,8 @@ import { listPatients } from '../user-ops-handlers/patients';
 import { t } from '../i18n';
 import { invoke } from '@tauri-apps/api/core';
 import { trace, error as errorLog } from '@tauri-apps/plugin-log';
+import { AsyncQueueManager } from '../cloud/libraries/History/history-manager/HistoryManager.svelte';
+
 /**
  ** L'objet AppState est là pour stocker les données importantes at runtime
  **
@@ -19,6 +21,13 @@ class AppState {
 	settings; // Important de l'avoir at runtime parce que petit et en interaction forte avec l'UI
 	/**@type DatabaseManager */
 	db; // DB connection
+	queue;
+
+	constructor() {
+		console.log('in AppState constructor');
+		this.queue = new AsyncQueueManager();
+		console.log('AppState constructor done');
+	}
 
 	async initializeDatabase() {
 		this.db = new DatabaseManager();
@@ -27,6 +36,7 @@ class AppState {
 
 	async init({ user, session, profil }) {
 		trace('entering AppState.init');
+		await this.queue.setup();
 		// lors de la première initialisation
 		if (user && profil && session) {
 			// Pour pouvoir offrir l'email pré-rempli dans l'écran de login
@@ -59,9 +69,9 @@ class AppState {
 			if (!this.settings) {
 				let { data, error } = await retrieveSettings(this.user.id);
 				if (error) {
-					errorLog(error)
+					errorLog(error);
 				}
-				this.settings = data
+				this.settings = data;
 			}
 		}
 	}

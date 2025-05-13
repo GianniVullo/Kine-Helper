@@ -5,87 +5,106 @@
  *
  ** Il permet de créer des entrées dans l'historique et de les récupérer du serveur.
  ** Pour se faire :
- **     - encrypter
+ *? - il faut setup les Tauri listeners pour savoir quand les job commencent et finissent -> Création d'une méthode asynchrone pour setup les listeners
+ *? mettre un onDelete pour cleanup les listeners si l'utilisateur se déconnecte
+ *
  */
 
 import { invoke } from '@tauri-apps/api/core';
-import { appState } from './AppState.svelte';
-import { supabase } from '../stores/supabaseClient';
-import { tick } from 'svelte';
+import { appState } from '../../../../managers/AppState.svelte';
+import { supabase } from '../../../../stores/supabaseClient';
+import { onDestroy } from 'svelte';
+import { listen } from '@tauri-apps/api/event';
+import { PromiseQueue } from './PromiseQueue.svelte';
+import { executeJob } from './jobs';
 
-class PromiseQueue {
-	operations = $state([]);
-	errorList = $derived(this.operations.map((operation) => operation.error));
-	running = $state(false);
+export class AsyncQueueManager {
+	promiseQueue = new PromiseQueue();
+	unlistenStarted;
+	unlistenSuccess;
+	unlistenFailed;
 
-	add(task) {
+	constructor() {
+		console.log('in AsyncQueueManager constructor');
+	}
+
+	/**
+	 *
+	 * @param {{label: string, job: string, data: string,}} task
+	 */
+	async addToQueue(task) {
+		console.log('addToQueue', task);
 		const taskId = crypto.randomUUID();
-		const wrappedTask = {
-			id: taskId,
-			status: 'pending',
-			result: null,
-			error: null,
-			table: task.table,
-			action: task.action,
-			date: task.date,
-			run: async () => {
-				try {
-					const result = await task.promesse();
-					console.log('Task result:', result);
-					this.operations = this.operations.map((op) => {
-						if (op.id === taskId) {
-							op.status = 'fulfilled';
-							op.result = result;
-						}
-						return op;
-					});
-					console.log('oprations now', this.operations);
-				} catch (err) {
-					this.operations = this.operations.map((op) => {
-						if (op.id === taskId) {
-							op.status = 'rejected';
-							op.error = err;
-						}
-						return op;
-					});
-					console.error('Error executing task:', err);
-				}
+		this.promiseQueue.add(taskId, task.label);
+		const session = await supabase.auth.getSession();
+		if (session.error) {
+			console.error('Error getting session:', session.error);
+			return { error: session.error };
+		}
+		let options = {
+			jobType: task.job,
+			data: {
+				id: taskId,
+				data: JSON.stringify(task.data),
+				token: session.data.session.access_token,
+				user_id: appState.user.id
 			}
 		};
+		console.log('options', options);
 
-		this.operations.push(wrappedTask);
-		console.log('Task added to queue:', taskId);
-		this.runNext();
-		return {
-			status: 'pending'
-		};
+		await executeJob(options);
 	}
 
-	async runNext() {
-		if (this.running || this.operations.length === 0) return;
-		this.running = true;
+	setup() {
+		return new Promise(async (resolve) => {
+			if (!this.unlistenStarted) {
+				this.unlistenStarted = await listen('job-started', (event) => {
+					console.log('Started:', event.payload);
+					this.setOperationStatus(event.payload, 'running');
+					this.promiseQueue.running = true;
+				});
+			}
 
-		console.log('Running next task in queue:', this.operations);
-		const nextOperation = this.operations.find((p) => p.status === 'pending');
-		if (nextOperation) {
-			await nextOperation.run();
-			console.log('Task completed:', this.operations[0]?.id);
-			delete nextOperation.run;
-			this.running = false;
-			await tick();
-			this.runNext(); // Continue with the next in queue
-		} else {
-			this.running = false;
+			if (!this.unlistenSuccess) {
+				this.unlistenSuccess = await listen('job-success', (event) => {
+					console.log('Success:', event.payload);
+					this.setOperationStatus(event.payload, 'fulfilled');
+					this.promiseQueue.running = false;
+				});
+			}
+
+			if (!this.unlistenFailed) {
+				this.unlistenFailed = await listen('job-failed', (event) => {
+					console.log('Failed:', event.payload);
+					this.setOperationStatus(event.payload, 'rejected');
+					this.promiseQueue.running = false;
+				});
+			}
+			resolve();
+		});
+	}
+
+	findOperationIdx(id) {
+		const opIndex = this.promiseQueue.operations.findIndex((op) => op.id === id);
+		if (opIndex !== -1) {
+			return opIndex;
+		}
+		return null;
+	}
+
+	setOperationStatus(id, status) {
+		const opIndex = this.findOperationIdx(id);
+		console.log('opIndex', opIndex);
+
+		if (typeof opIndex === 'number') {
+			console.log(
+				'setting status for opé',
+				status,
+				$state.snapshot(this.promiseQueue.operations[opIndex])
+			);
+			this.promiseQueue.operations[opIndex].status = status;
 		}
 	}
-
-	getStatuses() {
-		return this.operations.map((entry) => entry.status);
-	}
-}
-
-class HistoryManager {
-	promiseQueue = new PromiseQueue();
 
 	async sendToRemoteDB(table, action, data) {
 		/**
@@ -275,5 +294,3 @@ class HistoryManager {
 		return this.promiseQueue.add(task);
 	}
 }
-
-export const historyManager = new HistoryManager();

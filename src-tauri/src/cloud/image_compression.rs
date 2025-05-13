@@ -11,7 +11,7 @@ pub fn tiff_to_avif(from: &str, to: &str, file_name: &str) -> Vec<u8> {
         img.height() / resize_factor,
         image::imageops::FilterType::Triangle,
     );
-    let avif_path = format!("{}.avif", file_name);
+    // let avif_path = format!("{}.avif", file_name);
 
     // Convert to RGBA8 for AVIF encoder
     print!("Converting to RGBA8");
@@ -30,9 +30,9 @@ pub fn tiff_to_avif(from: &str, to: &str, file_name: &str) -> Vec<u8> {
         .unwrap();
 
     print!("Writing to file");
-    let _ = std::fs::write(format!("{}/{}", to, avif_path), &buffer)
-        .map_err(|e| e.to_string())
-        .expect("Failed to write AVIF file");
+    // let _ = std::fs::write(format!("{}/{}", to, avif_path), &buffer)
+        // .map_err(|e| e.to_string())
+        // .expect("Failed to write AVIF file");
     println!(
         "Done writing in {:?}",
         std::time::SystemTime::now()
