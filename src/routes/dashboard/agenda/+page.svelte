@@ -1,36 +1,20 @@
 <script>
 	// import EventCalendar from '$lib/EventCalendar.svelte';
 	import dayjs from 'dayjs';
-	import Calendar from '@event-calendar/core';
-	import TimeGrid from '@event-calendar/time-grid';
-	import DayGrid from '@event-calendar/day-grid';
 	import { modalStore } from '$lib/cloud/libraries/overlays/modalUtilities.svelte';
 	import { locale, t } from '../../../lib/i18n';
 	import { get } from 'svelte/store';
 	import { NomenclatureManager } from '../../../lib/utils/nomenclatureManager';
 	import { appState } from '../../../lib/managers/AppState.svelte';
+	import PageTitle from '../../../lib/ui/PageTitle.svelte';
+	import EventCalendar from '../../../lib/EventCalendar.svelte';
+	import Modal from '../../../lib/cloud/libraries/overlays/Modal.svelte';
+	import { page } from '$app/state';
+	import { eventFormater } from '../../../lib/utils/calendarEventFormater';
+	import { openModal } from '../../../lib/cloud/libraries/overlays/modalUtilities.svelte';
+	import { goto } from '$app/navigation';
 
-	let plugins = [TimeGrid, DayGrid];
-	function handleClickOnEvent(info) {
-		console.log(info);
-		const modal = {
-			type: 'component',
-			component: 'calendarEvent',
-			meta: {
-				event: info.event,
-				component: ec
-			}
-		};
-
-		modalStore.trigger(modal);
-	}
-
-	let ec;
-	$effect(() => {
-		if (ec) {
-			console.log('the ec', ec);
-		}
-	});
+	let ec = $state();
 
 	async function queryMonthEvents(start, end) {
 		let { data: seances, error } = await appState.db.select(
@@ -40,92 +24,62 @@
 		if (error) {
 			console.error(error);
 		}
-		let nomeclatureManager = new NomenclatureManager();
 		let events = [];
-		const durations = await nomeclatureManager.durationGuesser(seances);
+		if (seances.length === 0) {
+			return events;
+		}
+		if (error) {
+			console.error(error);
+			return;
+		}
 		for (const seance of seances) {
-			const { data: patientList, error } = await appState.db.select(
+			const { data: patientList, error: patientQueryError } = await appState.db.select(
 				'SELECT * from patients WHERE patient_id = $1',
 				[seance.patient_id]
 			);
 			let patient = patientList[0];
-			console.log('patient', patient);
-			events.push({
-				id: seance.seance_id,
-				// resourceIds: '',
-				// allDay: false,
-				start: dayjs(seance.date).toDate(),
-				end: dayjs(seance.date).add(durations[seances.indexOf(seance)], 'minute').toDate(),
-				title: patient.nom + ' ' + patient.prenom,
-				editable: false,
-				startEditable: false,
-				durationEditable: false,
-				backgroundColor: 'rgb(168,85,247)',
-				textColor: '#dbdee9',
-				extendedProps: {
-					seance: seance
-				}
-			});
+			events.push(eventFormater(seance, patient));
 		}
 		return events;
 	}
-	let base_options = {
-		allDaySlot: false,
-		view: 'dayGridMonth',
-		buttonText: {
-			close: get(t)('shared', 'close'),
-			dayGridMonth: get(t)('shared', 'month'),
-			listDay: get(t)('shared', 'list'),
-			listMonth: get(t)('shared', 'list'),
-			listWeek: get(t)('shared', 'list'),
-			listYear: get(t)('shared', 'list'),
-			resourceTimeGridDay: get(t)('shared', 'day'),
-			resourceTimeGridWeek: get(t)('shared', 'week'),
-			timeGridDay: get(t)('shared', 'day'),
-			timeGridWeek: get(t)('shared', 'week'),
-			today: get(t)('shared', 'today')
-		},
-		theme: (theme) => ({
-			...theme,
-			day: 'ec-day !bg-surface-100 dark:!bg-surface-800',
-			body: 'ec-body h-[80vh]',
-			button: 'btn btn-sm variant-filled-primary',
-			buttonGroup: 'btn-group variant-filled-primary [&>*+*]:border-white',
-			event: 'ec-event text-success-400 bg-surface-100 dark:border-white border-black border',
-			title: 'ec-title md:py-0 py-2',
-			toolbar: 'ec-toolbar flex-wrap'
-		}),
-		headerToolbar: {
-			start: 'prev,next today',
-			center: 'title',
-			end: 'dayGridMonth,timeGridWeek,timeGridDay'
-		},
-		eventSources: [
-			{
-				events(fetchInfo, successCallback, failureCallback) {
-					console.log('In the events list function', fetchInfo);
-					queryMonthEvents(fetchInfo.start, fetchInfo.end).then((events) => {
-						successCallback(events);
-					});
-					// new Promise(async (resolve, reject) => {
-					// 	console.log('In the promise');
-					// 	const es = await queryMonthEvents();
-					// 	console.log('Events', es);
-					// 	resolve();
-					// });
-				}
-			}
-		],
-		eventClick: handleClickOnEvent,
-		scrollTime: '08:00:00',
-		locale: get(locale),
-		views: {
-			timeGridWeek: { pointer: true }
-		}
-	};
 </script>
 
-<div class="h-full p-4">
-	<h1 class="text-surface-400 mb-4 text-lg">Agenda</h1>
-	<Calendar bind:this={ec} {plugins} options={base_options} />
-</div>
+<Modal
+	opened={page.state.modal?.name === 'eventCalendarOnclick'}
+	title={page.state.modal?.title}
+	body=""
+	leading={undefined}
+	buttonTextConfirm="Voir la situation pathologique"
+	buttonTextConfirmCSS="!bg-blue-500 !text-white"
+	onAccepted={() => {
+		goto(
+			`/dashboard/patients/${page.state.modal.event.extendedProps.seance.patient_id}/situation-pathologique/${page.state.modal.event.extendedProps.seance.sp_id}`
+		);
+	}} />
+
+<PageTitle titre="Agenda" />
+<EventCalendar
+	bind:ec
+	eventSources={[
+		{
+			events(fetchInfo, successCallback, failureCallback) {
+				console.log('In the events list function', fetchInfo);
+				queryMonthEvents(fetchInfo.start, fetchInfo.end).then((events) => {
+					successCallback(events);
+				});
+			}
+		}
+	]}
+	options={{
+		eventClick(info) {
+			console.log('eventClick', info);
+			openModal({
+				name: 'eventCalendarOnclick',
+				title: `Séance pour ${info.event.title}`,
+				event: info.event
+			});
+		},
+		loading(info) {
+			console.log('loading', info);
+		}
+	}} />

@@ -2,13 +2,24 @@
 	import { Calendar, TimeGrid, DayGrid, Interaction } from '@event-calendar/core';
 	import { locale, t } from './i18n';
 	import { get } from 'svelte/store';
+	import { appState } from './managers/AppState.svelte';
 
-	let { events = undefined, eventSource = undefined, options, ec = $bindable() } = $props();
+	let {
+		events = undefined,
+		eventSources = undefined,
+		options,
+		ec = $bindable(),
+		withoutInteractions = false
+	} = $props();
 
-	let plugins = [TimeGrid, DayGrid, Interaction];
+	let plugins = [TimeGrid, DayGrid];
+	if (!withoutInteractions) {
+		plugins.push(Interaction);
+	}
 	let base_options = {
 		allDaySlot: false,
 		view: 'dayGridMonth',
+		height: '600px',
 		/**
 		 ** Pour l'instant l'API n'est plus bonne et utilise l'ancienne Prestine façon de fonctionner
 		 ** Il y a un bouton "Nouvelle séances" qui sera suffisant pour l'instant
@@ -62,20 +73,45 @@
 			center: 'title',
 			end: 'dayGridMonth,timeGridWeek,timeGridDay'
 		},
-		events: events,
 		selectable: true,
-		eventSource: eventSource,
 		locale: get(locale),
 		eventClick: handleClickOnEvent,
-		scrollTime: '08:00:00',
+		scrollTime: '06:00:00',
+		viewDidMount: (info) => {
+			console.log('viewDidMount', info);
+			if (defaultView != info.type) {
+				console.log('defaultView', info.type);
+				appState.db.setItem('defaultView', info.type);
+				defaultView = info.type;
+			}
+		},
 		views: {
 			timeGridWeek: { pointer: true }
 		},
 		...options
 	};
+	if (events) {
+		base_options.events = events;
+	}
+	if (eventSources) {
+		base_options.eventSources = eventSources;
+	}
 	function handleClickOnEvent(info) {
 		console.log('eventClick', info);
 	}
+
+	let defaultView = new Promise(async (resolve) => {
+		let view = await appState.db.getItem('defaultView');
+		if (view) {
+			resolve(view);
+		} else {
+			resolve('dayGridMonth');
+		}
+		resolve('dayGridMonth');
+	});
+	console.log('the options', base_options);
 </script>
 
-<Calendar bind:this={ec} {plugins} options={base_options} />
+{#await defaultView then view}
+	<Calendar bind:this={ec} {plugins} options={{ ...base_options, view }} />
+{/await}
