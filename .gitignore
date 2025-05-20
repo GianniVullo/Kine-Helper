@@ -33,3 +33,5 @@ dist-ssr
 oldIdeas
 
 src-tauri/.cargo
+
+project_resources
