@@ -13,6 +13,7 @@
 	import { cloneDeep } from 'lodash';
 	import { invalidate } from '$app/navigation';
 	import Drawer from '../../../../../../../lib/cloud/libraries/overlays/Drawer.svelte';
+	import CardTable from '../../../../../../../lib/components/CardTable.svelte';
 
 	let { data } = $props();
 	let { patient, sp } = data;
@@ -35,8 +36,8 @@
 	buttonTextCancel={$t('shared', 'cancel')}
 	onAccepted={async () => {
 		await deleteAccord(page.state.modal.accord);
-		accords.splice(accords.indexOf(page.state.modal.accord), 1);
-		await invalidate('patient:layout');
+		let delIdx = accords.findIndex((a) => a.id === page.state.modal.accord.id);
+		accords.splice(delIdx, 1);
 		history.back();
 	}} />
 
@@ -46,52 +47,95 @@
 		<div class="flex flex-col flex-wrap">
 			<!--* Accord LIST -->
 			<div class="flex flex-col">
-				{#each accords as accord}
-					<div
-						class="border-surface-400 hover:bg-surface-100 dark:hover:bg-surface-700 flex flex-col justify-between rounded-lg border px-4 py-2 shadow duration-200">
-						<!--? Accord CONTROLS  -->
-						<div class="mb-2 flex items-center space-x-4">
-							<h5
-								class="text-secondary-800 dark:text-secondary-200 pointer-events-none select-none">
-								Annexe {accord.metadata.doc} - {dayjs(accord.created_at).format('DD/MM/YYYY')}
-							</h5>
-							<div class="flex space-x-2">
-								<button
-									onclick={() => {
-										console.log('accord in update button', accord);
-										openDrawer({
-											name: 'accordUpdate',
-											accord: cloneDeep($state.snapshot(accord))
-										});
-									}}
-									class="variant-outline-warning btn-icon btn-icon-sm"
-									><UpdateIcon
-										class="stroke-surface-600 dark:stroke-surface-200 h-5 w-5" /></button>
-								<button
-									onclick={async () => {
-										openModal({
-											name: 'deleteAccord',
-											accord: cloneDeep($state.snapshot(accord))
-										});
-									}}
-									class="variant-outline-error btn-icon btn-icon-sm"
-									><DeleteIcon
-										class="stroke-surface-600 dark:stroke-surface-200 h-5 w-5" /></button>
-								<button
-									class="variant-filled btn-icon btn-icon-sm dark:variant-filled"
-									onclick={async () => {
-										let { accord: annexe } = await getAccordPDF($state.snapshot(accord));
-										console.log('annexe', annexe);
-										await annexe.open();
-									}}><OpenIcon class="h-5 w-5" /></button>
-							</div>
-						</div>
-						<!--? Accord INFO -->
-						<div class="text-success-800 dark:text-surface-100 flex flex-col"></div>
-					</div>
+				{#if accords.length > 0}
+					<CardTable>
+						{#snippet header()}
+							<th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+								>ID</th>
+							<th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+								>Date</th>
+							<th
+								scope="col"
+								class="py-3.5 pr-3 pl-4 text-left text-sm font-semibold text-gray-900 sm:pl-0"
+								>Accord</th>
+							<th
+								scope="col"
+								class="py-3.5 pr-3 pl-4 text-left text-sm font-semibold text-gray-900 sm:pl-0"
+								>Validité</th>
+							<th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+								><span class="sr-only">Supprimer</span></th>
+							<th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+								><span class="sr-only">Modifier</span></th>
+							<th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+								><span class="sr-only">Ouvrir</span></th>
+						{/snippet}
+						{#snippet body()}
+							{#each accords as accord}
+								<tr>
+									<td class="px-3 py-5 text-sm whitespace-nowrap text-gray-500">
+										{accord.id}
+									</td>
+									<td class="px-3 py-5 text-sm whitespace-nowrap text-gray-500">
+										{dayjs(accord.date).format('DD/MM/YYYY')}
+									</td>
+									<td class="px-3 py-5 text-sm whitespace-nowrap text-gray-500">
+										{accord.metadata.doc}
+									</td>
+									<td class="px-3 py-5 text-sm whitespace-nowrap text-gray-500">
+										{#if accord.valid_from}
+											{accord.valid_from} ->
+										{:else}
+											Période de validité non mentionnée
+										{/if}
+										{#if accord.valid_from && accord.valid_to}
+											{accord.valid_to}
+										{/if}
+									</td>
+									<td
+										class="relative py-5 pr-4 pl-3 text-left text-sm font-medium whitespace-nowrap sm:pr-0">
+										<button
+											onclick={() => {
+												openModal({
+													name: 'deleteAccord',
+													accord: cloneDeep($state.snapshot(accord))
+												});
+											}}
+											class="mr-4 text-red-600 hover:text-red-900">
+											Supprimer<span class="sr-only">, {patient.nom} {patient.prenom}</span>
+										</button>
+									</td>
+									<td
+										class="relative cursor-pointer py-5 pr-4 pl-3 text-right text-sm font-medium whitespace-nowrap sm:pr-0">
+										<button
+											onclick={async () => {
+												console.log('accord in update button', accord);
+												openDrawer({
+													name: 'accordUpdate',
+													accord: cloneDeep($state.snapshot(accord))
+												});
+											}}
+											class="mr-4 text-yellow-600 hover:text-yellow-900">Modifier</button>
+									</td>
+
+									<td
+										class="relative py-5 pr-4 pl-3 text-left text-sm font-medium whitespace-nowrap sm:pr-0">
+										<button
+											onclick={async () => {
+												let { accord: annexe } = await getAccordPDF($state.snapshot(accord));
+												console.log('annexe', annexe);
+												await annexe.open();
+											}}
+											class="mr-4 text-indigo-600 hover:text-indigo-900">
+											Ouvrir<span class="sr-only">, {patient.nom} {patient.prenom}</span>
+										</button>
+									</td>
+								</tr>
+							{/each}
+						{/snippet}
+					</CardTable>
 				{:else}
-					{$t('document.list', 'empty')}
-				{/each}
+					<p class="my-5">{$t('document.list', 'empty')}</p>
+				{/if}
 			</div>
 		</div>
 		<!-- <div class="flex flex-col flex-wrap">

@@ -26,8 +26,9 @@
 
 	let formHandler = new Formulaire({
 		validateurs,
+		formElement: '#accord-update-form',
 		schema: object(validateurs),
-		submiter: '#accord-submit',
+		submiter: '#accord-update-submit',
 		initialValues: {
 			id: accordSnapshot?.id ?? crypto.randomUUID(),
 			valid_from: accordSnapshot?.valid_from,
@@ -89,7 +90,7 @@
 	});
 </script>
 
-<Form message={formHandler.message}>
+<Form id="accord-update-form" message={formHandler.message}>
 	<FormSection
 		titre="Informations générales"
 		description="Veuillez sélectionner la date et situation pathologique.">
@@ -111,7 +112,7 @@
 			<Field field={fields.reference} bind:value={formHandler.form.reference} />
 		</div>
 	</FormSection>
-	<SubmitButton id="accord-submit" className="col-span-full" />
+	<SubmitButton id="accord-update-submit" className="col-span-full" />
 </Form>
 
 <!-- {JSON.stringify(formHandler.form)} -->

@@ -18,7 +18,10 @@ const metadata = object({
 });
 const buildable = boolean();
 const notification = boolean();
-const situation = pipe(number("Veuillez choisir une situation pathologique"), integer("Veuillez choisir une situation pathologique"));
+const situation = pipe(
+	number('Veuillez choisir une situation pathologique'),
+	integer('Veuillez choisir une situation pathologique')
+);
 
 export const validateurs = {
 	id,
@@ -37,6 +40,8 @@ export const AccordSchema = pipe(
 		...validateurs
 	}),
 	transform((input) => {
+		console.log('input', input);
+
 		if (input?.metadata?.doc === 'B') {
 			input.metadata.notification = input.notification;
 		}
@@ -45,20 +50,11 @@ export const AccordSchema = pipe(
 	})
 );
 
-export async function onValid(data) {
-	trace('In AttestationSchema.onValid');
-
-	if (this.mode === 'create') {
-		trace('Engaging Attestation creation');
-		// <!--* CREATE PROCEDURE -->
-		await createAnnexe(data);
-		info('Attestation Creation done Successfully');
-	} else {
-		trace('Engaging Attestation modification');
-		// <!--* UPDATE PROCEDURE -->
-		// TODO
-		info('Attestation modified done Successfully');
-	}
+export async function onValid(data, mode) {
+	trace('In AccordSchema.onValid');
+	// <!--* CREATE PROCEDURE -->
+	await createAnnexe(data);
+	info('Accord Creation done Successfully');
 	history.back();
 }
 

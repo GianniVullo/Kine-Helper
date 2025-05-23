@@ -41,7 +41,7 @@
 		schema: object({
 			docType: string()
 		}),
-		submiter: '#accord-submit',
+		submiter: '#choose-accord-submit',
 		initialValues: {
 			docType: 'A'
 		},
@@ -63,5 +63,5 @@
 			required
 			{options} />
 	</div>
-	<SubmitButton id="accord-submit">{$t('shared', 'confirm')}</SubmitButton>
+	<SubmitButton id="choose-accord-submit">{$t('shared', 'confirm')}</SubmitButton>
 </Form>

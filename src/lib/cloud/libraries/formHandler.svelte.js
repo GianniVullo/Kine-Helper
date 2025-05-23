@@ -83,7 +83,10 @@ export class Formulaire {
 		let formEl = document.querySelector(this.formElement);
 		formEl.onsubmit = async (e) => {
 			e.preventDefault();
-			if (e.submitter.id !== this.submiter) {
+			console.log('onsubmit', e);
+			
+			
+			if (e.submitter.id !== document.querySelector(this.submiter).id) {
 				return;
 			}
 			submitButton.disabled = true;
@@ -93,6 +96,7 @@ export class Formulaire {
 
 		submitButton.onclick = async (e) => {
 			e.preventDefault();
+			console.log('onclick', e);
 			e.target.disabled = true;
 			await this.validateAndTerminate();
 			e.target.disabled = false;

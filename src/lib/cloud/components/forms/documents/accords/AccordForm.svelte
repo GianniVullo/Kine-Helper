@@ -4,17 +4,21 @@
 	import { t } from '../../../../../i18n';
 	import Form from '../../abstract-components/Form.svelte';
 	import FormSection from '../../abstract-components/FormSection.svelte';
-	import { onMount, tick } from 'svelte';
+	import { getContext, onMount, tick } from 'svelte';
 	import SubmitButton from '../../../../../forms/ui/SubmitButton.svelte';
 	import { appState } from '../../../../../managers/AppState.svelte';
 	import Field from '../../abstract-components/Field.svelte';
 	import SituationPathologiqueSelector from '../../../../../forms/documents/SituationPathologiqueSelector.svelte';
 	import dayjs from 'dayjs';
+	import { page } from '$app/state';
 
-	let { patient, sp, docType = 'A', mode = 'create', accord } = $props();
+	let { patient, sp, docType, mode = 'create', accord } = $props();
+
+	let accords = getContext('accords');
 
 	let formHandler = new Formulaire({
 		validateurs,
+		formElement: '#accord-form',
 		schema: AccordSchema,
 		submiter: '#accord-submit',
 		scrollable: 'right-drawer',
@@ -29,16 +33,25 @@
 			buildable: true,
 			metadata: { doc: docType }
 		},
-		onValid,
+		onValid: (data) => {
+			console.log('data', data);
+			
+			onValid(data, mode);
+			accords.push(data);
+		},
 		mode
 	});
 
+	$effect(() => {
+			formHandler.form.metadata.doc = page.state?.drawer?.docType;
+	});
+
 	onMount(() => {
-		formHandler.setup(onValid);
+		formHandler.setup();
 	});
 </script>
 
-<Form message={formHandler.message}>
+<Form id="accord-form" message={formHandler.message}>
 	<FormSection
 		titre="Informations générales"
 		description="Veuillez sélectionner la date et situation pathologique.">
