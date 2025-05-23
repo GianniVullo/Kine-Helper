@@ -55,7 +55,7 @@
 		{errors}
 		id="tarif_indemnite"
 		name="tarif_indemnite"
-		label="Indemnités de déplacment"
+		label="Indemnités de déplacement"
 		label2="Tarifs disponibles"
 		{tarifs}
 		bind:value={form.tarif_indemnite}

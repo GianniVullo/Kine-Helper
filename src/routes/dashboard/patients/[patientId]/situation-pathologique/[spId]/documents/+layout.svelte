@@ -73,7 +73,6 @@
 <SectionTitleWithTabs titre="Documents" className="space-x-2" {tabs}>
 	{#snippet actions()}
 		<BoutonPrincipalAvecIcone
-			size="sm"
 			onclick={() => {
 				if (!patient.is_complete) {
 					openModal({ name: 'patientIncomplete', fields: patient.missing_fields });

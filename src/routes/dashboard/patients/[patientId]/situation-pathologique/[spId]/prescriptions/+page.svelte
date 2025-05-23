@@ -43,7 +43,6 @@
 	{#snippet actions()}
 		<BoutonPrincipalAvecIcone
 			href={`/dashboard/patients/${patient.patient_id}/situation-pathologique/${sp.sp_id}/prescriptions/create`}
-			size="sm"
 			icon={PlusIcon}
 			inner={`&nbsp;${$t('prescription.list', 'add')}`} />
 	{/snippet}

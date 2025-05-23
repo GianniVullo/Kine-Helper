@@ -19,20 +19,19 @@
 
 <div class={outerCSS}>
 	<label
-		class="mb-4 flex flex-col items-start space-x-0 space-y-2 text-sm/6 font-medium text-gray-900 sm:flex-row sm:items-center sm:space-x-4 sm:space-y-0"
+		class="mb-4 flex flex-col items-start space-y-2 space-x-0 text-sm/6 font-medium text-gray-900 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-4"
 		><p>{label}</p>
 		<BoutonPrincipal inner={addButtonLabel} size="sm" onclick={addButtonHandler} />
 	</label>
 
-	<div class="ml-4 flex flex-col space-y-4">
+	<div class=" flex flex-col space-y-4">
 		{#each tarifList as custom_tarif, index}
 			{@const identifiant = `${key}${index}`}
-			<div class="flex flex-col space-y-2 rounded border border-indigo-500 p-2 sm:w-3/4">
+			<div class="relative flex flex-col rounded-xl bg-white shadow-md p-4 sm:w-3/4">
 				<BoutonSecondaireAvecIcone
 					size="sm"
-					className="inline-flex items-center bg-white text-sm font-medium text-red-900 shadow-sm ring-1 ring-inset ring-red-300 hover:bg-red-50 self-end"
-					onclick={removeButtonHandler(custom_tarif)}
-					inner={removeButtonLabel}>
+					className="inline-flex -top-2 -right-2 absolute items-center bg-white text-sm rounded-full font-medium text-red-900 shadow-md ring-1 ring-inset ring-red-300 hover:bg-red-50 self-end"
+					onclick={removeButtonHandler(custom_tarif)}>
 					{#snippet icon(cls)}
 						<svg
 							xmlns="http://www.w3.org/2000/svg"
@@ -40,7 +39,7 @@
 							viewBox="0 0 24 24"
 							stroke-width="1.5"
 							stroke="currentColor"
-							class="-ml-0.5 mr-1.5 size-5 text-red-400">
+							class="size-5 text-red-400">
 							<path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
 						</svg>
 					{/snippet}
@@ -59,7 +58,7 @@
 				{/snippet}
 
 				<!--* valeur -->
-				<div class="sm:col-span-4">
+				<div class="sm:col-span-4 mt-4">
 					<label for={identifiant + 'val'} class="block text-xs font-medium text-gray-900"
 						>Valeur de votre {key}</label>
 					<TwUiField

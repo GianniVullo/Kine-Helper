@@ -136,7 +136,7 @@
 				error={formHandler.errors.tarif_indemnite}
 				id="tarif_indemnite"
 				name="tarif_indemnite"
-				label="Indemnités de déplacment" />
+				label="Indemnités de déplacement" />
 
 			<!--* tarif_rapport_ecrit -->
 			<DefaultTarifField
@@ -186,7 +186,7 @@
 
 			<!--* tarifs -->
 			<TarifsListField
-				label="Tarifs personalisés"
+				label="Tarifs personnalisés"
 				key="tarifs_custom"
 				bind:tarifList={formHandler.form.tarifs}
 				addButtonLabel="Ajouter un tarif personnalisé"

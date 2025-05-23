@@ -75,14 +75,7 @@
 						inner: ({ patient_paid }) => (patient_paid ? 'Impayé' : 'Payé')
 					}
 				]
-			: []),
-		{
-			onclick: (attestation) => async () => {
-				await printHandler(attestation);
-			},
-			icon: (_) => printerIcon,
-			inner: (_) => 'Imprimer'
-		}
+			: [])
 		// {
 		// 	href: (attestation) =>
 		// 		`/dashboard/patients/${patient.patient_id}/situation-pathologique/${sp.sp_id}/attestations/${attestation.attestation_id}/update`,
@@ -133,7 +126,10 @@
 				>Part personnelle</th>
 			<th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
 				>Paiement</th>
-			<th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Actions</th>
+			<th scope="col" class="sr-only px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+				>Statut</th>
+			<th scope="col" class="sr-only px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+				>Imprimer</th>
 			<!-- TODO Ici j'ai mis action parce que, en fait, il va falloir mettre Modifier, Supprimer, Imprimer, Marquer comme payée par la mutuelle, par le patient, et qui sait quoi d'autres encore -->
 		{/snippet}
 		{#snippet body()}
@@ -180,7 +176,7 @@
 					</td>
 					<td
 						class="relative py-5 pr-4 pl-3 text-left text-sm font-medium whitespace-nowrap sm:pr-0">
-						<Dropdown inner="actions" className="" id={attestation.attestation_id}>
+						<Dropdown inner="Statut" className="" id={attestation.attestation_id}>
 							{#snippet dropper(menuItems, menuState)}
 								<div
 									id={attestation.attestation_id}
@@ -204,6 +200,17 @@
 								</div>
 							{/snippet}
 						</Dropdown>
+					</td>
+					<td
+						class="relative py-5 pr-4 pl-3 text-left text-sm font-medium whitespace-nowrap sm:pr-0">
+						<button
+							class="flex space-x-1 group"
+							onclick={async () => {
+								await printHandler(attestation);
+							}}>
+							{@render printerIcon('size-5 text-indigo-500 group-hover:text-indigo-700')}
+							<p class="group-hover:text-indigo-700 text-indigo-500">Imprimer</p>
+						</button>
 					</td>
 				</tr>
 			{/each}

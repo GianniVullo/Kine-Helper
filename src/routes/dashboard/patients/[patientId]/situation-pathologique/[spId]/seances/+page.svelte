@@ -13,7 +13,7 @@
 	import { openDrawer } from '../../../../../../../lib/cloud/libraries/overlays/drawerUtilities.svelte';
 	import { page } from '$app/state';
 	import Drawer from '../../../../../../../lib/cloud/libraries/overlays/Drawer.svelte';
-	import { cloneDeepWith, cloneDeep } from 'lodash';
+	import { cloneDeepWith } from 'lodash';
 
 	let { data } = $props();
 	let { patient, sp } = data;
@@ -54,22 +54,22 @@
 
 <SectionTitle titre="Séances" className="space-x-2">
 	{#snippet actions()}
-		<div class="flex items-center space-x-2">
+		<!-- <div class="flex items-center space-x-2">
 			<Select id="affichage" bind:value={display}>
 				{#snippet options()}
 					<option class="text-xs" value="calendar">🗓️ Calendrier</option>
 					<option class="text-xs" value="list">🗂️ Liste</option>
 				{/snippet}
 			</Select>
-		</div>
+		</div> -->
 		<BoutonSecondaireAvecIcone
-			size="sm"
+
 			href={`/dashboard/patients/${patient.patient_id}/situation-pathologique/${sp.sp_id}/seances/create-multiple`}
 			inner={'Séances multiples'}
 			icon={addIcon} />
 		<BoutonPrincipalAvecIcone
 			href={`/dashboard/patients/${patient.patient_id}/situation-pathologique/${sp.sp_id}/seances/create`}
-			size="sm"
+
 			className="ml-3 inline-flex items-center bg-indigo-600 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
 			inner="Séance"
 			icon={addIcon} />
