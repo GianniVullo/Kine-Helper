@@ -1,5 +1,5 @@
 <script>
-  import AttestationPreview from './AttestationPreview.svelte';
+	import AttestationPreview from './AttestationPreview.svelte';
 
 	import { Formulaire } from '../../../libraries/formHandler.svelte';
 	import {
@@ -23,7 +23,6 @@
 	import dayjs from 'dayjs';
 	import Field from '../abstract-components/Field.svelte';
 	import MoneyField from '../tarification-fields/MoneyField.svelte';
-	import CardTable from '../../../../components/CardTable.svelte';
 
 	let {
 		patient,
@@ -37,8 +36,18 @@
 		lines,
 		numero
 	} = $props();
+	console.log('AttestationForm', {
+		patient,
+		sp,
+		prescription_id,
+		attestation,
+		valeur_totale,
+		total_recu,
+		seances,
+		mode,
+		lines
+	});
 
-	console.log('lines', seances);
 	let formHandler = new Formulaire({
 		validateurs,
 		schema: AttestationSchema,
@@ -51,7 +60,7 @@
 			date: attestation?.date ?? lines[lines.length - 1].date,
 			prescription_id: attestation?.prescription_id ?? prescription_id,
 			attestation_id: attestation?.attestation_id ?? crypto.randomUUID(),
-			porte_prescr: attestation?.porte_prescr ?? !sp.attestations?.some((a) => a.porte_prescr),
+			porte_prescr: attestation?.porte_prescr ?? !sp.attestations?.some((a) => a.porte_prescr && a.prescription_id === prescription_id),
 			has_been_printed: attestation?.has_been_printed ?? false,
 			numero_etablissement: attestation?.numero_etablissement,
 			service: attestation?.service,
