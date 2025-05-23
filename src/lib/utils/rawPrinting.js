@@ -1,3 +1,4 @@
+import dayjs from 'dayjs';
 import { appState } from '../managers/AppState.svelte';
 import { invoke } from '@tauri-apps/api/core';
 export async function printAttestation(lines, attestation) {
@@ -5,6 +6,7 @@ export async function printAttestation(lines, attestation) {
 		await getData(attestation);
 
 	if (!lines) {
+		// TODO Ajouter indemnité de dplcmt etc
 		const { data: seances, error: seancesError } = await appState.db.select(
 			`SELECT seances.date, codes.code_reference 
 			FROM seances 
@@ -13,22 +15,10 @@ export async function printAttestation(lines, attestation) {
 			[attestation.attestation_id]
 		);
 		lines = seances;
-		console.log('seances', seances);
 		if (seancesError) {
 			return { error: seancesError };
 		}
-		console.log('lines', lines);
 	}
-	console.log(
-		'printAttestation with lines, attestation, patient, prescription, situation_pathologique, imprimante :',
-		lines,
-		attestation,
-		patient,
-		prescription,
-		situation_pathologique,
-		imprimante,
-		error
-	);
 	if (error) {
 		return { error };
 	}
@@ -54,7 +44,10 @@ export async function printAttestation(lines, attestation) {
 		attestation: {
 			porte_prescr: attestation.porte_prescr,
 			date: attestation.date,
-			seances: lines,
+			seances: lines.map((line) => {
+				line.date = dayjs(line.date).format('DD/MM/YY');
+				return line;
+			}),
 			total_recu: attestation.total_recu
 		},
 		kine: {
