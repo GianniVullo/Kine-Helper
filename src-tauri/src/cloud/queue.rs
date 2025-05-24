@@ -1,13 +1,14 @@
 use crate::cloud::jobs::Job;
 use futures_util::future::FutureExt;
-use std::collections::HashMap;
 use std::panic::AssertUnwindSafe;
 use std::time::Duration;
-use tauri::{AppHandle, Emitter, State};
-use tokio::sync::mpsc;
+use std::{collections::HashMap};
+use tauri::{async_runtime::JoinHandle, AppHandle, Emitter, State};
+use tokio::sync::{mpsc, Mutex};
 
 pub struct QueueState {
-    pub sender: mpsc::Sender<Job>,
+    pub sender: Mutex<Option<mpsc::Sender<Job>>>,
+    pub join_handle: Mutex<Option<JoinHandle<()>>>,
 }
 
 #[tauri::command]
@@ -24,12 +25,23 @@ pub async fn enqueue_job(
         "TestFailed" => Job::TestFailed(data),
         _ => return Err("Unknown job type".into()),
     };
-    if let Err(e) = state.sender.send(job).await {
-        eprintln!("Failed to enqueue job: {}", e);
-        return Err("Failed to enqueue job".into());
-    } else {
-        println!("Job enqueued: {:?}", job_type);
-        Ok(())
+
+    let sender = state.sender.lock().await;
+
+    match sender.as_ref() {
+        Some(queue_state) => {
+            if let Err(e) = queue_state.send(job).await {
+                eprintln!("Failed to enqueue job: {}", e);
+                return Err(format!("Failed to enqueue job: {}", e));
+            } else {
+                println!("Job enqueued: {:?}", job_type);
+                Ok(())
+            }
+        }
+        None => {
+            eprintln!("Sender is not available. It might not have been initialized or could have been dropped.");
+            Err("Sender is not available. It might not have been initialized or could have been dropped.".into())
+        }
     }
 }
 

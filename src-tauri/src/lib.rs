@@ -22,7 +22,6 @@ use appstate::AppState;
 use cloud::jobs::Job;
 use cloud::queue::{enqueue_job, run_queue, QueueState};
 use nomenclature::convention_decompression;
-use std::thread::sleep;
 
 #[cfg(target_os = "macos")]
 use apple_api::state::ScanOperation;
@@ -48,7 +47,6 @@ use eid_reader::get_eid_data;
 
 use stability_corrections::file_system_correction::perform_fs_stability_patch;
 use std::sync::Mutex;
-use std::time::Duration;
 use std::{
     fs::{self, File},
     io::Write,
@@ -128,9 +126,6 @@ async fn get_printer() -> Vec<LocalPrinter> {
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    let (tx, rx) = tokio::sync::mpsc::channel::<Job>(100);
-    let queue_state = QueueState { sender: tx };
-
     tauri::Builder::default()
         .plugin(
             tauri_plugin_log::Builder::new()
@@ -143,8 +138,13 @@ pub fn run() {
             app.handle()
                 .plugin(tauri_plugin_updater::Builder::new().build())?;
             app.manage(Mutex::new(AppState::default()));
+            let (tx, rx) = tokio::sync::mpsc::channel::<Job>(100);
+            let join_handle = tauri::async_runtime::spawn(run_queue(rx, app.handle().clone()));
+            let queue_state = QueueState {
+                sender: tokio::sync::Mutex::new(Some(tx)),
+                join_handle: tokio::sync::Mutex::new(Some(join_handle)),
+            };
             app.manage(queue_state);
-            tauri::async_runtime::spawn(run_queue(rx, app.handle().clone()));
 
             #[cfg(target_os = "macos")]
             app.manage(std::sync::Arc::new(Mutex::new(None::<ScanOperation>)));
@@ -205,10 +205,36 @@ pub fn run() {
                     }
                 });
                 println!("API: {:?}", api);
-                println!("Sleeping 10 seconds before exiting application...");
-                sleep(Duration::from_secs(10));
-                // Perform any cleanup or finalization here
-                println!("Exiting application...");
+
+                // Spawn an async block to drop sender and wait for queue
+                let app_handle = app.clone();
+                let (tx, rx) = tokio::sync::oneshot::channel();
+                let _exiting_thread_handle = tauri::async_runtime::spawn(async move {
+                    if let Some(queue_state) = app_handle.try_state::<QueueState>() {
+                        // Drop the sender (signal shutdown)
+                        let mut sender_guard = queue_state.sender.lock().await;
+                        if sender_guard.take().is_some() {
+                            println!("Sender dropped.");
+                        }
+
+                        let mut handle_guard = queue_state.join_handle.lock().await;
+                        if let Some(handle) = handle_guard.take() {
+                            // Wait for the queue to finish processing
+                            if let Err(e) = handle.await {
+                                // TODO : here we should at least store the error in a dedicated database table so that we can inform the user on what went wrong when he gets back. For the cloud users we could even store the error on the server to inform him wherever he connects from the next time.
+                                eprintln!("Error while waiting for queue: {:?}", e);
+                            } else {
+                                // If everything went well then, bye bye
+                                println!("Queue finished processing.");
+                            }
+                        } else {
+                            println!("Join handle already dropped.");
+                        }
+                    }
+                    println!("Exiting application...");
+                    let _ = tx.send(());
+                });
+                rx.blocking_recv().expect("Failed to receive exit signal");
             }
         });
 }
