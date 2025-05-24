@@ -28,7 +28,7 @@ async fn get_scanners() -> Result<Vec<String>, String> {
 }
 
 #[tauri::command]
-async fn get_scan(aap_handle: AppHandle, device_name: String) -> Result<Vec<u8>, String> {
+async fn get_scan(aap_handle: AppHandle, device_name: String) -> Result<String, String> {
     let info = match retrieve_scanner() {
         Ok(info) => info,
         Err(err) => return Err(format!("Failed to retrieve scanner: {}", err.to_string())),
@@ -75,7 +75,7 @@ async fn get_scan(aap_handle: AppHandle, device_name: String) -> Result<Vec<u8>,
 
         let cwd = app_handle
             .path()
-            .app_local_data_dir()
+            .document_dir()
             .unwrap()
             .into_os_string()
             .into_string()
@@ -128,6 +128,32 @@ async fn get_scan(aap_handle: AppHandle, device_name: String) -> Result<Vec<u8>,
             }
         };
 
+        let _format = match config.IsFormatSupported(ImageScannerFormat::Png) {
+            Ok(is_supported) => {
+                if is_supported {
+                    match config.SetFormat(ImageScannerFormat::Jpeg) {
+                        Ok(_) => {}
+                        Err(err) => {
+                            return Err(format!("Failed to set Jpeg format: {}", err.to_string()))
+                        }
+                    };
+                } else {
+                    match config.SetFormat(ImageScannerFormat::Png) {
+                        Ok(_) => {}
+                        Err(err) => {
+                            return Err(format!("Failed to set Png format: {}", err.to_string()))
+                        }
+                    };
+                }
+            }
+            Err(err) => {
+                return Err(format!(
+                    "Failed to check if format is supported: {}",
+                    err.to_string()
+                ))
+            }
+        };
+
         let source = match scanner.DefaultScanSource() {
             Ok(source) => source,
             Err(err) => {
@@ -148,25 +174,36 @@ async fn get_scan(aap_handle: AppHandle, device_name: String) -> Result<Vec<u8>,
             }
         };
 
+        // Here we wait because of a reported bug in the API on the windows-rs github
+        // https://github.com/microsoft/windows-rs/issues/3211
         sleep(Duration::from_millis(10));
-
-        //std::thread::sleep(std::time::Duration::from_millis(1)); // uncomment this and it will work
 
         let result = match task.get() {
             Ok(result) => result,
             Err(err) => return Err(format!("Failed to get scan result: {}", err.to_string())),
         };
-        println!("{:?}", result.ScannedFiles().expect("msg"));
 
-        // TODO : il faut envoyer tout ça dans image_compressor
-        Ok(tiff_to_avif(
-            result
-                .ScannedFiles()
-                .expect("msg")
-                .into_iter()
-                .map(|i| i.GetFileAsync().expect("msg").get().expect("msg").as_raw())
-                .collect(),
-        ))
+        let file = match result.ScannedFiles() {
+            Ok(files) => {
+                println!("The scanned files : {:?}", files);
+                match files.GetAt(0) {
+                    Ok(file) => file,
+                    Err(err) => {
+                        return Err(format!(
+                            "Failed to get scanned files[0]: {}",
+                            err.to_string()
+                        ))
+                    }
+                }
+            }
+            Err(err) => return Err(format!("Failed to get scanned files: {}", err.to_string())),
+        };
+        let folder_path = cwd;
+        let file_name = match file.Name() {
+            Ok(name) => name.to_string_lossy().to_string(),
+            Err(err) => return Err(format!("Failed to get file name: {}", err.to_string())),
+        };
+        Ok(format!("{}\\{}", folder_path, file_name))
     } else {
         Err("Cannot retrieve Scanner".to_string())
     }
