@@ -4,6 +4,7 @@ import dayjs from 'dayjs';
 import DBAdapter from '$lib/user-ops-handlers/dbAdapter';
 import { file_exists, open_file, read_file, remove_file, save_to_disk } from '../utils/fsAccessor';
 import { appState } from '../managers/AppState.svelte';
+import { invoke } from '@tauri-apps/api/core';
 
 function yPositionStore(initialValue) {
 	const yStore = writable(initialValue);
@@ -89,8 +90,7 @@ export class PDFGeneration {
 
 	async delete() {
 		console.log('arrived in delete');
-		let dirpath = await this.buildPath();
-		let path = dirpath + (this.platform === 'windows' ? '\\' : '/') + this.documentName + '.pdf';
+		let path = await this.get_path();
 		try {
 			if (await file_exists(path)) {
 				console.log('the file exists');
@@ -104,8 +104,7 @@ export class PDFGeneration {
 	}
 
 	async open() {
-		let dirpath = await this.buildPath();
-		let path = dirpath + (this.platform === 'windows' ? '\\' : '/') + this.documentName + '.pdf';
+		let path = await this.get_path();
 		console.log('path', path);
 		/**
 		 *! Pour l'instant j'ai eu recours à des fonctions écrites en Rust pour
@@ -123,6 +122,20 @@ export class PDFGeneration {
 			//* Dès lors on ouvre le dossier et on laisse l'utilisateurs s'occuper de l'ouverture lui-même
 			await open_file(dirpath);
 		}
+	}
+
+	async get_path() {
+		let dirpath = await this.buildPath();
+		let path = dirpath + (this.platform === 'windows' ? '\\' : '/') + this.documentName + '.pdf';
+		return path;
+	}
+
+	async print(printerName) {
+		// TODO: 1. envoyer le pdf filePath to Tauri Command print
+		await invoke('print_pdf', {
+			printerName,
+			filePath: await this.get_path()
+		});
 	}
 
 	fullWidthTable(data, headers, { x = this.margins.left, y = get(this.yPosition) } = {}) {
