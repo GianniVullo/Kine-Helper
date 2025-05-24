@@ -87,14 +87,30 @@
 	});
 
 	const checkIfRapportEcrit = new Promise(async (resolve, reject) => {
+		console.log("In check rapport ecrit");
+		
+		// Here the groups that doesn't allow a rapport ecrit to be created
 		if (typeof groupe_id === 'number' && [0, 6, 7].includes(groupe_id)) {
+			console.log("In check rapport ecrit : returning true");
 			resolve(true);
 		}
 		let { data, error } = await appState.db.select(
-			`SELECT * FROM seances WHERE sp_id = $1 AND rapport_ecrit = 1 AND seance_type != 3`,
-			[sp.sp_id]
+			`SELECT * FROM seances WHERE sp_id = $1 AND rapport_ecrit = $2`,
+			[sp.sp_id, true]
 		);
-
+		console.log("In check rapport ecrit : fetched seance", data);
+		
+		// We filter out the seances that are no-shows 
+		data = data.filter((s) => s.seance_type !== 3);
+		
+		// We filter out the seances that are not in the same year
+		data = data.filter((s) => {
+			const seanceDate = dayjs(s.date);
+			const currentDate = dayjs();
+			return seanceDate.year() === currentDate.year();
+		});
+		
+		console.log("In check rapport ecrit : filtered seance", data);
 		if (error) {
 			reject(error);
 		}
