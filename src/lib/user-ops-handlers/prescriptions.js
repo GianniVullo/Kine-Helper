@@ -1,4 +1,3 @@
-import { UserOperationsHandler } from './abstractHandler';
 import { file_exists, remove_file, save_to_disk, open_file } from '../utils/fsAccessor';
 import { appState } from '../managers/AppState.svelte';
 import { trace } from '@tauri-apps/plugin-log';
@@ -17,7 +16,9 @@ export async function updatePrescription(data, file) {
 		const fileName = `${data.prescription_id}.${fileExtension}`;
 
 		if (data.file_name) {
-			let delError = await remove_file(filePath + '/' + data.file_name, { recursive: true });
+			let delError = await remove_file(filePath + '/' + prescriptionFileName(data), {
+				recursive: true
+			});
 			if (delError) {
 				return { error: delError };
 			}
@@ -29,24 +30,32 @@ export async function updatePrescription(data, file) {
 			return { data, error: fsError };
 		}
 		data.file_name = { ext: fileExtension };
-		delete data.file;
 	}
+	delete data.file;
 
 	if (Array.isArray(data.froms) && data.froms.length > 0) {
+		if (data.file_name) {
+			try {
+				// TODO for loop to delete all the files for n_p files
+				// if !n_p, delete a single file
+				// for (index of n_p)
+
+				let delError = await remove_file(filePath + '/' + prescriptionFileName(data), {
+					recursive: true
+				});
+				if (delError) {
+					return { error: delError };
+				}
+			} catch (error) {
+				console.error('Error deleting file', error);
+			}
+		}
 		data.file_name = { ext: 'avif', n_p: data.froms.length };
 
 		const applocaldataDir = await appLocalDataDir();
 		const filePath = prescriptionPath();
-		const fileName = `${data.prescription_id}.${file.name.split('.').pop()}`;
 
 		console.log('the froms', data.froms);
-		if (data.file_name) {
-			let delError = await remove_file(filePath + '/' + data.file_name, { recursive: true });
-			if (delError) {
-				return { error: delError };
-			}
-			data.file_name = fileName;
-		}
 
 		for (const from of data.froms) {
 			console.log('the from', from);
@@ -55,12 +64,11 @@ export async function updatePrescription(data, file) {
 				job: 'CompressAndSendPrescription',
 				data: {
 					file_path: `${applocaldataDir}/${prescriptionPath()}`,
-					file_name: data.prescription_id + '.avif',
+					file_name: prescriptionFileName(data, 'avif'),
 					from
 				}
 			});
 		}
-		delete data.file;
 	}
 	delete data.froms;
 
@@ -92,11 +100,11 @@ export async function createPrescription(data, file) {
 		data.prescripteur = JSON.stringify(data.prescripteur);
 		let fsError = await save_to_disk(filePath, file_name, Array.from(await file.bytes()));
 		data.file_name = { ext: fileExtension };
-		delete data.file;
 		if (fsError) {
 			return { data: prescription, error: fsError };
 		}
 	}
+	delete data.file;
 
 	if (Array.isArray(data.froms)) {
 		data.file_name = { ext: 'avif', n_p: data.froms.length };
@@ -109,12 +117,11 @@ export async function createPrescription(data, file) {
 				job: 'CompressAndSendPrescription',
 				data: {
 					file_path: `${applocaldataDir}/${prescriptionPath()}`,
-					file_name: data.prescription_id + '.avif',
+					file_name: prescriptionFileName(data, 'avif'),
 					from
 				}
 			});
 		}
-		delete data.file;
 	}
 	delete data.froms;
 	console.log('the data', data);
@@ -175,4 +182,12 @@ export function prescriptionPath() {
 	return `${appState.user.id}/patient${
 		patient.patient_id
 	}/situation-pathologique-${sp.created_at}(${sp.sp_id})/prescriptions`;
+}
+
+function prescriptionFileName(prescription, ext) {
+	if (ext) {
+		return `${prescription.prescription_id}.${ext}`;
+	} else {
+		return `${prescription.prescription_id}.${prescription.file_name.ext}`;
+	}
 }
