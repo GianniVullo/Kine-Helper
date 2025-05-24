@@ -140,6 +140,16 @@ export async function createAttestation(data) {
 	// impression des faactures et attestation
 	if (data.has_been_printed) {
 		const { error } = await printAttestation(data.lines, data.attestation);
+		// Mise à jour de num_attestation
+		let { data: numero, error: storeError } = await appState.db.setItem(
+			'num_attestation',
+			parseInt(data.attestation.numero) + 1
+		);
+		console.log('numeroQueryResult', numero);
+
+		if (storeError) {
+			return { error: storeError };
+		}
 	}
 	if (data.printFacturePatient) {
 		// TODO : implement PDF printing
@@ -148,7 +158,9 @@ export async function createAttestation(data) {
 		if (facturePatientError) {
 			return { error: facturePatientError };
 		}
+		// TODO Mettre la fonction print lorsque l'API sera prête
 		facturePatient.open();
+		// facturePatient.print();
 	}
 	if (data.printFactureMutuelle) {
 		// TODO : implement PDF printing
@@ -157,17 +169,9 @@ export async function createAttestation(data) {
 		if (factureMutuelleError) {
 			return { error: factureMutuelleError };
 		}
-	}
-
-	// Mise à jour de num_attestation
-	let { data: numero, error: storeError } = await appState.db.setItem(
-		'num_attestation',
-		parseInt(data.attestation.numero) + 1
-	);
-	console.log('numeroQueryResult', numero);
-
-	if (storeError) {
-		return { error: storeError };
+		// TODO Mettre la fonction print lorsque l'API sera prête
+		factureMutuelle.open();
+		// factureMutuelle.print();
 	}
 }
 
