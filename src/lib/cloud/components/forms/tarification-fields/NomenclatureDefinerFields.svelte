@@ -29,6 +29,7 @@
 	console.log('In NomenclatureDefinerFields', form);
 	$effect(() => {
 		form.lieu_id;
+		form.patho_lourde_type;
 		untrack(() => {
 			dureeOptions = durees()
 				.map((d, index) => ({ label: d, value: index }))
@@ -51,6 +52,34 @@
 				form.duree = dO[0].value;
 			}
 		});
+		// change duree_id for patho lourde
+		if (form.groupe_id === 1) {
+			console.log('In $effect for patholourde setting durée', form);
+			untrack(() => {
+				switch (form.patho_lourde_type) {
+					case 0:
+						if ([4, 5, 8].includes(form.lieu_id)) {
+							form.duree = 1;
+						} else {
+							form.duree = 2;
+						}
+						break;
+					case 1 || 2:
+						form.duree = 4;
+						break;
+					case 3:
+						form.duree = 5;
+						break;
+					case 4:
+						form.duree = 3;
+						break;
+					case 5:
+						form.duree = 2;
+						break;
+				}
+			});
+			console.log('the duree now is', form.duree);
+		}
 	});
 </script>
 
