@@ -159,7 +159,7 @@ export const MultipleSeancesSchema = v.pipeAsync(
 			} else if (seance.seanceType === 'consult') {
 				delete seance.metadata.tarif_seance;
 				delete seance.metadata.tarif_seconde_seance;
-			} else if (seance.seanceType === 'consult') {
+			} else if (seance.seanceType === 'seconde') {
 				delete seance.metadata.tarif_consultatif;
 				delete seance.metadata.tarif_seance;
 			}
