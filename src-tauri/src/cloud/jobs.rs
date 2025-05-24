@@ -96,6 +96,13 @@ impl Job {
                 let avif_bytes = tiff_to_avif(&from, &file_path, &file_name);
                 let to = format!("{}/{}", file_path, file_name);
 
+                // Check if path exists
+                if !std::path::Path::new(&file_path).exists() {
+                    // Create the directories if they doesn't exist
+                    std::fs::create_dir_all(&file_path)
+                        .map_err(|e| format!("Failed to create directory {}: {}", file_path, e))?;
+                }
+
                 // write the avif bytes to a file
                 let _ = std::fs::write(to, avif_bytes);
 
