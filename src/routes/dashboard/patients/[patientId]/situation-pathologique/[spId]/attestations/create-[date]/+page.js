@@ -7,7 +7,7 @@ import { error } from '@sveltejs/kit';
  ** En fait, pour l'instant on ne fait pas "tarifer jusqu'ici"
  **	On fait seulement 1 attestation à la fois
  */
-export async function load({ url, parent }) {
+export async function load({ url, parent, params }) {
 	/**
 	 ** Il faut :
 	 ** 	- Itérer au travers des séances de la sp
@@ -25,6 +25,13 @@ export async function load({ url, parent }) {
 	if (!appState.db) {
 		await appState.init({});
 	}
+	// this parameter is here to put a block to the date the attestation will be created
+	let date;
+	if (params.date === 'none') {
+		date = dayjs();
+	} else {
+		date = dayjs(params.date);
+	}
 	const { sp, patient } = await parent();
 	let prescription_id;
 	let fromYear;
@@ -38,9 +45,11 @@ export async function load({ url, parent }) {
 			]);
 			continue;
 		}
+		// We can only group seance from a same prescription on a single attestation
 		if (!prescription_id) {
 			prescription_id = seance.prescription_id;
 		}
+		// We can group only seance from the same year
 		if (!fromYear) {
 			fromYear = dayjs(seance.date).year();
 		}
@@ -48,6 +57,10 @@ export async function load({ url, parent }) {
 			continue;
 		}
 		if (dayjs(seance.date).year() !== fromYear) {
+			continue;
+		}
+		// We better not tarify seance that are in the future
+		if (dayjs(seance.date).isAfter(date)) {
 			continue;
 		}
 		seancesToDealWith.push(seance);

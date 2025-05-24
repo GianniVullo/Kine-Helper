@@ -5,9 +5,11 @@
 	import { retrieveSituationPathologique } from '../user-ops-handlers/situations_pathologiques';
 
 	import BoutonPrincipalAvecIcone from '../components/BoutonPrincipalAvecIcone.svelte';
-	import { editIcon } from './svgs/IconSnippets.svelte';
+	import { editIcon, euroIcon } from './svgs/IconSnippets.svelte';
 	import BoutonSecondaireAvecIcone from '../components/BoutonSecondaireAvecIcone.svelte';
-	import BoutonPrincipal from "../components/BoutonPrincipal.svelte";
+	import BoutonPrincipal from '../components/BoutonPrincipal.svelte';
+	import dayjs from 'dayjs';
+	import { goto } from '$app/navigation';
 
 	let { event, seance, ec } = $props();
 
@@ -83,16 +85,20 @@
 						{/snippet}
 
 						Modifier</BoutonPrincipalAvecIcone>
-					<!-- <BoutonSecondaireAvecIcone
+					<BoutonSecondaireAvecIcone
 						size="sm"
 						onclick={() => {
-							deletion = true;
+							goto(
+								`/dashboard/patients/${patient.patient_id}/situation-pathologique/${sp.sp_id}/attestations/create-${dayjs(
+									seance.date
+								).format('YYYY-MM-DD')}`
+							);
 						}}
 						inner={$t('otherModal', 'calendarcontrols.bill')}>
 						{#snippet icon(cls)}
 							{@render euroIcon('text-secondary-500 size-5 -ml-0.5 mr-1.5')}
 						{/snippet}
-					</BoutonSecondaireAvecIcone> -->
+					</BoutonSecondaireAvecIcone>
 				{/if}
 				{#if !event.extendedProps.seance.has_been_attested}
 					<BoutonSecondaireAvecIcone
@@ -137,13 +143,12 @@
 							onclick={async () => {
 								await appState.db.delete('seances', [['seance_id', seance.seance_id]]);
 								console.log(ec);
-								
+
 								ec.removeEventById(seance.seance_id);
 								history.back();
 							}}
 							size="sm"
-							color="error"
-							>{$t('patients.detail', 'deleteModal.confirm')}</BoutonPrincipal>
+							color="error">{$t('patients.detail', 'deleteModal.confirm')}</BoutonPrincipal>
 					</div>
 				</div>
 			{/if}

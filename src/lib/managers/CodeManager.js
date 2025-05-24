@@ -26,6 +26,8 @@ export function assignCodes2({
 	convention,
 	seancesGeneree
 }) {
+	console.log('assignCodes2 with seance', seance);
+
 	let sqlAgreg;
 	let queryCompilerArgs = {
 		groupe_id: sp.groupe_id ?? seance.groupe_id,
@@ -44,7 +46,11 @@ export function assignCodes2({
 		const seancesAlreadyTarifed = sp.seances.filter((s) => {
 			switch (sp.groupe_id) {
 				case (0, 5):
-					return s.has_been_attested && dayjs(s.date).year() === dayjs().year() && seance.seance_type === 0;
+					return (
+						s.has_been_attested &&
+						dayjs(s.date).year() === dayjs().year() &&
+						seance.seance_type === 0
+					);
 				default:
 					return s.has_been_attested && s.seance_type === 0;
 			}
