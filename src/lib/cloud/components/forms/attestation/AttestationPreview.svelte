@@ -12,8 +12,8 @@
 		{ content: s.description },
 		{ content: dayjs(s.date).format('DD/MM/YYYY') },
 		{ content: s.code.code_reference },
-		{ content: s.valeur_totale.toFixed(2).replace('.', ',') + '€' },
-		{ content: s.total_recu.toFixed(2).replace('.', ',') + '€' }
+		{ content: s.valeur_totale?.toFixed(2).replace('.', ',') + '€' },
+		{ content: s.total_recu?.toFixed(2).replace('.', ',') + '€' }
 	])}
 	onclick={() => {
 		console.log('clicked');

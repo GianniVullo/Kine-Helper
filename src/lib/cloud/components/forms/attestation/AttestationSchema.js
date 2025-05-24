@@ -481,76 +481,47 @@ export async function groupSeanceInAttestations(seancesToDealWith, spArg, patien
 			 **			- sinon on essaye de prendre dans les paramètres généraux (table tarif dans la db)
 			 **			- sinon on prends la valeur du code
 			 */
-			if (
-				patient.bim ||
-				appState.user.conventionne ||
-				!seance?.metadata?.t_s ||
-				!sp?.metadata?.t_s ||
-				!seance?.metadata?.t_sec ||
-				!sp?.metadata?.t_sec
-			) {
-				valeur_totale_seance += code_seance.honoraire;
-				total_recu_seance += computeTotalRecu(code_seance, patient);
-			} else {
-				let tarif =
-					seance?.metadata?.t_s ||
-					sp?.metadata?.t_s ||
-					!seance?.metadata?.t_sec ||
-					!sp?.metadata?.t_sec;
-				if (!tarif) {
-					const { data: fetchedTarif, error: fetchError } = await appState.db.select(
-						`SELECT valeur FROM tarifs WHERE json_extract(metadata, '$.seance') is not null;`
-					);
-					if (fetchError) {
-						console.error(fetchError);
-						errorSvelte(500, { message: fetchError });
-					}
-					if (fetchedTarif.length > 0) {
-						tarif = fetchedTarif[0].valeur;
-					}
-				} else {
-					if (uuidRegex.test(tarif)) {
-						const { data: fetchedTarif2, error: fetchError2 } = await appState.db.select(
-							`SELECT valeur FROM tarifs WHERE id = $1;`,
-							[tarif]
-						);
-						if (fetchError2) {
-							console.error(fetchError2);
-							errorSvelte(500, { message: fetchError2 });
-						}
-						if (fetchedTarif2.length > 0) {
-							tarif = fetchedTarif2[0].valeur;
-						}
-					} else {
-						tarif = convertToFloat(tarif);
-					}
-				}
-				if (tarif) {
-					tarif = convertToFloat(tarif);
-					console.log('tarif = ', tarif, 'type = ', typeof tarif);
+			/**
+			 * Enfait ce serait plus intelligent de commencer par le kiné déconventionné
+			 * - Il faut d'abord une fonction qui détermine le tarif
+			 */
 
-					valeur_totale_seance += tarif;
-					// TODO Comment on fait ci en fait ?
-					///? Est ce que le kiné peut faire un tiers payant et facturer des suppléments ?
-					//? Réponse : Apparemment ce n'est pas précisé clairement donc les kinés ont le droit, si ils sont déconventionnés d'avoir des suppléments même si le patient est tiers payant
-					if (patient.tiers_payant) {
-						// donc ici il faut retirer l'intervention mutuelle du tarif
-						total_recu_seance += tarif - computeTotalRecu(code_seance, patient);
-					}
-					total_recu_seance += tarif;
-				} else {
-					valeur_totale_seance += code_seance.honoraire;
-					total_recu_seance += computeTotalRecu(code_seance, patient);
-				}
-			}
+			let { vt, tr } = await valeurIncrementor({
+				code: code_seance,
+				patient,
+				seance,
+				sp,
+				tarif_name:
+					seance.seance_type === 0
+						? 't_s'
+						: seance.seance_type === 1
+							? 't_c'
+							: seance.seance_type === 2
+								? 't_sec'
+								: null,
+				valeur_totale_seance,
+				total_recu_seance
+			});
+			valeur_totale_seance += vt;
+			total_recu_seance += tr;
+			console.log('code_seance = ', code_seance);
 			metadataCode.kine = code_seance;
 			if (seance.metadata?.intake) {
 				const intake = convention.filter((c) => c.lieu === seance.lieu_id && c.type === INTAKE);
 				console.log('intake = ', intake);
 				intake.length !== 1 && errorSvelte(500, { message: "Pas de code trouvé pour l'intake" });
 				console.log('intake = ', intake);
-				valeur_totale_seance += intake[0].honoraire;
-				total_recu_seance += computeTotalRecu(intake[0], patient);
+				let { vt, tr } = await valeurIncrementor({
+					code: intake[0],
+					patient,
+					seance,
+					sp,
+					tarif_name: 't_in',
+					valeur_totale_seance,
+					total_recu_seance
+				});
+				valeur_totale_seance += vt;
+				total_recu_seance += tr;
 				metadataCode.intake = intake[0];
 				lines.push({
 					id: lineId,
@@ -576,8 +547,17 @@ export async function groupSeanceInAttestations(seancesToDealWith, spArg, patien
 				);
 				rapport_ecrit.length !== 1 &&
 					errorSvelte(500, { message: 'Pas de code trouvé pour le rapport écrit' });
-				valeur_totale_seance += rapport_ecrit[0].honoraire;
-				total_recu_seance += computeTotalRecu(rapport_ecrit[0], patient);
+				let { vt, tr } = await valeurIncrementor({
+					code: rapport_ecrit[0],
+					patient,
+					seance,
+					sp,
+					tarif_name: 't_re',
+					valeur_totale_seance,
+					total_recu_seance
+				});
+				valeur_totale_seance += vt;
+				total_recu_seance += tr;
 				metadataCode.rapport_ecrit = rapport_ecrit[0];
 				lines.push({
 					id: lineId,
@@ -597,8 +577,17 @@ export async function groupSeanceInAttestations(seancesToDealWith, spArg, patien
 
 				indemnite.length !== 1 &&
 					errorSvelte(500, { message: "Pas de code trouvé pour l'indemnité" });
-				valeur_totale_seance += indemnite[0].honoraire;
-				total_recu_seance += computeTotalRecu(indemnite[0], patient);
+				let { vt, tr } = await valeurIncrementor({
+					code: indemnite[0],
+					patient,
+					seance,
+					sp,
+					tarif_name: 't_id',
+					valeur_totale_seance,
+					total_recu_seance
+				});
+				valeur_totale_seance += vt;
+				total_recu_seance += tr;
 				metadataCode.indemnite = indemnite[0];
 				lines.push({
 					id: lineId,
@@ -627,6 +616,7 @@ export async function groupSeanceInAttestations(seancesToDealWith, spArg, patien
 					total_recu_seance += supplementValue;
 				}
 			}
+			// Supplement ponctuel
 			if (seance.metadata?.ss_p) {
 				for (const { valeur } of seance.metadata.ss_p) {
 					const supplementValue = convertToFloat(valeur);
@@ -635,6 +625,8 @@ export async function groupSeanceInAttestations(seancesToDealWith, spArg, patien
 					total_recu_seance += supplementValue;
 				}
 			}
+			console.log('valeur_totale_seance = ', valeur_totale_seance);
+			console.log('total_recu_seance = ', total_recu_seance);
 			valeur_totale += valeur_totale_seance;
 			total_recu += total_recu_seance;
 			console.log('valeur_totale = ', valeur_totale);
@@ -643,7 +635,7 @@ export async function groupSeanceInAttestations(seancesToDealWith, spArg, patien
 				seance.metadata = {};
 			}
 			seance.metadata.codes = metadataCode;
-			seance.metadata.valeur_totale = valeur_totale_seance;
+			seance.metadata.valeur_totale = code_seance.honoraire;
 			seance.metadata.total_recu = total_recu_seance;
 			seances.push(seance);
 			lines.push({
@@ -651,8 +643,10 @@ export async function groupSeanceInAttestations(seancesToDealWith, spArg, patien
 				description: 'Séance',
 				date: seance.date,
 				code: code_seance,
-				valeur_totale: valeur_totale_seance,
-				total_recu: total_recu_seance,
+				valeur_totale: code_seance.honoraire,
+				total_recu: patient.tiers_payant
+					? computeTotalRecu(code_seance, patient)
+					: code_seance.honoraire,
 				seance_id: seance.seance_id
 			});
 			lineId++;
@@ -665,6 +659,42 @@ export async function groupSeanceInAttestations(seancesToDealWith, spArg, patien
 
 const PART_PERSO = 'part_personnelle';
 const INTER_MUTUELLE = 'intervention';
+
+async function retrieveTarif(tarifName, tarif) {
+	if (!tarif) {
+		const { data: fetchedTarif, error: fetchError } = await appState.db.select(
+			`SELECT valeur FROM tarifs WHERE json_extract(metadata, '$.${tarifName}') is not null;`
+		);
+		if (fetchError) {
+			console.error(fetchError);
+			errorSvelte(500, { message: fetchError });
+		}
+		if (fetchedTarif.length > 0) {
+			tarif = convertToFloat(fetchedTarif[0].valeur);
+		}
+	} else {
+		if (uuidRegex.test(tarif)) {
+			const { data: fetchedTarif2, error: fetchError2 } = await appState.db.select(
+				`SELECT valeur FROM tarifs WHERE id = $1;`,
+				[tarif]
+			);
+			if (fetchError2) {
+				console.error(fetchError2);
+				errorSvelte(500, { message: fetchError2 });
+			}
+			if (fetchedTarif2.length > 0) {
+				tarif = convertToFloat(fetchedTarif2[0].valeur);
+			}
+		} else {
+			try {
+				tarif = convertToFloat(tarif);
+			} catch (error) {
+				return null;
+			}
+		}
+	}
+	return tarif;
+}
 
 function queryBuilder(bim) {
 	return `_${bim ? 'pref' : 'nopref'}_${appState.user.conventionne ? 'conv' : 'noconv'}`;
@@ -694,4 +724,40 @@ function computeTotalRecu(code, patient) {
 		code.remboursement[INTER_MUTUELLE + query]
 	);
 	return part_personnelle_du_patient;
+}
+
+async function valeurIncrementor({ code, patient, seance, sp, tarif_name }) {
+	if (tarif_name === null) {
+		errorSvelte(500, { message: 'Pas de tarif trouvé pour la séance' });
+	}
+	let valeur_totale_seance = 0;
+	let total_recu_seance = 0;
+	if (!(appState.user.conventionne && !patient.bim)) {
+		let tarif = seance?.metadata?.[tarif_name] || sp?.metadata?.[tarif_name];
+		tarif = await retrieveTarif(tarif_name, tarif);
+		if (tarif) {
+			code.honoraire = tarif;
+			valeur_totale_seance += tarif;
+			if (patient.tiers_payant) {
+				total_recu_seance += computeTotalRecu(code, patient);
+			} else {
+				total_recu_seance += tarif;
+			}
+		} else {
+			valeur_totale_seance += code.honoraire;
+			if (patient.tiers_payant) {
+				total_recu_seance += computeTotalRecu(code, patient);
+			} else {
+				total_recu_seance += code.honoraire;
+			}
+		}
+	} else {
+		valeur_totale_seance += code.honoraire;
+		if (patient.tiers_payant) {
+			total_recu_seance += computeTotalRecu(code, patient);
+		} else {
+			total_recu_seance += code.honoraire;
+		}
+	}
+	return { vt: valeur_totale_seance, tr: total_recu_seance };
 }
