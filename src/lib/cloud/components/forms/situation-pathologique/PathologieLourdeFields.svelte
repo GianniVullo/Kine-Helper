@@ -14,6 +14,12 @@
 		secondeSeance = false,
 		readOnly = false
 	} = $props();
+
+	$effect(() => {
+		if (pathologieLourde !== 1) {
+			gmfcs = null;
+		}
+	});
 </script>
 
 <div class="max-w-sm">
