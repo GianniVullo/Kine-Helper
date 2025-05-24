@@ -1,14 +1,15 @@
 use crate::printer::{escp::build_document, form_data_modeling::DocumentFormData};
 use std::fs::File;
 use std::io::Write;
-use std::path::Path;
 use tauri::{AppHandle, Manager};
 use tauri_plugin_shell::ShellExt;
 
 #[tauri::command]
-pub fn print_attestation(app_handle: AppHandle, printer_name: String, form_data: DocumentFormData) -> () {
-    // Create a file with raw ESC/P commands
-    //! ATTENTION à Remettre le bon chemin avec le path_resolver()
+pub fn print_attestation(
+    app_handle: AppHandle,
+    printer_name: String,
+    form_data: DocumentFormData,
+) -> () {
     let file_path = app_handle.path().app_local_data_dir().unwrap();
     let file_path = file_path.join("temp_print_file.prn");
     let mut file = File::create(&file_path).expect("Failed to create file");
