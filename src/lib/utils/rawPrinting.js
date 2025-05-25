@@ -123,7 +123,7 @@ export async function printAttestation(lines, attestation) {
 		}
 	};
 	console.log('formData in RawPrinter ==', formData);
-	// let _res = await invoke('print_attestation', { printerName: imprimante.name, formData });
+	let _res = await invoke('print_attestation', { printerName: imprimante.name, formData });
 	return { error: null, data: _res };
 }
 
