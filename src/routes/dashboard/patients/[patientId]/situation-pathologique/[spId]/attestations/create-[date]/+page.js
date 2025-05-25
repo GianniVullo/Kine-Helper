@@ -2,6 +2,7 @@ import { appState } from '../../../../../../../../lib/managers/AppState.svelte.j
 import { groupSeanceInAttestations } from '../../../../../../../../lib/cloud/components/forms/attestation/AttestationSchema.js';
 import dayjs from 'dayjs';
 import { error } from '@sveltejs/kit';
+import { date } from 'valibot';
 /**
  *
  ** En fait, pour l'instant on ne fait pas "tarifer jusqu'ici"
@@ -83,5 +84,5 @@ export async function load({ url, parent, params }) {
 
 /** @type {import('./$types').EntryGenerator} */
 export function entries() {
-	return [{ patientId: 'test-patient', spId: '0b017e35-2b9a-4462-8723-fa2740af5ca2' }];
+	return [{ patientId: 'test-patient', spId: '0b017e35-2b9a-4462-8723-fa2740af5ca2', date: 'none' }];
 }
