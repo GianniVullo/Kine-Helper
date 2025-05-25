@@ -2,9 +2,9 @@ use crate::printer::{escp::build_document, form_data_modeling::DocumentFormData}
 use std::ffi::CString;
 use std::ptr;
 use windows::core::{PCSTR, PSTR};
-use windows::Win32::Foundation::{GetLastError, HANDLE};
+use windows::Win32::Foundation::GetLastError;
 use windows::Win32::Graphics::Printing::{
-    ClosePrinter, EndDocPrinter, EndPagePrinter, OpenPrinterA, StartDocPrinterA, StartPagePrinter,
+    ClosePrinter, EndDocPrinter, EndPagePrinter, OpenPrinterA, StartDocPrinterA, PRINTER_HANDLE, StartPagePrinter,
     WritePrinter, DOC_INFO_1A, PRINTER_ALL_ACCESS, PRINTER_DEFAULTSA,
 };
 use tauri::AppHandle;
@@ -13,7 +13,7 @@ use tauri::AppHandle;
 pub fn print_attestation(_app_handle: AppHandle, printer_name: &str, form_data: DocumentFormData) {
     println!("In the print_attestation fn with {}", printer_name);
     let printer_name = CString::new(printer_name).unwrap();
-    let mut printer_handle = HANDLE(0);
+    let mut printer_handle = PRINTER_HANDLE {Value: std::ptr::null_mut()};
     unsafe {
         println!("Now in the unsafe tag");
         let pd = PRINTER_DEFAULTSA {

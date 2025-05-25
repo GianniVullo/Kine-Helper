@@ -1,13 +1,12 @@
-use tauri::AppHandle;
-use tauri_plugin_shell::ShellExt;
+use std::path::Path;
+
 use winprint::printer::{FilePrinter, PdfiumPrinter, PrinterDevice};
 
-#[tauri::command]
-pub async fn get_printers() -> Result<Vec<String>, String> {
+fn actually_getting_printers() -> Result<Vec<PrinterDevice>, String> {
     let printers = PrinterDevice::all();
 
     match printers {
-        Ok(ps) => Ok(ps.into_iter().map(|p| p.name()).collect()),
+        Ok(ps) => Ok(ps.into_iter().map(|p| p).collect()),
 
         Err(err) => {
             return Err(err.to_string());
@@ -16,20 +15,17 @@ pub async fn get_printers() -> Result<Vec<String>, String> {
 }
 
 #[tauri::command]
-pub async fn print_pdf(
-    app_handle: AppHandle,
-    printer_name: String,
-    file_path: String,
-) -> Result<String, String> {
-    // TODO: Implement the Windows version of the print_pdf function
-    Ok("Print job submitted successfully".into())
+pub async fn get_printers() -> Result<Vec<String>, String> {
+    let printers = actually_getting_printers()?;
+    Ok(printers.into_iter().map(|p| p.name().to_string()).collect())
 }
 
-fn print_pdf(printer_name: String, file_path: String) -> Result<String, String> {
-    let printer = match get_printers() {
+#[tauri::command]
+pub fn print_pdf(printer_name: String, file_path: String) -> Result<String, String> {
+    let printer = match actually_getting_printers() {
         Ok(printers) => match printers
             .into_iter()
-            .find(|printer| printer.name() == printer_name)
+            .find(|printer| printer.name() == &printer_name)
         {
             Some(prn) => prn,
 

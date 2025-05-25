@@ -1,10 +1,9 @@
-use crate::cloud::image_compression::tiff_to_avif;
 use std::{thread::sleep, time::Duration};
 use tauri::{AppHandle, Manager};
 use windows::{
     core::HSTRING,
     Devices::{
-        Enumeration::DeviceInformation,
+        Enumeration::{DeviceInformation, DeviceInformationCollection},
         Scanners::{
             ImageScanner, ImageScannerFormat, ImageScannerResolution, ImageScannerScanSource,
         },
@@ -14,22 +13,21 @@ use windows::{
 
 #[tauri::command]
 async fn get_scanners() -> Result<Vec<String>, String> {
-    retrieve_scanner()
-        .await
-        .map_err(|e| e.to_string())
-        .and_then(|info| {
-            info.into_iter()
-                .map(|i| {
-                    i.map(|device_name| device_name.to_string_lossy().to_string())
-                        .map_err(|e| format!("Failed to get device name: {:?}", e))
-                })
-                .collect()
-        })
+    let info = retrieve_scanners()?;
+    let scanners_iterator = info.into_iter().map(|i| {
+        if let Ok(device_name) = i.Name() {
+            device_name.to_string_lossy()
+        } else {
+            "Unknow device".to_string()
+        }
+    });
+
+    Ok(scanners_iterator.collect())
 }
 
 #[tauri::command]
-async fn get_scan(aap_handle: AppHandle, device_name: String) -> Result<String, String> {
-    let info = match retrieve_scanner() {
+async fn get_scan(app_handle: AppHandle, device_name: String) -> Result<String, String> {
+    let info = match retrieve_scanners() {
         Ok(info) => info,
         Err(err) => return Err(format!("Failed to retrieve scanner: {}", err.to_string())),
     };
@@ -209,7 +207,7 @@ async fn get_scan(aap_handle: AppHandle, device_name: String) -> Result<String, 
     }
 }
 
-async fn retrieve_scanner() -> Result<Vec<String>, String> {
+fn retrieve_scanners() -> Result<DeviceInformationCollection, String> {
     let device_selector = match ImageScanner::GetDeviceSelector() {
         Ok(selector) => selector,
         Err(err) => {
@@ -240,13 +238,5 @@ async fn retrieve_scanner() -> Result<Vec<String>, String> {
         }
     };
 
-    let scanners_iterator = info.into_iter().map(|i| {
-        if let Ok(device_name) = i.Name() {
-            device_name.to_string_lossy()
-        } else {
-            "Unknow device".to_string()
-        }
-    });
-
-    Ok(scanners_iterator.collect())
+    Ok(info)
 }
