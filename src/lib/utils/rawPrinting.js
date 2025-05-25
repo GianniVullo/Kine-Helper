@@ -1,20 +1,77 @@
 import dayjs from 'dayjs';
 import { appState } from '../managers/AppState.svelte';
 import { invoke } from '@tauri-apps/api/core';
+import { indmeniteCategory, INTAKE, RAPPORT_ECRIT } from '../stores/codeDetails';
 export async function printAttestation(lines, attestation) {
 	const { patient, prescription, situation_pathologique, imprimante, error } =
 		await getData(attestation);
 
 	if (!lines) {
 		// TODO Ajouter indemnité de dplcmt etc
-		const { data: seances, error: seancesError } = await appState.db.select(
-			`SELECT seances.date, codes.code_reference 
+		let { data: seances, error: seancesError } = await appState.db.select(
+			`SELECT seances.date, codes.code_reference, codes.convention_id, seances.metadata, seances.indemnite, seances.rapport_ecrit, seances.lieu_id, seances.groupe_id
 			FROM seances 
 			LEFT JOIN codes ON codes.code_id = seances.code_id 
 			WHERE seances.attestation_id = $1`,
 			[attestation.attestation_id]
 		);
-		lines = seances;
+		console.log('seances in RawPrinter ==', seances);
+
+		seances.map((seance) => {
+			if (typeof seance.metadata === 'string') {
+				seance.metadata = JSON.parse(seance.metadata);
+			}
+			if (typeof seance.indemnite === 'string') {
+				seance.indemnite = JSON.parse(seance.indemnite);
+			}
+			if (typeof seance.rapport_ecrit === 'string') {
+				seance.rapport_ecrit = JSON.parse(seance.rapport_ecrit);
+			}
+		});
+		lines = [];
+		// Add the pseudo_code to the lines
+		for (const seance of seances) {
+			if (seance.metadata?.intake) {
+				const { data: intakeList } = await appState.db.select(
+					'SELECT code_reference FROM codes WHERE convention_id = $1 AND lieu = $2 AND type = $3',
+					[seance.convention_id, seance.lieu_id, INTAKE]
+				);
+				console.log('intakeList in RawPrinter ==', intakeList);
+				lines.push({
+					date: seance.date,
+					code_reference: intakeList[0]
+				});
+			}
+			if (seance.rapport_ecrit) {
+				const { data: rapportList } = await appState.db.select(
+					'SELECT code_reference FROM codes WHERE convention_id = $1 AND lieu = $2 AND type = $3 AND groupe = $4',
+					[seance.convention_id, seance.lieu_id, RAPPORT_ECRIT, seance.groupe_id]
+				);
+				console.log('rapportList in RawPrinter ==', rapportList);
+				lines.push({
+					date: seance.date,
+					code_reference: rapportList[0]
+				});
+			}
+			if (seance.indemnite) {
+				const { data: indemniteList } = await appState.db.select(
+					'SELECT code_reference FROM codes WHERE convention_id = $1 AND code_reference = $2',
+					[seance.convention_id, indmeniteCategory[seance.groupe_id]]
+				);
+				console.log('indemniteList in RawPrinter ==', indemniteList);
+				lines.push({
+					date: seance.date,
+					code_reference: indemniteList[0]
+				});
+			}
+			// Add the seance code_reference to the lines
+			console.log('seance.code_reference in RawPrinter ==', seance.code_reference);
+			lines.push({
+				date: seance.date,
+				code_reference: seance.code_reference
+			});
+		}
+
 		if (seancesError) {
 			return { error: seancesError };
 		}
@@ -66,7 +123,7 @@ export async function printAttestation(lines, attestation) {
 		}
 	};
 	console.log('formData in RawPrinter ==', formData);
-	let _res = await invoke('print_attestation', { printerName: imprimante.name, formData });
+	// let _res = await invoke('print_attestation', { printerName: imprimante.name, formData });
 	return { error: null, data: _res };
 }
 
