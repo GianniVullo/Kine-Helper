@@ -6,16 +6,22 @@
 	import { get } from 'svelte/store';
 	import { createProfile } from '../../user-ops-handlers/users';
 	import { appState } from '../../managers/AppState.svelte';
+
 	let message = '';
 	let clazz = '';
+
 	export { clazz as class };
 	export let column = false;
+
 	let formSchema = {
 		isValid
 	};
 
 	async function isValid({ formData, submitter }) {
-		console.log('in isValid with', formData);
+		if (!appState.db) {
+			await appState.init({});
+		}
+
 		submitter.innerHTML = get(t)('shared', 'loading');
 		formData.conventionne ??= false;
 		await createProfile(formData);
@@ -39,7 +45,7 @@
 	<div class:md:flex-row={!column} class="flex flex-col">
 		<div class="w-full p-2 md:p-4 lg:p-8">
 			<SectionCard>
-				<!-- <input type="hidden" name="id" value={appState.user.id} /> -->
+				<input type="hidden" name="user_id" value={appState.user.id} />
 				<TextField
 					name="nom"
 					value={appState.user.nom ?? undefined}

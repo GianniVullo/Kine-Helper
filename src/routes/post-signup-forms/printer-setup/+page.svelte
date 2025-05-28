@@ -2,6 +2,7 @@
 	import { open } from '@tauri-apps/plugin-shell';
 	import { FormWrapper, SubmitButton } from '../../../lib/forms/index';
 	import { goto } from '$app/navigation';
+	import { page } from '$app/state';
 	import { t, locale } from '../../../lib/i18n';
 	import { get } from 'svelte/store';
 	import { platform } from '@tauri-apps/plugin-os';
@@ -39,18 +40,21 @@
 	const formSchema = {
 		isValid
 	};
-
-	async function isValid({ formData, submitter }) {
-		console.log('in isValid with', formData);
-		setPrinter(formData.printer, formData.is_nine_pin);
-	}
 	async function setPrinter(printerName, is_nine_pin) {
+		if (!appState.db) {
+			await appState.init({});
+		}
 		// it'es enough to store these in local db
 		await appState.db.execute(
 			'INSERT INTO appareils (id, name, role, metadata) VALUES ($1, $2, $3, $4)',
 			[crypto.randomUUID(), printerName, 'raw_printer', JSON.stringify({ is_nine_pin })]
 		);
 		goto('/dashboard');
+	}
+
+	async function isValid({ formData, submitter }) {
+		console.log('in isValid with', formData);
+		await setPrinter(formData.printer, formData.is_nine_pin);
 	}
 </script>
 

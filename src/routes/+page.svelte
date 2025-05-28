@@ -6,7 +6,6 @@
 	import { goto } from '$app/navigation';
 	import { onDestroy } from 'svelte';
 	import { platform } from '@tauri-apps/plugin-os';
-	import { debug, error, info, trace, warn } from '@tauri-apps/plugin-log';
 	import { open } from '@tauri-apps/plugin-shell';
 
 	export let data;
@@ -33,9 +32,6 @@
 
 	let selectedForm = 'login';
 	let message = '';
-	onDestroy(() => {
-		data.unlisten();
-	});
 </script>
 
 <!-- <AvailableScanners /> -->
