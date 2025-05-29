@@ -5,14 +5,14 @@ use windows::{
     Devices::{
         Enumeration::{DeviceInformation, DeviceInformationCollection},
         Scanners::{
-            ImageScanner, ImageScannerFormat, ImageScannerResolution, ImageScannerScanSource,
+            ImageScanner, ImageScannerFormat, ImageScannerResolution,
         },
     },
     Storage::StorageFolder,
 };
 
 #[tauri::command]
-async fn get_scanners() -> Result<Vec<String>, String> {
+pub async fn get_scanners() -> Result<Vec<String>, String> {
     let info = retrieve_scanners()?;
     let scanners_iterator = info.into_iter().map(|i| {
         if let Ok(device_name) = i.Name() {
@@ -26,7 +26,7 @@ async fn get_scanners() -> Result<Vec<String>, String> {
 }
 
 #[tauri::command]
-async fn get_scan(app_handle: AppHandle, device_name: String) -> Result<String, String> {
+pub async fn get_scan(app_handle: AppHandle, device_name: String) -> Result<String, String> {
     let info = match retrieve_scanners() {
         Ok(info) => info,
         Err(err) => return Err(format!("Failed to retrieve scanner: {}", err.to_string())),
@@ -126,7 +126,7 @@ async fn get_scan(app_handle: AppHandle, device_name: String) -> Result<String, 
             }
         };
 
-        let _format = match config.IsFormatSupported(ImageScannerFormat::Png) {
+        let _format = match config.IsFormatSupported(ImageScannerFormat::Jpeg) {
             Ok(is_supported) => {
                 if is_supported {
                     match config.SetFormat(ImageScannerFormat::Jpeg) {

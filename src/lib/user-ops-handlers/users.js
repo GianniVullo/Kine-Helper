@@ -81,7 +81,7 @@ export async function createProfile(data) {
 	}
 
 	await appState.init({
-		user: appState.user,
+		user: { ...appState.user, ...data },
 		session: appState.session,
 		profil: data
 	});

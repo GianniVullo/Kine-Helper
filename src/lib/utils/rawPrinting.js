@@ -39,7 +39,7 @@ export async function printAttestation(lines, attestation) {
 				console.log('intakeList in RawPrinter ==', intakeList);
 				lines.push({
 					date: seance.date,
-					code_reference: intakeList[0]
+					code_reference: intakeList[0].code_reference
 				});
 			}
 			if (seance.rapport_ecrit) {
@@ -50,7 +50,7 @@ export async function printAttestation(lines, attestation) {
 				console.log('rapportList in RawPrinter ==', rapportList);
 				lines.push({
 					date: seance.date,
-					code_reference: rapportList[0]
+					code_reference: rapportList[0].code_reference
 				});
 			}
 			if (seance.indemnite) {
@@ -61,7 +61,7 @@ export async function printAttestation(lines, attestation) {
 				console.log('indemniteList in RawPrinter ==', indemniteList);
 				lines.push({
 					date: seance.date,
-					code_reference: indemniteList[0]
+					code_reference: indemniteList[0].code_reference
 				});
 			}
 			// Add the seance code_reference to the lines

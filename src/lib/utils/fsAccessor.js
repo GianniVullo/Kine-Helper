@@ -28,13 +28,20 @@ async function completePath() {
 	return localDir;
 }
 
+function baseDir() {
+	if (platform() === 'windows') {
+		return BaseDirectory.Document;
+	}
+	return BaseDirectory.AppLocalData;
+}
+
 // This is a legacy function because there was a bug on the tauri fs-plugin that didn't allow me to make use of their really usefull Basedir.AppLocalData
 async function pathFormat(path) {
 	console.log('in pathFormat with ', path);
 
-	if (platform() === 'windows') {
-		return `kine-helper-\\${path.replaceAll('/', '\\')}`;
-	}
+	// if (platform() === 'windows') {
+	// 	return `kine-helper-\\${path.replaceAll('/', '\\')}`;
+	// }
 	return path;
 }
 
@@ -42,13 +49,13 @@ export async function create_directories(path) {
 	// return await mkdir(await pathFormat(path), { baseDir: srcDir() });
 	console.log('In create directory');
 
-	return await mkdir(path, { baseDir: BaseDirectory.AppLocalData, recursive: true });
+	return await mkdir(path, { baseDir: baseDir(), recursive: true });
 }
 
 export async function file_exists(path) {
 	console.log('in file_exists with ', path);
 
-	return await exists(path, { baseDir: BaseDirectory.AppLocalData });
+	return await exists(path, { baseDir: baseDir() });
 }
 
 export async function save_to_disk(path, fileName, fileContent) {
@@ -85,7 +92,7 @@ export async function remove_file(path, { recursive = false }) {
 	console.log('in remove_file');
 
 	try {
-		return await remove(path, { baseDir: BaseDirectory.AppLocalData, recursive });
+		return await remove(path, { baseDir: baseDir(), recursive });
 	} catch (error) {
 		return error;
 	}
@@ -93,7 +100,7 @@ export async function remove_file(path, { recursive = false }) {
 
 export async function read_file(path) {
 	console.log('in read_file with ', path);
-	return await readFile(path, { baseDir: BaseDirectory.AppLocalData });
+	return await readFile(path, { baseDir: baseDir() });
 }
 
 export async function open_file(path) {

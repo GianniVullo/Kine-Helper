@@ -30,6 +30,9 @@ use apple_api::state::ScanOperation;
 use printer::{pdf_printer::unix::print_pdf, raw_printer::unix::print_attestation};
 
 #[cfg(target_os = "windows")]
+use crate::windows_api::scanner_api::{get_scan, get_scanners};
+
+#[cfg(target_os = "windows")]
 use printer::{pdf_printer::windows::print_pdf, raw_printer::windows::print_attestation};
 
 #[cfg(any(target_os = "macos", target_os = "linux", target_os = "windows"))]
@@ -183,9 +186,7 @@ pub fn run() {
             setup_path,
             #[cfg(any(target_os = "macos", target_os = "linux", target_os = "windows"))]
             get_printer,
-            #[cfg(target_os = "macos")]
             get_scanners,
-            #[cfg(target_os = "macos")]
             get_scan,
             #[cfg(any(target_os = "macos", target_os = "linux", target_os = "windows"))]
             print_pdf,

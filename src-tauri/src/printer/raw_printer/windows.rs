@@ -13,7 +13,7 @@ use tauri::AppHandle;
 pub fn print_attestation(_app_handle: AppHandle, printer_name: &str, form_data: DocumentFormData) {
     println!("In the print_attestation fn with {}", printer_name);
     let printer_name = CString::new(printer_name).unwrap();
-    let mut printer_handle = PRINTER_HANDLE {Value: std::ptr::null_mut()};
+    let mut printer_handle = PRINTER_HANDLE::default();
     unsafe {
         println!("Now in the unsafe tag");
         let pd = PRINTER_DEFAULTSA {
@@ -69,8 +69,8 @@ pub fn print_attestation(_app_handle: AppHandle, printer_name: &str, form_data: 
             }
             println!("now over and closing stuff");
             // End the page and document
-            EndPagePrinter(printer_handle);
-            EndDocPrinter(printer_handle);
+            let _ = EndPagePrinter(printer_handle);
+            let _ = EndDocPrinter(printer_handle);
             let _ = ClosePrinter(printer_handle);
             // let ok1 = Ok(bytes_written as usize);
         } else {

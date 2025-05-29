@@ -104,14 +104,12 @@ export class ScannerAPI {
 	async windows_get_scan(documentName, documentPath, afterScan, onerror) {
 		try {
 			const scan = await invoke('get_scan', {
-				scanOpsRelatedInfo: {
-					scanner_name: $state.snapshot(this.selectedScanner),
-					document_name: documentName,
-					document_path: documentPath
-				}
+				deviceName: this.selectedScanner
 			});
+			console.log('Scan result:', scan);
 			await afterScan(scan);
 		} catch (error) {
+			console.error('Error during scan:', error);
 			onerror(error);
 		}
 	}
