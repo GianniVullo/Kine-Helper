@@ -52,6 +52,7 @@ export async function onValid(data) {
 	}
 	info('Successfully logged user in');
 
+	this.message = 'Mise à jour des conventions inami, cela peut prendre quelques minutes...';
 	// Mettre à jour les conventions
 	const { data: updatingConvention, error: conventionUpdateError } =
 		await checkAndUpdateConventions(this.message, appState.db);

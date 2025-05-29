@@ -112,7 +112,7 @@
 			<Field field={fields.reference} bind:value={formHandler.form.reference} />
 		</div>
 	</FormSection>
-	<SubmitButton id="accord-update-submit" className="col-span-full" />
+	<SubmitButton id="accord-update-submit" className="col-span-full" loading={formHandler.loading} />
 </Form>
 
 <!-- {JSON.stringify(formHandler.form)} -->

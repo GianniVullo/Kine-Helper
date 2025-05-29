@@ -340,7 +340,7 @@
 				}} />
 		{/if}
 	</FormSection>
-	<SubmitButton id="seance-submit" className="col-span-full" />
+	<SubmitButton loading={formHandler.loading} id="seance-submit" className="col-span-full" />
 </Form>
 
 <!-- {JSON.stringify(formHandler.form)} -->

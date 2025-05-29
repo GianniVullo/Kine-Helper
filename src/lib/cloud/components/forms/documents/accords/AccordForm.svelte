@@ -78,7 +78,7 @@
 				error={formHandler.errors.situation} />
 		</div>
 	</FormSection>
-	<SubmitButton id="accord-submit" className="col-span-full" />
+	<SubmitButton loading={formHandler.loading} id="accord-submit" className="col-span-full" />
 </Form>
 
 <!-- {JSON.stringify(formHandler.form)} -->

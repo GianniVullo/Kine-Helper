@@ -36,6 +36,7 @@ export class Formulaire {
 	onError;
 	onValid;
 	isAsynchronous;
+	loading = $state(false);
 	// Scrollable : l'id de l'élément scrollable si c'est null ça window.scrollToTop
 	scrollable;
 
@@ -84,22 +85,21 @@ export class Formulaire {
 		formEl.onsubmit = async (e) => {
 			e.preventDefault();
 			console.log('onsubmit', e);
-			
-			
+
 			if (e.submitter.id !== document.querySelector(this.submiter).id) {
 				return;
 			}
-			submitButton.disabled = true;
+			this.loading = true;
 			await this.validateAndTerminate();
-			submitButton.disabled = false;
+			this.loading = false;
 		};
 
 		submitButton.onclick = async (e) => {
 			e.preventDefault();
 			console.log('onclick', e);
-			e.target.disabled = true;
+			this.loading = true;
 			await this.validateAndTerminate();
-			e.target.disabled = false;
+			this.loading = false;
 		};
 	}
 

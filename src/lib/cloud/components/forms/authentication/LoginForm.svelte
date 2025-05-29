@@ -13,20 +13,21 @@
 	});
 
 	onMount(() => {
-		formHandler.setup(onValid);
+		formHandler.setup();
+		console.log('LoginForm mounted', formHandler, formHandler.loading);
 	});
 </script>
 
 <form action="" id="default-form" class="space-y-4">
 	{#each fieldSchema as field}
-		<Field {field} error={formHandler.errors[field.name]} bind:value={formHandler.form[field.name]} />
+		<Field
+			{field}
+			error={formHandler.errors[field.name]}
+			bind:value={formHandler.form[field.name]} />
 	{/each}
-	<div class="items flex w-full justify-center mt-4">
-		<SubmitButton>
-			Se connecter
-		</SubmitButton>
+	<div class="items mt-4 flex w-full justify-center">
+		<SubmitButton loading={formHandler.loading}>Se connecter</SubmitButton>
 	</div>
 </form>
-
 
 <p class="mt-2 text-lg text-purple-800">{formHandler.message}</p>

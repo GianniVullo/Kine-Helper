@@ -68,7 +68,7 @@
 				error={formHandler.errors?.file} />
 		{/await}
 	</FormSection>
-	<SubmitButton id="sp-submit" className="col-span-full" />
+	<SubmitButton id="sp-submit" className="col-span-full" loading={formHandler.loading} />
 </Form>
 
 <!-- {JSON.stringify(formHandler.form)} -->

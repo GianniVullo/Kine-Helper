@@ -67,7 +67,7 @@
 	{:else}
 		Error : no section!
 	{/each}
-	<SubmitButton id="patient-submit" className="col-span-full" />
+	<SubmitButton id="patient-submit" className="col-span-full" loading={formHandler.loading} />
 </Form>
 
 <!-- {JSON.stringify(formHandler.form)} -->

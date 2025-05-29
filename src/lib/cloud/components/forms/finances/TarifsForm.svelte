@@ -247,7 +247,7 @@
 				openModal({ name: 'supplements', id: custom_tarif.id, nom: custom_tarif.nom });
 			}} />
 	</FormSection>
-	<SubmitButton id="seance-submit" className="col-span-full" />
+	<SubmitButton id="seance-submit" className="col-span-full" loading={formHandler.loading} />
 </Form>
 
 <!-- {JSON.stringify(formHandler.form)} -->

@@ -63,5 +63,5 @@
 			required
 			{options} />
 	</div>
-	<SubmitButton id="choose-accord-submit">{$t('shared', 'confirm')}</SubmitButton>
+	<SubmitButton id="choose-accord-submit" loading={formHandler.loading}>{$t('shared', 'confirm')}</SubmitButton>
 </Form>

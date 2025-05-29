@@ -26,6 +26,6 @@
 	{/each}
 
 	<div class="items mt-4 flex w-full justify-center">
-		<SubmitButton />
+		<SubmitButton loading={formHandler.loading} />
 	</div>
 </form>

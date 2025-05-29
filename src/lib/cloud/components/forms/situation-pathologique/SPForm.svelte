@@ -144,6 +144,6 @@
 			errors={formHandler.errors['supplements']}
 			{supplements} />
 	</FormSection>
-	<SubmitButton id="sp-submit" className="col-span-full" />
+	<SubmitButton id="sp-submit" className="col-span-full" loading={formHandler.loading} />
 	<!-- <div class="col-span-full"><p class="w-60">{JSON.stringify(formHandler.form)}</p></div> -->
 </Form>

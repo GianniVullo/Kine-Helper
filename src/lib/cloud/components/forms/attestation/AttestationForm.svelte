@@ -151,7 +151,7 @@
 			<AttestationPreview {lines}></AttestationPreview>
 		</div>
 	</FormSection>
-	<SubmitButton id="attestation-submit" className="col-span-full" />
+	<SubmitButton id="attestation-submit" className="col-span-full" loading={formHandler.loading} />
 </Form>
 
 <!-- {JSON.stringify(formHandler.form)} -->
