@@ -2,7 +2,8 @@ import { file_exists, remove_file, save_to_disk, open_file } from '../utils/fsAc
 import { appState } from '../managers/AppState.svelte';
 import { trace } from '@tauri-apps/plugin-log';
 import { page } from '$app/state';
-import { appLocalDataDir } from '@tauri-apps/api/path';
+import { appLocalDataDir, documentDir } from '@tauri-apps/api/path';
+import { platform } from '@tauri-apps/plugin-os';
 
 export async function updatePrescription(data, file) {
 	// TODO 1 : Il faut enregistrer le filename en fait car il faut pouvoir supprimer l'ancienne prescription même si l'extension de fichier n'est pas le même.
@@ -52,7 +53,7 @@ export async function updatePrescription(data, file) {
 		}
 		data.file_name = { ext: 'avif', n_p: data.froms.length };
 
-		const applocaldataDir = await appLocalDataDir();
+		const applocaldataDir = await get_precription_file_dir();
 		const filePath = prescriptionPath();
 
 		console.log('the froms', data.froms);
@@ -108,7 +109,7 @@ export async function createPrescription(data, file) {
 
 	if (Array.isArray(data.froms)) {
 		data.file_name = { ext: 'avif', n_p: data.froms.length };
-		const applocaldataDir = await appLocalDataDir();
+		const applocaldataDir = await get_precription_file_dir();
 		console.log('the froms', data.froms);
 		for (const from of data.froms) {
 			console.log('the from', from);
@@ -190,4 +191,12 @@ function prescriptionFileName(prescription, ext) {
 	} else {
 		return `${prescription.prescription_id}.${prescription.file_name.ext}`;
 	}
+}
+
+// This is needed because Windows won't let us write to the appLocalDataDir so we need to rewire it to the documentDir
+async function get_precription_file_dir() {
+	if (platform() === 'windows') {
+		return await documentDir();
+	}
+	return await appLocalDataDir();
 }
