@@ -62,11 +62,12 @@
 				{/snippet}
 			</Select>
 		</div> -->
-		<BoutonSecondaireAvecIcone
+		<!-- TODO : Remettre ça une fois que ce sera ergonomique -->
+		<!-- <BoutonSecondaireAvecIcone
 
 			href={`/dashboard/patients/${patient.patient_id}/situation-pathologique/${sp.sp_id}/seances/create-multiple`}
 			inner={'Séances multiples'}
-			icon={addIcon} />
+			icon={addIcon} /> -->
 		<BoutonPrincipalAvecIcone
 			href={`/dashboard/patients/${patient.patient_id}/situation-pathologique/${sp.sp_id}/seances/create`}
 
