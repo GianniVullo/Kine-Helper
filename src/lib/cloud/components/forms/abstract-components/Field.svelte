@@ -57,6 +57,7 @@
 			leading={field.leading}
 			leadingCSS={field.leadingCSS}
 			className={field.innerCSS}
+			autocomplete={false}
 			removeArrows={field.removeArrows}
 			trailing={field.trailing}
 			readonly={field.readonly}
