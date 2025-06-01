@@ -110,5 +110,11 @@ pub fn build_migrations() -> Vec<Migration> {
                             sql: include_str!("migrations/20250406133523_history_nodes.up.sql"),
                             kind: MigrationKind::Up,
                         },
+                        Migration {
+                            version: 18,
+                            description: "Ajout d'un champ deja_faites à la table prescriptions pour les reprise de patients",
+                            sql: include_str!("migrations/20250530133523_prescription_deja_faites.up.sql"),
+                            kind: MigrationKind::Up,
+                        },
                     ]
 }
