@@ -49,7 +49,8 @@
 				Kiné Helper
 			</h2>
 			<p class=" text-center text-sm text-gray-600">
-				{$t('login', 'subtitle')}
+				<!-- {$t('login', 'subtitle')} -->
+				Open Source et au service des kinésithérapeutes
 			</p>
 		</div>
 		{#if selectedForm == 'login'}

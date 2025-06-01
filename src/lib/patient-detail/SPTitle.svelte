@@ -80,7 +80,7 @@
 					{currentSp?.motif?.split(' ')?.slice(0, 3).join(' ')}
 					{currentSp?.motif?.split(' ')?.length > 3 ? '...' : ''}
 				</p>
-				<p class="text-sm font-medium text-gray-600">{patient?.nom} {patient?.nom}</p>
+				<p class="text-sm font-medium text-gray-600">{patient?.nom} {patient?.prenom}</p>
 			</div>
 		</div>
 	{/snippet}

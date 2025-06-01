@@ -46,7 +46,7 @@ export class AsyncQueueManager {
 			data: {
 				id: taskId,
 				data: JSON.stringify(task.data),
-				token: session.data.session.access_token,
+				token: session?.data?.session?.access_token,
 				user_id: appState.user.id
 			}
 		};

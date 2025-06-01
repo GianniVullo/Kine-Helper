@@ -14,6 +14,7 @@
 	import { invalidate } from '$app/navigation';
 	import Drawer from '../../../../../../../lib/cloud/libraries/overlays/Drawer.svelte';
 	import CardTable from '../../../../../../../lib/components/CardTable.svelte';
+	import { openDrawer } from '../../../../../../../lib/cloud/libraries/overlays/drawerUtilities.svelte';
 
 	let { data } = $props();
 	let { patient, sp } = data;
@@ -111,6 +112,7 @@
 												console.log('accord in update button', accord);
 												openDrawer({
 													name: 'accordUpdate',
+													accordId: accord.id,
 													accord: cloneDeep($state.snapshot(accord))
 												});
 											}}

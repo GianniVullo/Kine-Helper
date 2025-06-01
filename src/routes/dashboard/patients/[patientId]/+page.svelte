@@ -12,10 +12,10 @@
 	<div
 		class="mt-10 w-full border-b border-gray-200 pb-5 sm:flex sm:items-center sm:justify-between">
 		<h3 class="text-base font-semibold text-gray-900">Situations pathologiques</h3>
-		<div class="mt-3 sm:ml-4 sm:mt-0">
+		<div class="mt-3 sm:mt-0 sm:ml-4">
 			<a
 				href={`/dashboard/patients/${data.patient.patient_id}/situation-pathologique/create`}
-				class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+				class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
 				>Ajouter une situation pathologique</a>
 		</div>
 	</div>
@@ -43,7 +43,7 @@
 				<div class="flex shrink-0 items-center gap-x-4">
 					<div class="hidden sm:flex sm:flex-col sm:items-end">
 						<span
-							class="inline-flex items-center rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-600/10"
+							class="inline-flex items-center rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-700 ring-1 ring-red-600/10 ring-inset"
 							>10 séances non tarifiées</span>
 						<p class="mt-1 text-xs/5 text-gray-500">
 							Créée le <time datetime="2023-01-23T13:23Z"
@@ -88,9 +88,9 @@
 			<a
 				href={`/dashboard/patients/${data.patient.patient_id}/situation-pathologique/create`}
 				type="button"
-				class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
+				class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
 				<svg
-					class="-ml-0.5 mr-1.5 size-5"
+					class="mr-1.5 -ml-0.5 size-5"
 					viewBox="0 0 20 20"
 					fill="currentColor"
 					aria-hidden="true"

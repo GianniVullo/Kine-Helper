@@ -51,7 +51,9 @@
 					{patient?.nom}
 					{patient?.prenom}
 				</p>
-				<p class="text-sm font-medium text-gray-600">Mutualité</p>
+				{#if patient.mutualite}
+					<p class="text-sm font-medium text-gray-600">Mutualité : {patient.mutualite}</p>
+				{/if}
 			</div>
 		</div>
 	{/snippet}
