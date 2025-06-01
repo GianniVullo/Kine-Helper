@@ -1,16 +1,18 @@
 <script>
 	import { Formulaire } from '../../../libraries/formHandler.svelte';
-	import { PatientSchema, fieldSchema, onValid, validateurs } from './PatientSchema';
+	import { buildPatientSchema, fieldSchema, onValid } from './PatientSchema';
 	import { t } from '../../../../i18n';
 	import Form from '../abstract-components/Form.svelte';
 	import FormSection from '../abstract-components/FormSection.svelte';
-	import { onMount } from 'svelte';
 	import SubmitButton from '../../../../forms/ui/SubmitButton.svelte';
 	import { appState } from '../../../../managers/AppState.svelte';
 	import EidReader from '../../../libraries/EIDReader.svelte';
+	import { untrack } from 'svelte';
 	import dayjs from 'dayjs';
 
 	let { patient, mode = 'create' } = $props();
+
+	let { PatientSchema, validateurs } = buildPatientSchema();
 
 	let formHandler = new Formulaire({
 		validateurs,
@@ -40,8 +42,44 @@
 		mode
 	});
 
-	onMount(() => {
-		formHandler.setup();
+	function extractDateOfBirth(nationalNumber) {
+		// Remove dashes or dots if present
+		const cleaned = nationalNumber.replace(/[^0-9]/g, '');
+
+		let year = parseInt(cleaned.substring(0, 2), 10);
+		const month = cleaned.substring(2, 4);
+		const day = cleaned.substring(4, 6);
+
+		// Determine the century
+		const currentYear = new Date().getFullYear();
+		const currentCentury = Math.floor(currentYear / 100) * 100;
+		const fullYearGuess = currentCentury + year;
+
+		// Checksum helps determine if the person was born before 2000
+		const base = cleaned.substring(0, 9);
+		const checksum = parseInt(cleaned.substring(9, 11), 10);
+		let calculatedChecksum = 97 - (parseInt(base, 10) % 97);
+
+		if (calculatedChecksum !== checksum) {
+			// If checksum is wrong, try adding 2-digit prefix '2' (for post-2000 births)
+			year += 2000;
+			calculatedChecksum = 97 - (parseInt('2' + base, 10) % 97);
+			if (calculatedChecksum !== checksum) {
+				return;
+			}
+		} else {
+			year += 1900;
+		}
+
+		return `${year}-${month}-${day}`;
+	}
+
+	$effect(() => {
+		if (formHandler.form.niss?.length === 11) {
+			untrack(() => {
+				formHandler.form.date_naissance = extractDateOfBirth(formHandler.form.niss);
+			});
+		}
 	});
 </script>
 

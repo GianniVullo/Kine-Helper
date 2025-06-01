@@ -3,7 +3,6 @@
 
 	import { Formulaire } from '../../../libraries/formHandler.svelte';
 	import {
-		AttestationSchema,
 		fieldSchema,
 		financeSchema,
 		actionFields,
@@ -11,13 +10,12 @@
 		financeCheckboxSchema,
 		idFields,
 		onValid,
-		validateurs,
-		patient_field
+		patient_field,
+		buildAttestationSchema
 	} from './AttestationSchema';
 	import { t } from '../../../../i18n';
 	import Form from '../abstract-components/Form.svelte';
 	import FormSection from '../abstract-components/FormSection.svelte';
-	import { onMount, tick } from 'svelte';
 	import SubmitButton from '../../../../forms/ui/SubmitButton.svelte';
 	import { appState } from '../../../../managers/AppState.svelte';
 	import dayjs from 'dayjs';
@@ -36,17 +34,8 @@
 		lines,
 		numero
 	} = $props();
-	console.log('AttestationForm', {
-		patient,
-		sp,
-		prescription_id,
-		attestation,
-		valeur_totale,
-		total_recu,
-		seances,
-		mode,
-		lines
-	});
+
+	let { AttestationSchema, validateurs } = buildAttestationSchema();
 
 	let formHandler = new Formulaire({
 		validateurs,
@@ -60,7 +49,9 @@
 			date: attestation?.date ?? lines[lines.length - 1].date,
 			prescription_id: attestation?.prescription_id ?? prescription_id,
 			attestation_id: attestation?.attestation_id ?? crypto.randomUUID(),
-			porte_prescr: attestation?.porte_prescr ?? !sp.attestations?.some((a) => a.porte_prescr && a.prescription_id === prescription_id),
+			porte_prescr:
+				attestation?.porte_prescr ??
+				!sp.attestations?.some((a) => a.porte_prescr && a.prescription_id === prescription_id),
 			has_been_printed: attestation?.has_been_printed ?? false,
 			numero_etablissement: attestation?.numero_etablissement,
 			service: attestation?.service,
@@ -86,10 +77,6 @@
 		},
 		onValid,
 		mode
-	});
-
-	onMount(() => {
-		formHandler.setup(onValid);
 	});
 </script>
 

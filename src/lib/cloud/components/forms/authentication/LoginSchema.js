@@ -1,4 +1,4 @@
-import * as v from 'valibot';
+import { pipe, transform, object } from 'valibot';
 import { get } from 'svelte/store';
 import { t } from '../../../../i18n';
 import { retrieveProfile, signUserIn } from '../../../../user-ops-handlers/users';
@@ -7,30 +7,34 @@ import { lock, userIcon } from '../../../../ui/svgs/IconSnippets.svelte';
 import { appState } from '../../../../managers/AppState.svelte';
 import { trace, error as errorLog, info } from '@tauri-apps/plugin-log';
 import { checkAndUpdateConventions } from '../../../../stores/conventionStore';
+import { emailVal, stringVal } from '../validators/commons';
 
-const email = v.pipe(
-	v.transform((input) =>
-		input?.length === 0 ? null : typeof input === 'string' ? input.toLowerCase() : input
-	),
-	v.pipe(v.string('Ce champ est obligatoire'), v.email('Email invalide'))
-);
+export function buildLoginSchema() {
+	const email = pipe(
+		transform((input) =>
+			input?.length === 0 ? null : typeof input === 'string' ? input.toLowerCase() : input
+		),
+		emailVal
+	);
 
-const password = v.pipe(
-	v.transform((input) => (input?.length == 0 ? null : input)),
-	v.pipe(v.string('Ce champ est obligatoire'))
-);
+	const password = pipe(
+		transform((input) => (input?.length === 0 ? null : input)),
+		stringVal
+	);
 
-export const validateurs = {
-	email,
-	password
-};
-
-export const LoginSchema = v.pipe(
-	v.object({
+	const validateurs = {
 		email,
 		password
-	})
-);
+	};
+
+	const LoginSchema = pipe(
+		object({
+			email,
+			password
+		})
+	);
+	return { LoginSchema, validateurs };
+}
 
 export async function onValid(data) {
 	trace('In the LoginForm onValid');

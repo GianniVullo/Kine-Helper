@@ -1,55 +1,48 @@
-import * as v from 'valibot';
+import { pipe, transform, object, forward } from 'valibot';
 import { t } from '../../../../i18n';
 import { get } from 'svelte/store';
 import { lock, mailIcon, userIcon } from '../../../../ui/svgs/IconSnippets.svelte';
 import { createUser } from '$lib/user-ops-handlers/users';
 import { toast } from '$lib/cloud/libraries/overlays/notificationUtilities.svelte';
+import { stringVal, emailVal } from '../validators/commons';
+import {
+	minLengthPassword,
+	partialCheckPasswordComparison,
+	passwordValidator
+} from '../validators/specifics/authentication';
+export function buildSignupSchema() {
+	const email = pipe(
+		transform((input) =>
+			input?.length === 0 ? null : typeof input === 'string' ? input.toLowerCase() : input
+		),
+		pipe(stringVal, emailVal)
+	);
 
-const email = v.pipe(
-	v.transform((input) =>
-		input?.length === 0 ? null : typeof input === 'string' ? input.toLowerCase() : input
-	),
-	v.pipe(v.string('Ce champ est obligatoire'), v.email('Email invalide'))
-);
+	const password = pipe(
+		transform((input) => (input?.length == 0 ? null : input)),
+		pipe(stringVal, minLengthPassword, passwordValidator)
+	);
 
-const password = v.pipe(
-	v.transform((input) => (input?.length == 0 ? null : input)),
-	v.pipe(
-		v.string('Ce champ est obligatoire'),
-		v.minLength(1, 'Please enter your password.'),
-		v.regex(
-			/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$/,
-			'Your password must have 8 characters or more. Contains at least 1 upper case letter, one number and one special caracter'
-		)
-	)
-);
-
-const password2 = v.pipe(
-	v.transform((input) => (input?.length == 0 ? null : input)),
-	v.string('Ce champ est obligatoire')
-);
-
-export const validateurs = {
-	email,
-	password,
-	password2
-};
-
-export const SignupSchema = v.pipe(
-	v.object({
+	const password2 = pipe(
+		transform((input) => (input?.length == 0 ? null : input)),
+		stringVal
+	);
+	const validateurs = {
 		email,
 		password,
 		password2
-	}),
-	v.forward(
-		v.partialCheck(
-			[['password1'], ['password2']],
-			(input) => input.password === input.password2,
-			'The two passwords do not match.'
-		),
-		['password2']
-	)
-);
+	};
+
+	const SignupSchema = pipe(
+		object({
+			email,
+			password,
+			password2
+		}),
+		forward(partialCheckPasswordComparison, ['password2'])
+	);
+	return { SignupSchema, validateurs };
+}
 
 export async function onValid(data) {
 	await createUser(data);

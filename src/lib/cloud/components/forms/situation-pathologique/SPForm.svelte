@@ -1,5 +1,5 @@
 <script>
-	import { SPSchema, onValid, validateurs, fieldSchema } from './SPSchema';
+	import { onValid, buildSPSchema, fieldSchema } from './SPSchema';
 	import { SubmitButton } from '../../../../forms/index';
 	import { t } from '../../../../i18n';
 	import Form from '../abstract-components/Form.svelte';
@@ -7,7 +7,7 @@
 	import dayjs from 'dayjs';
 	import { Formulaire } from '../../../libraries/formHandler.svelte';
 	import { appState } from '../../../../managers/AppState.svelte';
-	import { onMount, untrack } from 'svelte';
+	import { untrack } from 'svelte';
 	import NomenclatureDefinerFields from '../tarification-fields/NomenclatureDefinerFields.svelte';
 	import SupplementField from '../tarification-fields/SupplementField.svelte';
 	import TarifField from '../tarification-fields/TarifField.svelte';
@@ -19,6 +19,8 @@
 		'sp',
 		sp?.seances.some((s) => s.has_been_attested)
 	);
+
+	let { SPSchema, validateurs } = buildSPSchema();
 
 	let formHandler = new Formulaire({
 		validateurs,
@@ -61,10 +63,6 @@
 			id: `groupe${index}`
 		}))
 		.filter((_, index) => (sp?.groupe_id ? sp.groupe_id === index : true));
-
-	onMount(() => {
-		formHandler.setup();
-	});
 
 	let lieuOptions = $state([]);
 

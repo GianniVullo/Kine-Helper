@@ -1,10 +1,5 @@
 <script>
-	import {
-		PrescriptionSchema,
-		onValid,
-		validateurs,
-		fieldSchema
-	} from './PrescriptionSchema.svelte';
+	import { buildPrescriptionSchema, onValid, fieldSchema } from './PrescriptionSchema.svelte';
 	import { SubmitButton } from '../../../../forms/index';
 	import { t } from '../../../../i18n';
 	import Form from '../abstract-components/Form.svelte';
@@ -12,7 +7,6 @@
 	import dayjs from 'dayjs';
 	import { Formulaire } from '../../../libraries/formHandler.svelte';
 	import { appState } from '../../../../managers/AppState.svelte';
-	import { onMount } from 'svelte';
 	import Field from '../abstract-components/Field.svelte';
 	import PhotocopieField from './PhotocopieField.svelte';
 	import { appLocalDataDir } from '@tauri-apps/api/path';
@@ -21,6 +15,8 @@
 	let { prescription, patient, sp, mode = 'create', title } = $props();
 
 	let fieldSchemaMode = fieldSchema(mode);
+
+	let { PrescriptionSchema, validateurs } = buildPrescriptionSchema();
 
 	let formHandler = new Formulaire({
 		validateurs,
@@ -38,10 +34,6 @@
 		mode
 	});
 
-	onMount(() => {
-		formHandler.setup();
-		console.log('The form State = ', formHandler.form);
-	});
 	const docNamePromise = new Promise(async (resolve) => {
 		resolve(`${await appLocalDataDir()}/${prescriptionPath()}`);
 	});

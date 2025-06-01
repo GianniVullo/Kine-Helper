@@ -1,5 +1,6 @@
 import { trace } from '@tauri-apps/plugin-log';
 import { isEqual } from 'lodash';
+import { onMount } from 'svelte';
 import { safeParse, safeParseAsync } from 'valibot';
 
 //* API de validation de formulaire
@@ -76,6 +77,10 @@ export class Formulaire {
 			this.evaluateAndValidate(this.form);
 		});
 		this.scrollable = scrollable;
+		onMount(() => {
+			this.setup();
+		});
+
 		console.log('initialValues', this.initialValues);
 	}
 

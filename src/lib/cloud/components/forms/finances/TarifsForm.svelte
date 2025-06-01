@@ -3,17 +3,14 @@
 	import { TarifsSchema, validateurs, onValid } from './TarifsSchema.svelte';
 	import Form from '../abstract-components/Form.svelte';
 	import FormSection from '../abstract-components/FormSection.svelte';
-	import { onMount } from 'svelte';
 	import SubmitButton from '../../../../forms/ui/SubmitButton.svelte';
 	import { appState } from '../../../../managers/AppState.svelte';
 	import { page } from '$app/state';
 	import DefaultTarifField from './DefaultTarifField.svelte';
 	import dayjs from 'dayjs';
-	import { get } from 'svelte/store';
 	import { t } from '../../../../i18n';
 	import TarifsListField from './TarifsListField.svelte';
 	import Modal from '../../../libraries/overlays/Modal.svelte';
-	import { pushState } from '$app/navigation';
 	import { openModal } from '../../../libraries/overlays/modalUtilities.svelte';
 
 	let now = dayjs().format('YYYY-MM-DD');
@@ -95,10 +92,6 @@
 			}
 		},
 		onValid
-	});
-
-	onMount(() => {
-		formHandler.setup();
 	});
 </script>
 

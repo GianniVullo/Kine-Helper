@@ -3,17 +3,14 @@
 	import { t } from '../../../../i18n';
 	import Field from '../abstract-components/Field.svelte';
 	import { Formulaire } from '../../../libraries/formHandler.svelte';
-	import { SignupSchema, onValid, fieldSchema, validateurs } from './SignupSchema';
-	import { onMount } from 'svelte';
+	import { onValid, fieldSchema, buildSignupSchema } from './SignupSchema';
+
+	let { SignupSchema, validateurs } = buildSignupSchema();
 
 	let formHandler = new Formulaire({
 		validateurs,
 		schema: SignupSchema,
 		onValid
-	});
-
-	onMount(() => {
-		formHandler.setup();
 	});
 </script>
 

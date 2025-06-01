@@ -1,98 +1,92 @@
-import * as v from 'valibot';
+import {
+	boolean,
+	isoDate,
+	nullish,
+	picklist,
+	pipe,
+	string,
+	transform,
+	uuid,
+	object
+} from 'valibot';
 import { t } from '../../../../i18n';
 import { createPatient, updatePatient } from '../../../../user-ops-handlers/patients';
 import { get } from 'svelte/store';
 import { goto, invalidate } from '$app/navigation';
 import { info, trace } from '@tauri-apps/plugin-log';
+import {
+	digitVal,
+	emailVal,
+	mutualiteValidator,
+	nissValidator,
+	postCodeValidator,
+	stringLengthMoreThan1
+} from '../validators/commons';
 // import { historyManager } from '../../../../managers/HistoryManager.svelte';
 
-const SEX = ['F', 'M'];
+export function buildPatientSchema() {
+	const SEX = ['F', 'M'];
+	const user_id = uuid();
+	const patient_id = uuid();
+	const nom = stringLengthMoreThan1;
+	const prenom = nullish(string());
+	const niss = nullish(nissValidator);
+	const date_naissance = nullish(isoDate());
+	const sexe = nullish(picklist(SEX));
+	const adresse = nullish(string());
+	const cp = nullish(postCodeValidator);
+	const localite = nullish(string());
+	const num_affilie = nullish(string());
+	const tiers_payant = boolean();
+	const ticket_moderateur = boolean();
+	const bim = boolean();
+	const mutualite = nullish(mutualiteValidator);
+	const email = pipe(
+		transform((input) => (input?.length == 0 ? null : input)),
+		nullish(pipe(string(), emailVal))
+	);
+	const tel = pipe(
+		transform((input) => (input ? input : null)),
+		nullish(pipe(string(), digitVal))
+	);
+	const gsm = pipe(
+		transform((input) => (input ? input : null)),
+		nullish(pipe(string(), digitVal))
+	);
 
-const user_id = v.pipe(v.nonNullable(v.string()), v.uuid());
-const patient_id = v.pipe(v.optional(v.string()), v.uuid());
-const nom = v.pipe(
-	v.transform((input) => (input?.length === 0 ? null : input)),
-	v.string('Ce champ est obligatoire'),
-	v.minWords(1, 'Veuillez insérer un nom')
-);
-const prenom = v.nullable(v.string());
-const niss = v.pipe(
-	v.transform((input) => (input?.length === 0 ? null : input)),
-	v.nullable(
-		v.pipe(
-			v.string(),
-			v.length(11, 'Veuillez insérer seulement les 11 caractères du niss'),
-			v.digits('Ce champ ne peut contenir que des chiffres')
-		)
-	)
-);
-const date_naissance = v.pipe(
-	v.nullable(v.isoDate())
-	// v.transform((input) => dayjs(input))
-);
-const sexe = v.nullable(v.picklist(SEX));
-const adresse = v.pipe(v.nullable(v.string()));
-const cp = v.nullable(
-	v.pipe(
-		v.transform((input) => (typeof input == 'number' ? `${input}` : input)),
-		v.string(),
-		v.length(4, 'Veuillez entrer seulement 4 chiffres svp'),
-		v.digits('Ce champ ne peut contenir que des chiffres')
-	)
-);
-const localite = v.nullable(v.string());
-const num_affilie = v.nullable(v.string());
-const tiers_payant = v.pipe(v.optional(v.boolean()));
-const ticket_moderateur = v.pipe(v.optional(v.boolean()));
-const bim = v.pipe(v.optional(v.boolean()));
-const mutualite = v.nullable(
-	v.pipe(
-		v.transform((input) => (typeof input == 'number' ? `${input}` : input)),
-		v.string(),
-		v.length(3, "Veuillez entrer seulement l'identifiant à 3 chiffres de la mutualité"),
-		v.digits('Ce champ ne peut contenir que des chiffres')
-	)
-);
-//// const numero_etablissement = v.nullable(v.string());
-//// const service = v.nullable(v.string());
-const email = v.pipe(
-	v.transform((input) => (input?.length == 0 ? null : input)),
-	v.nullable(v.pipe(v.string(), v.email('Email invalide')))
-);
-const tel = v.nullable(v.pipe(v.string(), v.digits('Ce champ ne peut contenir que des chiffres')));
-const gsm = v.nullable(v.pipe(v.string(), v.digits('Ce champ ne peut contenir que des chiffres')));
+	const validateurs = {
+		// Id
+		user_id,
+		patient_id,
+		nom,
+		prenom,
+		niss,
+		date_naissance,
+		sexe,
+		adresse,
+		cp,
+		localite,
+		// Assurabilité
+		num_affilie,
+		tiers_payant,
+		ticket_moderateur,
+		bim,
+		mutualite,
+		//// numero_etablissement,
+		//// service,
+		// Contact
+		tel,
+		gsm,
+		email
+	};
 
-export const validateurs = {
-	// Id
-	user_id,
-	patient_id,
-	nom,
-	prenom,
-	niss,
-	date_naissance,
-	sexe,
-	adresse,
-	cp,
-	localite,
-	// Assurabilité
-	num_affilie,
-	tiers_payant,
-	ticket_moderateur,
-	bim,
-	mutualite,
-	//// numero_etablissement,
-	//// service,
-	// Contact
-	tel,
-	gsm,
-	email
-};
-
-export const PatientSchema = v.pipe(
-	v.object({
-		...validateurs
-	}),
-);
+	const PatientSchema = pipe(
+		object({
+			...validateurs
+		})
+	);
+	return { validateurs, PatientSchema };
+}
 
 export async function onValid(data) {
 	trace('In PatientForm.onValid');
@@ -108,7 +102,7 @@ export async function onValid(data) {
 	} else {
 		trace('Engaging Patient modification');
 		// <!--* UPDATE PROCEDURE -->
-		
+
 		const { error } = await updatePatient(data);
 		if (error) {
 			return (this.message = error.message);
@@ -144,7 +138,7 @@ const identificationFields = [
 		placeholder: get(t)('shared', 'name'),
 		titre: get(t)('shared', 'name'),
 		help: null,
-		outerCSS: 'sm:col-span-4',
+		outerCSS: 'col-span-full sm:col-span-3',
 		innerCSS: ''
 	},
 	{
@@ -154,7 +148,7 @@ const identificationFields = [
 		placeholder: get(t)('shared', 'surname'),
 		titre: get(t)('shared', 'surname'),
 		help: null,
-		outerCSS: 'sm:col-span-4',
+		outerCSS: 'col-span-full sm:col-span-3',
 		innerCSS: ''
 	},
 	{
@@ -164,7 +158,7 @@ const identificationFields = [
 		placeholder: get(t)('form.patient', 'label.niss'),
 		titre: get(t)('form.patient', 'label.niss'),
 		help: null,
-		outerCSS: 'sm:col-span-4',
+		outerCSS: 'col-span-full sm:col-span-3',
 		innerCSS: ''
 	},
 	{
@@ -174,7 +168,7 @@ const identificationFields = [
 		placeholder: get(t)('form.patient', 'label.birthDate'),
 		titre: get(t)('form.patient', 'label.birthDate'),
 		help: null,
-		outerCSS: 'sm:col-span-4',
+		outerCSS: 'col-span-full sm:col-span-3',
 		innerCSS: ''
 	},
 	{
@@ -188,7 +182,7 @@ const identificationFields = [
 			{ id: 'f', value: 'F', name: 'female', label: get(t)('form.patient', 'sex.female') }
 		],
 		help: null,
-		outerCSS: 'sm:col-span-full',
+		outerCSS: 'col-span-full sm:col-span-full',
 		innerCSS: ''
 	},
 	{
@@ -198,7 +192,7 @@ const identificationFields = [
 		placeholder: get(t)('shared', 'address'),
 		titre: get(t)('shared', 'address'),
 		help: null,
-		outerCSS: 'sm:col-span-full',
+		outerCSS: 'col-span-full sm:col-span-full',
 		innerCSS: ''
 	},
 	{
@@ -208,7 +202,7 @@ const identificationFields = [
 		placeholder: get(t)('form.postSignup', 'label.postCode'),
 		titre: get(t)('form.postSignup', 'label.postCode'),
 		help: null,
-		outerCSS: 'sm:col-span-2',
+		outerCSS: 'col-span-2',
 		innerCSS: ''
 	},
 	{
@@ -218,7 +212,7 @@ const identificationFields = [
 		placeholder: get(t)('form.postSignup', 'label.city'),
 		titre: get(t)('form.postSignup', 'label.city'),
 		help: null,
-		outerCSS: 'sm:col-span-4',
+		outerCSS: 'col-span-4',
 		innerCSS: ''
 	}
 ];
@@ -231,7 +225,7 @@ const assurabiliteFields = [
 		placeholder: '319',
 		titre: 'Mutualité',
 		help: 'Veuillez n\'entrez que des nombres de 3 chiffres. Par exemple "319" pour Solidaris Wallonie',
-		outerCSS: 'sm:col-span-4',
+		outerCSS: 'col-span-full sm:col-span-4',
 		innerCSS: ''
 	},
 	{
@@ -241,7 +235,7 @@ const assurabiliteFields = [
 		placeholder: get(t)('form.patient', 'label.num_affilie'),
 		titre: get(t)('form.patient', 'label.num_affilie'),
 		help: 'Ce champ est <span class="italic ">extrêmement</span> facultatif.',
-		outerCSS: 'sm:col-span-4',
+		outerCSS: 'col-span-full sm:col-span-4',
 		innerCSS: ''
 	},
 	{
@@ -253,7 +247,7 @@ const assurabiliteFields = [
 			'Cochez cette case pour pratiquer le tiers payant avec ce patient. Vous devrez donc envoyer vos attestations à sa mutuelle.',
 		help: null,
 
-		outerCSS: 'sm:col-span-4',
+		outerCSS: 'col-span-full sm:col-span-4',
 		innerCSS: ''
 	},
 	{
@@ -264,7 +258,7 @@ const assurabiliteFields = [
 		checkboxDescription:
 			'Cochez cette case si vous faites payer le ticket modérateur à votre patient. Attention il y a une limite au nombre de patient pour lequel vous laissez tomber le ticket modérateur.',
 		help: null,
-		outerCSS: 'sm:col-span-4',
+		outerCSS: 'col-span-full sm:col-span-4',
 		innerCSS: ''
 	},
 	{
@@ -275,7 +269,7 @@ const assurabiliteFields = [
 		help: null,
 		checkboxDescription:
 			'Cochez cette case si votre patient est un Bénéficiaire à Intervention Majorée.',
-		outerCSS: 'sm:col-span-4',
+		outerCSS: 'col-span-full sm:col-span-4',
 		innerCSS: ''
 	}
 ];
@@ -286,9 +280,9 @@ const contactFields = [
 		name: 'tel',
 		inputType: 'text',
 		placeholder: get(t)('form.patient', 'label.tel'),
-		titre: get(t)('form.patient', 'label.tel'),
+		titre: "Téléphone 1",
 		help: null,
-		outerCSS: 'sm:col-span-4',
+		outerCSS: 'col-span-full sm:col-span-4',
 		innerCSS: ''
 	},
 	{
@@ -296,9 +290,9 @@ const contactFields = [
 		name: 'gsm',
 		inputType: 'text',
 		placeholder: get(t)('form.postSignup', 'label.cellPhone'),
-		titre: get(t)('form.postSignup', 'label.cellPhone'),
+		titre: "Téléphone 2",
 		help: null,
-		outerCSS: 'sm:col-span-4',
+		outerCSS: 'col-span-full sm:col-span-4',
 		innerCSS: ''
 	},
 	{
@@ -308,7 +302,7 @@ const contactFields = [
 		placeholder: 'email',
 		titre: 'Email',
 		help: null,
-		outerCSS: 'sm:col-span-4',
+		outerCSS: 'col-span-full sm:col-span-4',
 		innerCSS: ''
 	}
 ];

@@ -1,199 +1,188 @@
-import * as v from 'valibot';
+import {
+	pipe,
+	transform,
+	transformAsync,
+	uuid,
+	nullish,
+	number,
+	isoDate,
+	picklist,
+	boolean,
+	array,
+	object,
+	forwardAsync,
+	pipeAsync
+} from 'valibot';
 import { createSeance, editSeance } from '../../../../user-ops-handlers/seances';
 import { goto, invalidate } from '$app/navigation';
 import { info, trace, error as errorLog } from '@tauri-apps/plugin-log';
 import { appState } from '../../../../managers/AppState.svelte';
 import { numericalString } from '../../../../utils/validationGenerics';
 import { modelingMetadata, tarifUnitValidator } from '../tarification-fields/tarifHelpers';
-import { duree_int } from '../../../../stores/codeDetails';
 import { filtrerLesChampsAUpdater } from '../../../database';
 import { untrack } from 'svelte';
 import { isEmpty, isEqual } from 'lodash';
 import { Seance } from '../../../../user-ops-handlers/models';
 import { toast } from '../../../libraries/overlays/notificationUtilities.svelte';
 import { successIcon } from '../../../../ui/svgs/IconSnippets.svelte';
+import { isoDateWithMessage, isoTimeWithMessage } from '../validators/commons';
+import { seanceSameDayValidator, seanceTypes } from '../validators/specifics/seance';
+import { defineDuree } from './Commons.svelte';
 
-export const seanceTypes = ['kiné', 'consult', 'seconde', 'no-show'];
-const modeChoices = ['create', 'update'];
+export function buildSeanceSchema() {
+	const modeChoices = ['create', 'update'];
 
-const user_id = v.uuid();
-const patient_id = v.uuid();
-const sp_id = v.uuid();
-const prescription_id = v.nullish(v.uuid());
-const seance_id = v.uuid();
-const date = v.pipe(
-	v.transform((input) => (input?.length === 0 ? null : input)),
-	v.string('Ce champ est obligatoire'),
-	v.isoDate()
-);
+	const user_id = uuid();
+	const patient_id = uuid();
+	const sp_id = uuid();
+	const prescription_id = nullish(uuid());
+	const seance_id = uuid();
+	const date = pipe(
+		transform((input) => (input?.length === 0 ? null : input)),
+		isoDateWithMessage
+	);
 
-//* start and custom durée
-const start = v.pipe(
-	v.transform((input) => (input?.length === 0 ? null : input)),
-	v.string('Ce champ est obligatoire'),
-	v.isoTime()
-);
-const duree = v.number();
-const lieu_id = v.number();
-const duree_custom = v.number();
-const created_at = v.pipe(v.string('Ce champ est obligatoire'), v.isoDate());
-const seanceType = v.nullish(v.picklist(seanceTypes), 'kiné');
-const mode = v.picklist(modeChoices);
-const indemnite = v.optional(v.boolean());
-const ticket_moderateur = v.optional(v.boolean());
-const rapport_ecrit = v.optional(v.boolean());
-const intake = v.optional(v.boolean());
-const groupe_id = v.nullish(v.number());
-const patho_lourde_type = v.nullish(v.number());
+	//* start and custom durée
+	const start = pipe(
+		transform((input) => (input?.length === 0 ? null : input)),
+		isoTimeWithMessage
+	);
+	const duree = number();
+	const lieu_id = number();
+	const duree_custom = number();
+	const created_at = isoDate();
+	const seanceType = nullish(picklist(seanceTypes), 'kiné');
+	const mode = picklist(modeChoices);
+	const indemnite = boolean();
+	const ticket_moderateur = boolean();
+	const rapport_ecrit = boolean();
+	const intake = boolean();
+	const groupe_id = nullish(number());
+	const patho_lourde_type = nullish(number());
 
-// Tarifaction fields
-const supplements = v.nullish(v.array(v.uuid()));
-const supplements_ponctuels = v.nullish(v.array(tarifUnitValidator()));
+	// Tarifaction fields
+	const supplements = nullish(array(uuid()));
+	const supplements_ponctuels = nullish(array(tarifUnitValidator()));
 
-const tarif_seance = v.nullish(v.uuid());
-const tarif_indemnite = v.nullish(v.uuid());
-const tarif_rapport_ecrit = v.nullish(v.uuid());
-const tarif_consultatif = v.nullish(v.uuid());
-const tarif_seconde_seance = v.nullish(v.uuid());
-const tarif_intake = v.nullish(v.uuid());
-const tarif_no_show = v.nullish(v.uuid());
-const tarif_seance_custom = numericalString;
-const tarif_indemnite_custom = numericalString;
-const tarif_rapport_ecrit_custom = numericalString;
-const tarif_consultatif_custom = numericalString;
-const tarif_seconde_seance_custom = numericalString;
-const tarif_intake_custom = numericalString;
-const tarif_no_show_custom = numericalString;
+	const tarif_seance = nullish(uuid());
+	const tarif_indemnite = nullish(uuid());
+	const tarif_rapport_ecrit = nullish(uuid());
+	const tarif_consultatif = nullish(uuid());
+	const tarif_seconde_seance = nullish(uuid());
+	const tarif_intake = nullish(uuid());
+	const tarif_no_show = nullish(uuid());
+	const tarif_seance_custom = numericalString;
+	const tarif_indemnite_custom = numericalString;
+	const tarif_rapport_ecrit_custom = numericalString;
+	const tarif_consultatif_custom = numericalString;
+	const tarif_seconde_seance_custom = numericalString;
+	const tarif_intake_custom = numericalString;
+	const tarif_no_show_custom = numericalString;
 
-export const validateurs = {
-	user_id,
-	patient_id,
-	sp_id,
-	prescription_id,
-	seance_id,
-	created_at,
-	date,
-	start,
-	duree,
-	lieu_id,
-	duree_custom,
-	ticket_moderateur,
-	seanceType,
-	indemnite,
-	rapport_ecrit,
-	intake,
-	duree,
-	groupe_id,
-	patho_lourde_type,
-	supplements,
-	supplements_ponctuels,
-	tarif_seance,
-	tarif_indemnite,
-	tarif_rapport_ecrit,
-	tarif_consultatif,
-	tarif_seconde_seance,
-	tarif_intake,
-	tarif_seance_custom,
-	tarif_indemnite_custom,
-	tarif_rapport_ecrit_custom,
-	tarif_consultatif_custom,
-	tarif_seconde_seance_custom,
-	tarif_intake_custom,
-	tarif_no_show,
-	tarif_no_show_custom,
-	mode
-};
+	const validateurs = {
+		user_id,
+		patient_id,
+		sp_id,
+		prescription_id,
+		seance_id,
+		created_at,
+		date,
+		start,
+		duree,
+		lieu_id,
+		duree_custom,
+		ticket_moderateur,
+		seanceType,
+		indemnite,
+		rapport_ecrit,
+		intake,
+		duree,
+		groupe_id,
+		patho_lourde_type,
+		supplements,
+		supplements_ponctuels,
+		tarif_seance,
+		tarif_indemnite,
+		tarif_rapport_ecrit,
+		tarif_consultatif,
+		tarif_seconde_seance,
+		tarif_intake,
+		tarif_seance_custom,
+		tarif_indemnite_custom,
+		tarif_rapport_ecrit_custom,
+		tarif_consultatif_custom,
+		tarif_seconde_seance_custom,
+		tarif_intake_custom,
+		tarif_no_show,
+		tarif_no_show_custom,
+		mode
+	};
 
-export const SeanceSchema = v.pipeAsync(
-	v.object({
-		...validateurs
-	}),
-	//! pour l'instant je préfère qu'on passe seulement des warnings et que l'on ne fasse de blocage stricte car il y a toujours ce cas de figure en patho lourde ou le kiné peut aller voir le patient plus de deux fois par jour...
-	v.forwardAsync(
-		v.partialCheckAsync(
-			[['date']],
-			async (input) => {
-				trace('Checking for seances on the same day');
-				let { data, error } = await appState.db.select(
-					'SELECT * FROM seances WHERE date(date) = $1 AND sp_id = $2',
-					[input.date, input.sp_id]
+	const SeanceSchema = pipeAsync(
+		object({
+			...validateurs
+		}),
+		//! pour l'instant je préfère qu'on passe seulement des warnings et que l'on ne fasse de blocage stricte car il y a toujours ce cas de figure en patho lourde ou le kiné peut aller voir le patient plus de deux fois par jour...
+		forwardAsync(seanceSameDayValidator, ['date']),
+		transformAsync(async (input) => {
+			modelingMetadata(input);
+			if (input.seanceType === 'kiné') {
+				delete input.metadata.tarif_consultatif;
+				delete input.metadata.tarif_seconde_seance;
+			} else if (input.seanceType === 'consult') {
+				delete input.metadata.tarif_seance;
+				delete input.metadata.tarif_seconde_seance;
+			} else if (input.seanceType === 'consult') {
+				delete input.metadata.tarif_consultatif;
+				delete input.metadata.tarif_seance;
+			}
+			if (input.supplements_ponctuels.length > 0) {
+				input.metadata.ss_p = input.supplements_ponctuels.map((sup) => {
+					return { nom: sup.nom, valeur: sup.valeur };
+				});
+			}
+			delete input.supplements_ponctuels;
+			if (input.intake) {
+				input.metadata.intake = input.intake;
+			}
+
+			let duree_normale = defineDuree(input.duree, input.patho_lourde_type, input.lieu_id);
+			if (!duree_normale || duree_normale !== input.duree_custom) {
+				input.metadata.duree_custom = input.duree_custom;
+			}
+			input.seance_type = seanceTypes.indexOf(input.seanceType);
+			delete input.seanceType;
+			if (Object.keys(input.metadata).length === 0) {
+				input.metadata = null;
+			}
+
+			if (input.mode === 'update') {
+				const seance = new Seance(
+					(
+						await appState.db.select('SELECT * FROM seances WHERE seance_id = $1', [
+							input.seance_id
+						])
+					).data[0]
 				);
-				if (error) {
-					errorLog('Error while checking for seances on the same day ' + error);
-					return false;
+				if (isEqual(seance.metadata, input.metadata)) {
+					delete input.metadata;
 				}
-				if (
-					data.length > 1 &&
-					typeof input.groupe_id === 'number' &&
-					input.groupe_id !== 1 &&
-					typeof input.patho_lourde_type === 'number' &&
-					input.patho_lourde_type !== 5
-				) {
-					return false;
+				if (seance.seance_type === input.seance_type) {
+					delete input.seance_type;
 				}
-				return true;
-			},
-			'Il y a déjà 2 séances ce jour là !'
-		),
-		['date']
-	),
-	v.transformAsync(async (input) => {
-		modelingMetadata(input);
-		if (input.seanceType === 'kiné') {
-			delete input.metadata.tarif_consultatif;
-			delete input.metadata.tarif_seconde_seance;
-		} else if (input.seanceType === 'consult') {
-			delete input.metadata.tarif_seance;
-			delete input.metadata.tarif_seconde_seance;
-		} else if (input.seanceType === 'consult') {
-			delete input.metadata.tarif_consultatif;
-			delete input.metadata.tarif_seance;
-		}
-		if (input.supplements_ponctuels.length > 0) {
-			input.metadata.ss_p = input.supplements_ponctuels.map((sup) => {
-				return { nom: sup.nom, valeur: sup.valeur };
-			});
-		}
-		delete input.supplements_ponctuels;
-		if (input.intake) {
-			input.metadata.intake = input.intake;
-		}
-
-		let duree_normale = defineDuree(input.duree, input.patho_lourde_type, input.lieu_id);
-		if (!duree_normale || duree_normale !== input.duree_custom) {
-			input.metadata.duree_custom = input.duree_custom;
-		}
-		input.seance_type = seanceTypes.indexOf(input.seanceType);
-		delete input.seanceType;
-		if (Object.keys(input.metadata).length === 0) {
-			input.metadata = null;
-		}
-
-		if (input.mode === 'update') {
-			const seance = new Seance(
-				(
-					await appState.db.select('SELECT * FROM seances WHERE seance_id = $1', [input.seance_id])
-				).data[0]
-			);
-			if (isEqual(seance.metadata, input.metadata)) {
-				delete input.metadata;
 			}
-			if (seance.seance_type === input.seance_type) {
-				delete input.seance_type;
-			}
-		}
-		delete input.duree_custom;
-		delete input.tarif_no_show;
-		delete input.tarif_no_show_custom;
-		delete input.mode;
-		delete input.intake;
-		return input;
-	})
-);
+			delete input.duree_custom;
+			delete input.tarif_no_show;
+			delete input.tarif_no_show_custom;
+			delete input.mode;
+			delete input.intake;
+			return input;
+		})
+	);
+	return { SeanceSchema, validateurs };
+}
 
 export async function onValid(data) {
-	trace('in onValid with data' + JSON.stringify(data));
-
 	trace('In SeanceForm.onValid');
 
 	if (this.mode === 'create') {
@@ -223,7 +212,8 @@ export async function onValid(data) {
 		toast.trigger({
 			titre: modificationDone ? 'Séance modifiée avec succès.' : 'Aucune modification effectuée.',
 			description: 'Vous retrouverez votre séance dans votre agenda',
-			leading: successIcon
+			leading: successIcon,
+			timeout: 3000,
 		});
 	}
 
@@ -316,35 +306,6 @@ export const checkboxesFields = [
 		innerCSS: ''
 	}
 ];
-
-export function defineDuree(duree, patho_lourde_type, lieu_id) {
-	if (duree) {
-		return duree_int(duree);
-	}
-	if (patho_lourde_type) {
-		switch (patho_lourde_type) {
-			case 0:
-				if ([0, 1, 2, 3, 7].includes(lieu_id)) {
-					return 30;
-				}
-				return 20;
-			case 1 || 2:
-				return 60;
-			case 3:
-				return 120;
-			case 4:
-				return 45;
-			case 5:
-				return null;
-			default:
-				break;
-		}
-	}
-	if (patho_lourde_type === 5) {
-		return 60;
-	}
-	return 30;
-}
 
 export class ComplexSetup {
 	dateChecked;

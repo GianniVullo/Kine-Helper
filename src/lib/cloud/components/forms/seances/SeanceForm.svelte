@@ -1,116 +1,72 @@
 <script>
 	import { Formulaire } from '../../../libraries/formHandler.svelte';
 	import {
-		SeanceSchema,
 		checkboxesFields,
 		dateField,
 		idFieldSchema,
 		onValid,
-		validateurs,
-		defineDuree,
 		ComplexSetup,
-		seanceTypes
+		buildSeanceSchema
 	} from './SeanceSchema.svelte';
 	import Form from '../abstract-components/Form.svelte';
 	import FormSection from '../abstract-components/FormSection.svelte';
-	import { onMount } from 'svelte';
 	import SubmitButton from '../../../../forms/ui/SubmitButton.svelte';
 	import { appState } from '../../../../managers/AppState.svelte';
 	import Field from '../abstract-components/Field.svelte';
 	import SimpleSelect from '../fields/SimpleSelect.svelte';
 	import TarifField from '../tarification-fields/TarifField.svelte';
-	import { getTarificationInitialValues } from '../tarification-fields/tarifHelpers';
-	import { get } from 'svelte/store';
 	import { page } from '$app/state';
-	import { t } from '../../../../i18n';
 	import SupplementField from '../tarification-fields/SupplementField.svelte';
 	import TarifsListField from '../finances/TarifsListField.svelte';
 	import dayjs from 'dayjs';
 	import { clock } from '../../../../ui/svgs/IconSnippets.svelte';
 	import { pushState } from '$app/navigation';
 	import Modal from '../../../libraries/overlays/Modal.svelte';
+	import { initialSeanceValues } from './Commons.svelte';
 
-	let fromCalendarDate = page.url.searchParams.get('date');
 	let now = dayjs().format('YYYY-MM-DD');
 
 	let { patient, sp, seance, tarifs, supplements, prescriptions, mode = 'create' } = $props();
-	console.log('seance', seance);
 
-	let { groupe_id, lieu_id, patho_lourde_type } = sp;
+	let { groupe_id } = sp;
 
-	const tarifMetadata = getTarificationInitialValues(sp, tarifs, seance);
-	const initialValues = {
-		user_id: appState.user.id,
-		patient_id: patient.patient_id,
-		sp_id: sp.sp_id,
-		prescription_id:
-			(seance?.prescription_id ?? prescriptions.length === 1)
-				? prescriptions[0].prescription_id
-				: null,
-		duree: seance?.duree ?? sp.duree,
-		seanceType:
-			typeof seance?.seance_type === 'number' ? seanceTypes[seance.seance_type] : undefined,
-		lieu_id: seance?.lieu_id ?? sp?.lieu_id,
-		start: seance?.start,
-		duree_custom:
-			seance?.metadata?.duree_custom ?? defineDuree(sp.duree, sp.patho_lourde_type, sp.lieu_id),
-		seance_id: seance?.seance_id ?? crypto.randomUUID(),
-		created_at: seance?.created_at ?? now,
-		date: seance?.date ?? fromCalendarDate ?? now,
-		ticket_moderateur: seance?.ticket_moderateur ?? patient.ticket_moderateur ?? true,
-		indemnite: seance?.indemnite ?? (lieu_id === 3 || groupe_id === 6 ? true : false),
-		rapport_ecrit: seance?.rapport_ecrit ?? false,
-		intake: seance?.metadata?.intake ?? false,
-		supplements_ponctuels:
-			seance?.metadata?.supplements_ponctuels?.map((s) => ({
-				id: undefined,
-				user_id: undefined,
-				created_at: undefined,
-				nom: s.nom,
-				valeur: s.valeur
-			})) ?? [],
-		groupe_id,
-		patho_lourde_type,
-		mode,
-		...tarifMetadata,
-		supplements: seance?.metadata?.supplements ?? []
-	};
-	console.log('splieud', sp.lieu_id === 3);
+	let { SeanceSchema, validateurs } = buildSeanceSchema();
+
 	let formHandler = new Formulaire({
 		validateurs,
 		schema: SeanceSchema,
 		isAsynchronous: true,
 		submiter: '#seance-submit',
-		initialValues,
+		initialValues: initialSeanceValues({ patient, sp, seance, prescriptions, tarifs, mode }),
 		onValid,
 		mode
 	});
 
 	const checkIfRapportEcrit = new Promise(async (resolve, reject) => {
-		console.log("In check rapport ecrit");
-		
+		console.log('In check rapport ecrit');
+
 		// Here the groups that doesn't allow a rapport ecrit to be created
 		if (typeof groupe_id === 'number' && [0, 6, 7].includes(groupe_id)) {
-			console.log("In check rapport ecrit : returning true");
+			console.log('In check rapport ecrit : returning true');
 			resolve(true);
 		}
 		let { data, error } = await appState.db.select(
 			`SELECT * FROM seances WHERE sp_id = $1 AND rapport_ecrit = $2`,
 			[sp.sp_id, true]
 		);
-		console.log("In check rapport ecrit : fetched seance", data);
-		
-		// We filter out the seances that are no-shows 
+		console.log('In check rapport ecrit : fetched seance', data);
+
+		// We filter out the seances that are no-shows
 		data = data.filter((s) => s.seance_type !== 3);
-		
+
 		// We filter out the seances that are not in the same year
 		data = data.filter((s) => {
 			const seanceDate = dayjs(s.date);
 			const currentDate = dayjs();
 			return seanceDate.year() === currentDate.year();
 		});
-		
-		console.log("In check rapport ecrit : filtered seance", data);
+
+		console.log('In check rapport ecrit : filtered seance', data);
 		if (error) {
 			reject(error);
 		}
@@ -140,24 +96,6 @@
 		}
 	});
 
-	const modal = (element, elementType) => ({
-		type: 'confirm',
-		title: 'Confirmation',
-		body: `Voulez-vous vraiment supprimer ${element.nom} ?`,
-		buttonTextConfirm: get(t)('shared', 'confirm'),
-		buttonTextCancel: get(t)('shared', 'cancel'),
-		modalClasses: {
-			buttonPositive: 'isModal'
-		},
-		response: async (r) => {
-			if (r) {
-				formHandler.form[elementType] = formHandler.form[elementType].filter(
-					(s) => s.id != element.id
-				);
-			}
-		}
-	});
-
 	const duree_custom_help = $derived.by(() => {
 		if (sp.groupe_id === 4 && formHandler.form.seanceType === 'seconde') {
 			return 'Deux durées possibles dans la nomenclature : 15 ou 30 minutes. Pour toutes durées supérieures à 20 minutes Kiné Helper assignera le code de nomenclature de 30 minutes.';
@@ -171,10 +109,6 @@
 		formHandler,
 		sp
 	);
-
-	onMount(() => {
-		formHandler.setup();
-	});
 </script>
 
 <Modal

@@ -3,7 +3,6 @@
 	import { t } from '../../../../../i18n';
 	import Form from '../../abstract-components/Form.svelte';
 	import FormSection from '../../abstract-components/FormSection.svelte';
-	import { onMount, tick } from 'svelte';
 	import SubmitButton from '../../../../../forms/ui/SubmitButton.svelte';
 	import { appState } from '../../../../../managers/AppState.svelte';
 	import Field from '../../abstract-components/Field.svelte';
@@ -12,6 +11,8 @@
 	import { isoDate, object, string, uuid } from 'valibot';
 	import { arrowRightIcon, arrowBottomIcon } from '../../../../../ui/svgs/IconSnippets.svelte';
 	import { filtrerLesChampsAUpdater } from '../../../../database';
+	import { page } from '$app/state';
+	import { untrack } from 'svelte';
 
 	let { patient, sp, docType = 'A', mode = 'create', accord } = $props();
 
@@ -22,24 +23,18 @@
 		reference: string()
 	};
 
-	const accordSnapshot = $state.snapshot(accord);
-
 	let formHandler = new Formulaire({
 		validateurs,
 		formElement: '#accord-update-form',
 		schema: object(validateurs),
 		submiter: '#accord-update-submit',
-		initialValues: {
-			id: accordSnapshot?.id ?? crypto.randomUUID(),
-			valid_from: accordSnapshot?.valid_from,
-			valid_to: accordSnapshot?.valid_to,
-			reference: accordSnapshot?.reference
-		},
 		async onValid(data) {
+			let fields = filtrerLesChampsAUpdater(this.touched, data);
+			console.log('AccordUpdateForm onValid', page.state.drawer?.accordId);
 			const { data: _, error } = await appState.db.update(
 				'accords',
-				[['id', data.id]],
-				filtrerLesChampsAUpdater(this.touched, data)
+				[['id', page.state.drawer?.accordId]],
+				fields
 			);
 			if (error) {
 				this.message = error;
@@ -84,9 +79,15 @@
 			innerCSS: ''
 		}
 	};
-
-	onMount(() => {
-		formHandler.setup();
+	$effect(() => {
+		if (accord) {
+			untrack(() => {
+				formHandler.form.id = accord.id ?? crypto.randomUUID();
+				formHandler.form.valid_from = accord.valid_from;
+				formHandler.form.valid_to = accord.valid_to;
+				formHandler.form.reference = accord.reference ?? '';
+			});
+		}
 	});
 </script>
 

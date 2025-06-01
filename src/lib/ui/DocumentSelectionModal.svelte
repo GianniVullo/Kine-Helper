@@ -7,7 +7,6 @@
 	import Form from '../cloud/components/forms/abstract-components/Form.svelte';
 	import { Formulaire } from '../cloud/libraries/formHandler.svelte';
 	import { length, object, pipe, string } from 'valibot';
-	import { onMount } from 'svelte';
 	import { replaceState } from '$app/navigation';
 	import { cloneDeep } from 'lodash';
 
@@ -47,10 +46,6 @@
 		},
 		onValid,
 		mode: 'create'
-	});
-
-	onMount(() => {
-		formHandler.setup();
 	});
 </script>
 

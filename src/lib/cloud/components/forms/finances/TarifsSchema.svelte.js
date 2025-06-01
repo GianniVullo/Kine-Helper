@@ -1,26 +1,24 @@
-import * as v from 'valibot';
+import { nullish, array, pipe, object } from 'valibot';
 import { t } from '../../../../i18n';
-import { createSituationPathologique } from '../../../../user-ops-handlers/situations_pathologiques';
-import { get } from 'svelte/store';
-import { goto, invalidate } from '$app/navigation';
-import { info, trace } from '@tauri-apps/plugin-log';
+import { goto } from '$app/navigation';
+import { trace } from '@tauri-apps/plugin-log';
 
 import { appState } from '../../../../managers/AppState.svelte';
 import { tarifUnitValidator } from '../tarification-fields/tarifHelpers';
 
 // Tarifaction fields
-const tarif_seance = v.nullish(tarifUnitValidator(true, 'custom'));
-const tarif_indemnite = v.nullish(tarifUnitValidator(true, 'custom'));
-const tarif_rapport_ecrit = v.nullish(tarifUnitValidator(true, 'custom'));
-const tarif_consultatif = v.nullish(tarifUnitValidator(true, 'custom'));
-const tarif_seconde_seance = v.nullish(tarifUnitValidator(true, 'custom'));
-const tarif_intake = v.nullish(tarifUnitValidator(true, 'custom'));
-const tarif_no_show = v.nullish(tarifUnitValidator(true, 'custom'));
+const tarif_seance = nullish(tarifUnitValidator(true, 'custom'));
+const tarif_indemnite = nullish(tarifUnitValidator(true, 'custom'));
+const tarif_rapport_ecrit = nullish(tarifUnitValidator(true, 'custom'));
+const tarif_consultatif = nullish(tarifUnitValidator(true, 'custom'));
+const tarif_seconde_seance = nullish(tarifUnitValidator(true, 'custom'));
+const tarif_intake = nullish(tarifUnitValidator(true, 'custom'));
+const tarif_no_show = nullish(tarifUnitValidator(true, 'custom'));
 
-const tarifs = v.nullish(v.array(tarifUnitValidator(false, 'custom')), []);
+const tarifs = nullish(array(tarifUnitValidator(false, 'custom')), []);
 
 // Supplément field
-const supplements = v.nullish(v.array(tarifUnitValidator()), []);
+const supplements = nullish(array(tarifUnitValidator()), []);
 
 export const validateurs = {
 	supplements,
@@ -34,8 +32,8 @@ export const validateurs = {
 	tarifs
 };
 
-export const TarifsSchema = v.pipe(
-	v.object({
+export const TarifsSchema = pipe(
+	object({
 		...validateurs
 	})
 );

@@ -1,20 +1,16 @@
 <script>
-	import { onMount } from 'svelte';
 	import { Formulaire } from '../../../libraries/formHandler.svelte';
 	import Field from '../abstract-components/Field.svelte';
-	import { LoginSchema, onValid, fieldSchema, validateurs } from './LoginSchema';
+	import { onValid, fieldSchema, buildLoginSchema } from './LoginSchema';
 	import SubmitButton from '../../../../forms/ui/SubmitButton.svelte';
+
+	let { LoginSchema, validateurs } = buildLoginSchema();
 
 	let formHandler = new Formulaire({
 		validateurs,
 		schema: LoginSchema,
 		initialValues: { email: localStorage.getItem('lastLoggedUser') },
 		onValid
-	});
-
-	onMount(() => {
-		formHandler.setup();
-		console.log('LoginForm mounted', formHandler, formHandler.loading);
 	});
 </script>
 

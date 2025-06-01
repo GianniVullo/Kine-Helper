@@ -1,10 +1,10 @@
 <script>
 	import { Formulaire } from '../../../../libraries/formHandler.svelte';
-	import { AccordSchema, fieldSchema, onValid, validateurs } from './AccordSchema.svelte';
+	import { buildAccordSchema, fieldSchema, onValid } from './AccordSchema.svelte';
 	import { t } from '../../../../../i18n';
 	import Form from '../../abstract-components/Form.svelte';
 	import FormSection from '../../abstract-components/FormSection.svelte';
-	import { getContext, onMount, tick } from 'svelte';
+	import { getContext } from 'svelte';
 	import SubmitButton from '../../../../../forms/ui/SubmitButton.svelte';
 	import { appState } from '../../../../../managers/AppState.svelte';
 	import Field from '../../abstract-components/Field.svelte';
@@ -13,6 +13,8 @@
 	import { page } from '$app/state';
 
 	let { patient, sp, docType, mode = 'create', accord } = $props();
+
+	let { AccordSchema, validateurs } = buildAccordSchema();
 
 	let accords = getContext('accords');
 
@@ -35,7 +37,7 @@
 		},
 		onValid: (data) => {
 			console.log('data', data);
-			
+
 			onValid(data, mode);
 			accords.push(data);
 		},
@@ -43,11 +45,7 @@
 	});
 
 	$effect(() => {
-			formHandler.form.metadata.doc = page.state?.drawer?.docType;
-	});
-
-	onMount(() => {
-		formHandler.setup();
+		formHandler.form.metadata.doc = page.state?.drawer?.docType;
 	});
 </script>
 

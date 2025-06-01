@@ -1,15 +1,12 @@
 <script>
 	import { Formulaire } from '../../../libraries/formHandler.svelte';
 	import {
-		MultipleSeancesSchema,
 		checkboxesFields,
 		dateField,
 		idFieldSchema,
 		onValid,
-		validateurs,
-		defineDuree,
 		ComplexSetup,
-		seanceTypes
+		buildMultipleSeancesSchema
 	} from './MultipleSeanceSchema.svelte';
 	import Form from '../abstract-components/Form.svelte';
 	import FormSection from '../abstract-components/FormSection.svelte';
@@ -19,10 +16,7 @@
 	import Field from '../abstract-components/Field.svelte';
 	import SimpleSelect from '../fields/SimpleSelect.svelte';
 	import TarifField from '../tarification-fields/TarifField.svelte';
-	import { getTarificationInitialValues } from '../tarification-fields/tarifHelpers';
-	import { get } from 'svelte/store';
 	import { page } from '$app/state';
-	import { t } from '../../../../i18n';
 	import SupplementField from '../tarification-fields/SupplementField.svelte';
 	import TarifsListField from '../finances/TarifsListField.svelte';
 	import dayjs from 'dayjs';
@@ -30,56 +24,25 @@
 	import { pushState } from '$app/navigation';
 	import Modal from '../../../libraries/overlays/Modal.svelte';
 	import EventCalendar from '../../../../EventCalendar.svelte';
-	import { array, object } from 'valibot';
 	import { eventFormater } from '../../../../utils/calendarEventFormater';
 	import BoutonPrincipal from '../../../../components/BoutonPrincipal.svelte';
+	import { initialSeanceValues } from './Commons.svelte';
 
 	let ec;
 	let now = dayjs().format('YYYY-MM-DD');
+
+	/**
+	 * TODO : Create a Stepper here so that the ui is cleaner. Actually the UI is bloated because the calendar takes a lot of space and doesn't let the user see the seance form beneath it. The solution : first we define a seance prototype to add to the calendar then we add dates to the calendar and finally the dates will be converted into seances.
+	 */
 
 	let { patient, sp, seance, tarifs, supplements, prescriptions, mode = 'create' } = $props();
 
 	let { groupe_id, lieu_id, patho_lourde_type } = sp;
 
-	const tarifMetadata = getTarificationInitialValues(sp, tarifs, seance);
-
-	const initialValues = () => ({
-		user_id: appState.user.id,
-		patient_id: patient.patient_id,
-		sp_id: sp.sp_id,
-		prescription_id:
-			(seance?.prescription_id ?? prescriptions.length === 1)
-				? prescriptions[0].prescription_id
-				: null,
-		duree: seance?.duree ?? sp.duree,
-		seanceType:
-			typeof seance?.seance_type === 'number' ? seanceTypes[seance.seance_type] : undefined,
-		lieu_id: seance?.lieu_id ?? sp?.lieu_id,
-		duree_custom:
-			seance?.metadata?.duree_custom ?? defineDuree(sp.duree, sp.patho_lourde_type, sp.lieu_id),
-		seance_id: seance?.seance_id ?? crypto.randomUUID(),
-		created_at: seance?.created_at ?? now,
-		ticket_moderateur: seance?.ticket_moderateur ?? patient.ticket_moderateur ?? true,
-		indemnite: seance?.indemnite ?? (lieu_id === 3 || groupe_id === 6 ? true : false),
-		rapport_ecrit: seance?.rapport_ecrit ?? false,
-		intake: seance?.metadata?.intake ?? false,
-		supplements_ponctuels:
-			seance?.metadata?.supplements_ponctuels?.map((s) => ({
-				id: undefined,
-				user_id: undefined,
-				created_at: undefined,
-				nom: s.nom,
-				valeur: s.valeur
-			})) ?? [],
-		groupe_id,
-		patho_lourde_type,
-		mode,
-		...tarifMetadata,
-		supplements: seance?.metadata?.supplements ?? []
-	});
+	let { MultipleSeancesSchema, validateurs } = buildMultipleSeancesSchema();
 
 	let formHandler = new Formulaire({
-		validateurs: { seances: array(object(validateurs)) },
+		validateurs,
 		schema: MultipleSeancesSchema,
 		isAsynchronous: true,
 		submiter: '#seance-submit',
@@ -144,7 +107,6 @@
 	// par exemple redéfinir constamment le champs seanceType pour que le patient ne puisse pas créer de secondes séances pour une pathologie courante
 
 	onMount(() => {
-		formHandler.setup();
 		manager.ec = ec;
 	});
 </script>
@@ -193,7 +155,7 @@
 							return;
 						}
 						let newSeance = {
-							...initialValues(),
+							...initialSeanceValues({ patient, sp, prescriptions }),
 							date: clickedDate.format('YYYY-MM-DD'),
 							seanceType: 'kiné',
 							start: clickedDate.format('HH:mm')

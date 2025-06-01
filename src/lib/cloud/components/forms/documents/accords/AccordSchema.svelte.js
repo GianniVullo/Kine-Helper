@@ -1,54 +1,55 @@
-import { uuid, pipe, string, boolean, transform, isoDate, integer, object, number } from 'valibot';
+import { uuid, pipe, string, boolean, transform, isoDate, object } from 'valibot';
 import { t } from '../../../../../i18n';
 import { goto, invalidate } from '$app/navigation';
 import { info, trace } from '@tauri-apps/plugin-log';
 import { createAnnexe } from '../../../../../user-ops-handlers/documents';
+import { accordSituationValidator, stringVal } from '../../validators/commons';
 
-const id = uuid();
-const user_id = uuid();
-const patient_id = uuid();
-const sp_id = uuid();
-const date = pipe(
-	transform((input) => (input?.length === 0 ? null : input)),
-	string('Ce champ est obligatoire'),
-	isoDate()
-);
-const metadata = object({
-	doc: string()
-});
-const buildable = boolean();
-const notification = boolean();
-const situation = pipe(
-	number('Veuillez choisir une situation pathologique'),
-	integer('Veuillez choisir une situation pathologique')
-);
+export function buildAccordSchema() {
+	const id = uuid();
+	const user_id = uuid();
+	const patient_id = uuid();
+	const sp_id = uuid();
+	const date = pipe(
+		transform((input) => (input?.length === 0 ? null : input)),
+		stringVal,
+		isoDate()
+	);
+	const metadata = object({
+		doc: string()
+	});
+	const buildable = boolean();
+	const notification = boolean();
+	const situation = accordSituationValidator;
 
-export const validateurs = {
-	id,
-	user_id,
-	patient_id,
-	sp_id,
-	date,
-	metadata,
-	situation,
-	buildable,
-	notification
-};
+	const validateurs = {
+		id,
+		user_id,
+		patient_id,
+		sp_id,
+		date,
+		metadata,
+		situation,
+		buildable,
+		notification
+	};
 
-export const AccordSchema = pipe(
-	object({
-		...validateurs
-	}),
-	transform((input) => {
-		console.log('input', input);
+	const AccordSchema = pipe(
+		object({
+			...validateurs
+		}),
+		transform((input) => {
+			console.log('input', input);
 
-		if (input?.metadata?.doc === 'B') {
-			input.metadata.notification = input.notification;
-		}
-		delete input.notification;
-		return input;
-	})
-);
+			if (input?.metadata?.doc === 'B') {
+				input.metadata.notification = input.notification;
+			}
+			delete input.notification;
+			return input;
+		})
+	);
+	return { AccordSchema, validateurs };
+}
 
 export async function onValid(data, mode) {
 	trace('In AccordSchema.onValid');
