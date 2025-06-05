@@ -34,7 +34,7 @@
   -->
 	<BackDrop display={commandPalette.inner.opened} />
 
-	<div class="fixed inset-0 z-50 w-screen overflow-y-auto p-4 sm:p-6 md:p-20">
+	<div class="fixed inset-0 z-50 w-screen overflow-y-auto p-4 pt-20 sm:p-6 md:p-20">
 		<!--
       Command palette, show/hide based on modal state.
 
@@ -117,8 +117,9 @@
 									<button
 										class="group flex cursor-default items-center px-4 py-2 select-none"
 										id="option-2"
-										onclick={() => {
-											this.resetCommandPalette();
+										onclick={(e) => {
+											e.stopPropagation();
+											commandPalette.resetCommandPalette();
 											goto(`/dashboard/patients/${patient.patient_id}`);
 										}}
 										tabindex="-1">

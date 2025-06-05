@@ -403,8 +403,9 @@
 				</svg>
 			</button>
 		{/if}
-		<div class="flex-1 text-sm/6 font-semibold text-gray-900">
-			{menuItems.find((p) => p.href === page.url.pathname)?.name}
+		<div class="flex-1 flex items-center text-sm/6 font-semibold text-gray-900">
+			<!-- {menuItems.find((p) => p.href === page.url.pathname)?.name} -->
+			<CommandPaletteManualOpener />
 		</div>
 		<a href="#">
 			<span class="sr-only">Paramètres</span>

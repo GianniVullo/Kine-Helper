@@ -10,7 +10,7 @@
 		window.dispatchEvent(new CustomEvent('command-palette:open'));
 	}}
 	class:macos={platform() === 'macos'}
-	class="flex w-full items-center gap-1 rounded-full bg-gray-50 px-4 py-2 inset-ring inset-ring-gray-950/8"
+	class="flex w-36 lg:w-full items-center gap-1 rounded-full bg-gray-50 px-4 py-2 inset-ring inset-ring-gray-950/8"
 	><svg
 		xmlns="http://www.w3.org/2000/svg"
 		viewBox="0 0 16 16"
