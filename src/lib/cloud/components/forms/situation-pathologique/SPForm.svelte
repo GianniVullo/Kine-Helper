@@ -109,6 +109,14 @@
 	<FormSection
 		titre="Informations relative à la nomenclature"
 		description="Ces champs permettent à Kiné Helper d'assigner les bons codes de nomenclatures à vos séances.">
+		{#if formHandler.form.groupe_id === 6}
+			<p class="col-span-full mt-2 text-sm text-red-800">Attention, ce groupe nécessite une autorisation que seul un médecin peut demander.</p>
+		{/if}
+		{#if [1, 4, 5].includes(formHandler.form.groupe_id)}
+			<p class="col-span-full mt-2 text-sm text-red-800">
+				Attention : ce groupe de nomenclature nécessite une demande au médecin conseil.
+			</p>
+		{/if}
 		{#if sp?.seances.some((s) => s.has_been_attested)}
 			<p class="col-span-full mt-2 text-sm text-black">
 				Vous ne pouvez pas modifier les informations de nomenclature d'une sp contenant des séances
@@ -129,7 +137,20 @@
 		{#if !appState.user.conventionne}
 			<!-- TODO: Ici Il faut mettre un "en attente de définition de la nomenclature" pour connaitre les champs nécessaires -->
 			{#if displayTarifs}
-				<TarifField bind:form={formHandler.form} errors={formHandler.errors} all {tarifs} />
+				<TarifField
+					bind:form={formHandler.form}
+					errors={formHandler.errors}
+					{tarifs}
+					seance
+					consultatif
+					indemnite={formHandler.form.lieu_id === 3}
+					rapport={[1, 4, 5].includes(formHandler.form.groupe_id)}
+					intake={formHandler.form.groupe_id === 0}
+					seconde_seance={(formHandler.form.groupe_id === 4 &&
+						[0, 3].includes(formHandler.form.duree_ss_fa)) ||
+						formHandler.form.groupe_id === 5 ||
+						formHandler.form.groupe_id === 1}
+					no_show />
 			{:else}
 				<p class="col-span-full mt-2 text-sm text-red-600">
 					Veuillez remplir les champs de la nomenclature pour pouvoir définir les tarifs

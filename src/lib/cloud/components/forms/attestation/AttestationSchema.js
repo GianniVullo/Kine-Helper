@@ -373,7 +373,7 @@ export const fieldSchema = [
 	}
 ];
 
-export async function groupSeanceInAttestations(seancesToDealWith, spArg, patientArg, conventions) {
+export async function groupSeanceInAttestations(seancesToDealWith, spArg, patientArg, conventions, prescription) {
 	let sp = spArg;
 	let patient = patientArg;
 	if (!sp) {
@@ -427,6 +427,7 @@ export async function groupSeanceInAttestations(seancesToDealWith, spArg, patien
 			 * */
 			const metadataCode = {};
 			const code_seance = assignCodes2({
+				prescription,
 				sp,
 				seance,
 				indexOfSeance: seancesToDealWith.indexOf(seance),

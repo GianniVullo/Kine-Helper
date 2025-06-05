@@ -24,7 +24,8 @@ export function assignCodes2({
 	architecture,
 	patient,
 	convention,
-	seancesGeneree
+	seancesGeneree,
+	prescription
 }) {
 	console.log('assignCodes2 with seance', seance);
 
@@ -58,7 +59,11 @@ export function assignCodes2({
 		console.log('seancesAlreadyTarifed', seancesAlreadyTarifed);
 
 		// Définition du compteur et des limites
-		const seancesGeneree = seancesAlreadyTarifed.length + indexOfSeance;
+		// ici on doit ajouter les séances déjà_faites de la prescription
+		const seancesGeneree =
+			seancesAlreadyTarifed.length + indexOfSeance + prescription?.deja_faites
+				? prescription.deja_faites
+				: 0;
 		console.log('seancesGeneree and indexOfSeance', seancesGeneree, indexOfSeance);
 		const normalCodeLimit = architecture.seances_normales_executables - sp.deja_faites;
 		console.log('normalCodeLimit', normalCodeLimit);

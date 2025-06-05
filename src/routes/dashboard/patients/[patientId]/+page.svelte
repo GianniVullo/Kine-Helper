@@ -2,6 +2,9 @@
 	import { t } from '../../../../lib/i18n';
 	import dayjs from 'dayjs';
 	import Title from '$lib/patient-detail/Title.svelte';
+	import CardTable from '../../../../lib/components/CardTable.svelte';
+	import { goto } from '$app/navigation';
+	import { arrowRightIcon, chevronRightIcon } from '../../../../lib/ui/svgs/IconSnippets.svelte';
 
 	let { data } = $props();
 	let sps = data.patient?.situations_pathologiques?.length > 0;
@@ -21,49 +24,43 @@
 	</div>
 
 	<ul role="list" class="w-full divide-y divide-gray-100">
-		{#each data.patient?.situations_pathologiques as sp}
-			<li class="relative flex justify-between gap-x-6 py-5">
-				<div class="flex min-w-0 gap-x-4">
-					<!-- <img
-						class="size-12 flex-none rounded-full bg-gray-50"
-						src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
-						alt="" /> -->
-					<div class="min-w-0 flex-auto">
-						<p class="text-sm/6 font-semibold text-gray-900">
-							<a href={`/dashboard/patients/${sp.patient_id}/situation-pathologique/${sp.sp_id}`}>
-								<span class="absolute inset-x-0 -top-px bottom-0"></span>
-								{sp.motif}
-							</a>
-						</p>
-						<p class="mt-1 flex truncate text-xs/5 text-gray-500">
-							{sp.plan_du_ttt}
-						</p>
-					</div>
-				</div>
-				<div class="flex shrink-0 items-center gap-x-4">
-					<div class="hidden sm:flex sm:flex-col sm:items-end">
-						<span
-							class="inline-flex items-center rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-700 ring-1 ring-red-600/10 ring-inset"
-							>10 séances non tarifiées</span>
-						<p class="mt-1 text-xs/5 text-gray-500">
-							Créée le <time datetime="2023-01-23T13:23Z"
-								>{dayjs(sp.created_at).format('DD/MM/YYYY')}</time>
-						</p>
-					</div>
-					<svg
-						class="size-5 flex-none text-gray-400"
-						viewBox="0 0 20 20"
-						fill="currentColor"
-						aria-hidden="true"
-						data-slot="icon">
-						<path
-							fill-rule="evenodd"
-							d="M8.22 5.22a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06-1.06L11.94 10 8.22 6.28a.75.75 0 0 1 0-1.06Z"
-							clip-rule="evenodd" />
-					</svg>
-				</div>
-			</li>
-		{/each}
+		<CardTable>
+			{#snippet header()}
+				<th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Motif</th>
+				<th
+					scope="col"
+					class="py-3.5 pr-3 pl-4 text-left text-sm font-semibold text-gray-900 sm:pl-0">Date</th>
+				<th scope="col" class="sr-only px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+					>Consulter</th>
+				<!-- TODO Ici j'ai mis action parce que, en fait, il va falloir mettre Modifier, Supprimer, Imprimer, Marquer comme payée par la mutuelle, par le patient, et qui sait quoi d'autres encore -->
+			{/snippet}
+			{#snippet body()}
+				{#each data.patient?.situations_pathologiques as sp}
+					<tr
+					class="hover:cursor-pointer"
+						onclick={() => {
+							goto(
+								'/dashboard/patients/' +
+									data.patient.patient_id +
+									'/situation-pathologique/' +
+									sp.sp_id
+							);
+						}}>
+						<td class="px-3 py-5 text-sm whitespace-nowrap text-gray-700">
+							{sp.motif}
+						</td>
+						<td class="px-3 py-5 text-sm whitespace-nowrap text-gray-500">
+							{dayjs(sp.created_at).format('DD/MM/YYYY')}
+						</td>
+						<td
+							class="relative py-5 pr-4 pl-3 text-right text-sm font-medium whitespace-nowrap sm:pr-0 flex items-center justify-end">
+							<p class="text-indigo-500 group-hover:text-indigo-700">Consulter</p>
+							{@render chevronRightIcon('size-5 flex-none text-indigo-400 mr-5')}
+						</td>
+					</tr>
+				{/each}
+			{/snippet}
+		</CardTable>
 	</ul>
 {:else}
 	<div class="mt-10 w-full text-center">

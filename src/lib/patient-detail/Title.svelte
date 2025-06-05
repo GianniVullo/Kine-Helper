@@ -10,6 +10,7 @@
 	import Dropdown from '../components/dropdowns/Dropdown.svelte';
 	import Modal from '../cloud/libraries/overlays/Modal.svelte';
 	import { pushState, goto } from '$app/navigation';
+	import { archiveBoxArrowDownIcon, eyeIcon } from '../ui/svgs/IconSnippets.svelte';
 
 	const modal = {
 		title: get(t)('patients.detail', 'pdeleteModal.title'),
@@ -76,19 +77,15 @@
 			</span>
 
 			<span class="ml-3 hidden sm:block">
-				<BoutonSecondaireAvecIcone href={homeUrl() + '/details'} inner="Détails">
+				<BoutonSecondaireAvecIcone
+					inner="Archiver"
+					onclick={() => {
+						console.log('ARCHIVE TO BE DONE');
+						/**
+						 * TODO */
+					}}>
 					{#snippet icon(cls)}
-						<svg
-							class={cls}
-							viewBox="0 0 20 20"
-							fill="currentColor"
-							aria-hidden="true"
-							data-slot="icon">
-							<path
-								d="M12.232 4.232a2.5 2.5 0 0 1 3.536 3.536l-1.225 1.224a.75.75 0 0 0 1.061 1.06l1.224-1.224a4 4 0 0 0-5.656-5.656l-3 3a4 4 0 0 0 .225 5.865.75.75 0 0 0 .977-1.138 2.5 2.5 0 0 1-.142-3.667l3-3Z" />
-							<path
-								d="M11.603 7.963a.75.75 0 0 0-.977 1.138 2.5 2.5 0 0 1 .142 3.667l-3 3a2.5 2.5 0 0 1-3.536-3.536l1.225-1.224a.75.75 0 0 0-1.061-1.06l-1.224 1.224a4 4 0 1 0 5.656 5.656l3-3a4 4 0 0 0-.225-5.865Z" />
-						</svg>
+						{@render archiveBoxArrowDownIcon(cls)}
 					{/snippet}
 				</BoutonSecondaireAvecIcone>
 			</span>
@@ -112,25 +109,9 @@
 			</span>
 
 			<span class="sm:ml-3">
-				<BoutonPrincipalAvecIcone
-					inner="Archiver"
-					onclick={() => {
-						console.log('ARCHIVE TO BE DONE');
-						/**
-						 * TODO */
-					}}>
+				<BoutonPrincipalAvecIcone href={homeUrl() + '/details'} inner="Appeler">
 					{#snippet icon(cls)}
-						<svg
-							class={cls}
-							viewBox="0 0 20 20"
-							fill="currentColor"
-							aria-hidden="true"
-							data-slot="icon">
-							<path
-								fill-rule="evenodd"
-								d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z"
-								clip-rule="evenodd" />
-						</svg>
+						{@render eyeIcon(cls)}
 					{/snippet}
 				</BoutonPrincipalAvecIcone>
 			</span>
