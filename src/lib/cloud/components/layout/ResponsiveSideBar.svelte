@@ -10,6 +10,7 @@
 	import Modal from '../../libraries/overlays/Modal.svelte';
 	import { openModal } from '../../libraries/overlays/modalUtilities.svelte';
 	import { goto, afterNavigate } from '$app/navigation';
+	import CommandPaletteManualOpener from '../../libraries/command-palette/CommandPaletteManualOpener.svelte';
 
 	let { children } = $props();
 
@@ -86,7 +87,7 @@
 <div>
 	<!-- Off-canvas menu for mobile, show/hide based on off-canvas menu state. -->
 	<div
-		class="relative z-40 lg:hidden {!showDrawer ? 'pointer-events-none' : ''}"
+		class="relative z-10 lg:hidden {!showDrawer ? 'pointer-events-none' : ''}"
 		role="dialog"
 		aria-modal="true">
 		<!--
@@ -251,12 +252,13 @@
 	</div>
 
 	<!-- Static sidebar for desktop -->
-	<div id="main-sidebar" class="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-72 lg:flex-col">
+	<div id="main-sidebar" class="hidden lg:fixed lg:inset-y-0 lg:z-10 lg:flex lg:w-72 lg:flex-col">
 		<!-- Sidebar component, swap this element with another sidebar if you like -->
 		<div
 			class="flex grow flex-col gap-y-5 overflow-y-auto border-r border-gray-200 bg-gray-300/60 px-6">
-			<div class="flex h-16 shrink-0 items-center">
+			<div class="flex h-16 shrink-0 items-center space-x-5">
 				<img class="h-8 w-auto" src={logo} alt="Your Company" />
+				<CommandPaletteManualOpener />
 			</div>
 			<nav class="flex flex-1 flex-col">
 				<ul role="list" class="flex flex-1 flex-col gap-y-7">
