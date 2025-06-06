@@ -1,8 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
-<dict>
-  <key>NSCameraUsageDescription</key>
-  <string>Request camera access for WebRTC</string>
-</dict>
+  <dict>
+    <key>NSCameraUsageDescription</key>
+    <string>Used for scanning documents.</string>
+    <key>NSMicrophoneUsageDescription</key>
+    <string>Used for future voice features.</string>
+    <key>NSBluetoothAlwaysUsageDescription</key>
+    <string>Required to connect to Bluetooth devices.</string>
+    <key>NSDocumentsFolderUsageDescription</key>
+    <string>Required to store exported PDFs.</string>
+    <key>NSUSBUsageDescription</key>
+    <string>Required to access your scanner and eID card reader.</string>
+  </dict>
 </plist>
