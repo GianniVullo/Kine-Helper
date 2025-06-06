@@ -207,7 +207,10 @@ export const fieldSchema = (mode) => [
 		help: null,
 		outerCSS: 'col-span-3 sm:col-span-2',
 		innerCSS: ''
-	},
+	}
+];
+
+export const previousSeancesFields = [
 	{
 		id: 'jointe_a',
 		name: 'jointe_a',

@@ -1,5 +1,5 @@
 <script>
-	import { buildPrescriptionSchema, onValid, fieldSchema } from './PrescriptionSchema.svelte';
+	import { buildPrescriptionSchema, onValid, fieldSchema, previousSeancesFields } from './PrescriptionSchema.svelte';
 	import { SubmitButton } from '../../../../forms/index';
 	import { t } from '../../../../i18n';
 	import Form from '../abstract-components/Form.svelte';
@@ -49,6 +49,16 @@
 		{:else}
 			Il n'y a aucun champs à afficher
 		{/each}
+	</FormSection>
+	<FormSection titre="Séances précédentes" description="Si vous reprenez un traitement entamé par un autre kiné, ces champs permettront à Kiné Helper d'assigner les bons nombres de code de nomenclature à vos séances.">
+		{#each previousSeancesFields as field}
+			<Field
+				{field}
+				error={formHandler.errors[field.name]}
+				bind:value={formHandler.form[field.name]} />
+		{/each}
+	</FormSection>
+	<FormSection titre="Photocopie" gridCSS="grid gap-x-6 grid-cols-6">
 		{#await docNamePromise then documentPath}
 			<PhotocopieField
 				{prescription}

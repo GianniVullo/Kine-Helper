@@ -2,7 +2,15 @@
 	import { extractErrorForField } from '../../../libraries/formHandler.svelte';
 	import Field from './Field.svelte';
 
-	let { titre, description = undefined, form = $bindable(), fields, children, errors } = $props();
+	let {
+		titre,
+		description = undefined,
+		form = $bindable(),
+		fields,
+		children,
+		errors,
+		gridCSS = 'grid gap-x-6 gap-y-8 grid-cols-6'
+	} = $props();
 </script>
 
 <div class="border-b border-gray-900/10 pb-12">
@@ -12,7 +20,7 @@
 			{description}
 		</p>
 	{/if}
-	<div class="mt-10 grid gap-x-6 gap-y-8 grid-cols-6">
+	<div class={['mt-10', gridCSS]}>
 		{#if children}
 			{@render children()}
 		{:else}

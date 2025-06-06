@@ -84,7 +84,7 @@
 {/snippet}
 
 <div class="relative col-span-full h-72 w-full overflow-hidden">
-	<h4 class="block text-sm/6 font-medium text-gray-900">
+	<h4 class="block text-sm/6 font-medium text-gray-900 mb-2">
 		{@html `${get(t)('form.prescription', 'copy.label')}${mode === 'update' && prescription.file_name ? `<br /> <span class="text-sm text-gray-400">Actuellement dans la base de donnée : </span><span class ="text-gray-500 text-sm">${prescription.prescripteurNom} ${prescription.prescripteurPrenom} - ${dayjs(prescription.date).format('DD-MM-YYYY')}.${prescription.file_name}</span>` : ''}`}
 	</h4>
 	{#if stepIndex === 0}

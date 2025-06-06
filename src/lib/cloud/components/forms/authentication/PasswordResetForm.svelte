@@ -1,5 +1,4 @@
 <script>
-	import { user } from '$lib/stores/UserStore';
 	import EmailField from './EmailField.svelte';
 	import { SubmitButton, FormWrapper } from '../index';
 	import { t } from '../../i18n';
