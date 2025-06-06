@@ -4,9 +4,7 @@ use windows::{
     core::HSTRING,
     Devices::{
         Enumeration::{DeviceInformation, DeviceInformationCollection},
-        Scanners::{
-            ImageScanner, ImageScannerFormat, ImageScannerResolution,
-        },
+        Scanners::{ImageScanner, ImageScannerFormat, ImageScannerResolution},
     },
     Storage::StorageFolder,
 };
@@ -111,20 +109,20 @@ pub async fn get_scan(app_handle: AppHandle, device_name: String) -> Result<Stri
             }
         };
 
-        println!("{:?}", config.MinResolution().expect("msg"));
+        // println!("{:?}", config.MinResolution().expect("msg"));
 
-        let _set_desired_resolution = match config.SetDesiredResolution(ImageScannerResolution {
-            DpiX: 100.0,
-            DpiY: 100.0,
-        }) {
-            Ok(_) => {}
-            Err(err) => {
-                return Err(format!(
-                    "Failed to set desired resolution: {}",
-                    err.to_string()
-                ))
-            }
-        };
+        // let _set_desired_resolution = match config.SetDesiredResolution(ImageScannerResolution {
+        //     DpiX: 100.0,
+        //     DpiY: 100.0,
+        // }) {
+        //     Ok(_) => {}
+        //     Err(err) => {
+        //         return Err(format!(
+        //             "Failed to set desired resolution: {}",
+        //             err.to_string()
+        //         ))
+        //     }
+        // };
 
         let _format = match config.IsFormatSupported(ImageScannerFormat::Jpeg) {
             Ok(is_supported) => {
@@ -132,23 +130,28 @@ pub async fn get_scan(app_handle: AppHandle, device_name: String) -> Result<Stri
                     match config.SetFormat(ImageScannerFormat::Jpeg) {
                         Ok(_) => {}
                         Err(err) => {
-                            return Err(format!("Failed to set Jpeg format: {}", err.to_string()))
+                            // Whatever. If setting the format fails, we can still compress whatever format will come at us
                         }
                     };
                 } else {
-                    match config.SetFormat(ImageScannerFormat::Png) {
-                        Ok(_) => {}
-                        Err(err) => {
-                            return Err(format!("Failed to set Png format: {}", err.to_string()))
+                    match config.IsFormatSupported(ImageScannerFormat::Png) {
+                        Ok(is_png_supported) => match config.SetFormat(ImageScannerFormat::Png) {
+                            Ok(_) => {}
+                            Err(err) => {
+                                return Err(format!(
+                                    "Failed to set Png format: {}",
+                                    err.to_string()
+                                ))
+                            }
+                        },
+                        Err(err)  => {
+                            // whatever too
                         }
                     };
                 }
             }
             Err(err) => {
-                return Err(format!(
-                    "Failed to check if format is supported: {}",
-                    err.to_string()
-                ))
+                // Whatever. 
             }
         };
 
