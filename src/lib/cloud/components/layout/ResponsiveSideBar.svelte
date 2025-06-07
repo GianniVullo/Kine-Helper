@@ -5,15 +5,22 @@
 	import { t, locale } from '$lib/i18n/index';
 	import { get } from 'svelte/store';
 	import SignOutIcon from '../../../ui/svgs/SignOutIcon.svelte';
+	import {
+		bookIcon,
+		crossIcon,
+		signOutIcon,
+		viewColumnIcon
+	} from '../../../ui/svgs/IconSnippets.svelte';
 	import { open } from '@tauri-apps/plugin-shell';
 	import BugReportModal from '../../../ui/BugReportModal.svelte';
 	import Modal from '../../libraries/overlays/Modal.svelte';
 	import { openModal } from '../../libraries/overlays/modalUtilities.svelte';
 	import { goto, afterNavigate } from '$app/navigation';
 	import CommandPaletteManualOpener from '../../libraries/command-palette/CommandPaletteManualOpener.svelte';
+	import { SidePanel } from './SidePanel.svelte';
 
 	let { children } = $props();
-
+	let sidePanel = new SidePanel();
 	let showDrawer = $state(false);
 	let menuItems = $derived([
 		{
@@ -170,10 +177,12 @@
 										<li>
 											<a
 												{href}
-												class="group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold {page.url
-													.pathname === href
-													? 'bg-gray-50 text-indigo-600'
-													: 'text-gray-700 hover:bg-gray-50 hover:text-indigo-600'}">
+												class={[
+													'group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold',
+													page.url.pathname === href
+														? 'bg-gray-50 text-indigo-600'
+														: 'text-gray-700 hover:bg-gray-50 hover:text-indigo-600'
+												]}>
 												<svg
 													class="size-6 shrink-0 {page.url.pathname === href
 														? 'bg-gray-50 text-indigo-600'
@@ -252,26 +261,55 @@
 	</div>
 
 	<!-- Static sidebar for desktop -->
-	<div id="main-sidebar" class="hidden lg:fixed lg:inset-y-0 lg:z-10 lg:flex lg:w-72 lg:flex-col">
+	<div
+		id="main-sidebar"
+		class={[
+			'hidden duration-300 lg:fixed lg:inset-y-0 lg:z-10 lg:flex lg:flex-col',
+			sidePanel.isOpen ? 'lg:w-72' : 'lg:w-20'
+		]}>
 		<!-- Sidebar component, swap this element with another sidebar if you like -->
 		<div
-			class="flex grow flex-col gap-y-5 overflow-y-auto border-r border-gray-200 bg-gray-300/60 px-6">
-			<div class="flex h-16 shrink-0 items-center space-x-5">
-				<img class="h-8 w-auto" src={logo} alt="Your Company" />
-				<CommandPaletteManualOpener />
+			class={[
+				'flex grow flex-col gap-y-5 overflow-y-auto border-r border-gray-200 px-6',
+				sidePanel.isOpen ? 'bg-gray-300/60' : 'bg-gray-900'
+			]}>
+			<div
+				class={[
+					'flex h-16 shrink-0 items-center',
+					sidePanel.isOpen ? 'flex-row space-x-5' : 'mt-5 mb-16 flex-col items-center space-y-5'
+				]}>
+				<img class="h-8 w-auto" src={logo} alt="Kiné Helper" />
+				<CommandPaletteManualOpener shrink={!sidePanel.isOpen} />
+				{#if sidePanel.isOpen}
+					<button
+						onclick={() => sidePanel.toggle()}
+						disabled={sidePanel.loading}
+						class="flex w-8 items-center justify-center"
+						>{@render crossIcon('size-5 text-gray-500')}</button>
+				{:else}
+					<button
+						onclick={() => sidePanel.toggle()}
+						disabled={sidePanel.loading}
+						class="flex w-8 items-center justify-center"
+						>{@render viewColumnIcon('size-5 text-gray-500')}</button>
+				{/if}
 			</div>
 			<nav class="flex flex-1 flex-col">
 				<ul role="list" class="flex flex-1 flex-col gap-y-7">
 					<li>
+						<div class="text-xs/6 font-semibold text-gray-400">Menu</div>
 						<ul role="list" class="-mx-2 space-y-1">
 							{#each menuItems as { href, svg, name, active }}
 								<li aria-current={active ? 'page' : undefined}>
 									<a
 										{href}
-										class="group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold {active ||
-										page.url.pathname === href
-											? 'bg-gray-50 text-indigo-600'
-											: 'text-gray-700 hover:bg-gray-50 hover:text-indigo-600'}">
+										class={[
+											'group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold',
+											active || page.url.pathname === href
+												? 'bg-gray-50 text-indigo-600'
+												: 'text-gray-700 hover:bg-gray-50 hover:text-indigo-600',
+											sidePanel.isOpen ? '' : 'items-center justify-center'
+										]}>
 										<svg
 											class="size-6 shrink-0 {active || page.url.pathname === href
 												? 'bg-gray-50 text-indigo-600'
@@ -284,7 +322,9 @@
 											data-slot="icon">
 											{@html svg}
 										</svg>
-										{name}
+										{#if sidePanel.isOpen}
+											{name}
+										{/if}
 									</a>
 								</li>
 							{/each}
@@ -293,53 +333,56 @@
 					<li>
 						<div class="text-xs/6 font-semibold text-gray-400">Actions</div>
 						<ul role="list" class="-mx-2 mt-2 space-y-1">
+							{#snippet secondaryAction({
+								icon,
+								modalName,
+								label,
+								className = 'size-4 shrink-0 text-gray-700 group-hover:text-indigo-600'
+							})}
+								<li>
+									<button
+										onclick={() => openModal({ name: modalName })}
+										class={[
+											'group flex w-full gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-gray-700  hover:text-indigo-600',
+											sidePanel.isOpen ? '' : 'justify-center text-center'
+										]}>
+										<span
+											class={[
+												'flex size-6 shrink-0 items-center justify-center rounded-lg border border-gray-200 text-[0.625rem] font-medium text-gray-400 group-hover:border-indigo-600 group-hover:text-indigo-600',
+												sidePanel.isOpen ? 'bg-white' : 'bg-gray-400'
+											]}>
+											{@render icon(className)}
+										</span>
+										{#if sidePanel.isOpen}
+											{label}
+										{/if}
+									</button>
+								</li>
+							{/snippet}
 							<!--! Bouton pour se déconnecter -->
-							<li>
-								<button
-									onclick={() => openModal({ name: 'signout' })}
-									class="group flex w-full gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-gray-700 hover:bg-gray-50 hover:text-indigo-600">
-									<span
-										class="flex size-6 shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-white text-[0.625rem] font-medium text-gray-400 group-hover:border-indigo-600 group-hover:text-indigo-600">
-										<SignOutIcon
-											class="size-4 shrink-0 text-gray-400 group-hover:text-indigo-600" />
-									</span>
-									{$t('sidebar', 'logout', null, 'Log out')}
-								</button>
-							</li>
+							{@render secondaryAction({
+								icon: signOutIcon,
+								modalName: 'signout',
+								label: $t('sidebar', 'logout', null, 'Log out')
+							})}
 							<!--! Bouton pour accéder à la documentation -->
-							<li>
-								<button
-									onclick={() => openModal({ name: 'docModal' })}
-									class="group flex w-full gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-gray-700 hover:bg-gray-50 hover:text-indigo-600">
-									<span
-										class="flex size-6 shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-white text-[0.625rem] font-medium text-gray-400 group-hover:border-indigo-600 group-hover:text-indigo-600">
-										<svg
-											xmlns="http://www.w3.org/2000/svg"
-											fill="none"
-											viewBox="0 0 24 24"
-											stroke-width="1.5"
-											stroke="currentColor"
-											class="size-4 shrink-0 text-gray-400 group-hover:text-indigo-600">
-											<path
-												stroke-linecap="round"
-												stroke-linejoin="round"
-												d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25" />
-										</svg>
-									</span>
-									{$t('sidebar', 'doc')}
-								</button>
-							</li>
+							{@render secondaryAction({
+								icon: bookIcon,
+								modalName: 'docModal',
+								label: $t('sidebar', 'doc')
+							})}
+							{#snippet questionMark(cls)}
+								<span class={cls}>?</span>
+							{/snippet}
 							<!--! Bouton pour signaler un bug/une seggestion -->
-							<li>
-								<button
-									onclick={() => openModal({ name: 'bugReport' })}
-									class="group flex w-full gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-gray-700 hover:bg-gray-50 hover:text-indigo-600">
-									<span
-										class="flex size-6 shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-white text-xs font-medium text-gray-400 group-hover:border-indigo-600 group-hover:text-indigo-600"
-										>?</span>
-									{$t('sidebar', 'bugReport')}
-								</button>
-							</li>
+							{@render secondaryAction({
+								modalName: 'bugReport',
+								icon: questionMark,
+								className: sidePanel.isOpen
+									? 'flex size-6 shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-white text-xs font-medium text-gray-700 group-hover:border-indigo-600 group-hover:text-indigo-600'
+									: 'flex size-6 shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-gray-400 text-xs font-medium text-gray-700 group-hover:border-indigo-600 group-hover:text-indigo-600',
+								label: $t('sidebar', 'bugReport')
+							})}
 						</ul>
 					</li>
 					<li class="-mx-6 mt-auto">
@@ -351,7 +394,9 @@
 								src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
 								alt="" />
 							<span class="sr-only">Your profile</span>
-							<span aria-hidden="true">Tom Cook</span>
+							{#if sidePanel.isOpen}
+								<span aria-hidden="true">Tom Cook</span>
+							{/if}
 						</a>
 					</li>
 				</ul>
@@ -403,7 +448,7 @@
 				</svg>
 			</button>
 		{/if}
-		<div class="flex-1 flex items-center text-sm/6 font-semibold text-gray-900">
+		<div class="flex flex-1 items-center text-sm/6 font-semibold text-gray-900">
 			<!-- {menuItems.find((p) => p.href === page.url.pathname)?.name} -->
 			<CommandPaletteManualOpener />
 		</div>
@@ -416,7 +461,7 @@
 		</a>
 	</div>
 
-	<main class="py-10 lg:pl-72">
+	<main class={['py-10 duration-300', sidePanel.isOpen ? 'lg:pl-72' : 'lg:pl-20']}>
 		<div class="px-4 sm:px-6 lg:px-8">
 			{@render children?.()}
 		</div>
