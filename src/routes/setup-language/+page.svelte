@@ -7,7 +7,7 @@
 	import { writable } from 'svelte/store';
 	import { CircleArrowIcon } from '../../lib/ui/svgs/index';
 	import { writeTextFile } from '@tauri-apps/plugin-fs';
-	import { appLocalDataDir } from '@tauri-apps/api/path';
+	import { appLocalDataDir, BaseDirectory } from '@tauri-apps/api/path';
 	import { tick } from 'svelte';
 
 	let items = writable(['FR', 'NL', 'DE', 'EN']);
@@ -58,8 +58,13 @@
 		});
 		console.log('transFile', transFile);
 		console.log('dictionnary', $dictionnary);
-		let path = await appLocalDataDir();
-		await writeTextFile(`${path}/settings.json`, JSON.stringify(transFile));
+		try {
+			await writeTextFile(`settings.json`, JSON.stringify(transFile), {
+				baseDir: BaseDirectory.AppLocalData
+			});
+		} catch (error) {
+			console.log('Error writing settings.json', error);
+		}
 		// Ensuite on va mettre à jour le store des traductions
 		locale.set(selectedLocale);
 		// enfin on transitionne vers la nouvelle page
@@ -98,12 +103,12 @@
 					id={item}
 					animate:flip={{ duration: 200, easing: cubicOut }}
 					on:click={() => onSelectedLanguage(item)}
-					class="card relative snap-center !rounded-lg p-4 font-bold duration-200 hover:scale-125 dark:!bg-surface-200 dark:text-surface-800">
+					class="card dark:!bg-surface-200 dark:text-surface-800 relative snap-center !rounded-lg p-4 font-bold duration-200 hover:scale-125">
 					<div
 						id={`inner-${item}`}
-						class="absolute left-[50%] top-[50%] hidden translate-x-[-50%] translate-y-[-50%] items-center justify-center duration-150">
+						class="absolute top-[50%] left-[50%] hidden translate-x-[-50%] translate-y-[-50%] items-center justify-center duration-150">
 						<div
-							class="h-10 w-10 animate-spin rounded-full border-2 border-secondary-500 border-l-purple-500">
+							class="border-secondary-500 h-10 w-10 animate-spin rounded-full border-2 border-l-purple-500">
 						</div>
 					</div>
 					<div id={`inner-${item}`}>{item}</div></button>

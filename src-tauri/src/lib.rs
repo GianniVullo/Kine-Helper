@@ -48,7 +48,10 @@ use database_migrations::build_migrations;
 #[cfg(any(target_os = "macos", target_os = "linux", target_os = "windows"))]
 use eid_reader::get_eid_data;
 
-use stability_corrections::file_system_correction::perform_fs_stability_patch;
+use stability_corrections::{
+    file_system_correction::perform_fs_stability_patch,
+    macos_hardened_runtime_fs_correction::migrate_old_data_if_needed,
+};
 use std::sync::Mutex;
 use std::{
     fs::{self, File},
@@ -129,6 +132,7 @@ async fn get_printer() -> Vec<LocalPrinter> {
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    println!("launching");
     tauri::Builder::default()
         .plugin(
             tauri_plugin_log::Builder::new()
@@ -137,23 +141,37 @@ pub fn run() {
         )
         .plugin(tauri_plugin_clipboard_manager::init())
         .setup(|app| {
+            println!("Running Tauri Setup with {:?}", app);
             #[cfg(desktop)]
             app.handle()
                 .plugin(tauri_plugin_updater::Builder::new().build())?;
+            println!("Registered plugin_updater");
             app.manage(Mutex::new(AppState::default()));
+            println!("Registered AppState");
             let (tx, rx) = tokio::sync::mpsc::channel::<Job>(100);
+            println!("Created channel for job queue");
             let join_handle = tauri::async_runtime::spawn(run_queue(rx, app.handle().clone()));
+            println!("Spawned job queue handler");
             let queue_state = QueueState {
                 sender: tokio::sync::Mutex::new(Some(tx)),
                 join_handle: tokio::sync::Mutex::new(Some(join_handle)),
             };
+            println!("Created QueueState with sender and join_handle");
             app.manage(queue_state);
+            println!("Registered QueueState in app state");
 
             #[cfg(target_os = "macos")]
             app.manage(std::sync::Arc::new(Mutex::new(None::<ScanOperation>)));
+            println!("Registered ScanOperation state for macOS");
 
             // Ici je corrige le problème de stabilité du file système le prblm prevenait du faire que j'ai utilisé des variables que les utilisateurs peuvent modifier pour nommer le file system de Kiné Helper. En conséquence lorsque les utilisateurs modifient une de ces variables, le file system se désynchronise d'avec KH qui recrée une nouvelle structure perdant ansi l'accès à toutes les données précédentes. example: si le nom du patient était modifié l'utilisateur perdait l'accès au dossier du patient qui portait son nom.
             perform_fs_stability_patch(app);
+
+            // Here I perform a correction in the file system on macos only because when I enabled the hardened runtime the default app_local_data_dir was moved to Containers/data/be.kine-helper.prod causing users to lose access to their data. This patch moves the data from the old location to the new one.
+            #[cfg(target_os = "macos")]
+            migrate_old_data_if_needed().expect("Failed to migrate old data");
+
+            println!("Performed file system stability patch");
             Ok(())
         })
         .plugin(tauri_plugin_os::init())

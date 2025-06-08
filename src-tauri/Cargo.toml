@@ -1,6 +1,6 @@
 [package]
 name = "kine-helper"
-version = "1.0.1"
+version = "1.0.2"
 description = "A Tauri App"
 authors = ["you"]
 license = ""
@@ -17,7 +17,7 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 tauri-build = { version = "2.0.5", features = [] }
 
 [dependencies]
-tauri = { version = "2.2.5", features = ["devtools"] }
+tauri = { version = "2.2.5", features = [] }
 tauri-plugin-shell = "2.2.0"
 tauri-plugin-dialog = "2.2.0"
 tauri-plugin-os = "2.2.0"
@@ -43,6 +43,7 @@ tokio = "1.44.2"
 image = "0.25.6"
 futures-util = "0.3.31"
 postgrest = "1.6.0"
+dirs = "6.0.0"
 
 
 # you can add the dependencies on the `[dependencies]` section if you do not target mobile
