@@ -8,7 +8,7 @@
 	import PathologieLourdeFields from '../situation-pathologique/PathologieLourdeFields.svelte';
 	import Field from '../abstract-components/Field.svelte';
 
-	let { form = $bindable(), lieuOptions, errors, groupeOptions } = $props();
+	let { form = $bindable(), lieuOptions, errors, groupeOptions, readonly } = $props();
 
 	let dureeOptions = $state();
 
@@ -83,8 +83,15 @@
 	});
 </script>
 
+{#if readonly}
+	<p class="col-span-full mt-2 text-sm text-red-900">
+		Vous ne pouvez pas modifier les informations de nomenclature d'une sp contenant des séances déjà
+		attestées
+	</p>
+{/if}
 <div class="col-span-full md:col-span-4">
 	<SimpleSelect
+		{readonly}
 		label={get(t)('form.generateur', 'group.label')}
 		name="groupe_id"
 		bind:value={form.groupe_id}
@@ -101,6 +108,7 @@
 {#if typeof form.groupe_id == 'number'}
 	<div class="col-span-full md:col-span-4">
 		<SimpleSelect
+			{readonly}
 			label={get(t)('form.generateur', 'lieu.label')}
 			name="lieu_id"
 			bind:value={form.lieu_id}
@@ -118,6 +126,7 @@
 {#if typeof form.groupe_id == 'number' && form.groupe_id === 1}
 	<div class="col-span-full md:col-span-4">
 		<PathologieLourdeFields
+			{readonly}
 			bind:pathologieLourde={form.patho_lourde_type}
 			bind:gmfcs={form.gmfcs}
 			{errors} />
@@ -129,6 +138,7 @@
 		<SimpleSelect
 			label={'Durée'}
 			name="duree"
+			{readonly}
 			bind:value={form.duree}
 			options={dureeOptions}
 			placeholder="Choisissez une durée" />
@@ -152,6 +162,7 @@
 		<SimpleSelect
 			label="Durée de la seconde séance"
 			name="duree"
+			{readonly}
 			bind:value={form.duree_ss_fa}
 			options={[
 				{ label: "Je n'effectue pas de secondes séances", value: -1 },
@@ -171,6 +182,7 @@
 			id: 'volet_j',
 			name: 'volet_j',
 			inputType: 'checkbox',
+			readonly,
 			checkboxLabel: 'La pathologie est un volet <span class="italic">j) Polytraumatisé</span>',
 			checkboxDescription:
 				'Cochez cette case si la pathologie est un volet j) Polytraumatisé, cela donne accès à 120 séances.',
@@ -185,6 +197,7 @@
 	<div class="col-span-full">
 		<RadioFieldV2
 			name="Amb_hos"
+			readOnly={readonly}
 			bind:value={form.amb_hos}
 			options={[
 				{ value: 'AMB', label: 'AMB' },

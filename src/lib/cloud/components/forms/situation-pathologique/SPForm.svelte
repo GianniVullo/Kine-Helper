@@ -110,25 +110,21 @@
 		titre="Informations relative à la nomenclature"
 		description="Ces champs permettent à Kiné Helper d'assigner les bons codes de nomenclatures à vos séances.">
 		{#if formHandler.form.groupe_id === 6}
-			<p class="col-span-full mt-2 text-sm text-red-800">Attention, ce groupe nécessite une autorisation que seul un médecin peut demander.</p>
+			<p class="col-span-full mt-2 text-sm text-red-800">
+				Attention, ce groupe nécessite une autorisation que seul un médecin peut demander.
+			</p>
 		{/if}
 		{#if [1, 4, 5].includes(formHandler.form.groupe_id)}
 			<p class="col-span-full mt-2 text-sm text-red-800">
 				Attention : ce groupe de nomenclature nécessite une demande au médecin conseil.
 			</p>
 		{/if}
-		{#if sp?.seances.some((s) => s.has_been_attested)}
-			<p class="col-span-full mt-2 text-sm text-black">
-				Vous ne pouvez pas modifier les informations de nomenclature d'une sp contenant des séances
-				déjà attestées
-			</p>
-		{:else}
-			<NomenclatureDefinerFields
-				{lieuOptions}
-				{groupeOptions}
-				bind:form={formHandler.form}
-				errors={formHandler.errors} />
-		{/if}
+		<NomenclatureDefinerFields
+			readonly={sp?.seances.some((s) => s.has_been_attested)}
+			{lieuOptions}
+			{groupeOptions}
+			bind:form={formHandler.form}
+			errors={formHandler.errors} />
 	</FormSection>
 	<FormSection
 		titre="Informations relative à la tarification"
