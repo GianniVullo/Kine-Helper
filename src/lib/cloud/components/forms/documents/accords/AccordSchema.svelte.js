@@ -3,13 +3,13 @@ import { t } from '../../../../../i18n';
 import { goto, invalidate } from '$app/navigation';
 import { info, trace } from '@tauri-apps/plugin-log';
 import { createAnnexe } from '../../../../../user-ops-handlers/documents';
-import { accordSituationValidator, stringVal } from '../../validators/commons';
+import { accordSituationValidator, stringVal, uuidVal } from '../../validators/commons';
 
 export function buildAccordSchema() {
-	const id = uuid();
-	const user_id = uuid();
-	const patient_id = uuid();
-	const sp_id = uuid();
+	const id = uuidVal;
+	const user_id = uuidVal;
+	const patient_id = uuidVal;
+	const sp_id = uuidVal;
 	const date = pipe(
 		transform((input) => (input?.length === 0 ? null : input)),
 		stringVal,

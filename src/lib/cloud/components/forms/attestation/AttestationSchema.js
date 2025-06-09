@@ -16,15 +16,16 @@ import {
 	integerValidator,
 	isoDateWithMessage,
 	moneyValidator,
-	stringLengthMoreThan1ButCanBeNull
+	stringLengthMoreThan1ButCanBeNull,
+	uuidVal
 } from '../validators/commons';
 
 export function buildAttestationSchema() {
-	const user_id = uuid();
-	const patient_id = uuid();
-	const sp_id = uuid();
-	const prescription_id = uuid();
-	const attestation_id = uuid();
+	const user_id = uuidVal;
+	const patient_id = uuidVal;
+	const sp_id = uuidVal;
+	const prescription_id = uuidVal;
+	const attestation_id = uuidVal;
 	const date = isoDateWithMessage;
 	const created_at = isoDate();
 	const porte_prescr = boolean();
@@ -45,7 +46,7 @@ export function buildAttestationSchema() {
 			description: string(),
 			date: string(),
 			code: object({
-				code_id: uuid(),
+				code_id: uuidVal,
 				code_reference: string(),
 				honoraire: number(),
 				remboursement: pipe(
@@ -54,13 +55,13 @@ export function buildAttestationSchema() {
 			}),
 			valeur_totale: number(),
 			total_recu: number(),
-			seance_id: uuid()
+			seance_id: uuidVal
 		})
 	);
 	const seances = array(
 		object({
-			seance_id: uuid(),
-			code_id: uuid(),
+			seance_id: uuidVal,
+			code_id: uuidVal,
 			metadata: object({
 				valeur_totale: number(),
 				total_recu: number()
@@ -373,7 +374,13 @@ export const fieldSchema = [
 	}
 ];
 
-export async function groupSeanceInAttestations(seancesToDealWith, spArg, patientArg, conventions, prescription) {
+export async function groupSeanceInAttestations(
+	seancesToDealWith,
+	spArg,
+	patientArg,
+	conventions,
+	prescription
+) {
 	let sp = spArg;
 	let patient = patientArg;
 	if (!sp) {

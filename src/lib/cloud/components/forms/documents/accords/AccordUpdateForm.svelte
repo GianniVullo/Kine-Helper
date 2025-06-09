@@ -13,11 +13,12 @@
 	import { filtrerLesChampsAUpdater } from '../../../../database';
 	import { page } from '$app/state';
 	import { untrack } from 'svelte';
+	import { uuidVal } from '../../validators/commons';
 
 	let { patient, sp, docType = 'A', mode = 'create', accord } = $props();
 
 	const validateurs = {
-		id: uuid(),
+		id: uuidVal,
 		valid_from: isoDate(),
 		valid_to: isoDate(),
 		reference: string()

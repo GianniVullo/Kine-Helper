@@ -19,13 +19,18 @@ import {
 	file as valibotFile,
 	object as valibotObject
 } from 'valibot';
-import { inamiValidator, isoDateWithMessage, stringLengthMoreThan1 } from '../validators/commons';
+import {
+	inamiValidator,
+	isoDateWithMessage,
+	stringLengthMoreThan1,
+	uuidVal
+} from '../validators/commons';
 
 export function buildPrescriptionSchema() {
-	const user_id = uuid();
-	const patient_id = uuid();
-	const sp_id = uuid();
-	const prescription_id = uuid();
+	const user_id = uuidVal;
+	const patient_id = uuidVal;
+	const sp_id = uuidVal;
+	const prescription_id = uuidVal;
 	const created_at = isoDate();
 	const date = isoDateWithMessage;
 	const jointe_a = nullish(isoDate());

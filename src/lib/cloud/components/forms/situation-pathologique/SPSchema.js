@@ -32,15 +32,15 @@ import {
 	lieuValidator,
 	patho_lourde_typeValidator
 } from '../validators/specifics/situationPathologique';
-import { stringLengthMoreThan1 } from '../validators/commons';
+import { stringLengthMoreThan1, uuidVal } from '../validators/commons';
 
 export function buildSPSchema() {
 	const SEX = ['AMB', 'HOS', null, undefined];
 	const DUREE_SS_FA = [-1, 0, 3];
 
-	const user_id = uuid();
-	const patient_id = uuid();
-	const sp_id = uuid();
+	const user_id = uuidVal;
+	const patient_id = uuidVal;
+	const sp_id = uuidVal;
 	const created_at = isoDate();
 	const motif = stringLengthMoreThan1;
 	const plan_du_ttt = nullish(string());
@@ -54,15 +54,15 @@ export function buildSPSchema() {
 	);
 
 	// Tarifaction fields
-	const supplements = nullish(array(uuid()));
+	const supplements = nullish(array(uuidVal));
 
-	const tarif_seance = nullish(uuid());
-	const tarif_indemnite = nullish(uuid());
-	const tarif_rapport_ecrit = nullish(uuid());
-	const tarif_consultatif = nullish(uuid());
-	const tarif_seconde_seance = nullish(uuid());
-	const tarif_intake = nullish(uuid());
-	const tarif_no_show = nullish(uuid());
+	const tarif_seance = nullish(uuidVal);
+	const tarif_indemnite = nullish(uuidVal);
+	const tarif_rapport_ecrit = nullish(uuidVal);
+	const tarif_consultatif = nullish(uuidVal);
+	const tarif_seconde_seance = nullish(uuidVal);
+	const tarif_intake = nullish(uuidVal);
+	const tarif_no_show = nullish(uuidVal);
 	const tarif_seance_custom = numericalString;
 	const tarif_indemnite_custom = numericalString;
 	const tarif_rapport_ecrit_custom = numericalString;

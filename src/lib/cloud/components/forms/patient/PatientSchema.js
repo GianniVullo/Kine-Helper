@@ -20,14 +20,15 @@ import {
 	mutualiteValidator,
 	nissValidator,
 	postCodeValidator,
-	stringLengthMoreThan1
+	stringLengthMoreThan1,
+	uuidVal
 } from '../validators/commons';
 // import { historyManager } from '../../../../managers/HistoryManager.svelte';
 
 export function buildPatientSchema() {
 	const SEX = ['F', 'M'];
-	const user_id = uuid();
-	const patient_id = uuid();
+	const user_id = uuidVal;
+	const patient_id = uuidVal;
 	const nom = stringLengthMoreThan1;
 	const prenom = nullish(string());
 	const niss = nullish(nissValidator);
@@ -280,7 +281,7 @@ const contactFields = [
 		name: 'tel',
 		inputType: 'text',
 		placeholder: get(t)('form.patient', 'label.tel'),
-		titre: "Téléphone 1",
+		titre: 'Téléphone 1',
 		help: null,
 		outerCSS: 'col-span-full sm:col-span-4',
 		innerCSS: ''
@@ -290,7 +291,7 @@ const contactFields = [
 		name: 'gsm',
 		inputType: 'text',
 		placeholder: get(t)('form.postSignup', 'label.cellPhone'),
-		titre: "Téléphone 2",
+		titre: 'Téléphone 2',
 		help: null,
 		outerCSS: 'col-span-full sm:col-span-4',
 		innerCSS: ''

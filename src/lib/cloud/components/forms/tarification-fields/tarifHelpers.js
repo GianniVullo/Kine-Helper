@@ -1,6 +1,7 @@
 import { pipe, string, regex, object, transform, nullish, isoDate, uuid } from 'valibot';
 import { error } from '@sveltejs/kit';
 import { appState } from '../../../../managers/AppState.svelte';
+import { uuidVal } from '../validators/commons';
 
 function assignRelevantTarif(value, id) {
 	const parsedMetadata = JSON.parse(value.metadata);
@@ -98,7 +99,7 @@ export const tarifUnitValidator = (e, name) => {
 	);
 	if (name == 'custom') {
 		return object({
-			id: e ? nullish(uuid()) : uuid(),
+			id: e ? nullish(uuidVal) : uuidVal,
 			nom: string('Ce champ est obligatoire'),
 			valeur: e
 				? pipe(
@@ -107,16 +108,16 @@ export const tarifUnitValidator = (e, name) => {
 					)
 				: numericalString,
 			created_at: isoDate(),
-			user_id: uuid(),
+			user_id: uuidVal,
 			metadata: string()
 		});
 	}
 	return object({
-		id: e ? nullish(uuid()) : uuid(),
+		id: e ? nullish(uuidVal) : uuidVal,
 		nom: string('Ce champ est obligatoire'),
 		valeur: e ? nullish(numericalString) : numericalString,
 		created_at: isoDate(),
-		user_id: uuid()
+		user_id: uuidVal
 	});
 };
 
@@ -149,7 +150,7 @@ export function modelingMetadata(input) {
 	if (input.supplements.length > 0) {
 		input.metadata.ss = input.supplements;
 	}
-	
+
 	delete input.supplements;
 	delete input.tarif_seance;
 	delete input.tarif_indemnite;

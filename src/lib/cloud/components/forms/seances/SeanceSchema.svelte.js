@@ -2,7 +2,6 @@ import {
 	pipe,
 	transform,
 	transformAsync,
-	uuid,
 	nullish,
 	number,
 	isoDate,
@@ -25,18 +24,18 @@ import { isEmpty, isEqual } from 'lodash';
 import { Seance } from '../../../../user-ops-handlers/models';
 import { toast } from '../../../libraries/overlays/notificationUtilities.svelte';
 import { successIcon } from '../../../../ui/svgs/IconSnippets.svelte';
-import { isoDateWithMessage, isoTimeWithMessage } from '../validators/commons';
+import { isoDateWithMessage, isoTimeWithMessage, uuidVal } from '../validators/commons';
 import { seanceSameDayValidator, seanceTypes } from '../validators/specifics/seance';
 import { defineDuree } from './Commons.svelte';
 
 export function buildSeanceSchema() {
 	const modeChoices = ['create', 'update'];
 
-	const user_id = uuid();
-	const patient_id = uuid();
-	const sp_id = uuid();
-	const prescription_id = nullish(uuid());
-	const seance_id = uuid();
+	const user_id = uuidVal;
+	const patient_id = uuidVal;
+	const sp_id = uuidVal;
+	const prescription_id = uuidVal;
+	const seance_id = uuidVal;
 	const date = pipe(
 		transform((input) => (input?.length === 0 ? null : input)),
 		isoDateWithMessage
@@ -61,16 +60,16 @@ export function buildSeanceSchema() {
 	const patho_lourde_type = nullish(number());
 
 	// Tarifaction fields
-	const supplements = nullish(array(uuid()));
+	const supplements = nullish(array(uuidVal));
 	const supplements_ponctuels = nullish(array(tarifUnitValidator()));
 
-	const tarif_seance = nullish(uuid());
-	const tarif_indemnite = nullish(uuid());
-	const tarif_rapport_ecrit = nullish(uuid());
-	const tarif_consultatif = nullish(uuid());
-	const tarif_seconde_seance = nullish(uuid());
-	const tarif_intake = nullish(uuid());
-	const tarif_no_show = nullish(uuid());
+	const tarif_seance = nullish(uuidVal);
+	const tarif_indemnite = nullish(uuidVal);
+	const tarif_rapport_ecrit = nullish(uuidVal);
+	const tarif_consultatif = nullish(uuidVal);
+	const tarif_seconde_seance = nullish(uuidVal);
+	const tarif_intake = nullish(uuidVal);
+	const tarif_no_show = nullish(uuidVal);
 	const tarif_seance_custom = numericalString;
 	const tarif_indemnite_custom = numericalString;
 	const tarif_rapport_ecrit_custom = numericalString;
@@ -213,7 +212,7 @@ export async function onValid(data) {
 			titre: modificationDone ? 'Séance modifiée avec succès.' : 'Aucune modification effectuée.',
 			description: 'Vous retrouverez votre séance dans votre agenda',
 			leading: successIcon,
-			timeout: 3000,
+			timeout: 3000
 		});
 	}
 

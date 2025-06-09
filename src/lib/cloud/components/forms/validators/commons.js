@@ -12,16 +12,18 @@ import {
 	regex,
 	number,
 	integer,
-	isoTime
+	isoTime,
+	uuid
 } from 'valibot';
 
 // Precursors
 export const stringVal = string('Ce champ est obligatoire');
 const minLengthVal = minLength(1, 'Ce champ ne peut pas être vide');
+export const uuidVal = pipe(string(), uuid('Veuillez insérer un UUID valide'));
 const lengthVal = length(11, 'Veuillez insérer 11 chiffres');
 export const digitVal = digits("Veuillez n'insérer que des chiffres");
-export const isoDateWithMessage = isoDate('Veuillez insérer une date valide');
-export const isoTimeWithMessage = isoTime('Veuillez insérer une heure valide');
+export const isoDateWithMessage = pipe(string(), isoDate('Veuillez insérer une date valide'));
+export const isoTimeWithMessage = pipe(string(), isoTime('Veuillez insérer une heure valide'));
 export const emailVal = email('Veuillez insérer un email valide');
 
 // Validators
