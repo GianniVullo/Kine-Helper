@@ -43,7 +43,9 @@ export function initialSeanceValues({ patient, sp, seance, prescriptions, tarifs
 		patho_lourde_type: sp.patho_lourde_type,
 		mode,
 		...tarifMetadata,
-		supplements: seance?.metadata?.supplements ?? []
+		supplements: seance?.metadata?.supplements ?? [],
+		is_paid: seance?.is_paid ?? false,
+		payment_method: seance?.payment_method,
 	};
 }
 
@@ -75,3 +77,5 @@ export function defineDuree(duree, patho_lourde_type, lieu_id) {
 	}
 	return 30;
 }
+
+export const payment_methods = ['cash', 'carte', 'virement', 'qrCode'];

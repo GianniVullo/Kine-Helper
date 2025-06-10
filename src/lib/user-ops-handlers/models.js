@@ -1,3 +1,4 @@
+import { payment_methods } from '../cloud/components/forms/seances/Commons.svelte';
 import { safeBooleanJsonParse } from '../cloud/database';
 import { appState } from '../managers/AppState.svelte';
 
@@ -202,6 +203,7 @@ export class Seance {
 		prescription_id,
 		has_been_attested,
 		is_paid,
+		payment_method,
 		indemnite,
 		rapport_ecrit,
 		ticket_moderateur,
@@ -238,7 +240,8 @@ export class Seance {
 		this.attestation_id = attestation_id;
 		this.prescription_id = prescription_id;
 		this.has_been_attested = has_been_attested;
-		this.is_paid = is_paid;
+		this.is_paid = JSON.parse(is_paid);
+		this.payment_method = payment_methods[payment_method]
 	}
 	get minutes() {
 		switch (this.duree) {

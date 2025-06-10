@@ -6,7 +6,8 @@
 		idFieldSchema,
 		onValid,
 		ComplexSetup,
-		buildSeanceSchema
+		buildSeanceSchema,
+		paymentFields
 	} from './SeanceSchema.svelte';
 	import Form from '../abstract-components/Form.svelte';
 	import FormSection from '../abstract-components/FormSection.svelte';
@@ -194,6 +195,18 @@
 			error={formHandler.errors.duree_custom} />
 	</FormSection>
 	<FormSection titre="Information relative à la tarification">
+		<Field
+			field={paymentFields[0]}
+			error={formHandler.errors?.[paymentFields[0].name]}
+			bind:value={formHandler.form[paymentFields[0].name]} />
+
+		{#if formHandler.form.is_paid}
+			<Field
+				field={paymentFields[1]}
+				error={formHandler.errors?.[paymentFields[1].name]}
+				bind:value={formHandler.form[paymentFields[1].name]} />
+		{/if}
+
 		<!--* Indemnité -->
 		{#if sp.lieu_id === 3 || seance?.lieu_id === 3}
 			<Field

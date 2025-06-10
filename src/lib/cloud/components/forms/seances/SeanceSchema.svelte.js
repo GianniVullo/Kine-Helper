@@ -20,13 +20,13 @@ import { numericalString } from '../../../../utils/validationGenerics';
 import { modelingMetadata, tarifUnitValidator } from '../tarification-fields/tarifHelpers';
 import { filtrerLesChampsAUpdater } from '../../../database';
 import { untrack } from 'svelte';
-import { isEmpty, isEqual } from 'lodash';
+import { indexOf, isEmpty, isEqual } from 'lodash';
 import { Seance } from '../../../../user-ops-handlers/models';
 import { toast } from '../../../libraries/overlays/notificationUtilities.svelte';
 import { successIcon } from '../../../../ui/svgs/IconSnippets.svelte';
 import { isoDateWithMessage, isoTimeWithMessage, uuidVal } from '../validators/commons';
 import { seanceSameDayValidator, seanceTypes } from '../validators/specifics/seance';
-import { defineDuree } from './Commons.svelte';
+import { defineDuree, payment_methods } from './Commons.svelte';
 
 export function buildSeanceSchema() {
 	const modeChoices = ['create', 'update'];
@@ -58,6 +58,8 @@ export function buildSeanceSchema() {
 	const intake = boolean();
 	const groupe_id = nullish(number());
 	const patho_lourde_type = nullish(number());
+	const is_paid = boolean();
+	const payment_method = nullish(picklist(payment_methods));
 
 	// Tarifaction fields
 	const supplements = nullish(array(uuidVal));
@@ -114,7 +116,9 @@ export function buildSeanceSchema() {
 		tarif_intake_custom,
 		tarif_no_show,
 		tarif_no_show_custom,
-		mode
+		mode,
+		is_paid,
+		payment_method
 	};
 
 	const SeanceSchema = pipeAsync(
@@ -169,6 +173,9 @@ export function buildSeanceSchema() {
 				if (seance.seance_type === input.seance_type) {
 					delete input.seance_type;
 				}
+			}
+			if (input.payment_method) {
+				input.payment_method = payment_methods.indexOf(input.payment_method);
 			}
 			delete input.duree_custom;
 			delete input.tarif_no_show;
@@ -302,6 +309,36 @@ export const checkboxesFields = [
 		checkboxLabel: 'Ticket modérateur',
 		checkboxDescription: 'Cochez cette case si le patient paie le ticket modérateur.',
 		outerCSS: 'col-span-full',
+		innerCSS: ''
+	}
+];
+
+export const paymentFields = [
+	{
+		id: 'is_paid',
+		name: 'is_paid',
+		inputType: 'checkbox',
+		checkboxLabel: 'Séance payée',
+		checkboxDescription:
+			'Indique si la séance a déjà été payée par le patient.',
+		outerCSS: 'col-span-full sm:col-span-3',
+		innerCSS: ''
+	},
+	{
+		id: 'payment_method',
+		name: 'payment_method',
+		inputType: 'select',
+		selectOptions: ['cash', 'carte', 'virement', 'qrCode'],
+		label: 'Mode de paiement',
+		options: [
+			{ label: 'Espèces', value: 'cash' },
+			{ label: 'Carte bancaire', value: 'carte' },
+			{ label: 'Virement', value: 'virement' },
+			{ label: 'QR Code', value: 'qrCode' }
+		],
+		placeholder: 'Sélectionnez un mode de paiement',
+		help: null,
+		outerCSS: 'col-span-full sm:col-span-3',
 		innerCSS: ''
 	}
 ];

@@ -12,6 +12,7 @@ import { eventFormater } from '../../../../utils/calendarEventFormater';
 import { buildSeanceSchema } from './SeanceSchema.svelte';
 import { multipleSeanceMinLengthValidator, seanceTypes } from '../validators/specifics/seance';
 import { cloneDeep } from 'lodash';
+import { payment_methods } from './Commons.svelte';
 
 export function buildMultipleSeancesSchema() {
 	let { SeanceSchema, validateurs } = buildSeanceSchema();
@@ -47,6 +48,10 @@ export function buildMultipleSeancesSchema() {
 				console.log('input in first transform', input);
 				let seances = input.seances.map((seance) => {
 					let newSeance = cloneDeep(input.seance_prototype);
+					if (newSeance.is_paid && newSeance.payment_method) {
+						newSeance.payment_method = newSeance.payment_method;
+					}
+
 					newSeance.date = seance.date;
 					newSeance.start = seance.start;
 					newSeance.seanceType = seance.seanceType;
@@ -97,6 +102,9 @@ export function buildMultipleSeancesSchema() {
 					delete seance.seanceType;
 					if (Object.keys(seance.metadata).length === 0) {
 						seance.metadata = null;
+					}
+					if (seance.payment_method) {
+						seance.payment_method = payment_methods.indexOf(seance.payment_method);
 					}
 					delete seance.duree_custom;
 					delete seance.tarif_no_show;

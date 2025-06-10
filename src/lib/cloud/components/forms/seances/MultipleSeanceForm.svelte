@@ -28,6 +28,7 @@
 	import { initialSeanceValues } from './Commons.svelte';
 	import Stepper from '../../ui/Stepper.svelte';
 	import { safeParse } from 'valibot';
+	import { paymentFields } from './SeanceSchema.svelte';
 
 	let ec;
 	let now = dayjs().format('YYYY-MM-DD');
@@ -274,6 +275,18 @@
 			error={formHandler.errors.duree_custom} />
 	</FormSection>
 	<FormSection titre="Information relative à la tarification">
+		<Field
+			field={paymentFields[0]}
+			error={formHandler.errors?.[paymentFields[0].name]}
+			bind:value={formHandler.form.seance_prototype[paymentFields[0].name]} />
+
+		{#if formHandler.form.seance_prototype.is_paid}
+			<Field
+				field={paymentFields[1]}
+				error={formHandler.errors?.[paymentFields[1].name]}
+				bind:value={formHandler.form.seance_prototype[paymentFields[1].name]} />
+		{/if}
+
 		<!--* Indemnité -->
 		{#if sp.lieu_id === 3 || seance?.lieu_id === 3}
 			<Field

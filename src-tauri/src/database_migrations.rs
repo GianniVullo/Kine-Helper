@@ -116,5 +116,11 @@ pub fn build_migrations() -> Vec<Migration> {
                             sql: include_str!("migrations/20250530133523_prescription_deja_faites.up.sql"),
                             kind: MigrationKind::Up,
                         },
+                        Migration {
+                            version: 19,
+                            description: "Ajout d'un champ payment_method à la table séances pour savoir comment l'argent a été payé",
+                            sql: include_str!("migrations/20250530133523_seance_payment.up.sql"),
+                            kind: MigrationKind::Up,
+                        },
                     ]
 }

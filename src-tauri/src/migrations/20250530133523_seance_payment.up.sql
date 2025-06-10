@@ -1,0 +1,1 @@
+ALTER TABLE seances ADD COLUMN payment_method INTEGER; 
