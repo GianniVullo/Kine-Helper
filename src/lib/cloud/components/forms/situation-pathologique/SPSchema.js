@@ -203,7 +203,7 @@ export const fieldSchema = [
 		name: 'motif',
 		inputType: 'text',
 		placeholder: get(t)('sp.detail', 'reason.label'),
-		titre: get(t)('sp.detail', 'reason'),
+		titre: 'Motif de consultation ou diagnostic',
 		help: null,
 		outerCSS: 'col-span-full',
 		innerCSS: ''

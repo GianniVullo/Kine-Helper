@@ -176,7 +176,7 @@
 			event.preventDefault();
 			if (confirmDeletionText === 'Delete my account') {
 				console.log('supprimer mon compte');
-				await nukeUsersData();
+				// await nukeUsersData();
 			} else {
 				if (!toast.fired.some((toast) => toast.titre === 'Erreur!')) {
 					toast.trigger({
