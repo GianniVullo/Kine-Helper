@@ -160,6 +160,17 @@ export class Formulaire {
 			'Le formulaire contient une error sur le ou les champs suivant : ' +
 			Array.from(errorFields.values()).join(', ');
 	}
+
+	extractErrorForField(validationState) {
+		if (validationState.issues && validationState.issues.length > 0) {
+			for (const issue of validationState.issues) {
+				console.log('issue', issue);
+				const fieldName = issue.path?.[0]?.key;
+				console.log('fieldName', fieldName);
+				this.errors[fieldName] = issue.message;
+			}
+		}
+	}
 }
 
 export function extractErrorForField(validationState) {

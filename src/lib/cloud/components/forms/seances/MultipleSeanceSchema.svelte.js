@@ -1,4 +1,4 @@
-import { pipeAsync, objectAsync, arrayAsync, transform, array, object } from 'valibot';
+import { pipeAsync, objectAsync, arrayAsync, transform, array, object, pipe } from 'valibot';
 import { createMultipleSeances } from '../../../../user-ops-handlers/seances';
 import { goto, invalidate } from '$app/navigation';
 import { info, trace, error as errorLog } from '@tauri-apps/plugin-log';
@@ -10,17 +10,64 @@ import { Seance } from '../../../../user-ops-handlers/models';
 import dayjs from 'dayjs';
 import { eventFormater } from '../../../../utils/calendarEventFormater';
 import { buildSeanceSchema } from './SeanceSchema.svelte';
-import { multipleSeanceMinLengthValidator } from '../validators/specifics/seance';
+import { multipleSeanceMinLengthValidator, seanceTypes } from '../validators/specifics/seance';
+import { cloneDeep } from 'lodash';
 
 export function buildMultipleSeancesSchema() {
 	let { SeanceSchema, validateurs } = buildSeanceSchema();
+	/** Here we need to create a seance prototype validator with the seance schema.
+	 * It just needs to exclude the time and date fields.
+	 * (the duration fields needs to stay to let the kiné define the duration he wants for its seances)
+	 * then we need a validator for the seances array which is an array of dates, seanceType, start and seance_id.
+	 * Finally we need to transform the input to build the seances array according to the seance prototype.
+	 */
+	let prototypeValidator = cloneDeep(validateurs);
+	delete prototypeValidator.date;
+	delete prototypeValidator.start;
+	delete prototypeValidator.seance_id;
+	delete prototypeValidator.seanceType;
 	return {
 		MultipleSeancesSchema: pipeAsync(
-			objectAsync({
-				seances: pipeAsync(arrayAsync(SeanceSchema), multipleSeanceMinLengthValidator)
+			object({
+				seance_prototype: object(prototypeValidator),
+				seances: pipe(
+					array(
+						object({
+							seance_id: validateurs.seance_id,
+							seanceType: validateurs.seanceType,
+							start: validateurs.start,
+							date: validateurs.date
+						})
+					),
+					multipleSeanceMinLengthValidator
+				)
 			}),
+			// Assemble the seances array from the prototype and the seances array
+			transform((input) => {
+				console.log('input in first transform', input);
+				let seances = input.seances.map((seance) => {
+					let newSeance = cloneDeep(input.seance_prototype);
+					newSeance.date = seance.date;
+					newSeance.start = seance.start;
+					newSeance.seanceType = seance.seanceType;
+					newSeance.seance_id = seance.seance_id;
+					return newSeance;
+				});
+				console.log('seances', seances);
+				if (input.seance_prototype.intake) {
+					console.log('input.seance_prototype.intake', input.seance_prototype.intake);
+					seances[0] = { ...seances[0], intake: input.seance_prototype.intake };
+				}
+				if (input.seance_prototype.rapport_ecrit) {
+					seances[0].rapport_ecrit = input.seance_prototype.rapport_ecrit;
+				}
+				input = { seances };
+				return input;
+			}),
+			object({ seances: array(object(validateurs)) }),
 			transform((input) => {
 				for (const seance of input.seances) {
+					console.log('input in second transform', seance);
 					modelingMetadata(seance);
 					if (seance.seanceType === 'kiné') {
 						delete seance.metadata.tarif_consultatif;
@@ -32,7 +79,7 @@ export function buildMultipleSeancesSchema() {
 						delete seance.metadata.tarif_consultatif;
 						delete seance.metadata.tarif_seance;
 					}
-					if (seance.supplements_ponctuels.length > 0) {
+					if (seance.supplements_ponctuels?.length > 0) {
 						seance.metadata.ss_p = seance.supplements_ponctuels.map((sup) => {
 							return { nom: sup.nom, valeur: sup.valeur };
 						});
@@ -61,7 +108,11 @@ export function buildMultipleSeancesSchema() {
 				return input;
 			})
 		),
-		validateurs: { seances: array(object(validateurs)) }
+		validateurs: {
+			seances: array(object(validateurs)),
+			seance_prototype: object(prototypeValidator)
+		},
+		seance_prototype_validateur: object(prototypeValidator)
 	};
 }
 
@@ -79,9 +130,9 @@ export async function onValid(data) {
 
 	goto(
 		'/dashboard/patients/' +
-			this.form.seances[0].patient_id +
+			(this.form.seances[0].patient_id ?? data.seances?.[0]?.patient_id) +
 			'/situation-pathologique/' +
-			this.form.seances[0].sp_id +
+			(this.form.seances[0].sp_id ?? data.seances?.[0]?.sp_id) +
 			'/seances'
 	);
 }
@@ -106,12 +157,12 @@ export const idFieldSchema = [
 		id: 'sp_id',
 		name: 'sp_id',
 		inputType: 'hidden'
-	},
-	{
-		id: 'seance_id',
-		name: 'seance_id',
-		inputType: 'hidden'
 	}
+	// {
+	// 	id: 'seance_id',
+	// 	name: 'seance_id',
+	// 	inputType: 'hidden'
+	// }
 ];
 
 export const dateField = {
@@ -212,15 +263,23 @@ export class ComplexSetup {
 		this.formHandler = formHandler;
 		this.patient = patient;
 		$effect(() => {
+			// here we check for seances the same day as the selected seance. We need to check it against both the already recorded seances (in the db) and the seances in the form (using ec.getEvents)
+
+			//The seance to check
 			const seance = formHandler.form.seances[this.selectedSeance];
 			if (seance) {
+				// First querying the db
+				// Todo (in the Cloud version this might be querying a cache whatever we choose, storing it in the Tauri AppState or using the db as cache, either way we will still need async code)
 				appState.db
 					.select('SELECT * FROM seances WHERE date(date) = $1 AND sp_id = $2', [
 						seance.date,
 						sp_id
 					])
 					.then(({ data, error }) => {
+						// Here we untrack the data to avoid $effect to be retriggered
 						untrack(() => {
+							// Now we supposed to have a list of Seances the same day in the db.
+							// So we add the seances from the form to the data array to know how much seances on the same day
 							data.push(
 								...this.formHandler.form.seances.filter((s) => {
 									const sDate = dayjs(dayjs(s.date).format('YYYY-MM-DD'));
@@ -233,6 +292,7 @@ export class ComplexSetup {
 								this.formHandler.message =
 									'Erreur, la table séance ne peut pas être sélectionnée :  ' + error;
 							}
+							// If there is only one seance it means that it must be a kiné seance (consultative seances are only allowed once so ppl should not be able to add consultative seance on the MultipleSeanceForm)
 							if (data.length === 1) {
 								if (seance.seanceType === 'seconde') {
 									seance.seanceType = 'kiné';
@@ -240,23 +300,25 @@ export class ComplexSetup {
 								this.formHandler.message = null;
 								this.dateWarning = null;
 								console.log('sTypes', this.sTypes);
+								// This is no longer necessary as we don't build seances on the fly but rather with a prototype at the validation step
 								this.seanceTypes = this.sTypes.filter(
 									(st) => st.value !== 'seconde' || st.value === 'no-show'
 								);
 							}
 							if (data.length === 2) {
-								const doesSeanceExist = data[0].seance_id === seance?.seance_id;
-								console.log('doesSeanceExist', doesSeanceExist);
-								if (doesSeanceExist) {
-									const s = new Seance(data[0]);
-									seance.seanceType = seanceTypes[s.seance_type];
-									this.dateWarning = '';
-									this.seanceTypes = this.sTypes.filter((st) => st.value !== 'seconde');
-									console.log('sTypes', $state.snapshot(this.seanceTypes));
-									return;
-								}
+								// Once again this is no longer necessary for the same reason as above
+								// const doesSeanceExist = data[0].seance_id === seance?.seance_id;
+								// console.log('doesSeanceExist', doesSeanceExist);
+								// if (doesSeanceExist) {
+								// 	const s = new Seance(data[0]);
+								// 	seance.seanceType = seanceTypes[s.seance_type];
+								// 	this.dateWarning = '';
+								// 	this.seanceTypes = this.sTypes.filter((st) => st.value !== 'seconde');
+								// 	console.log('sTypes', $state.snapshot(this.seanceTypes));
+								// 	return;
+								// }
 								this.dateWarning =
-									'Attention, il y a déjà une séance ce jour là. <br /> Si cela est permis vous pouvez tarifez une seconde séance. Pour le volet j) d\'une pathologie lourde veuillez sélectionner "séance de kinésitherapie"';
+									'Attention, il y a déjà une séance ce jour là. <br /> Si cela est permis vous pouvez tarifez une seconde séance. Pour le volet j) d\'une pathologie lourde veuillez sélectionner "séance de kinésitherapie" et non "seconde séance"';
 								if (
 									typeof groupe_id === 'number' &&
 									groupe_id === 1 &&
@@ -275,14 +337,15 @@ export class ComplexSetup {
 								}
 							}
 							if (data.length > 2) {
-								const doesSeanceExist = data[0].seance_id === seance?.seance_id;
-								console.log('doesSeanceExist', doesSeanceExist);
-								if (doesSeanceExist) {
-									const s = new Seance(data[0]);
-									seance.seanceType = seanceTypes[s.seance_type];
-									this.seanceTypes = this.sTypes.filter((st) => st.value != 'seconde');
-									return;
-								}
+								// Actually I don't remember why I did this, but it seems unnecessary now
+								// const doesSeanceExist = data[0].seance_id === seance?.seance_id;
+								// console.log('doesSeanceExist', doesSeanceExist);
+								// if (doesSeanceExist) {
+								// 	const s = new Seance(data[0]);
+								// 	seance.seanceType = seanceTypes[s.seance_type];
+								// 	this.seanceTypes = this.sTypes.filter((st) => st.value != 'seconde');
+								// 	return;
+								// }
 								if (
 									typeof groupe_id === 'number' &&
 									groupe_id !== 1 &&
@@ -295,11 +358,12 @@ export class ComplexSetup {
 										"Attention, il y a déjà deux séances ce jour là, votre attestation risque d'être invalide si vous ne soignez pas une pathologie lourde volet j). Vous n'avez pas spécifié ces données dans le formulaire situation pathologique. Kiné Helper n'est donc pas en mesure de valider ce champ. Si vous êtes sûr de vous, Kiné Helper ne vous bloquera pas.";
 								}
 							}
-							let relatedEventSeance = this.ec?.getEventById(seance.seance_id).extendedProps.seance;
-							console.log('Dates are equal', seance.date === relatedEventSeance.date);
-							if (seance.date != relatedEventSeance.date) {
-								this.ec.updateEvent(eventFormater($state.snapshot(seance), this.patient));
-							}
+							// Once again this is no longer necessary for the same reason as above
+							// let relatedEventSeance = this.ec?.getEventById(seance.seance_id);
+							// console.log('Dates are equal', seance.date === relatedEventSeance.date);
+							// if (seance.date != relatedEventSeance.date) {
+							// 	this.ec.updateEvent(eventFormater($state.snapshot(seance), this.patient));
+							// }
 						});
 					});
 			}

@@ -147,7 +147,7 @@ export function modelingMetadata(input) {
 	if (input.tarif_no_show || input.tarif_no_show_custom) {
 		input.metadata.t_ns = input.tarif_no_show ?? input.tarif_no_show_custom;
 	}
-	if (input.supplements.length > 0) {
+	if (input.supplements?.length > 0) {
 		input.metadata.ss = input.supplements;
 	}
 

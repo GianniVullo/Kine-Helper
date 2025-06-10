@@ -8,7 +8,7 @@ export function eventFormater(seance, patient) {
 	console.log('start', start);
 
 	let end = start
-		.add(seance.metadata?.duree_custom ?? seance?.minutes ?? seance.duree_custom ?? 0, 'minute')
+		.add(seance.metadata?.duree_custom || seance?.minutes || seance.duree_custom || 0, 'minute')
 		.format('YYYY-MM-DD HH:mm');
 	const event = {
 		id: seance.seance_id,

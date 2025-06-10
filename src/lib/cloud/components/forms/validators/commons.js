@@ -19,7 +19,7 @@ import {
 // Precursors
 export const stringVal = string('Ce champ est obligatoire');
 const minLengthVal = minLength(1, 'Ce champ ne peut pas être vide');
-export const uuidVal = pipe(string(), uuid('Veuillez insérer un UUID valide'));
+export const uuidVal = pipe(stringVal, uuid('Veuillez insérer un UUID valide'));
 const lengthVal = length(11, 'Veuillez insérer 11 chiffres');
 export const digitVal = digits("Veuillez n'insérer que des chiffres");
 export const isoDateWithMessage = pipe(string(), isoDate('Veuillez insérer une date valide'));
