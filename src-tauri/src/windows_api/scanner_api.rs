@@ -1,10 +1,13 @@
 use std::{thread::sleep, time::Duration};
 use tauri::{AppHandle, Manager};
 use windows::{
-    core::HSTRING,
+    core::{Interface, HSTRING},
     Devices::{
         Enumeration::{DeviceInformation, DeviceInformationCollection},
-        Scanners::{ImageScanner, ImageScannerFormat, ImageScannerResolution},
+        Scanners::{
+            IImageScannerSourceConfiguration, IImageScannerSourceConfiguration_Impl, ImageScanner,
+            ImageScannerFormat, ImageScannerResolution, ImageScannerScanSource,
+        },
     },
     Storage::StorageFolder,
 };
@@ -99,62 +102,6 @@ pub async fn get_scan(app_handle: AppHandle, device_name: String) -> Result<Stri
             }
         };
 
-        let config = match scanner.FlatbedConfiguration() {
-            Ok(config) => config,
-            Err(err) => {
-                return Err(format!(
-                    "Failed to get flatbed configuration: {}",
-                    err.to_string()
-                ))
-            }
-        };
-
-        // println!("{:?}", config.MinResolution().expect("msg"));
-
-        // let _set_desired_resolution = match config.SetDesiredResolution(ImageScannerResolution {
-        //     DpiX: 100.0,
-        //     DpiY: 100.0,
-        // }) {
-        //     Ok(_) => {}
-        //     Err(err) => {
-        //         return Err(format!(
-        //             "Failed to set desired resolution: {}",
-        //             err.to_string()
-        //         ))
-        //     }
-        // };
-
-        let _format = match config.IsFormatSupported(ImageScannerFormat::Jpeg) {
-            Ok(is_supported) => {
-                if is_supported {
-                    match config.SetFormat(ImageScannerFormat::Jpeg) {
-                        Ok(_) => {}
-                        Err(err) => {
-                            // Whatever. If setting the format fails, we can still compress whatever format will come at us
-                        }
-                    };
-                } else {
-                    match config.IsFormatSupported(ImageScannerFormat::Png) {
-                        Ok(is_png_supported) => match config.SetFormat(ImageScannerFormat::Png) {
-                            Ok(_) => {}
-                            Err(err) => {
-                                return Err(format!(
-                                    "Failed to set Png format: {}",
-                                    err.to_string()
-                                ))
-                            }
-                        },
-                        Err(err)  => {
-                            // whatever too
-                        }
-                    };
-                }
-            }
-            Err(err) => {
-                // Whatever. 
-            }
-        };
-
         let source = match scanner.DefaultScanSource() {
             Ok(source) => source,
             Err(err) => {
@@ -162,6 +109,50 @@ pub async fn get_scan(app_handle: AppHandle, device_name: String) -> Result<Stri
                     "Failed to get default scan source: {}",
                     err.to_string()
                 ))
+            }
+        };
+
+        let _config = match source {
+            ImageScannerScanSource::Flatbed => match scanner.FlatbedConfiguration() {
+                Ok(config) => {
+                    match config.cast() {
+                        Ok(casted_config) => {
+                            configure(&casted_config);
+                        }
+                        Err(err) => {
+                            println!("Failed to cast flatbed configuration: {}", err.to_string());
+                            // whatever
+                        }
+                    }
+                }
+                Err(err) => {
+                    return Err(format!(
+                        "Failed to get flatbed configuration: {}",
+                        err.to_string()
+                    ))
+                }
+            },
+            ImageScannerScanSource::Feeder => match scanner.FeederConfiguration() {
+                Ok(config) => {
+                    match config.cast() {
+                        Ok(casted_config) => {
+                            configure(&casted_config);
+                        }
+                        Err(err) => {
+                            println!("Failed to cast feeder configuration: {}", err.to_string());
+                            // whatever
+                        }
+                    }
+                }
+                Err(err) => {
+                    return Err(format!(
+                        "Failed to get feeder configuration: {}",
+                        err.to_string()
+                    ))
+                }
+            },
+            _ => {
+                return Err("Unsupported scan source".to_string());
             }
         };
 
@@ -242,4 +233,60 @@ fn retrieve_scanners() -> Result<DeviceInformationCollection, String> {
     };
 
     Ok(info)
+}
+
+fn configure(config: &IImageScannerSourceConfiguration) -> () {
+    // We just try it and if it fails, we just ignore it
+    let _format = match config.IsFormatSupported(ImageScannerFormat::Jpeg) {
+        Ok(is_supported) => {
+            if is_supported {
+                match config.SetFormat(ImageScannerFormat::Jpeg) {
+                    Ok(_) => {}
+                    Err(err) => {
+                        println!("Failed to set Jpeg format: {}", err.to_string());
+                        // Whatever. If setting the format fails, we can still compress whatever format will come at us
+                    }
+                };
+            } else {
+                match config.IsFormatSupported(ImageScannerFormat::Png) {
+                    Ok(is_png_supported) => {
+                        if is_png_supported {
+                            match config.SetFormat(ImageScannerFormat::Png) {
+                                Ok(_) => {}
+                                Err(err) => {
+                                    println!("Failed to set Png format: {}", err.to_string());
+                                    //whatever
+                                }
+                            }
+                        }
+                        // else whatever, we just use the default format
+                    }
+                    Err(err) => {
+                        println!(
+                            "Failed to check if Png format is supported: {}",
+                            err.to_string()
+                        );
+                        // whatever too
+                    }
+                };
+            }
+        }
+        Err(err) => {
+            println!(
+                "Failed to check if format is supported: {}",
+                err.to_string()
+            );
+            // Whatever.
+        }
+    };
+    let _set_desired_resolution = match config.SetDesiredResolution(ImageScannerResolution {
+        DpiX: 100.0,
+        DpiY: 100.0,
+    }) {
+        Ok(_) => {}
+        Err(err) => {
+            println!("Failed to set desired resolution: {}", err.to_string());
+            // Whatever. If setting the resolution fails, we can still scan
+        }
+    };
 }
