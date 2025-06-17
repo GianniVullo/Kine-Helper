@@ -24,75 +24,82 @@
 		tarif_intake,
 		tarif_no_show,
 		tarifs,
-		supplements
+		supplements,
+		form_id,
+		...rest
 	} = $props();
 
-	let formHandler = new Formulaire({
-		validateurs,
-		schema: TarifsSchema,
-		submiter: '#seance-submit',
-		initialValues: {
-			tarifs,
-			supplements,
-			tarif_seance: tarif_seance ?? {
-				id: null,
-				user_id: appState.user.id,
-				nom: 'tarif_seance',
-				valeur: null,
-				created_at: now,
-				metadata: JSON.stringify({ t_s: true })
+	let formHandler = rest.formHandler;
+
+	if (!formHandler) {
+		formHandler = new Formulaire({
+			validateurs,
+			schema: TarifsSchema,
+			submiter: rest.submiter ?? '#seance-submit',
+			formElement: form_id,
+			initialValues: {
+				tarifs,
+				supplements,
+				tarif_seance: tarif_seance ?? {
+					id: null,
+					user_id: appState.user.id,
+					nom: 'tarif_seance',
+					valeur: null,
+					created_at: now,
+					metadata: JSON.stringify({ t_s: true })
+				},
+				tarif_indemnite: tarif_indemnite ?? {
+					id: null,
+					user_id: appState.user.id,
+					nom: 'tarif_indemnite',
+					valeur: null,
+					created_at: now,
+					metadata: JSON.stringify({ t_id: true })
+				},
+				tarif_rapport_ecrit: tarif_rapport_ecrit ?? {
+					id: null,
+					user_id: appState.user.id,
+					nom: 'tarif_rapport_ecrit',
+					valeur: null,
+					created_at: now,
+					metadata: JSON.stringify({ t_re: true })
+				},
+				tarif_consultatif: tarif_consultatif ?? {
+					id: null,
+					user_id: appState.user.id,
+					nom: 'tarif_consultatif',
+					valeur: null,
+					created_at: now,
+					metadata: JSON.stringify({ t_c: true })
+				},
+				tarif_seconde_seance: tarif_seconde_seance ?? {
+					id: null,
+					user_id: appState.user.id,
+					nom: 'tarif_seconde_seance',
+					valeur: null,
+					created_at: now,
+					metadata: JSON.stringify({ t_sec: true })
+				},
+				tarif_intake: tarif_intake ?? {
+					id: null,
+					user_id: appState.user.id,
+					nom: 'tarif_intake',
+					valeur: null,
+					created_at: now,
+					metadata: JSON.stringify({ t_in: true })
+				},
+				tarif_no_show: tarif_no_show ?? {
+					id: null,
+					user_id: appState.user.id,
+					nom: 'tarif_no_show',
+					valeur: null,
+					created_at: now,
+					metadata: JSON.stringify({ t_ns: true })
+				}
 			},
-			tarif_indemnite: tarif_indemnite ?? {
-				id: null,
-				user_id: appState.user.id,
-				nom: 'tarif_indemnite',
-				valeur: null,
-				created_at: now,
-				metadata: JSON.stringify({ t_id: true })
-			},
-			tarif_rapport_ecrit: tarif_rapport_ecrit ?? {
-				id: null,
-				user_id: appState.user.id,
-				nom: 'tarif_rapport_ecrit',
-				valeur: null,
-				created_at: now,
-				metadata: JSON.stringify({ t_re: true })
-			},
-			tarif_consultatif: tarif_consultatif ?? {
-				id: null,
-				user_id: appState.user.id,
-				nom: 'tarif_consultatif',
-				valeur: null,
-				created_at: now,
-				metadata: JSON.stringify({ t_c: true })
-			},
-			tarif_seconde_seance: tarif_seconde_seance ?? {
-				id: null,
-				user_id: appState.user.id,
-				nom: 'tarif_seconde_seance',
-				valeur: null,
-				created_at: now,
-				metadata: JSON.stringify({ t_sec: true })
-			},
-			tarif_intake: tarif_intake ?? {
-				id: null,
-				user_id: appState.user.id,
-				nom: 'tarif_intake',
-				valeur: null,
-				created_at: now,
-				metadata: JSON.stringify({ t_in: true })
-			},
-			tarif_no_show: tarif_no_show ?? {
-				id: null,
-				user_id: appState.user.id,
-				nom: 'tarif_no_show',
-				valeur: null,
-				created_at: now,
-				metadata: JSON.stringify({ t_ns: true })
-			}
-		},
-		onValid
-	});
+			onValid
+		});
+	}
 </script>
 
 <Modal
@@ -108,7 +115,7 @@
 		history.back();
 	}} />
 
-<Form title="Gérer vos tarifs" message={formHandler.message}>
+<Form id={form_id} title="Gérer vos tarifs" message={formHandler.message}>
 	{#if !appState.user.conventionne}
 		<FormSection
 			titre="Vos tarifs"

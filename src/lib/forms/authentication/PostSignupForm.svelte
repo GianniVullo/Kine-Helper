@@ -1,43 +1,30 @@
 <script>
-	import { FormWrapper, TextField, SubmitButton, CheckboxField, SectionCard } from '../index';
-	import IbanField from './IbanField.svelte';
-	import { goto } from '$app/navigation';
-	import { t } from '../../i18n';
-	import { get } from 'svelte/store';
-	import { createProfile } from '../../user-ops-handlers/users';
-	import { appState } from '../../managers/AppState.svelte';
+	import Form from '../../cloud/components/forms/abstract-components/Form.svelte';
+	import { fieldsSchema } from '../../cloud/components/forms/authentication/UserDataSchema.svelte';
+	import FormSection from '../../cloud/components/forms/abstract-components/FormSection.svelte';
 
-	let message = '';
-	let clazz = '';
-
-	export { clazz as class };
-	export let column = false;
-
-	let formSchema = {
-		isValid
-	};
-
-	async function isValid({ formData, submitter }) {
-		if (!appState.db) {
-			await appState.init({});
-		}
-
-		submitter.innerHTML = get(t)('shared', 'loading');
-		formData.conventionne ??= false;
-		await createProfile(formData);
-		const { data: rawPrinter, error } = await appState.db.getRawPrinter();
-		if (error) {
-			message = error;
-			clazz = 'text-red-500';
-			submitter.innerHTML = 'Enregistrer';
-			return;
-		}
-		submitter.innerHTML = 'OK';
-		rawPrinter ? goto('/dashboard') : goto('/post-signup-forms/printer-setup');
-	}
+	let { formHandler = $bindable() } = $props();
+	// if (!formHandler) {
+	// 	formHandler = buildUserDataFormHandler({});
+	// }
 </script>
 
-<FormWrapper class={'group/form flex flex-col space-y-2 px-4' + clazz} {formSchema}>
+<Form id="user-data-form" className="flex flex-col items-start w-full">
+	{#each fieldsSchema as { titre, description, fields }}
+		<FormSection
+			{titre}
+			{description}
+			{fields}
+			bind:form={formHandler.form}
+			errors={formHandler.errors} />
+	{:else}
+		Error : no section!
+	{/each}
+</Form>
+
+<!-- {JSON.stringify(formHandler.form)} -->
+
+<!-- <FormWrapper class={'group/form flex flex-col space-y-2 px-4' + clazz} {formSchema}>
 	<h1 class="text-surface-600">{$t('form.postSignup', 'title')}</h1>
 	<p class="text-surface-500 dark:text-surface-400">
 		{$t('form.postSignup', 'description')}
@@ -83,7 +70,7 @@
 					name="gsm"
 					value={appState.user.gsm ?? undefined}
 					placeholder={$t('form.postSignup', 'label.cellPhone')}
-					label={$t('form.postSignup', 'label.cellPhone')} /> -->
+					label={$t('form.postSignup', 'label.cellPhone')} /> 
 			</SectionCard>
 		</div>
 		<div class="w-full p-2 md:p-4 lg:p-8">
@@ -115,4 +102,4 @@
 		</div>
 	</div>
 	<div class="font-semibold">{message}</div>
-</FormWrapper>
+</FormWrapper> -->

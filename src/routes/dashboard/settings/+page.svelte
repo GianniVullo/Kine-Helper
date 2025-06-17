@@ -18,6 +18,10 @@
 	import Field from '../../../lib/cloud/components/forms/abstract-components/Field.svelte';
 	import { untrack } from 'svelte';
 	import PageTitle from '../../../lib/cloud/components/layout/PageTitle.svelte';
+	import FormSection from '../../../lib/cloud/components/forms/abstract-components/FormSection.svelte';
+	import BoutonPrincipal from '../../../lib/components/BoutonPrincipal.svelte';
+	import { buildUserDataFormHandler } from '../../../lib/cloud/components/forms/authentication/UserDataSchema.svelte';
+	import SubmitButton from '../../../lib/forms/ui/SubmitButton.svelte';
 
 	let imprimanteMatricielleP = new Promise(async (resolve, reject) => {
 		let { data: iM, error } = await appState.db.getRawPrinter();
@@ -138,6 +142,8 @@
 	const btnBaseCSS =
 		'inline-flex w-full justify-center rounded-md  px-3 py-2 text-sm font-semibold text-white shadow-xs  sm:w-auto';
 
+	let formHandler = buildUserDataFormHandler({ delaySetup: true });
+
 	$effect(() => {
 		imprimanteMatricielle;
 		pinNumber;
@@ -150,6 +156,12 @@
 				untrack(() => (modified = false));
 			}
 		});
+	});
+	$effect(() => {
+		console.log('setting up formHandler', formHandler);
+		formHandler.setup();
+		console.log('formHandler', formHandler);
+		formHandler.evaluateAndValidate();
 	});
 </script>
 
@@ -212,31 +224,35 @@
 	</form>
 </Modal>
 
-<main class="flex h-full w-full flex-col items-start space-y-4 overflow-y-scroll">
-	<PageTitle titre={$t('sidebar', 'settings')} />
+<PageTitle titre={$t('sidebar', 'settings')} />
+
+<main class="mt-10 flex h-full w-full grid-cols-6 flex-col overflow-y-scroll">
 	{#await imprimanteMatricielleP then _}
-		<section class="flex flex-col items-start space-y-2">
-			<h2 class="text-secondary-500 dark:text-secondary-300">{$t('settings', 'printer')}</h2>
+		<FormSection titre="Périphériques" description={$t('settings', 'printer')}>
 			{#if platform() === 'windows'}
-				<WindowsSelectionField
-					cb={() => {
-						console.log('in cb');
-					}}
-					bind:printerField={imprimanteMatricielle} />
+				<div class="col-span-full">
+					<WindowsSelectionField
+						cb={() => {
+							console.log('in cb');
+						}}
+						bind:printerField={imprimanteMatricielle} />
+				</div>
 			{:else}
-				<Field
-					field={{
-						id: 'printer',
-						name: 'printer',
-						type: 'text',
-						titre: 'Imprimante',
-						help: "Sélectionnez l'imprimante à utiliser pour imprimer les attestations",
-						placeholder: "Nom de l'imprimante"
-					}}
-					class="input"
-					type="text"
-					name="printer"
-					bind:value={imprimanteMatricielle} />
+				<div class="col-span-4">
+					<Field
+						field={{
+							id: 'printer',
+							name: 'printer',
+							type: 'text',
+							titre: "Nom de l'imprimante",
+							help: "Entrez le nom de l'imprimante que vous souhaitez utiliser pour imprimer les attestations.",
+							placeholder: "Nom de l'imprimante"
+						}}
+						class="input"
+						type="text"
+						name="printer"
+						bind:value={imprimanteMatricielle} />
+				</div>
 			{/if}
 			<RadioFieldV2
 				name="is_nine_pin"
@@ -251,39 +267,41 @@
 				<button onclick={changePrinter} class={[btnBaseCSS, 'bg-indigo-600 hover:bg-indigo-500']}
 					>{$t('shared', 'save')}</button>
 			{/if}
-		</section>
+		</FormSection>
 	{:catch error}
 		<p class="text-error-600">{error}</p>
 	{/await}
-	<section class="flex flex-col items-start space-y-2">
-		<h2 class="text-secondary-500 dark:text-secondary-300">{$t('settings', 'lang')}</h2>
-		<SelectFieldV2
-			on:input={changingLanguage}
-			value={$locale}
-			name="lang"
-			options={[
-				{ value: 'FR', label: 'Français' },
-				{ value: 'NL', label: 'Nederlands' },
-				{ value: 'EN', label: 'English' },
-				{ value: 'DE', label: 'Deutsch' }
-			]} />
-	</section>
-	<!-- <section class="flex flex-col items-start space-y-2">
-		<h2 class="text-secondary-500 dark:text-secondary-300">{$t('settings', 'theme')}</h2>
-		<LightSwitch />
-	</section> -->
-	<section class="flex flex-col items-start space-y-2">
-		<h2 class="text-secondary-500 dark:text-secondary-300">{$t('settings', 'accountDeletion')}</h2>
-		<p class="text-gray-500">
-			{$t('settings', 'deletionWarning')}
-		</p>
-		<button
-			onclick={() => openModal({ name: 'deleteAccount' })}
-			class={[btnBaseCSS, 'bg-red-600 hover:bg-red-500']}
-			>{$t('settings', 'deletionConfirm')}</button>
-	</section>
-	<section class="flex flex-col items-start space-y-2">
+	<FormSection
+		titre={$t('settings', 'lang')}
+		description="Vous pouvez choisir entre le français, le néerlandais, l'allemand ou l'anglais"
+		className="mt-10">
+		<div class="col-span-full">
+			<SelectFieldV2
+				on:input={changingLanguage}
+				value={$locale}
+				name="lang"
+				options={[
+					{ value: 'FR', label: 'Français' },
+					{ value: 'NL', label: 'Nederlands' },
+					{ value: 'EN', label: 'English' },
+					{ value: 'DE', label: 'Deutsch' }
+				]} />
+		</div>
+	</FormSection>
+	<FormSection
+		className="mt-10"
+		titre={$t('settings', 'accountDeletion')}
+		description="Attention, la loi requiert que vous conserviez les données de vos patients pour une durée de 10 ans. Si vous souhaitez mettre fin à votre contrat avec nous, nous vous remettrons vos données avant de les supprimer définitivement de nos serveurs.">
+		<div class="col-span-full">
+			<BoutonPrincipal
+				color="error"
+				onclick={() => openModal({ name: 'deleteAccount' })}
+				inner={$t('settings', 'deletionConfirm')} />
+		</div>
+	</FormSection>
+	<section class="mt-10 flex flex-col items-start space-y-2">
 		<!-- <h2 class="text-secondary-500 dark:text-secondary-300">{$t('settings', 'profile')}</h2> -->
-		<PostSignupForm class="w-screen" />
+		<PostSignupForm bind:formHandler />
+		<SubmitButton id="user-data-button" loading={formHandler.loading} />
 	</section>
 </main>

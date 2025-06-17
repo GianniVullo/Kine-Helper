@@ -2,6 +2,7 @@ import { nullish, array, pipe, object } from 'valibot';
 import { t } from '../../../../i18n';
 import { goto } from '$app/navigation';
 import { trace } from '@tauri-apps/plugin-log';
+import { Formulaire } from '../../../libraries/formHandler.svelte';
 
 import { appState } from '../../../../managers/AppState.svelte';
 import { tarifUnitValidator } from '../tarification-fields/tarifHelpers';
@@ -142,4 +143,129 @@ function diffArrays(initialArray, currentArray, key = 'id') {
 	}
 
 	return { created, updated, deleted };
+}
+
+export async function getTarifs(error) {
+	if (!appState.db) {
+		await appState.init({});
+	}
+
+	let { data: tarifs, error: dbError } = await appState.db.select(
+		`SELECT * FROM tarifs WHERE user_id = $1`,
+		[appState.user.id]
+	);
+
+	let { data: supplements, error: dbError2 } = await appState.db.select(
+		`SELECT * FROM supplements WHERE user_id = $1`,
+		[appState.user.id]
+	);
+	if (dbError || dbError2) {
+		error(500, { message: dbError + dbError2 });
+	}
+	let tarif_seance = tarifs.find((t) => JSON.parse(t.metadata)?.t_s);
+	let tarif_indemnite = tarifs.find((t) => JSON.parse(t.metadata)?.t_id);
+	let tarif_rapport_ecrit = tarifs.find((t) => JSON.parse(t.metadata)?.t_re);
+	let tarif_consultatif = tarifs.find((t) => JSON.parse(t.metadata)?.t_c);
+	let tarif_seconde_seance = tarifs.find((t) => JSON.parse(t.metadata)?.t_sec);
+	let tarif_intake = tarifs.find((t) => JSON.parse(t.metadata)?.t_in);
+	let tarif_no_show = tarifs.find((t) => JSON.parse(t.metadata)?.t_ns);
+	let tarifs_custom = tarifs.filter((t) => JSON.parse(t.metadata)?.custom);
+	let data = {
+		tarif_seance,
+		tarif_indemnite,
+		tarif_rapport_ecrit,
+		tarif_consultatif,
+		tarif_seconde_seance,
+		tarif_intake,
+		tarif_no_show,
+		tarifs: tarifs_custom,
+		supplements
+	};
+
+	return data;
+}
+
+export async function buildTarifsFormHandler({ form_id, delaySetup }) {
+	let {
+		tarif_seance,
+		tarif_indemnite,
+		tarif_rapport_ecrit,
+		tarif_consultatif,
+		tarif_seconde_seance,
+		tarif_intake,
+		tarif_no_show,
+		tarifs,
+		supplements
+	} = await getTarifs((status, error) => {
+		trace('Error fetching tarifs:', error);
+		console.error(status, { message: error });
+	});
+	return new Formulaire({
+		validateurs,
+		schema: TarifsSchema,
+		submiter: '#tarifs-button',
+		formElement: form_id,
+		initialValues: {
+			tarifs,
+			supplements,
+			tarif_seance: tarif_seance ?? {
+				id: null,
+				user_id: appState.user.id,
+				nom: 'tarif_seance',
+				valeur: null,
+				created_at: now,
+				metadata: JSON.stringify({ t_s: true })
+			},
+			tarif_indemnite: tarif_indemnite ?? {
+				id: null,
+				user_id: appState.user.id,
+				nom: 'tarif_indemnite',
+				valeur: null,
+				created_at: now,
+				metadata: JSON.stringify({ t_id: true })
+			},
+			tarif_rapport_ecrit: tarif_rapport_ecrit ?? {
+				id: null,
+				user_id: appState.user.id,
+				nom: 'tarif_rapport_ecrit',
+				valeur: null,
+				created_at: now,
+				metadata: JSON.stringify({ t_re: true })
+			},
+			tarif_consultatif: tarif_consultatif ?? {
+				id: null,
+				user_id: appState.user.id,
+				nom: 'tarif_consultatif',
+				valeur: null,
+				created_at: now,
+				metadata: JSON.stringify({ t_c: true })
+			},
+			tarif_seconde_seance: tarif_seconde_seance ?? {
+				id: null,
+				user_id: appState.user.id,
+				nom: 'tarif_seconde_seance',
+				valeur: null,
+				created_at: now,
+				metadata: JSON.stringify({ t_sec: true })
+			},
+			tarif_intake: tarif_intake ?? {
+				id: null,
+				user_id: appState.user.id,
+				nom: 'tarif_intake',
+				valeur: null,
+				created_at: now,
+				metadata: JSON.stringify({ t_in: true })
+			},
+			tarif_no_show: tarif_no_show ?? {
+				id: null,
+				user_id: appState.user.id,
+				nom: 'tarif_no_show',
+				valeur: null,
+				created_at: now,
+				metadata: JSON.stringify({ t_ns: true })
+			}
+		},
+		onValid,
+		delaySetup
+	});
 }
