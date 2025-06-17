@@ -2,7 +2,6 @@
 	import { Formulaire } from '../../../libraries/formHandler.svelte';
 	import {
 		checkboxesFields,
-		dateField,
 		idFieldSchema,
 		onValid,
 		ComplexSetup,
@@ -118,12 +117,20 @@
 	});
 
 	function dateComparator(s, event) {
-		console.log('dateComparator', s, event);
 		let first = `${dayjs(s.date).format('YYYY-MM-DD')}T${s.start}:00`;
 		let second = event.dateStr;
-		console.log('dateComparator', first, second);
 		return first === second;
 	}
+	let alreadyThereEvents = sp.seances.map((s) =>
+		eventFormater(s, patient, {
+			editable: false,
+			startEditable: false,
+			durationEditable: false,
+			extendedProps: { wasThere: true },
+			backgroundColor: '#bdbdbd', // neutral gray: unselectable but informative
+			textColor: '#333333',
+		})
+	);
 </script>
 
 {#snippet step1()}
@@ -133,11 +140,15 @@
 		<div class="col-span-full w-full">
 			<EventCalendar
 				bind:ec
-				events={[]}
+				events={alreadyThereEvents}
 				options={{
 					eventClick(infos) {
-						// on event clicked we remove it
+						// on event clicked we remove it if it is not already in the sp
 						console.log('event clicked', infos);
+						if (infos.event.extendedProps.wasThere) {
+							console.log('was there');
+							return;
+						}
 						let events = ec.getEvents();
 						const event = events.find((seance) =>
 							dateComparator(

@@ -56,8 +56,8 @@
 			// body: 'ec-body h-96',
 			// button: 'btn btn-sm variant-filled-purple',
 			// buttonGroup: 'btn-group variant-filled-purple [&>*+*]:border-white',
-			event: 'ec-event !text-purple-500 !bg-purple-50 hover:!bg-purple-100 hover:text-purple-700',
-			eventTitle: 'font-semibold text-purple-700',
+			event: 'ec-event text-purple-500 bg-purple-50 hover:bg-purple-100 hover:text-purple-700',
+			eventTitle: 'font-semibold',
 			toolbar:
 				'ec-toolbar flex space-y-2 sm:space-y-0 items-start sm:items-center flex-col sm:flex-row',
 			eventBody: 'ec-event-body !flex-row',

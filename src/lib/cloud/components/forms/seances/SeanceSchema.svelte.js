@@ -54,8 +54,8 @@ export function buildSeanceSchema() {
 	const mode = picklist(modeChoices);
 	const indemnite = boolean();
 	const ticket_moderateur = boolean();
-	const rapport_ecrit = boolean();
-	const intake = boolean();
+	const rapport_ecrit = nullish(boolean());
+	const intake = nullish(boolean());
 	const groupe_id = nullish(number());
 	const patho_lourde_type = nullish(number());
 	const is_paid = boolean();
