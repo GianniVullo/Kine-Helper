@@ -722,7 +722,7 @@ async function valeurIncrementor({ code, patient, seance, sp, tarif_name }) {
 	}
 	let valeur_totale_seance = 0;
 	let total_recu_seance = 0;
-	if (!(appState.user.conventionne && !patient.bim)) {
+	if (!appState.user.conventionne && !patient.bim) {
 		let tarif = seance?.metadata?.[tarif_name] || sp?.metadata?.[tarif_name];
 		tarif = await retrieveTarif(tarif_name, tarif);
 		if (tarif) {

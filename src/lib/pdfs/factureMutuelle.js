@@ -21,7 +21,7 @@ export class FactureMutuelle extends PDFGeneration {
 				NISS: patient.niss,
 				Codes: this.codeRefChain(codes, has_intake, has_rapport_ecrit, has_indemnite),
 				'Nbr. de prestations effectuées': `${seances.length}`,
-				total: formData.total
+				total: typeof formData.total === 'number' ? formData.total.toFixed(2) : formData.total
 			}
 		];
 	}

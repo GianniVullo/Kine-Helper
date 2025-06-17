@@ -38,6 +38,7 @@ export const inamiValidator = pipe(
 	digitVal,
 	nonEmpty('Veuillez insérer le n°INAMI du prescripteur')
 );
+export const kineInamiValidator = pipe(stringLengthMoreThan1, lengthVal, digitVal);
 
 export const nissValidator = pipe(
 	string(),

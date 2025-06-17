@@ -67,8 +67,8 @@
 			resolve(true);
 		}
 		let { data, error } = await appState.db.select(
-			`SELECT * FROM seances WHERE sp_id = $1 AND rapport_ecrit = TRUE AND seance_type != 3`,
-			[sp.sp_id]
+			`SELECT * FROM seances WHERE sp_id = $1 AND rapport_ecrit = $2 AND seance_type != 3`,
+			[sp.sp_id, false]
 		);
 
 		if (error) {

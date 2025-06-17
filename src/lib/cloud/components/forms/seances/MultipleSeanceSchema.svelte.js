@@ -105,6 +105,8 @@ export function buildMultipleSeancesSchema() {
 					}
 					if (seance.payment_method) {
 						seance.payment_method = payment_methods.indexOf(seance.payment_method);
+					} else {
+						delete input.payment_method;
 					}
 					delete seance.duree_custom;
 					delete seance.tarif_no_show;

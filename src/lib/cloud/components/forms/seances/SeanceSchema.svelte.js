@@ -176,6 +176,8 @@ export function buildSeanceSchema() {
 			}
 			if (input.payment_method) {
 				input.payment_method = payment_methods.indexOf(input.payment_method);
+			} else {
+				delete input.payment_method;
 			}
 			delete input.duree_custom;
 			delete input.tarif_no_show;
@@ -319,8 +321,7 @@ export const paymentFields = [
 		name: 'is_paid',
 		inputType: 'checkbox',
 		checkboxLabel: 'Séance payée',
-		checkboxDescription:
-			'Indique si la séance a déjà été payée par le patient.',
+		checkboxDescription: 'Indique si la séance a déjà été payée par le patient.',
 		outerCSS: 'col-span-full sm:col-span-3',
 		innerCSS: ''
 	},

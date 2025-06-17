@@ -2,7 +2,7 @@
 	import { extractErrorForField } from '../../../libraries/formHandler.svelte';
 	import FormTitle from './FormTitle.svelte';
 
-	let { id = 'default-form', title, action = undefined, multipart, children, message } = $props();
+	let { id = 'default-form', title, action = undefined, multipart, children, message, className } = $props();
 </script>
 
 {#if title}
@@ -17,7 +17,7 @@
 <form
 	{id}
 	{action}
-	class="mt-10 flex flex-col items-start w-full"
+	class={className || "mt-10 flex flex-col items-start w-full"}
 	method="POST"
 	enctype={multipart ? undefined : 'multipart/form-data'}>
 	<div class="space-y-12 w-full">

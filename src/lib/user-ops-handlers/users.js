@@ -32,8 +32,6 @@ export async function signUserIn(formData) {
 }
 
 export async function createProfile(data) {
-	data.conventionne = JSON.parse(data.conventionne);
-	data.cp = parseInt(data.cp);
 	/**
 	 ** - Enregistrer dans la base de données locale
 	 ** - Enregistrer dans Supabase
@@ -70,8 +68,8 @@ export async function createProfile(data) {
 			.from('kinesitherapeutes')
 			.upsert({
 				id: appState.user.id,
-				nom: data.nom,
-				prenom: data.prenom,
+				nom: data.nom ?? profileExists?.[0]?.nom,
+				prenom: data.prenom ?? profileExists?.[0]?.prenom,
 				encrypted: null
 			});
 		console.log('Profile supabase', supabaseResponse);
