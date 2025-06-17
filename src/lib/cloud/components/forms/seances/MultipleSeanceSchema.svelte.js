@@ -56,6 +56,8 @@ export function buildMultipleSeancesSchema() {
 					newSeance.start = seance.start;
 					newSeance.seanceType = seance.seanceType;
 					newSeance.seance_id = seance.seance_id;
+					delete newSeance.intake;
+					delete newSeance.rapport_ecrit;
 					return newSeance;
 				});
 				console.log('seances', seances);
