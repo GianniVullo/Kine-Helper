@@ -61,7 +61,10 @@
 <Modal
 	opened={page.state?.modal?.name === 'confirmExitPrinterConfig'}
 	title={get(t)('printerSetup', 'confirmModal.title')}
-	body={get(t)('printerSetup', 'confirmModal.body')} />
+	body={get(t)('printerSetup', 'confirmModal.body')}
+	onAccepted={() => {
+		goto('/dashboard');
+	}} />
 
 <main class="p-10">
 	<h1 class="text-surface-900 dark:text-surface-400">
