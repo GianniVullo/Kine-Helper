@@ -1,14 +1,11 @@
 import { boolean, digits, length, union, object, pipe, regex, transform } from 'valibot';
 import {
-	inamiValidator,
 	kineInamiValidator,
 	stringLengthMoreThan1,
-	stringLengthMoreThan1ButCanBeNull,
-	stringVal
+	stringLengthMoreThan1ButCanBeNull
 } from '../validators/commons';
 import { get } from 'svelte/store';
 import { t } from '../../../../i18n';
-import { goto } from '$app/navigation';
 import { createProfile } from '../../../../user-ops-handlers/users';
 import { appState } from '../../../../managers/AppState.svelte';
 import { Formulaire } from '../../../../cloud/libraries/formHandler.svelte';
@@ -87,6 +84,7 @@ async function onValid(formData) {
 	const filteredData = this.filtrerLesChampsAUpdater(formData);
 	console.log('Filtered data for DB operation', filteredData);
 	if (!isEmpty(filteredData)) {
+		// C'est pas ergonomique du tout mais createProfile est enfait un "createOrUpdateProfile" qui va créer ou mettre à jour le profil utilisateur
 		const { data, error } = await createProfile(filteredData);
 		console.log('Db operation response', data);
 		if (error) {

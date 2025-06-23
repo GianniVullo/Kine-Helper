@@ -51,7 +51,8 @@ export class Formulaire {
 		onError,
 		mode = 'create',
 		isAsynchronous = false,
-		scrollable
+		scrollable,
+		delaySetup = false
 	}) {
 		trace('Constructing the Formulaire instance with ' + Object.keys(validateurs).join(', '));
 		this.submiter = submiter;
@@ -72,16 +73,15 @@ export class Formulaire {
 		} else {
 			this.onError = this.defaultOnError.bind(this);
 		}
-		trace('Setting $effect up');
-		$effect(() => {
-			this.evaluateAndValidate(this.form);
-		});
 		this.scrollable = scrollable;
-		onMount(() => {
-			this.setup();
-		});
-
-		console.log('initialValues', this.initialValues);
+		if (!delaySetup) {
+			$effect(() => {
+				this.evaluateAndValidate();
+			});
+			onMount(() => {
+				this.setup();
+			});
+		}
 	}
 
 	setup() {
@@ -123,14 +123,22 @@ export class Formulaire {
 		}
 	}
 
-	evaluateAndValidate(form) {
-		console.log('in evaluateAndValidate with', $state.snapshot(form));
-		for (const field of Object.keys(form)) {
+	async validateAsync() {
+		trace('Asynchronous validation');
+		return await safeParseAsync(this.schema, this.form);
+	}
+
+	validate() {
+		return safeParse(this.schema, this.form);
+	}
+
+	evaluateAndValidate() {
+		console.log('in evaluateAndValidate with', $state.snapshot(this.form));
+		for (const field of Object.keys(this.form)) {
 			if (this.touched[field]) {
 				trace(field + ' is touched');
-				this.errors[field] = extractErrorForField(
-					safeParse(this.validateurs[field], this.form[field])
-				);
+				let parsedError = safeParse(this.validateurs[field], this.form[field]);
+				this.errors[field] = extractErrorForField(parsedError);
 			}
 		}
 	}
@@ -170,6 +178,16 @@ export class Formulaire {
 				this.errors[fieldName] = issue.message;
 			}
 		}
+	}
+
+	filtrerLesChampsAUpdater(data) {
+		for (const field of Object.keys(this.touched)) {
+			const isTouched = this.touched[field];
+			if (!isTouched) {
+				delete data[field];
+			}
+		}
+		return data;
 	}
 }
 

@@ -80,6 +80,8 @@
 		"fs:allow-appcache-read",
 		"fs:allow-appcache-read-recursive",
 		"fs:allow-appconfig-read",
+		"fs:allow-read-text-file",
+		"fs:allow-resource-read-recursive",
 		"updater:allow-check",
 		"updater:default",
 		"dialog:allow-save",

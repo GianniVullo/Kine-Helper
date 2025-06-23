@@ -9,10 +9,17 @@
 	import { buildTarifsFormHandler } from '../finances/TarifsSchema.svelte';
 	import { appState } from '../../../../managers/AppState.svelte';
 	import { tick } from 'svelte';
+	import { on } from 'svelte/events';
+	import { goto } from '$app/navigation';
 
 	let stepperController = new StepperController([]);
 
+	let submitAll;
+
 	let setFormsup = new Promise(async (resolve) => {
+		if (!appState.db) {
+			await appState.init({});
+		}
 		let userDataFormHandler = buildUserDataFormHandler({ delaySetup: true });
 		console.log('UserDataFormHandler:', userDataFormHandler);
 		const { data: rawPrinter, error } = await appState.db.getRawPrinter();
@@ -61,7 +68,7 @@
 					periphericFormHandler.evaluateAndValidate();
 					return valid.success;
 				}
-			},
+			}
 			// {
 			// 	title: 'Tarifs et suppléments',
 			// 	step: TarifsFormStep,
@@ -70,6 +77,40 @@
 			// }
 		];
 		stepperController.steps = steps;
+		submitAll = async () => {
+			// tarifsSubmiter?.click();
+			const { data: rawPrinter, error } = await appState.db.getRawPrinter();
+
+			if (userDataFormHandler.validate().success) {
+				await userDataFormHandler.validateAndTerminate();
+				if (periphericFormHandler.validate().success) {
+					await periphericFormHandler.validateAndTerminate();
+				}
+				goto('/dashboard');
+			} else {
+				// If the user data form is not valid, we don't proceed to the next step
+				stepperController.goToStep(0);
+				return;
+			}
+
+			// TODO : Ajouter une step Tarifs
+			// if (!rawPrinter) {
+			// 	goToStep(1);
+			// } else {
+			// 	if (
+			// 		!formData.conventionne &&
+			// 		// remplacer par un call supabase ou cache pour le cloud
+			// 		!(await appState.db.select(
+			// 			'SELECT * FROM tarifs WHERE json_extract(metadata, $.t_s) = $1'
+			// 		),
+			// 		[true])
+			// 	) {
+			// 		goToStep(2);
+			// 	} else {
+			// 		goto('/dashboard');
+			// 	}
+			// }
+		};
 		resolve();
 	});
 
@@ -78,27 +119,6 @@
 	let userDataSubmiter;
 	let periphericSubmiter;
 	// let tarifsSubmiter;
-	let submitAllForms = async () => {
-		userDataSubmiter?.click();
-		periphericSubmiter?.click();
-		// tarifsSubmiter?.click();
-		const { data: rawPrinter, error } = await appState.db.getRawPrinter();
-
-		if (!rawPrinter) {
-			goToStep(1);
-		} else {
-			if (
-				!formData.conventionne &&
-				// remplacer par un call supabase ou cache pour le cloud
-				!(await appState.db.select('SELECT * FROM tarifs WHERE json_extract(metadata, $.t_s) = $1'),
-				[true])
-			) {
-				goToStep(2);
-			} else {
-				goto('/dashboard');
-			}
-		}
-	};
 
 	$effect(() => {
 		if (stepperHandle) {
@@ -124,7 +144,7 @@
 {#await setFormsup then _}
 	<div bind:this={stepperHandle} class="my-12">
 		{#snippet finalButton()}
-			<BoutonPrincipal onclick={() => submitAllForms()} inner="Enregistrer" />
+			<BoutonPrincipal id="submit-all" onclick={() => submitAll()} inner="Enregistrer" />
 		{/snippet}
 		<Stepper bind:stepperController {finalButton} />
 		<button

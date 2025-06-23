@@ -118,7 +118,7 @@ export async function onValid(data) {
 	// Si le profil de l'utilisateur est incomplet
 	if (!appState.has_complete_profile()) {
 		info('User has incomplete profile');
-		goto('/post-signup-forms/kine-profile');
+		goto('/post-signup-forms');
 		return;
 	}
 
@@ -138,7 +138,7 @@ export async function onValid(data) {
 	// Si l'utilisateur n'a pas d'appareil enregistré
 	if (appareil?.length === 0) {
 		info('User has no device on local db');
-		goto('/post-signup-forms/printer-setup');
+		goto('/post-signup-forms');
 		return;
 	}
 

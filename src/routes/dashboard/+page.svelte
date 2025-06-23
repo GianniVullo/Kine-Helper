@@ -5,11 +5,14 @@
 	import { calendarIcon, cogIcon, euroIcon, userIcon } from '../../lib/ui/svgs/IconSnippets.svelte';
 	import { goto } from '$app/navigation';
 	import ActionRapide from '../../lib/cloud/components/layout/ActionRapide.svelte';
+	import OnBoardingWidget from '../../lib/cloud/components/layout/on-boarding/OnBoardingWidget.svelte';
 
 	let { data } = $props();
 </script>
 
 <PageTitle titre={$t('sidebar', 'dashboard')} />
+
+<!-- <OnBoardingWidget /> -->
 
 <!-- On peut aussi créer un raccourci à "Nouveau patient" -->
 

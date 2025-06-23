@@ -7,7 +7,6 @@ export class StepperController {
 	steps = $state();
 	constructor(steps, dev = false) {
 		this.steps = steps;
-		this.dev = true;
 	}
 	next() {
 		if (this.currentStep < this.steps.length - 1) {
