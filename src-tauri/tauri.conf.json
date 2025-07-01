@@ -23,7 +23,11 @@
 		"macOS": {
 			"hardenedRuntime": true,
 			"entitlements": "./Entitlements.plist"
-		}
+		},
+		"resources": [
+			"./gabarits_pdf/tinetti.pdf",
+			"./gabarits_pdf/liste_e.pdf"
+		]
 	},
 	"app": {
 		"withGlobalTauri": false,
