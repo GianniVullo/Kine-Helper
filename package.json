@@ -1,7 +1,7 @@
 {
   "name": "kine-helper",
   "private": true,
-  "version": "1.0.3",
+  "version": "1.0.4",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -29,6 +29,7 @@
     "jspdf": "^2.5.1",
     "lodash": "^4.17.21",
     "orderedmap": "^2.1.1",
+    "pdf-lib": "^1.17.1",
     "pristinejs": "^1.1.0",
     "prosemirror-commands": "^1.7.0",
     "prosemirror-dropcursor": "^1.8.1",
