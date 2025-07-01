@@ -3,11 +3,20 @@
 	import TwUiFileField from '../fields/TwUIFileField.svelte';
 	import TwUiRadioGroup from '../fields/TwUIRadioGroup.svelte';
 	import SimpleSelect from '../fields/SimpleSelect.svelte';
+	import TwUiRadioGroupWithPanel from '../fields/TwUIRadioGroupWithPanel.svelte';
 	let { field, value = $bindable(), error, warning, onchange, oninput } = $props();
 </script>
 
 {#if field.inputType === 'radio'}
 	<TwUiRadioGroup
+		bind:group={value}
+		label={field.label}
+		description={field.description}
+		outerCSS={field.outerCSS}
+		options={field.options}
+		{error} />
+{:else if field.inputType === 'radioWithPanel'}
+	<TwUiRadioGroupWithPanel
 		bind:group={value}
 		label={field.label}
 		description={field.description}
