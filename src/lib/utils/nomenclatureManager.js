@@ -1,4 +1,4 @@
-import { LocalDatabase } from '../stores/databaseInitializer';
+import { appState } from '../managers/AppState.svelte';
 import { Code, indmeniteCategory } from '../stores/codeDetails';
 import { get, writable } from 'svelte/store';
 
@@ -427,7 +427,7 @@ export class NomenclatureArchitecture {
 
 export class NomenclatureManager {
 	constructor() {
-		this.database = new LocalDatabase();
+		this.database = appState.db;
 		this.cache = new Map();
 	}
 

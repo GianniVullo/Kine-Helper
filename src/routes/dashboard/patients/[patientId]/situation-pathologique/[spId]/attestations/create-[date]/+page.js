@@ -69,7 +69,9 @@ export async function load({ url, parent, params }) {
 	const { seances, valeur_totale, total_recu, lines } = await groupSeanceInAttestations(
 		seancesToDealWith,
 		sp,
-		patient
+		patient,
+		null,
+		sp.prescriptions.find((p) => p.prescription_id === prescription_id),
 	);
 	let numero = await appState.db.getItem('num_attestation');
 	return {

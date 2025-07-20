@@ -1,7 +1,7 @@
 {
   "name": "kine-helper",
   "private": true,
-  "version": "1.0.4",
+  "version": "1.0.5",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -11,6 +11,9 @@
     "test": "vitest"
   },
   "dependencies": {
+    "@editorjs/editorjs": "^2.30.8",
+    "@editorjs/header": "^2.8.8",
+    "@editorjs/paragraph": "^2.11.7",
     "@floating-ui/dom": "^1.6.13",
     "@supabase/supabase-js": "^2.38.1",
     "@tailwindcss/vite": "^4.0.17",

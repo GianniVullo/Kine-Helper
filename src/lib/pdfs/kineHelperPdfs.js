@@ -1,7 +1,6 @@
 import { get, writable } from 'svelte/store';
 import { jsPDF } from 'jspdf';
 import dayjs from 'dayjs';
-import DBAdapter from '$lib/user-ops-handlers/dbAdapter';
 import { file_exists, open_file, read_file, remove_file, save_to_disk } from '../utils/fsAccessor';
 import { appState } from '../managers/AppState.svelte';
 import { invoke } from '@tauri-apps/api/core';
@@ -70,7 +69,6 @@ export class PDFGeneration {
 	}
 	async save() {
 		let { dirPath } = await this.save_file();
-		let db = new DBAdapter();
 		let document = {
 			form_data: this.formData,
 			docType: this.docType,
@@ -80,7 +78,7 @@ export class PDFGeneration {
 			sp_id: this.sp.sp_id,
 			user_id: appState.user.id
 		};
-		await db.save('documents', document);
+		await appState.db.insert('documents', document);
 		this.data = document;
 		console.log(
 			'in pdfGeneration with path ==',

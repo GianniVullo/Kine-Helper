@@ -16,13 +16,14 @@
 	} from './ListeESchema.svelte';
 	import { ListeEPDF } from './ListeEPDF.svelte';
 	import { BaseDirectory, writeFile } from '@tauri-apps/plugin-fs';
+	import RichTextEditor from '../../../../libraries/rich-text-editor/RichTextEditor.svelte';
 
 	let formHandler = new Formulaire({
 		initialValues: {
 			id: 'liste_e',
 			date: '2024-01-01',
 			form_data: {
-				first_time: false,
+				first_time: true,
 				p2a: 2,
 				p2b: `Læe patient a besoin de faire des chose par lui même et même, je dirais, de dire des choses chouettes et toutLe patient a besoin de faire des chose par lui même et même, je dirais, de dire des choses chouettes et toutLe patient a besoin de faire des chose par lui même et même, je dirais, de dire des choses chouettes et tout !
                     - Moins de soins sur les foisonnements
@@ -76,6 +77,8 @@
 		}
 	});
 </script>
+
+<RichTextEditor />
 
 <Form title="Création d'une demande pour Liste E (pathologie lourde)" message={formHandler.message}>
 	<input type="hidden" name="id" bind:value={formHandler.form.id} />

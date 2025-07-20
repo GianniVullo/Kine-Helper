@@ -188,26 +188,15 @@ export async function getCodes(data) {
 export async function updateAttestation(data) {
 	const opsHandler = setupAttestationOpsHandler();
 	opsHandler.execute(async () => {
-		const db = new DBAdapter();
-		await db.update(
+		await appState.db.update(
 			'attestations',
 			[
-				['user_id', get(user).user.id],
+				['user_id', appState.user.id],
 				['patient_id', data.patient_id],
 				['attestation_id', data.attestation_id]
 			],
 			data
 		);
-		patients.update((p) => {
-			const rpatient = p.find((p) => p.patient_id === data.patient_id);
-			const rsp = rpatient.situations_pathologiques.find((lsp) => lsp.sp_id === data.sp_id);
-			let attest = rsp.attestations.find((a) => a.attestation_id === data.attestation_id);
-			attest.mutuelle_paid = data.mutuelle_paid;
-			attest.patient_paid = data.patient_paid;
-			attest.total_recu = data.total_recu;
-			attest.valeur_totale = data.valeur_totale;
-			return p;
-		});
 	});
 }
 

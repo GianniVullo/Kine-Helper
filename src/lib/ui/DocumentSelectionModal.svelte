@@ -7,27 +7,34 @@
 	import Form from '../cloud/components/forms/abstract-components/Form.svelte';
 	import { Formulaire } from '../cloud/libraries/formHandler.svelte';
 	import { length, object, pipe, string } from 'valibot';
-	import { replaceState } from '$app/navigation';
+	import { goto, replaceState } from '$app/navigation';
 	import { cloneDeep } from 'lodash';
 
 	let { accords } = $props();
 	const options = [
 		{ value: 'A', label: get(t)('shared', 'annexe') + ' A' },
-		{ value: 'B', label: get(t)('shared', 'annexe') + ' B' }
+		{ value: 'B', label: get(t)('shared', 'annexe') + ' B' },
+		{ value: 'E', label: 'Demande pour Pathologies Lourdes' }
 	];
 
 	function onValid(data) {
 		console.log('in onValid', data);
-		console.log('accords', accords);
-		replaceState('', {
-			...page.state,
-			modal: undefined
-		});
-		openDrawer({
-			name: 'accordCreate',
-			accord: cloneDeep($state.snapshot(accords)),
-			docType: data.docType
-		});
+		console.log(
+			'going to ',
+			`/dashboard/patients/${page.params.patientId}/situation-pathologique/${page.params.spId}/documents/create-${data.docType}`
+		);
+		goto(
+			`/dashboard/patients/${page.params.patientId}/situation-pathologique/${page.params.spId}/documents/create-${data.docType}`
+			// {
+			// 	state: {
+			// 		drawer: {
+			// 			name: 'accordCreate',
+			// 			docType: data.docType,
+			// 			accord: cloneDeep(accords.find((a) => a.doc_type === data.docType))
+			// 		}
+			// 	}
+			// }
+		);
 	}
 
 	const validateurs = {
@@ -58,5 +65,6 @@
 			required
 			{options} />
 	</div>
-	<SubmitButton id="choose-accord-submit" loading={formHandler.loading}>{$t('shared', 'confirm')}</SubmitButton>
+	<SubmitButton id="choose-accord-submit" loading={formHandler.loading}
+		>{$t('shared', 'confirm')}</SubmitButton>
 </Form>

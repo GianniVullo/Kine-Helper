@@ -1,9 +1,9 @@
 use crate::cloud::{image_compression::tiff_to_avif, postgrest::create_client};
-use base64::{engine::general_purpose::STANDARD, Engine as _};
-use postgrest::Postgrest;
+// use base64::{engine::general_purpose::STANDARD, Engine as _};
+// use postgrest::Postgrest;
 use std::{collections::HashMap, time::Duration};
 
-use tauri::{AppHandle, Emitter, Manager};
+use tauri::{AppHandle, Emitter};
 
 #[derive(Debug, Clone)]
 pub enum Job {

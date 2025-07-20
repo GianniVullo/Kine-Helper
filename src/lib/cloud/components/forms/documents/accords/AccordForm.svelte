@@ -23,7 +23,7 @@
 		formElement: '#accord-form',
 		schema: AccordSchema,
 		submiter: '#accord-submit',
-		scrollable: 'right-drawer',
+		// scrollable: 'right-drawer',
 		initialValues: {
 			id: accord?.id ?? crypto.randomUUID(),
 			user_id: appState.user.id,
@@ -33,7 +33,7 @@
 			date: accord?.date ?? dayjs().format('YYYY-MM-DD'),
 			situation: accord?.situation ?? undefined,
 			buildable: true,
-			metadata: { doc: docType }
+			metadata: { doc: page.params.docType }
 		},
 		onValid: (data) => {
 			console.log('data', data);
@@ -44,9 +44,6 @@
 		mode
 	});
 
-	$effect(() => {
-		formHandler.form.metadata.doc = page.state?.drawer?.docType;
-	});
 </script>
 
 <Form id="accord-form" message={formHandler.message}>

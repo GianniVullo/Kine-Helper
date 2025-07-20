@@ -225,6 +225,8 @@ pub fn run() {
                 });
                 println!("API: {:?}", api);
 
+                //* Safely shutdown the queue and wait for it to finish processing 
+
                 // Spawn an async block to drop sender and wait for queue
                 let app_handle = app.clone();
                 let (tx, rx) = tokio::sync::oneshot::channel();
@@ -254,6 +256,8 @@ pub fn run() {
                     let _ = tx.send(());
                 });
                 rx.blocking_recv().expect("Failed to receive exit signal");
+                
+                //* Clear the cache
             }
         });
 }

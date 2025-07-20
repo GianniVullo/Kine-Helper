@@ -24,7 +24,7 @@
 		console.log('UserDataFormHandler:', userDataFormHandler);
 		const { data: rawPrinter, error } = await appState.db.getRawPrinter();
 		let periphericFormHandler = buildPrinterFormHandler({
-			printer: rawPrinter.name,
+			printer: rawPrinter?.name,
 			delaySetup: true
 		});
 		console.log('PeriphericFormHandler:', periphericFormHandler);

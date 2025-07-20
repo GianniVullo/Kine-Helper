@@ -1,8 +1,3 @@
-import { UserOperationsHandler } from './abstractHandler';
-import { user } from '../stores/UserStore';
-import DBAdapter from './dbAdapter';
-import { LocalDatabase } from '../stores/databaseInitializer';
-import dayjs from 'dayjs';
 import { appState } from '../managers/AppState.svelte';
 
 export async function retrieveSettings(user_id) {

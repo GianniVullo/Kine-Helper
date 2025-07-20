@@ -60,10 +60,11 @@ export function assignCodes2({
 
 		// Définition du compteur et des limites
 		// ici on doit ajouter les séances déjà_faites de la prescription
-		const seancesGeneree =
-			seancesAlreadyTarifed.length + indexOfSeance + prescription?.deja_faites
-				? prescription.deja_faites
-				: 0;
+		let seancesGeneree = seancesAlreadyTarifed.length + indexOfSeance;
+
+		if (prescription?.deja_faites) {
+			seancesGeneree += prescription.deja_faites;
+		}
 		console.log('seancesGeneree and indexOfSeance', seancesGeneree, indexOfSeance);
 		const normalCodeLimit = architecture.seances_normales_executables - sp.deja_faites;
 		console.log('normalCodeLimit', normalCodeLimit);
