@@ -1,12 +1,6 @@
 <script>
-	import {
-		lightningIcon,
-		magnifyingGlassIcon,
-		userIcon,
-		warningOutlineIcon
-	} from '../../../ui/svgs/IconSnippets.svelte';
+	import { userIcon } from '../../../ui/svgs/IconSnippets.svelte';
 	import { goto } from '$app/navigation';
-	import ActionRapide from '../../components/layout/ActionRapide.svelte';
 	import { CommandPaletteController } from './commandPaletteController.svelte';
 	import BackDrop from './BackDrop.svelte';
 	import HelpPanel from './HelpPanel.svelte';
@@ -14,7 +8,14 @@
 	import ActionRapidePanel from './ActionRapidePanel.svelte';
 
 	let commandPalette = new CommandPaletteController();
-	let patientPromise = commandPalette.patientsPromise();
+	let patientPromise = $state(commandPalette.patientsPromise());
+	$effect(() => {
+		// We reset the patientPromise every time the command palette is opened so that the data are always up to date with the newly inserted patients.
+		if (commandPalette.inner.opened) {
+			console.log('Command palette opened, fetching patients');
+			patientPromise = commandPalette.patientsPromise();
+		}
+	});
 </script>
 
 <div
