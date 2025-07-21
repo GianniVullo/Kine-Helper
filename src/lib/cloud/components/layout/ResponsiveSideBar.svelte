@@ -18,6 +18,8 @@
 	import { goto, afterNavigate } from '$app/navigation';
 	import CommandPaletteManualOpener from '../../libraries/command-palette/CommandPaletteManualOpener.svelte';
 	import { SidePanel } from './SidePanel.svelte';
+	import BackDrop from '../../libraries/command-palette/BackDrop.svelte';
+	import { appState } from '../../../managers/AppState.svelte';
 
 	let { children } = $props();
 	let sidePanel = new SidePanel();
@@ -91,6 +93,34 @@
 		history.back();
 	}} />
 
+{#snippet TeamWidgetDesktop()}
+	<li class="-mx-6 mt-auto">
+		<a
+			href="#"
+			class="flex items-center gap-x-4 px-6 py-3 text-sm/6 font-semibold text-gray-900 hover:bg-gray-50">
+			<div
+				class="flex size-8 items-center justify-center rounded-full bg-gray-300 text-gray-600"
+				alt="">
+				{`${appState.user?.prenom?.charAt(0) || ''}${appState.user?.nom?.charAt(0) || ''}`}
+			</div>
+			<span class="sr-only">Your profile</span>
+			{#if sidePanel.isOpen}
+				<span aria-hidden="true"
+					>{`${appState.user?.prenom || ''} ${appState.user?.nom || ''}`}</span>
+			{/if}
+		</a>
+	</li>
+{/snippet}
+{#snippet TeamWidgetMobile()}<a href="#">
+		<span class="sr-only">Paramètres</span>
+		<div
+			class="flex size-8 items-center justify-center rounded-full bg-gray-300 text-gray-600"
+			alt="">
+			{`${appState.user?.prenom?.charAt(0) || ''}${appState.user?.nom?.charAt(0) || ''}`}
+		</div>
+	</a>
+{/snippet}
+
 <div>
 	<!-- Off-canvas menu for mobile, show/hide based on off-canvas menu state. -->
 	<div
@@ -107,12 +137,7 @@
 		  From: "opacity-100"
 		  To: "opacity-0"
 	  -->
-		<div
-			class="fixed inset-0 bg-gray-900/80 transition-opacity duration-300 ease-linear {showDrawer
-				? 'opacity-100'
-				: 'opacity-0'}"
-			aria-hidden="true">
-		</div>
+		<BackDrop display={showDrawer} color="bg-gray-900/80" z="" />
 
 		<div class="fixed inset-0 flex">
 			<!--
@@ -385,20 +410,7 @@
 							})}
 						</ul>
 					</li>
-					<li class="-mx-6 mt-auto">
-						<a
-							href="#"
-							class="flex items-center gap-x-4 px-6 py-3 text-sm/6 font-semibold text-gray-900 hover:bg-gray-50">
-							<img
-								class="size-8 rounded-full bg-gray-50"
-								src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
-								alt="" />
-							<span class="sr-only">Your profile</span>
-							{#if sidePanel.isOpen}
-								<span aria-hidden="true">Tom Cook</span>
-							{/if}
-						</a>
-					</li>
+					{@render TeamWidgetDesktop()}
 				</ul>
 			</nav>
 		</div>
@@ -452,13 +464,7 @@
 			<!-- {menuItems.find((p) => p.href === page.url.pathname)?.name} -->
 			<CommandPaletteManualOpener />
 		</div>
-		<a href="#">
-			<span class="sr-only">Paramètres</span>
-			<img
-				class="size-8 rounded-full bg-gray-50"
-				src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
-				alt="" />
-		</a>
+		{@render TeamWidgetMobile()}
 	</div>
 
 	<main class={['py-10 duration-300', sidePanel.isOpen ? 'lg:pl-72' : 'lg:pl-20']}>
