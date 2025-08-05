@@ -8,7 +8,7 @@
 	import { buildPrinterFormHandler } from './PrinterSetupSchema.svelte';
 	import { buildTarifsFormHandler } from '../finances/TarifsSchema.svelte';
 	import { appState } from '../../../../managers/AppState.svelte';
-	import { tick } from 'svelte';
+	import { onDestroy, tick } from 'svelte';
 	import { on } from 'svelte/events';
 	import { goto } from '$app/navigation';
 
@@ -132,6 +132,9 @@
 			// stepperController.steps[2].stepArgs.formHandler.evaluateAndValidate();
 		}
 	});
+	onDestroy(() => {
+		console.log('Destroying stepper');
+	})
 </script>
 
 <PageTitle titre="Configuration de Kiné Helper" />

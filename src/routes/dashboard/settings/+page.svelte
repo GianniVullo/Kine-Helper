@@ -26,11 +26,11 @@
 	let imprimanteMatricielleP = new Promise(async (resolve, reject) => {
 		let { data: iM, error } = await appState.db.getRawPrinter();
 		if (error) {
-			console.log('error', error);
+			console.log('error getting the imprimante', error);
 			reject(error);
 		}
-		imprimanteMatricielle = iM.name;
-		pinNumber = iM.metadata.is_nine_pin;
+		imprimanteMatricielle = iM?.name;
+		pinNumber = iM?.metadata?.is_nine_pin;
 		console.log(pinNumber);
 		resolve(iM);
 	});
@@ -110,30 +110,65 @@
 	}
 
 	async function changePrinter() {
-		if ((await appState.db.getRawPrinter()) === imprimanteMatricielle) return;
-
-		const { data: _, error } = await appState.db.execute(
-			'UPDATE appareils SET name = $1, metadata = $2 WHERE role = $3',
-			[imprimanteMatricielle, JSON.stringify({ is_nine_pin: pinNumber }), 'raw_printer']
-		);
-		modified = false;
-		if (!error) {
-			toast.trigger({
-				titre: 'Imprimante modifiée avec succès.',
-				description: 'Vos attestations seront désormais imprimées sur ' + imprimanteMatricielle,
-				leading: successIcon,
-				leadingCSS: 'size-6 text-green-400',
-				timeout: 5000
-			});
-		} else {
+		const {data: imprimante, error: imprimanteQueryError} = await appState.db.getRawPrinter();
+		console.log('imprimante', imprimante);
+		if (imprimanteQueryError) {
 			toast.trigger({
 				titre: 'Erreur!',
-				description: error,
+				description: imprimanteQueryError,
 				leading: errorIcon,
 				leadingCSS: 'size-6 text-red-400',
 				timeout: 5000
 			});
+			return;
 		}
+		if (imprimante === imprimanteMatricielle) return;
+		if (!imprimante) {
+			const { data: _, error } = await appState.db.execute(
+				'INSERT INTO appareils (id, name, metadata, role) VALUES ($1, $2, $3, $4)',
+				[crypto.randomUUID(), imprimanteMatricielle, JSON.stringify({ is_nine_pin: pinNumber }), 'raw_printer']
+			);
+			if (!error) {
+				toast.trigger({
+					titre: 'Imprimante ajoutée avec succès.',
+					description: 'Vos attestations seront désormais imprimées sur ' + imprimanteMatricielle,
+					leading: successIcon,
+					leadingCSS: 'size-6 text-green-400',
+					timeout: 5000
+				});
+			} else {
+				toast.trigger({
+					titre: 'Erreur!',
+					description: error,
+					leading: errorIcon,
+					leadingCSS: 'size-6 text-red-400',
+					timeout: 5000
+				});
+			}
+		} else {
+			const { data: _, error } = await appState.db.execute(
+				'UPDATE appareils SET name = $1, metadata = $2 WHERE role = $3',
+				[imprimanteMatricielle, JSON.stringify({ is_nine_pin: pinNumber }), 'raw_printer']
+			);
+			if (!error) {
+				toast.trigger({
+					titre: 'Imprimante modifiée avec succès.',
+					description: 'Vos attestations seront désormais imprimées sur ' + imprimanteMatricielle,
+					leading: successIcon,
+					leadingCSS: 'size-6 text-green-400',
+					timeout: 5000
+				});
+			} else {
+				toast.trigger({
+					titre: 'Erreur!',
+					description: error,
+					leading: errorIcon,
+					leadingCSS: 'size-6 text-red-400',
+					timeout: 5000
+				});
+			}
+		}
+		modified = false;
 	}
 	let modified = $state(false);
 
@@ -150,7 +185,7 @@
 		appState.db.getRawPrinter().then(({ data: value, error }) => {
 			console.log('imprimanteMatricielle', value);
 
-			if (imprimanteMatricielle !== value.name || pinNumber !== value.metadata.is_nine_pin) {
+			if (imprimanteMatricielle !== value?.name || pinNumber !== value?.metadata?.is_nine_pin) {
 				untrack(() => (modified = true));
 			} else {
 				untrack(() => (modified = false));
@@ -230,6 +265,7 @@
 	{#await imprimanteMatricielleP then _}
 		<FormSection titre="Périphériques" description={$t('settings', 'printer')}>
 			{#if platform() === 'windows'}
+			{console.log('platform is windows')}
 				<div class="col-span-full">
 					<WindowsSelectionField
 						cb={() => {

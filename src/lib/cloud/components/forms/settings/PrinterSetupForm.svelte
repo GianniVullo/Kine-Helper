@@ -71,6 +71,10 @@
 					titre: $t('printerSetup', 'label.printer'),
 					placeholder: 'Entrez le nom de votre imprimante RAW',
 					outerCSS: 'col-span-full md:col-span-3',
+					onchange: (e) => {
+						formHandler.form.printer = e.target.value;
+						formHandler.evaluateAndValidate();
+					},
 					options: printers.map((printer) => ({
 						value: printer.system_name,
 						label: printer.name

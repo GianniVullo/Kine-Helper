@@ -1,4 +1,4 @@
-import { boolean, digits, length, union, object, pipe, regex, transform } from 'valibot';
+import { boolean, digits, length, union, object, pipe, regex, transform, string, uuid } from 'valibot';
 import {
 	kineInamiValidator,
 	stringLengthMoreThan1,
@@ -14,6 +14,7 @@ import { isEmpty } from 'lodash';
 function buildUserDataSchema() {
 	let cpVal = (x) => pipe(stringLengthMoreThan1, digits(), x);
 	const validateurs = {
+		user_id: pipe(string(), uuid()),
 		nom: stringLengthMoreThan1,
 		prenom: stringLengthMoreThan1,
 		adresse: stringLengthMoreThan1,
@@ -28,7 +29,7 @@ function buildUserDataSchema() {
 			transform((input) => parseInt(input))
 		),
 		localite: stringLengthMoreThan1,
-		gsm: stringLengthMoreThan1ButCanBeNull,
+		// gsm: stringLengthMoreThan1ButCanBeNull,
 		inami: kineInamiValidator,
 		iban: pipe(
 			stringLengthMoreThan1,
@@ -113,11 +114,12 @@ async function onValid(formData) {
 }
 export function buildUserDataFormHandler({ delaySetup }) {
 	const { UserDataSchema, validateurs } = buildUserDataSchema();
-
+	console.log('UserDataSchema', appState.user);
 	return new Formulaire({
 		schema: UserDataSchema,
 		validateurs,
 		initialValues: {
+			user_id: appState.user?.id,
 			...appState.user,
 			conventionne: appState.user?.conventionne ?? false
 		},
@@ -154,16 +156,16 @@ export const fieldsSchema = [
 				outerCSS: 'col-span-full sm:col-span-3',
 				innerCSS: ''
 			},
-			{
-				id: 'gsm',
-				name: 'gsm',
-				inputType: 'text',
-				placeholder: 'Téléphone',
-				titre: 'Téléphone',
-				help: null,
-				outerCSS: 'col-span-full sm:col-span-4',
-				innerCSS: ''
-			}
+			// {
+			// 	id: 'gsm',
+			// 	name: 'gsm',
+			// 	inputType: 'text',
+			// 	placeholder: 'Téléphone',
+			// 	titre: 'Téléphone',
+			// 	help: null,
+			// 	outerCSS: 'col-span-full sm:col-span-4',
+			// 	innerCSS: ''
+			// }
 		]
 	},
 	{
