@@ -25,6 +25,7 @@ export function buildPrinterFormHandler({printer, delaySetup}) {
 }
 
 export async function onValid(formData) {
+	console.log('Form data:', formData);
 	if (!appState.db) {
 		await appState.init({});
 	}
