@@ -5,13 +5,13 @@
 	import { relaunch } from '@tauri-apps/plugin-process';
 	import { onMount } from 'svelte';
 	import { get } from 'svelte/store';
-	import { appLocalDataDir, BaseDirectory } from '@tauri-apps/api/path';
-	import { exists, writeTextFile } from '@tauri-apps/plugin-fs';
-	import { read_file, file_exists } from '../../lib/utils/fsAccessor';
 	import { blur } from 'svelte/transition';
 	import { cubicOut } from 'svelte/easing';
 	import { supabase } from '../../lib';
 	import Spiner from '../../lib/cloud/components/layout/Spiner.svelte';
+	import { platform } from '@tauri-apps/plugin-os';
+	import { terminal } from 'virtual:terminal';
+	import Database from '@tauri-apps/plugin-sql';
 
 	// <!--* Idée de ce composant -->
 	// Ici il faut attendre que le Dom soit complètement chargé pour éviter tout flickering.
@@ -26,7 +26,7 @@
 	let contentSize;
 	let indexOfContentDownload;
 	onMount(() => {
-		console.log('splashscreen mounted');
+		terminal.log('splashscreen mounted');
 		const myEvent = new CustomEvent('svelteLoaded', {
 			detail: { key: 'value' }
 		});
@@ -39,124 +39,141 @@
 	// <!--* Initialization et mise-à-jour de l'application -->
 	function lookingForUpdateAndInstallOrContinue() {
 		return new Promise((resolve, reject) => {
-			console.log('initializing check');
-			check()
-				.then((update) => {
-					console.log('update', update);
-					// <!--? Si une MAJ est trouvée -->
-					if (update?.available) {
-						// <!--? ETAPE 1 : Update l'UI pour signaler le téléchargement -->
-						loadingStatus.push(
-							`${get(t)(
-								'splash',
-								'download',
-								null,
-								"Downloading, the app's going to restart soon."
-							)}`
-						);
-						// <!--? ETAPE 2 : télécharger et installer -->
-						// TODO : mettre un timout reload, parce que si il y a un problème lors du fetch tout plante
-						update
-							.downloadAndInstall((progress) => {
-								if (progress.event === 'Started') {
-									contentSize = progress.data.contentLength;
-									loadingStatus.push('0 %');
-									indexOfContentDownload = loadingStatus.indexOf('0 %');
-								}
-								if (progress.event === 'Progress') {
-									loadingStatus[indexOfContentDownload] =
-										`${(progress.data.chunkLength / contentSize) * 100} %`;
-								}
-								if (progress.event === 'Finished') {
-									loadingStatus[indexOfContentDownload] = 'DOWNLOAD COMPLETED !';
-								}
-							})
-							.then(() => {
-								loadingStatus.push(
-									`${get(t)('splash', 'done', null, 'Download done, restarting ...')}`
-								);
-								// <!--? ETAPE 3 : relancer l'application -->
-								relaunch();
-								resolve();
-							})
-							.catch((e) => {
-								console.log('erreur dans le downloadAndInstall', e);
-							});
-					} else {
+			terminal.log('initializing check');
+			const platformName = platform();
+			if (platformName !== 'ios' && platformName !== 'android') {
+				check()
+					.then((update) => {
+						terminal.log('update', update);
+						// <!--? Si une MAJ est trouvée -->
+						if (update?.available) {
+							// <!--? ETAPE 1 : Update l'UI pour signaler le téléchargement -->
+							loadingStatus.push(
+								`${get(t)(
+									'splash',
+									'download',
+									null,
+									"Downloading, the app's going to restart soon."
+								)}`
+							);
+							// <!--? ETAPE 2 : télécharger et installer -->
+							// TODO : mettre un timout reload, parce que si il y a un problème lors du fetch tout plante
+							update
+								.downloadAndInstall((progress) => {
+									if (progress.event === 'Started') {
+										contentSize = progress.data.contentLength;
+										loadingStatus.push('0 %');
+										indexOfContentDownload = loadingStatus.indexOf('0 %');
+									}
+									if (progress.event === 'Progress') {
+										loadingStatus[indexOfContentDownload] =
+											`${(progress.data.chunkLength / contentSize) * 100} %`;
+									}
+									if (progress.event === 'Finished') {
+										loadingStatus[indexOfContentDownload] = 'DOWNLOAD COMPLETED !';
+									}
+								})
+								.then(() => {
+									loadingStatus.push(
+										`${get(t)('splash', 'done', null, 'Download done, restarting ...')}`
+									);
+									// <!--? ETAPE 3 : relancer l'application -->
+									relaunch();
+									resolve();
+								})
+								.catch((e) => {
+									terminal.log('erreur dans le downloadAndInstall', e);
+								});
+						} else {
+							// <!--? Si aucune MAJ n'est trouvée -->
+							loadingStatus.push(`${get(t)('splash', 'uptodate', null, "App's up to date.")}`);
+							langPromise = new Promise(updateLang);
+							resolve();
+						}
+					})
+					.catch((e) => {
+						console.error(e);
 						// <!--? Si aucune MAJ n'est trouvée -->
-						loadingStatus.push(`${get(t)('splash', 'uptodate', null, "App's up to date.")}`);
-						langPromise = new Promise(updateLang);
-						resolve();
-					}
-				})
-				.catch((e) => {
-					console.error(e);
-					// <!--? Si aucune MAJ n'est trouvée -->
-					loadingStatus.push(
-						`${get(t)('splash', 'error', null, 'Error encountered, Retry later.')}`
-					);
-				});
+						loadingStatus.push(
+							// `${get(t)('splash', 'error', null, 'Error encountered, Retry later.')}`
+							e
+						);
+					});
+			} else {
+				terminal.log('Mobile platform detected, skipping update check and going to lang update');
+				loadingStatus.push(
+					`${get(t)('splash', 'mobilePlatform', null, 'Mobile platform detected, skipping update check')}`
+				);
+				langPromise = new Promise(updateLang);
+				resolve();
+			}
 		});
 	}
 
 	async function updateLang(resolve, reject) {
-		console.log('updateLang');
+		terminal.log('updateLangPromise');
 		// D'abord vérifier si le fichier /settings.json existe
-		let path = await appLocalDataDir();
-		let settingsExists = await file_exists(`settings.json`);
-		console.log('settingsExists', settingsExists);
+		terminal.log('Checking if translations are already in the database');
+		let settingsExists = false;
+		let db;
+		let translations;
+		try {
+			db = await Database.load('sqlite:kinehelper.db');
+			terminal.log('db loaded', db);
+			translations = await db.select('SELECT * FROM translations');
+			terminal.log('translations', translations);
+			settingsExists = translations.length > 0;
+		} catch (error) {
+			terminal.error('Error loading database', error);
+		}
+		terminal.log('settingsExists', settingsExists);
 		if (settingsExists) {
-			// Si oui
-			// On récupère la langue par défaut et la version du fichier de traduction présent sur le disque.
-			const settingsFileContent = await read_file('settings.json');
-			const textDecoder = new TextDecoder();
-			const str = textDecoder.decode(settingsFileContent);
-			console.log('The settings file content = ', str);
-			const settings = JSON.parse(str);
-			let currentVersion = settings.translations[settings.defaultLocale].version;
-			console.log('currentVersion', currentVersion);
+			translations = translations.map((t) => {
+				t.translation = JSON.parse(t.translation);
+				return t;
+			});
+			let defaultTranslation = translations.find((t) => t.is_default);
+			let currentVersion = defaultTranslation.version;
+			terminal.log('currentVersion', currentVersion);
 			// On call l'API pour récupérer la version la plus récente du fichier de traduction et on compare avec la version actuelle.
 			const { data, error } = await supabase
 				.from('translations')
 				.select('version')
-				.eq('code', settings.defaultLocale);
-			console.log('data', data);
-			console.log('error', error);
+				.eq('code', defaultTranslation.code);
+			terminal.log('data', data);
+			terminal.log('error', error);
 			if (error) {
-				// Si il y a une erreur ici, ne bloquons pas la route de notre utilisateur. Tant pis pour cette fois.
+				// if error let's not block users because the i18n is supposed to be optional (through the fallback args from $t)
 				goto('/');
-				resolve();
-				return;
+				return resolve();
 			}
 			let newVersion = data[0].version;
-			console.log('newVersion', newVersion);
+			terminal.log('newVersion', newVersion);
 			if (newVersion > currentVersion) {
 				// Si la version est différente
 				loadingStatus.push(
 					`${get(t)('splash', 'langDownload', null, 'Downloading new translations')}`
 				);
 				// On télécharge le nouveaux dictionnaire
-				let newDictionnary = await queryDictionnary(settings.defaultLocale);
+				let newDictionnary = await queryDictionnary(defaultTranslation.code);
 				if (!newDictionnary) {
 					// Pareil, on abandonne.
 					goto('/');
 					resolve();
 					return;
 				}
-				// On remplace le dictionnaire par le nouveau dans l'objet settings
-				settings.translations[settings.defaultLocale] = newDictionnary.translation;
-				settings.translations[settings.defaultLocale].version = newVersion;
-				// On remplace le dictionnaire par le nouveau dans le dictionnaire
 				dictionnary.update((d) => {
-					d[settings.defaultLocale] = newDictionnary.translation;
+					d[defaultTranslation.code] = newDictionnary.translation;
 					return d;
 				});
-				// On écrit le fichier sur le disque
-				await writeTextFile(`settings.json`, JSON.stringify(settings), {
-					baseDir: BaseDirectory.AppLocalData
-				});
+				// We cache it in sqlite
+				await db.execute('UPDATE translations SET translation = ?, version = ? WHERE code = ?', [
+					JSON.stringify(newDictionnary.translation),
+					newVersion,
+					defaultTranslation.code
+				]);
+				await db.close();
 			}
-			// On redirige vers la page de login.
 		} else {
 			// Si non
 			// On abandonne tout et on redirige vers la page de sélection des langues
@@ -171,8 +188,8 @@
 	}
 	async function queryDictionnary(defaultLocale) {
 		const { data, error } = await supabase.from('translations').select().eq('code', defaultLocale);
-		console.log('data', data);
-		console.log('error', error);
+		terminal.log('data', data);
+		terminal.log('error', error);
 		if (error) {
 			// Pareil, tant pis on abandonne
 			return;
@@ -180,6 +197,8 @@
 		return data[0];
 	}
 </script>
+
+<!-- <button class="bg-amber-50" onclick={() => {}}>TEST</button> -->
 
 <div
 	class="flex min-h-screen items-center justify-center bg-gradient-to-br from-purple-500 to-indigo-500 dark:from-purple-700 dark:to-indigo-700">
