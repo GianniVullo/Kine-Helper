@@ -2,7 +2,6 @@
 	import { invoke } from '@tauri-apps/api/core';
 	import Spiner from '../components/layout/Spiner.svelte';
 	import { tick } from 'svelte';
-	import { clear } from '@tauri-apps/plugin-clipboard-manager';
 
 	let { dataReceiver } = $props();
 	/**

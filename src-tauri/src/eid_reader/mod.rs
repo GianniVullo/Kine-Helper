@@ -1,10 +1,60 @@
 pub mod eid_reader_resources;
 pub mod get_card;
 pub mod read_data;
+pub mod signature;
+use base64::{engine::general_purpose::STANDARD, Engine as _};
 use eid_reader_resources::FileType;
 use get_card::get_card;
 use read_data::read_file;
+use ring::digest;
 use std::collections::HashMap;
+
+use crate::eid_reader::signature::sign;
+
+#[tauri::command]
+pub fn sha256_hash_bytes(data: &str) -> Vec<u8> {
+    digest::digest(&digest::SHA256, data.as_bytes())
+        .as_ref()
+        .to_vec()
+}
+
+#[tauri::command]
+pub fn sha256_hash_base64(data: &str) -> String {
+    STANDARD.encode(sha256_hash_bytes(data))
+}
+
+#[tauri::command]
+pub fn get_b64_certificate() -> Result<String, String> {
+    let card = get_card()?;
+    let certificat_e_health = "Whatever";
+
+    let certificat_authentication_from_smartcard =
+        read_file(&card, FileType::authentication_certificate())?;
+    // ATTENTION Le certificat doit être formaté avec les html carriage return
+    let trimmed_certificate = strip_trailing_zeros(certificat_authentication_from_smartcard);
+    let b64_certificat_authentication = STANDARD.encode(trimmed_certificate);
+
+    Ok(insert_cr_every_76_chars(b64_certificat_authentication))
+}
+
+fn insert_cr_every_76_chars(base64_str: String) -> String {
+    base64_str
+        .as_bytes()
+        .chunks(76)
+        .map(|chunk| std::str::from_utf8(chunk).unwrap()) // Safe because Base64 is valid UTF-8
+        .collect::<Vec<_>>()
+        .join("&#xD;\n") // Add both `&#xD;` and `\n`
+}
+
+#[tauri::command]
+pub async fn sign_eid_data(hash: Vec<u8>, pin: String) -> Result<String, String> {
+    println!("Hash to sign (base64): {}", STANDARD.encode(&hash));
+    println!("Using pin: {}", pin);
+    let card = get_card()?;
+    let signature_value = sign(&card, hash, &pin)?;
+    println!("Signature value (base64): {}", &signature_value);
+    Ok(STANDARD.encode(&signature_value))
+}
 
 #[tauri::command]
 pub async fn get_eid_data() -> Result<HashMap<String, String>, String> {
@@ -152,4 +202,15 @@ fn parse_address_data(
     } else {
         (None, None, None)
     }
+}
+
+pub fn strip_trailing_zeros(mut data: Vec<u8>) -> Vec<u8> {
+    while let Some(&last) = data.last() {
+        if last == 0 {
+            data.pop();
+        } else {
+            break;
+        }
+    }
+    data
 }
