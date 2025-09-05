@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite';
 import { sveltekit } from '@sveltejs/kit/vite';
+import Terminal from 'vite-plugin-terminal';
 import tailwindcss from '@tailwindcss/vite';
 import { visualizer } from 'rollup-plugin-visualizer'; // @ts-expect-error process is a nodejs global
 const host = process.env.TAURI_DEV_HOST;
@@ -7,10 +8,13 @@ const host = process.env.TAURI_DEV_HOST;
 // https://vitejs.dev/config/
 export default defineConfig(async () => ({
 	plugins: [
-		visualizer({
-			emitFile: true,
-			filename: 'stats.html'
+		Terminal({
+			output: ['terminal', 'console']
 		}),
+		// visualizer({
+		// 	emitFile: true,
+		// 	filename: 'stats.html'
+		// }),
 		tailwindcss(),
 		sveltekit()
 	],
@@ -35,5 +39,11 @@ export default defineConfig(async () => ({
 			// 3. tell vite to ignore watching `src-tauri`
 			ignored: ['**/src-tauri/**']
 		}
+	},
+	ssr: {
+		optimizeDeps: {
+			include: ['lodash', 'dayjs']
+		},
+		noExternal: ['lodash', 'dayjs']
 	}
 }));
