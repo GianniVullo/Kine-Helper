@@ -1,8 +1,8 @@
 import { trace } from '@tauri-apps/plugin-log';
-import { isEqual } from 'lodash';
 import { onMount } from 'svelte';
 import { safeParse, safeParseAsync } from 'valibot';
-
+import { cloneDeep, isEqual } from 'lodash';
+import { terminal } from 'virtual:terminal';
 //* API de validation de formulaire
 /**
  ** les features nécessaires :
@@ -82,6 +82,16 @@ export class Formulaire {
 				this.setup();
 			});
 		}
+		console.log('this.initialValues', this.initialValues);
+	}
+
+	reset() {
+		console.log('resetting the form');
+		for (const fieldName of Object.keys(this.validateurs)) {
+			trace('Registering ' + fieldName);
+			this.errors[fieldName] = false;
+			this.initialValues[fieldName] = this.form?.[fieldName] ?? null;
+		}
 	}
 
 	setup() {
@@ -89,19 +99,19 @@ export class Formulaire {
 		let formEl = document.querySelector(this.formElement);
 		formEl.onsubmit = async (e) => {
 			e.preventDefault();
-			console.log('onsubmit', e);
+			terminal.log('Form submitted with id', e.submitter.id);
 
 			if (e.submitter.id !== document.querySelector(this.submiter).id) {
 				return;
 			}
 			this.loading = true;
+			terminal.log('Submitting form with id', e.submitter.id);
 			await this.validateAndTerminate();
 			this.loading = false;
 		};
 
 		submitButton.onclick = async (e) => {
 			e.preventDefault();
-			console.log('onclick', e);
 			this.loading = true;
 			await this.validateAndTerminate();
 			this.loading = false;
@@ -109,12 +119,23 @@ export class Formulaire {
 	}
 
 	async validateAndTerminate() {
+		terminal.log('Validating form');
 		let validData;
 		if (this.isAsynchronous) {
 			trace('Asynchronous validation');
+			terminal.log('Asynchronous validation with schema', this.schema);
 			validData = await safeParseAsync(this.schema, this.form);
 		} else {
-			validData = safeParse(this.schema, this.form);
+			terminal.group();
+			terminal.log('Synchronous validation with schema');
+			terminal.log(typeof this.schema);
+			terminal.groupEnd();
+			try {
+				validData = safeParse(this.schema, this.form);
+			} catch (error) {
+				console.error('Validation error:', this.schema["~run"]);
+				validData = safeParse(this.schema, this.form);
+			}
 		}
 		if (validData.success) {
 			await this.onValid(validData.output);
@@ -137,7 +158,9 @@ export class Formulaire {
 		for (const field of Object.keys(this.form)) {
 			if (this.touched[field]) {
 				trace(field + ' is touched');
-				let parsedError = safeParse(this.validateurs[field], this.form[field]);
+				let valFun = this.validateurs[field];
+				let val = this.form[field];
+				let parsedError = safeParse(valFun, val);
 				this.errors[field] = extractErrorForField(parsedError);
 			}
 		}
@@ -180,9 +203,17 @@ export class Formulaire {
 		}
 	}
 
-	filtrerLesChampsAUpdater(data) {
+	filtrerLesChampsAUpdater(formData) {
+		// Here we first create a deep copy of the form data using lodash to not risk hurt the UX
+		let data;
+		if (!formData) {
+			data = cloneDeep($state.snapshot(this.form));
+		} else {
+			data = cloneDeep(formData);
+		}
 		for (const field of Object.keys(this.touched)) {
 			const isTouched = this.touched[field];
+			console.log('isTouched', isTouched, 'for field', field);
 			if (!isTouched) {
 				delete data[field];
 			}
