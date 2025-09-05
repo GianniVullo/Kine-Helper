@@ -1,18 +1,12 @@
 <script>
 	import { supabase } from '../../../stores/supabaseClient';
-	import logo from '$lib/assets/logo.png';
+	import logo from '$lib/assets/logocab.png';
 	import { page } from '$app/state';
 	import { t, locale } from '$lib/i18n/index';
 	import { get } from 'svelte/store';
 	import SignOutIcon from '../../../ui/svgs/SignOutIcon.svelte';
-	import {
-		bookIcon,
-		crossIcon,
-		signOutIcon,
-		viewColumnIcon
-	} from '../../../ui/svgs/IconSnippets.svelte';
+	import { bookIcon, signOutIcon, viewColumnIcon } from '../../../ui/svgs/IconSnippets.svelte';
 	import { open } from '@tauri-apps/plugin-shell';
-	import BugReportModal from '../../../ui/BugReportModal.svelte';
 	import Modal from '../../libraries/overlays/Modal.svelte';
 	import { openModal } from '../../libraries/overlays/modalUtilities.svelte';
 	import { goto, afterNavigate } from '$app/navigation';
@@ -20,6 +14,7 @@
 	import { SidePanel } from './SidePanel.svelte';
 	import BackDrop from '../../libraries/command-palette/BackDrop.svelte';
 	import { appState } from '../../../managers/AppState.svelte';
+	import BugReportForm from '../../../components/forms/BugReportForm.svelte';
 
 	let { children } = $props();
 	let sidePanel = new SidePanel();
@@ -48,8 +43,9 @@
 		},
 		{
 			name: get(t)('sidebar', 'settings'),
-			href: '/dashboard/settings',
-			svg: `<path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12a7.5 7.5 0 0015 0m-15 0a7.5 7.5 0 1115 0m-15 0H3m16.5 0H21m-1.5 0H12m-8.457 3.077l1.41-.513m14.095-5.13l1.41-.513M5.106 17.785l1.15-.964m11.49-9.642l1.149-.964M7.501 19.795l.75-1.3m7.5-12.99l.75-1.3m-6.063 16.658l.26-1.477m2.605-14.772l.26-1.477m0 17.726l-.26-1.477M10.698 4.614l-.26-1.477M16.5 19.794l-.75-1.299M7.5 4.205L12 12m6.894 5.785l-1.149-.964M6.256 7.178l-1.15-.964m15.352 8.864l-1.41-.513M4.954 9.435l-1.41-.514M12.002 12l-3.75 6.495" />`
+			href: '/dashboard/settings/profil',
+			svg: `<path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12a7.5 7.5 0 0015 0m-15 0a7.5 7.5 0 1115 0m-15 0H3m16.5 0H21m-1.5 0H12m-8.457 3.077l1.41-.513m14.095-5.13l1.41-.513M5.106 17.785l1.15-.964m11.49-9.642l1.149-.964M7.501 19.795l.75-1.3m7.5-12.99l.75-1.3m-6.063 16.658l.26-1.477m2.605-14.772l.26-1.477m0 17.726l-.26-1.477M10.698 4.614l-.26-1.477M16.5 19.794l-.75-1.299M7.5 4.205L12 12m6.894 5.785l-1.149-.964M6.256 7.178l-1.15-.964m15.352 8.864l-1.41-.513M4.954 9.435l-1.41-.514M12.002 12l-3.75 6.495" />`,
+			active: page.route.id.includes('settings')
 		}
 	]);
 
@@ -57,6 +53,7 @@
 		page;
 		showDrawer = false;
 	});
+	const cabName = 'Cabinet Vullo';
 </script>
 
 <Modal
@@ -73,7 +70,7 @@
 	opened={page.state?.modal?.name === 'bugReport'}
 	title={get(t)('sidebar', 'bugReport')}
 	body={$t('bugModal', 'description')}>
-	<BugReportModal />
+	<BugReportForm />
 </Modal>
 <Modal
 	opened={page.state?.modal?.name === 'docModal'}
@@ -96,7 +93,7 @@
 {#snippet TeamWidgetDesktop()}
 	<li class="-mx-6 mt-auto">
 		<a
-			href="#"
+			href="/dashboard/profile"
 			class="flex items-center gap-x-4 px-6 py-3 text-sm/6 font-semibold text-gray-900 hover:bg-gray-50">
 			<div
 				class="flex size-8 items-center justify-center rounded-full bg-gray-300 text-gray-600"
@@ -111,7 +108,7 @@
 		</a>
 	</li>
 {/snippet}
-{#snippet TeamWidgetMobile()}<a href="#">
+{#snippet TeamWidgetMobile()}<a href="/dashboard/profile">
 		<span class="sr-only">Paramètres</span>
 		<div
 			class="flex size-8 items-center justify-center rounded-full bg-gray-300 text-gray-600"
@@ -119,6 +116,58 @@
 			{`${appState.user?.prenom?.charAt(0) || ''}${appState.user?.nom?.charAt(0) || ''}`}
 		</div>
 	</a>
+{/snippet}
+
+{#snippet TopWidgetDesktop()}
+	<div
+		class={{
+			'flex flex-col px-2': sidePanel.isOpen,
+			'mb-5 px-2 pb-4': !sidePanel.isOpen,
+			'pb-4 mb-5': true
+		}}>
+		<div
+			class={[
+				'grid h-16 shrink-0 grid-cols-6 items-center',
+				sidePanel.isOpen ? 'flex-row space-x-5' : 'my-5 flex-col items-center space-y-5'
+			]}>
+			{#if sidePanel.isOpen}
+				<img class="col-span-1 h-auto w-auto p-1" src={logo} alt="Kiné Helper" />
+			{:else}
+				<div
+					role="button"
+					tabindex="0"
+					onmouseover={sidePanel.swapLogoForCollapseButton.bind(sidePanel)}
+					onmouseleave={sidePanel.swapCollapseForButton.bind(sidePanel)}
+					onfocus={sidePanel.swapLogoForCollapseButton.bind(sidePanel)}
+					onblur={sidePanel.swapCollapseForButton.bind(sidePanel)}
+					onkeydown={(event) => {
+						if (event.key === 'Enter') {
+							sidePanel.toggle();
+						}
+					}}
+					class="col-span-full flex w-full items-center justify-center">
+					<button
+						id="swappable-btn"
+						class="flex hidden size-16 items-center justify-center rounded-full text-white cursor-pointer"
+						aria-label="Open sidebar"
+						onclick={sidePanel.onClickCollapseButton.bind(sidePanel)}
+						disabled={sidePanel.loading}>{@render viewColumnIcon('size-5 text-gray-200')}</button>
+					<img id="swappable-img" class="h-12" src={logo} alt="Kiné Helper" />
+				</div>
+			{/if}
+			<div class={{ 'col-span-4 overflow-hidden': sidePanel.isOpen, hidden: !sidePanel.isOpen }}>
+				<h5 class="text-xl font-semibold whitespace-nowrap text-gray-800">{cabName}</h5>
+			</div>
+			{#if sidePanel.isOpen}
+				<button
+					onclick={() => sidePanel.toggle()}
+					disabled={sidePanel.loading}
+					class="col-span-1 flex w-full items-end justify-end cursor-pointer"
+					>{@render viewColumnIcon('size-5 text-gray-500 cursor-pointer')}</button>
+			{/if}
+		</div>
+		<CommandPaletteManualOpener shrink={!sidePanel.isOpen} />
+	</div>
 {/snippet}
 
 <div>
@@ -205,13 +254,13 @@
 												class={[
 													'group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold',
 													page.url.pathname === href
-														? 'bg-gray-50 text-indigo-600'
-														: 'text-gray-700 hover:bg-gray-50 hover:text-indigo-600'
+														? 'bg-gray-50 text-sidebar-600'
+														: 'text-gray-700 hover:bg-gray-50 hover:text-sidebar-600'
 												]}>
 												<svg
 													class="size-6 shrink-0 {page.url.pathname === href
-														? 'bg-gray-50 text-indigo-600'
-														: 'text-gray-400 group-hover:text-indigo-600'}"
+														? 'bg-gray-50 text-sidebar-600'
+														: 'text-gray-400 group-hover:text-sidebar-600'}"
 													fill="none"
 													viewBox="0 0 24 24"
 													stroke-width="1.5"
@@ -232,12 +281,12 @@
 									<!--! Bouton pour se déconnecter -->
 									<li>
 										<button
-											onclick={() => openModal({ name: 'confirm' })}
-											class="group flex w-full gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-gray-700 hover:bg-gray-50 hover:text-indigo-600">
+											onclick={() => openModal({ name: 'signout' })}
+											class="group flex w-full gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-gray-700 hover:bg-gray-50 hover:text-sidebar-600">
 											<span
-												class="flex size-6 shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-white text-[0.625rem] font-medium text-gray-400 group-hover:border-indigo-600 group-hover:text-indigo-600">
+												class="flex size-6 shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-white text-[0.625rem] font-medium text-gray-400 group-hover:border-sidebar-600 group-hover:text-sidebar-600">
 												<SignOutIcon
-													class="size-4 shrink-0 text-gray-400 group-hover:text-indigo-600" />
+													class="size-4 shrink-0 text-gray-400 group-hover:text-sidebar-600" />
 											</span>
 											{$t('sidebar', 'logout', null, 'Log out')}
 										</button>
@@ -246,16 +295,16 @@
 									<li>
 										<button
 											onclick={() => openModal({ name: 'docModal' })}
-											class="group flex w-full gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-gray-700 hover:bg-gray-50 hover:text-indigo-600">
+											class="group flex w-full gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-gray-700 hover:bg-gray-50 hover:text-sidebar-600">
 											<span
-												class="flex size-6 shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-white text-[0.625rem] font-medium text-gray-400 group-hover:border-indigo-600 group-hover:text-indigo-600">
+												class="flex size-6 shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-white text-[0.625rem] font-medium text-gray-400 group-hover:border-sidebar-600 group-hover:text-sidebar-600">
 												<svg
 													xmlns="http://www.w3.org/2000/svg"
 													fill="none"
 													viewBox="0 0 24 24"
 													stroke-width="1.5"
 													stroke="currentColor"
-													class="size-4 shrink-0 text-gray-400 group-hover:text-indigo-600">
+													class="size-4 shrink-0 text-gray-400 group-hover:text-sidebar-600">
 													<path
 														stroke-linecap="round"
 														stroke-linejoin="round"
@@ -269,9 +318,9 @@
 									<li>
 										<button
 											onclick={() => openModal({ name: 'bugReport' })}
-											class="group flex w-full gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-gray-700 hover:bg-gray-50 hover:text-indigo-600">
+											class="group flex w-full gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-gray-700 hover:bg-gray-50 hover:text-sidebar-600">
 											<span
-												class="flex size-6 shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-white text-xs font-medium text-gray-400 group-hover:border-indigo-600 group-hover:text-indigo-600"
+												class="flex size-6 shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-white text-xs font-medium text-gray-400 group-hover:border-sidebar-600 group-hover:text-sidebar-600"
 												>?</span>
 											{$t('sidebar', 'bugReport')}
 										</button>
@@ -295,35 +344,15 @@
 		<!-- Sidebar component, swap this element with another sidebar if you like -->
 		<div
 			class={[
-				'flex grow flex-col gap-y-5 overflow-y-auto border-r border-gray-200 px-6',
-				sidePanel.isOpen ? 'bg-gray-300/60' : 'bg-gray-900'
+				'flex grow flex-col gap-y-5 overflow-y-auto border-r border-gray-200',
+				sidePanel.isOpen ? 'bg-gray-300/60' : 'bg-gray-800'
 			]}>
-			<div
-				class={[
-					'flex h-16 shrink-0 items-center',
-					sidePanel.isOpen ? 'flex-row space-x-5' : 'mt-5 mb-16 flex-col items-center space-y-5'
-				]}>
-				<img class="h-8 w-auto" src={logo} alt="Kiné Helper" />
-				<CommandPaletteManualOpener shrink={!sidePanel.isOpen} />
-				{#if sidePanel.isOpen}
-					<button
-						onclick={() => sidePanel.toggle()}
-						disabled={sidePanel.loading}
-						class="flex w-8 items-center justify-center"
-						>{@render crossIcon('size-5 text-gray-500')}</button>
-				{:else}
-					<button
-						onclick={() => sidePanel.toggle()}
-						disabled={sidePanel.loading}
-						class="flex w-8 items-center justify-center"
-						>{@render viewColumnIcon('size-5 text-gray-500')}</button>
-				{/if}
-			</div>
-			<nav class="flex flex-1 flex-col">
+			{@render TopWidgetDesktop()}
+			<nav class="flex flex-1 flex-col px-6">
 				<ul role="list" class="flex flex-1 flex-col gap-y-7">
 					<li>
 						<div class="text-xs/6 font-semibold text-gray-400">Menu</div>
-						<ul role="list" class="-mx-2 space-y-1">
+						<ul role="list" class="-mx-2 mt-2 space-y-1">
 							{#each menuItems as { href, svg, name, active }}
 								<li aria-current={active ? 'page' : undefined}>
 									<a
@@ -331,14 +360,14 @@
 										class={[
 											'group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold',
 											active || page.url.pathname === href
-												? 'bg-gray-50 text-indigo-600'
-												: 'text-gray-700 hover:bg-gray-50 hover:text-indigo-600',
+												? 'bg-gray-50 text-sidebar-600'
+												: 'text-gray-700 hover:bg-gray-50 hover:text-sidebar-600',
 											sidePanel.isOpen ? '' : 'items-center justify-center'
 										]}>
 										<svg
 											class="size-6 shrink-0 {active || page.url.pathname === href
-												? 'bg-gray-50 text-indigo-600'
-												: 'text-gray-400 group-hover:text-indigo-600'}"
+												? 'bg-gray-50 text-sidebar-600'
+												: 'text-sidebar-400 group-hover:text-sidebar-600'}"
 											fill="none"
 											viewBox="0 0 24 24"
 											stroke-width="1.5"
@@ -362,18 +391,18 @@
 								icon,
 								modalName,
 								label,
-								className = 'size-4 shrink-0 text-gray-700 group-hover:text-indigo-600'
+								className = 'size-4 shrink-0 text-gray-700 group-hover:text-sidebar-600'
 							})}
 								<li>
 									<button
 										onclick={() => openModal({ name: modalName })}
 										class={[
-											'group flex w-full gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-gray-700  hover:text-indigo-600',
+											'group flex w-full gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-gray-700  hover:text-sidebar-600',
 											sidePanel.isOpen ? '' : 'justify-center text-center'
 										]}>
 										<span
 											class={[
-												'flex size-6 shrink-0 items-center justify-center rounded-lg border border-gray-200 text-[0.625rem] font-medium text-gray-400 group-hover:border-indigo-600 group-hover:text-indigo-600',
+												'flex size-6 shrink-0 items-center justify-center rounded-lg border border-gray-200 text-[0.625rem] font-medium text-gray-400 group-hover:border-sidebar-600 group-hover:text-sidebar-600',
 												sidePanel.isOpen ? 'bg-white' : 'bg-gray-400'
 											]}>
 											{@render icon(className)}
@@ -404,8 +433,8 @@
 								modalName: 'bugReport',
 								icon: questionMark,
 								className: sidePanel.isOpen
-									? 'flex size-6 shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-white text-xs font-medium text-gray-700 group-hover:border-indigo-600 group-hover:text-indigo-600'
-									: 'flex size-6 shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-gray-400 text-xs font-medium text-gray-700 group-hover:border-indigo-600 group-hover:text-indigo-600',
+									? 'flex size-6 shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-white text-xs font-medium text-gray-700 group-hover:border-sidebar-600 group-hover:text-sidebar-600'
+									: 'flex size-6 shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-gray-400 text-xs font-medium text-gray-700 group-hover:border-sidebar-600 group-hover:text-sidebar-600',
 								label: $t('sidebar', 'bugReport')
 							})}
 						</ul>
@@ -417,7 +446,7 @@
 	</div>
 
 	<div
-		class="sticky top-0 z-40 flex items-center gap-x-6 bg-white px-4 py-4 shadow-sm sm:px-6 lg:hidden">
+		class="sticky top-0 z-40 flex items-center justify-between gap-x-6 bg-white px-4 py-4 border-b-2 border-sidebar-500 shadow-sm sm:px-6 lg:hidden">
 		{#if !showDrawer}
 			<button
 				onclick={() => {
@@ -460,10 +489,11 @@
 				</svg>
 			</button>
 		{/if}
-		<div class="flex flex-1 items-center text-sm/6 font-semibold text-gray-900">
+		<div class="flex max-w-14 flex-1 items-center text-sm/6 font-semibold text-gray-900">
 			<!-- {menuItems.find((p) => p.href === page.url.pathname)?.name} -->
-			<CommandPaletteManualOpener />
+			<CommandPaletteManualOpener shrink={true} />
 		</div>
+		<h5 class="text-lg font-semibold text-gray-900">Mon cabinet</h5>
 		{@render TeamWidgetMobile()}
 	</div>
 
