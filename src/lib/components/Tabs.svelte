@@ -1,7 +1,7 @@
 <script>
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
-	import Select from './form/Select.svelte';
+	import Select from './forms/blocks/Select.svelte';
 	let { tabs, className } = $props();
 </script>
 

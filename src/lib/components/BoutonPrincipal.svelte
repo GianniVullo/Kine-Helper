@@ -5,7 +5,7 @@
 		inner,
 		size = 'base',
 		children,
-		className = 'text-sm font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ',
+		className = 'text-sm font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:!cursor-not-allowed',
 		color = 'primary',
 		shadow = 'shadow-sm',
 		disabled,
@@ -17,6 +17,7 @@
 		base: ' rounded-md px-2.5 py-1.5',
 		lg: ' rounded-md px-3 py-2'
 	};
+
 	const colors = {
 		primary:
 			'bg-indigo-600 text-white hover:bg-indigo-500 focus-visible:outline-indigo-600 disabled:bg-indigo-300',

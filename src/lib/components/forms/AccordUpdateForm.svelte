@@ -1,23 +1,18 @@
 <script>
-	import { Formulaire } from '../../../../libraries/formHandler.svelte';
-	import { t } from '../../../../../i18n';
-	import Form from '../../abstract-components/Form.svelte';
-	import FormSection from '../../abstract-components/FormSection.svelte';
-	import SubmitButton from '../../../../../forms/ui/SubmitButton.svelte';
-	import { appState } from '../../../../../managers/AppState.svelte';
-	import Field from '../../abstract-components/Field.svelte';
-	import SituationPathologiqueSelector from '../../../../../forms/documents/SituationPathologiqueSelector.svelte';
-	import dayjs from 'dayjs';
-	import { isoDate, object, string, uuid } from 'valibot';
-	import { arrowRightIcon, arrowBottomIcon } from '../../../../../ui/svgs/IconSnippets.svelte';
+	import { Formulaire } from '../../cloud/libraries/formHandler.svelte.js';
+	// import { t } from '../../i18n';
+	import { Form, FormSection, SubmitButton, Field } from './blocks/index.js';
+	import { appState } from '../../managers/AppState.svelte';
+	import { isoDate, object, string } from 'valibot';
+	import { arrowRightIcon, arrowBottomIcon } from '../../ui/svgs/IconSnippets.svelte';
 	import { page } from '$app/state';
 	import { untrack } from 'svelte';
-	import { uuidVal } from '../../validators/commons';
+	import { uuidVal } from './validators/baseValidators.js';
 
 	let { patient, sp, docType = 'A', mode = 'create', accord } = $props();
 
 	const validateurs = {
-		id: uuidVal,
+		id: uuidVal(),
 		valid_from: isoDate(),
 		valid_to: isoDate(),
 		reference: string()
@@ -30,7 +25,6 @@
 		submiter: '#accord-update-submit',
 		async onValid(data) {
 			let fields = this.filtrerLesChampsAUpdater(data);
-			console.log('AccordUpdateForm onValid', page.state.drawer?.accordId);
 			const { data: _, error } = await appState.db.update(
 				'accords',
 				[['id', page.state.drawer?.accordId]],
