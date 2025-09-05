@@ -108,28 +108,6 @@ export async function createFacture(data, attestation_ids, produce_pdf = true) {
 	return { data: facture[0] };
 }
 
-export async function createAnnexe(accord) {
-	console.log('in createAnnexe with accord :', accord);
-	// Create l'annexe
-	const { data: annexe, error: annexeError } = await appState.db.insert('accords', accord);
-	if (annexeError) {
-		return { error: annexeError };
-	}
-	console.log('annexe', annexe);
-
-	// Create le pdf
-	const { accord: accordPDF, error: accordPDFError } = await getAccordPDF(accord);
-	if (accordPDFError) {
-		return { error: accordPDFError };
-	}
-	try {
-		await accordPDF.open();
-		return { data: annexe[0] };
-	} catch (errorPDFOpen) {
-		return { error: errorPDFOpen };
-	}
-}
-
 export async function editDocument(data) {}
 
 export async function deleteFacture(data) {
@@ -197,7 +175,10 @@ async function getpsp(facture) {
 	}
 	let patient = patientArray[0];
 	console.log('patient', patient);
-	let { data: sp, error: spError } = await appState.db.retrieve_sp(facture.sp_id);
+	let { data: sp, error: spError } = await appState.db.select(
+		'SELECT * FROM situations_pathologiques WHERE sp_id = $1',
+		[facture.sp_id]
+	);
 	if (spError) {
 		return { error: spError };
 	}

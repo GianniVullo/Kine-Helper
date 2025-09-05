@@ -3,30 +3,6 @@ import { SituationPathologique } from './models';
 import { get } from 'svelte/store';
 import { appState } from '../managers/AppState.svelte';
 
-export async function createSituationPathologique(data) {
-	return await appState.db.insert('situations_pathologiques', data);
-}
-
-export async function editSituationPathologique(data, sp_id) {
-	return await appState.db.update('situations_pathologiques', [['sp_id', sp_id]], data);
-}
-
-export async function deleteSituationPathologique(data) {
-		await appState.db.delete('situations_pathologiques', [
-			['sp_id', data.sp_id],
-		]);
-}
-
-export async function retrieveSituationPathologique(data) {
-	let { data: completedSp, error } = await appState.db.retrieve_sp(data.sp_id);
-	if (error) {
-		return { data: null, error };
-	}
-	console.log('completedSp', completedSp);
-	completedSp = new SituationPathologique(completedSp);
-	completedSp.upToDate = true;
-	return { data: completedSp, error };
-}
 
 async function getOtherSps(patient_id, sp_id, db) {
 	console.log('in getLastSp() with', patient_id);

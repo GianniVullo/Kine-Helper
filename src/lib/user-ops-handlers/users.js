@@ -37,47 +37,60 @@ export async function createProfile(data) {
 	 ** - Enregistrer dans Supabase
 	 ** - Mettre les données dans le cache de l'application
 	 */
-	const { data: profileExists, error: queryError } = await appState.db.select(
-		'SELECT * FROM kines WHERE user_id = $1;',
-		[appState.user.id]
-	);
-	console.log('Profile exists', profileExists);
-	if (profileExists?.length > 0) {
-		const { data: dbResponse, error: profileUserError } = await appState.db.update(
-			'kines',
-			[['user_id', appState.user.id]],
-			data
-		);
-		if (profileUserError) {
-			return { error: profileUserError };
-		}
-		console.log('Profile user', dbResponse);
-	} else {
-		const { data: dbResponse, error: profileUserError } = await appState.db.insert('kines', data);
-		if (profileUserError) {
-			return { error: profileUserError };
-		}
-		console.log('Profile user', dbResponse);
-	}
-	if (
-		(profileExists?.length > 0 &&
-			(data.nom !== profileExists[0].nom || data.prenom != profileExists[0].prenom)) ||
-		profileExists?.length === 0
-	) {
-		const { data: supabaseResponse, error: supaError } = await supabase
+	/**
+	 * TODO Enfait maintenant tout va être mis dans le cloud.
+	 */
+	if (data.offre === 'cloud') {
+		let profile;
+		// On va créer le profil dans la base de données cloud
+		const { data: profileData, error: profileError } = await supabase
 			.from('kinesitherapeutes')
-			.upsert({
-				id: appState.user.id,
-				nom: data.nom ?? profileExists?.[0]?.nom,
-				prenom: data.prenom ?? profileExists?.[0]?.prenom,
-				encrypted: null
-			});
-		console.log('Profile supabase', supabaseResponse);
-		if (supaError) {
-			return { error: supaError };
+			.upsert(data);
+		if (profileData) {
+			profile = { ...profileData };
+		}
+	} else {
+		const { data: profileExists, error: queryError } = await appState.db.select(
+			'SELECT * FROM kines WHERE user_id = $1;',
+			[appState.user.id]
+		);
+		console.log('Profile exists', profileExists);
+		if (profileExists?.length > 0) {
+			const { data: dbResponse, error: profileUserError } = await appState.db.update(
+				'kines',
+				[['user_id', appState.user.id]],
+				data
+			);
+			if (profileUserError) {
+				return { error: profileUserError };
+			}
+			console.log('Profile user', dbResponse);
+		} else {
+			const { data: dbResponse, error: profileUserError } = await appState.db.insert('kines', data);
+			if (profileUserError) {
+				return { error: profileUserError };
+			}
+			console.log('Profile user', dbResponse);
+		}
+		if (
+			(profileExists?.length > 0 &&
+				(data.nom !== profileExists[0].nom || data.prenom != profileExists[0].prenom)) ||
+			profileExists?.length === 0
+		) {
+			const { data: supabaseResponse, error: supaError } = await supabase
+				.from('kinesitherapeutes')
+				.upsert({
+					id: appState.user.id,
+					nom: data.nom ?? profileExists?.[0]?.nom,
+					prenom: data.prenom ?? profileExists?.[0]?.prenom,
+					encrypted: null
+				});
+			console.log('Profile supabase', supabaseResponse);
+			if (supaError) {
+				return { error: supaError };
+			}
 		}
 	}
-
 	await appState.init({
 		user: { ...appState.user, ...data },
 		session: appState.session,

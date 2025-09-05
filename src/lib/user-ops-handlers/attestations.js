@@ -3,7 +3,7 @@ import { appState } from '../managers/AppState.svelte';
 import { printAttestation } from '../utils/rawPrinting';
 import { getFactureMutuellePDFHandler, getFacturePatientPDFHandler } from './documents';
 import dayjs from 'dayjs';
-import { groupSeanceInAttestations } from '../cloud/components/forms/attestation/AttestationSchema';
+import { groupSeanceInAttestations } from '../components/forms/utils/attestationUtils';
 
 function setupAttestationOpsHandler() {
 	const opsHandler = new UserOperationsHandler();

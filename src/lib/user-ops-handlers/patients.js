@@ -1,23 +1,6 @@
-import { UserOperationsHandler } from './abstractHandler';
 import { appState } from '../managers/AppState.svelte';
 import { Patient, SituationPathologique } from './models';
 import { info, trace } from '@tauri-apps/plugin-log';
-
-//* ça a l'air con mtn mais je suis sûr que ça va payer à un moment
-function setupPatientOpsHandler() {
-	const opsHandler = new UserOperationsHandler();
-	//* Modifier le handler ici pour que ça colle à l'opération : les erreurs possibles, les tâches intermédiaires par exemple.
-	return opsHandler;
-}
-
-export async function createPatient(patient) {
-	trace('Creating new patient');
-	let { data, error } = await appState.db.insert('patients', patient);
-	if (data) {
-		data = new Patient(data);
-	}
-	return { data, error };
-}
 
 export async function retrievePatient(data) {
 	let { data: result, error } = await appState.db.select(
@@ -47,28 +30,9 @@ export async function retrievePatient(data) {
 	return { data: result, error: null };
 }
 
-export async function updatePatient(data) {
-	trace('Updating Patient');
-	const { error } = await appState.db.update(
-		'patients',
-		[
-			['user_id', appState.user.id],
-			['patient_id', data.patient_id]
-		],
-		data
-	);
-	if (error) {
-		return { error };
-	}
-	trace('Patient Updated');
-	return { error: null };
-}
-
 export async function deletePatient(data) {
 	trace('deleting patient');
-	const { error } = await appState.db.delete('patients', [
-		['patient_id', data.patient_id]
-	]);
+	const { error } = await appState.db.delete('patients', [['patient_id', data.patient_id]]);
 	return { error };
 }
 
