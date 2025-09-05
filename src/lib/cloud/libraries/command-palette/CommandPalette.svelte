@@ -6,6 +6,7 @@
 	import HelpPanel from './HelpPanel.svelte';
 	import NotFoundPanel from './NotFoundPanel.svelte';
 	import ActionRapidePanel from './ActionRapidePanel.svelte';
+	import { t } from '$lib/i18n';
 
 	let commandPalette = new CommandPaletteController();
 	let patientPromise = $state(commandPalette.patientsPromise());
@@ -56,10 +57,11 @@
 			{#await patientPromise then _}
 				<div class="grid grid-cols-1">
 					<input
+						id="command-palette-input"
 						bind:this={commandPalette.searchInput}
 						type="text"
 						class="col-start-1 row-start-1 h-12 w-full border-none pr-4 pl-11 text-base text-gray-900 outline-hidden placeholder:text-gray-400 focus:ring-0 sm:text-sm"
-						placeholder="Search..."
+						placeholder={$t('commandPalette', 'placeholder', {}, 'Search...')}
 						bind:value={commandPalette.inner.search}
 						role="combobox"
 						aria-expanded="false"
@@ -111,7 +113,7 @@
 							</ul>
 						</li> -->
 						<li>
-							<h2 class="text-xs font-semibold text-gray-900">Patients</h2>
+							<h2 class="text-xs font-semibold text-gray-900">{$t('commandPalette', 'patients', {}, 'Patients')}</h2>
 							<div class="-mx-4 mt-2 text-sm text-gray-700">
 								<!-- Active: "bg-indigo-600 text-white outline-hidden" -->
 								{#each commandPalette.filteredPatients as patient}
@@ -151,8 +153,8 @@
 						actionRapides={[
 							{
 								icon: userIcon,
-								titre: 'Nouveau patient',
-								description: 'Créez un nouveau patient',
+								titre: $t('commandPalette', 'newPatient', {}, 'New patient'),
+								description: $t('commandPalette', 'newPatientDesc', {}, 'Create a new patient'),
 								onclick: () => {
 									commandPalette.resetCommandPalette();
 									goto('/dashboard/patients/create');
@@ -165,10 +167,10 @@
 
 				<!-- Footer -->
 				<div class="flex flex-wrap items-center bg-gray-50 px-4 py-2.5 text-xs text-gray-700">
-					Tapez
+					{$t('commandPalette', 'helpFooter', {}, 'Type')}
 					<kbd
 						class="mx-1 flex size-5 items-center justify-center rounded-sm border border-gray-400 bg-white font-semibold text-gray-900 sm:mx-2"
-						>?</kbd> pour obtenir de l'aide.
+						>?</kbd> {$t('commandPalette', 'helpFooter2', {}, 'for help.')}
 				</div>
 			{/await}
 		</div>
