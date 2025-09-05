@@ -1,8 +1,23 @@
 <script>
+	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import { t } from '../i18n';
+	import {
+		clipBoardDocIcon,
+		homeIcon,
+		userIcon,
+		userIdIcon,
+		userMultipleIcon
+	} from '../ui/svgs/IconSnippets.svelte';
+	import { terminal } from 'virtual:terminal';
 
 	let { currentSp, patient } = $props();
+	const regex =
+		/^\/dashboard\/patients\/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\/situation-pathologique\/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
+	const patientRegex =
+		/^\/dashboard\/patients\/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
+	let isSpDetailPage = $derived(regex.test(page.url.pathname));
+	let isPatientDetailPage = $derived(patientRegex.test(page.url.pathname));
 </script>
 
 {#snippet chevronRight()}
@@ -18,25 +33,41 @@
 			clip-rule="evenodd" />
 	</svg>
 {/snippet}
-{#snippet breadcrumbsItem(href, label, className, first)}
+{#snippet breadcrumbsItem({ href, label, className, first, icon, isActive })}
 	<li>
 		<div class={['flex', first ? undefined : 'items-center']}>
 			{#if !first}
 				{@render chevronRight()}
 			{/if}
-			<a
-				{href}
+			<button
+				onclick={() => {
+					terminal.log('breadcrumbsItem clicked', isActive);
+					if (!isActive) {
+						goto(href);
+					}
+				}}
 				class={[
 					'text-sm font-medium text-gray-500 hover:text-gray-700',
 					className,
-					!first && 'ml-4'
-				]}>{label}</a>
+					!first && 'ml-2 sm:ml-4',
+					isActive && 'text-indigo-600',
+					!isActive && 'hover:underline'
+				]}>
+				{#if icon}
+					<div class={{ 'hidden sm:block': icon, 'stroke-indigo-600': isActive }}>
+						{label}
+					</div>
+					<div class="block sm:hidden">{@render icon('size-5')}</div>
+				{:else}
+					{label}
+				{/if}
+			</button>
 		</div>
 	</li>
 {/snippet}
 
 <div>
-	<nav class="sm:hidden" aria-label="Back">
+	<!-- <nav class="sm:hidden" aria-label="Back">
 		<button
 			onclick={() => {
 				history.back();
@@ -55,56 +86,78 @@
 			</svg>
 			Retour
 		</button>
-	</nav>
-	<nav class="hidden sm:flex" aria-label="Breadcrumb">
-		<ol role="list" class="flex items-center space-x-4">
-			{@render breadcrumbsItem('/dashboard/patients', 'Patients', null, true)}
-			{@render breadcrumbsItem('/dashboard/patients/' + patient.patient_id, patient.nom)}
+	</nav> -->
+	<nav class="flex" aria-label="Breadcrumb">
+		<ol role="list" class="flex items-center space-x-2 sm:space-x-4">
+			{@render breadcrumbsItem({
+				href: '/dashboard/patients',
+				label: $t('sidebar', 'patients', {}, 'Patients'),
+				first: true,
+				icon: userMultipleIcon
+			})}
+			{@render breadcrumbsItem({
+				href: '/dashboard/patients/' + patient.patient_id,
+				label: patient.nom,
+				icon: userIdIcon,
+				isActive: isPatientDetailPage
+			})}
 			{#if currentSp}
-				{@render breadcrumbsItem(
-					'/dashboard/patients/' +
+				{@render breadcrumbsItem({
+					href:
+						'/dashboard/patients/' +
 						patient.patient_id +
 						'/situation-pathologique/' +
 						currentSp.sp_id,
-					currentSp.motif,
-					'max-w-44 truncate'
-				)}
+					label: currentSp.motif,
+					className: 'max-w-44 truncate',
+					first: false,
+					icon: clipBoardDocIcon,
+					isActive: isSpDetailPage
+				})}
 				{#if page.route.id.includes('attestations')}
-					{@render breadcrumbsItem(
-						'/dashboard/patients/' +
+					{@render breadcrumbsItem({
+						href:
+							'/dashboard/patients/' +
 							patient.patient_id +
 							'/situation-pathologique/' +
 							currentSp.sp_id +
 							'/attestations',
-						'Tarification'
-					)}
+						label: 'Tarification',
+						isActive: true
+					})}
 				{:else if page.route.id.includes('seances')}
-					{@render breadcrumbsItem(
-						'/dashboard/patients/' +
+					{@render breadcrumbsItem({
+						href:
+							'/dashboard/patients/' +
 							patient.patient_id +
 							'/situation-pathologique/' +
 							currentSp.sp_id +
 							'/seances',
-						'Séances'
-					)}
+						label: $t('patients.detail', 'prestations', {}, 'Sessions'),
+						isActive: true
+					})}
 				{:else if page.route.id.includes('prescriptions')}
-					{@render breadcrumbsItem(
-						'/dashboard/patients/' +
+					{@render breadcrumbsItem({
+						href:
+							'/dashboard/patients/' +
 							patient.patient_id +
 							'/situation-pathologique/' +
 							currentSp.sp_id +
 							'/prescriptions',
-						'Prescriptions'
-					)}
+						label: $t('sp.detail', 'prescriptions', {}, 'Prescriptions'),
+						isActive: true
+					})}
 				{:else if page.route.id.includes('documents')}
-					{@render breadcrumbsItem(
-						'/dashboard/patients/' +
+					{@render breadcrumbsItem({
+						href:
+							'/dashboard/patients/' +
 							patient.patient_id +
 							'/situation-pathologique/' +
 							currentSp.sp_id +
 							'/documents',
-						'Documents'
-					)}
+						label: $t('sp.detail', 'documents', {}, 'Documents'),
+						isActive: true
+					})}
 				{/if}
 			{/if}
 		</ol>
