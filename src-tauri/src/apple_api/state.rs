@@ -1,6 +1,10 @@
 use objc2::rc::Retained;
 
-use super::image_capture_core::{browser_delegate::MyBrowserDelegate, scanner_delegate::MyScannerDelegate, ImageCaptureCore::{ICDevice, ICDeviceBrowser}};
+use super::image_capture_core::{
+    browser_delegate::MyBrowserDelegate,
+    scanner_delegate::MyScannerDelegate,
+    ImageCaptureCore::{ICDevice, ICDeviceBrowser},
+};
 
 #[derive(Default, Debug)]
 pub struct ScannerAPI {

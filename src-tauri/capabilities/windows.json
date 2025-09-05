@@ -63,8 +63,9 @@
     "updater:default",
     "dialog:allow-save",
     "process:allow-restart",
-    "clipboard-manager:allow-write-text",
-    "log:default"
+    "log:default",
+    "process:default",
+    "global-shortcut:default"
   ],
   "platforms": [
     "windows"
