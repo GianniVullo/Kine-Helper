@@ -99,7 +99,7 @@ pub fn build_document(form_data: DocumentFormData) -> Vec<u8> {
         format_to_12_inch: vec![0x1b, 0x43, 0x00, 0x0c],
         form_feed_cmd: vec![0x0c],
         set_to_12_cpi: vec![0x1b, 0x4d],
-        set_to_10_cpi: vec![0x1b, 0x50]
+        set_to_10_cpi: vec![0x1b, 0x50],
     };
 
     let (id_section, prestations_section, prescription_section, section_signature_dist) =

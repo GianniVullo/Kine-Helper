@@ -1,13 +1,13 @@
 use crate::printer::{escp::build_document, form_data_modeling::DocumentFormData};
 use std::ffi::CString;
 use std::ptr;
+use tauri::AppHandle;
 use windows::core::{PCSTR, PSTR};
 use windows::Win32::Foundation::GetLastError;
 use windows::Win32::Graphics::Printing::{
-    ClosePrinter, EndDocPrinter, EndPagePrinter, OpenPrinterA, StartDocPrinterA, PRINTER_HANDLE, StartPagePrinter,
-    WritePrinter, DOC_INFO_1A, PRINTER_ALL_ACCESS, PRINTER_DEFAULTSA,
+    ClosePrinter, EndDocPrinter, EndPagePrinter, OpenPrinterA, StartDocPrinterA, StartPagePrinter,
+    WritePrinter, DOC_INFO_1A, PRINTER_ALL_ACCESS, PRINTER_DEFAULTSA, PRINTER_HANDLE,
 };
-use tauri::AppHandle;
 
 #[tauri::command]
 pub fn print_attestation(_app_handle: AppHandle, printer_name: &str, form_data: DocumentFormData) {

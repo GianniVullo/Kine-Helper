@@ -1,9 +1,6 @@
 /**
- **  Ici il faut s'arranger pour que le logiciel se synchronise avec le serveur
- ** ça demande de vérifier :
- * - La liste des médecins du kinés => Non car on va plutôt faire ça avec le cloud
- ** - la liste des codes (On arrête avec le gzip, c'est de la suroptimisation inutile)
- ** - l'historique de noeud
+ **  Here we need to insure that the conventions and the doctors are synchronized between the local database and the remote server.
+ ** We use gziped json from S3 to store the conventions and the doctors. This ensures that a user can incrementally dispose of everything he needs to work offline.
  */
 
 import { supabase } from '../stores/supabaseClient';
