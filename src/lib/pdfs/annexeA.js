@@ -2,7 +2,7 @@ import { PDFGeneration } from './kineHelperPdfs';
 import { get } from 'svelte/store';
 import dayjs from 'dayjs';
 import { locale } from '../i18n';
-import { save_to_disk } from '../utils/fsAccessor';
+import { save_local_file } from '../utils/fsAccessor';
 import { appState } from '../managers/AppState.svelte';
 
 export class AnnexeA extends PDFGeneration {
@@ -300,14 +300,17 @@ export class AnnexeA extends PDFGeneration {
 	}
 
 	async save_file() {
-		console.log('Now signing the file');
 		this.buildPdf();
 		//* Si Kiné Helper ne trouve pas signature.png, il ne se passera rien
 		await this.authSignature({ y: this.pageHeight - 55 });
 
 		let docOutput = this.doc.output('arraybuffer');
 		let dirPath = await this.buildPath();
-		await save_to_disk(dirPath, this.documentName + '.pdf', new Uint8Array(docOutput));
+		await save_local_file(
+			dirPath,
+			this.documentName + '.pdf',
+			Array.from(new Uint8Array(docOutput))
+		);
 		return { dirPath };
 	}
 
