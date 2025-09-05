@@ -7,9 +7,12 @@ import { error as errorSvelte } from '@sveltejs/kit';
 export async function load() {
 	trace('Loading patients from local db');
 	await appState.init({});
-	console.log("The apstate in load of patients",appState);
-	
-	let { data: patients, error } = await listPatients(appState.user);
+	console.log('The apstate in load of patients', appState);
+
+	let { data: patients, error } = await appState.db.select(
+		'SELECT * from patients WHERE user_id = $1',
+		[appState.user.id]
+	);
 	if (error) {
 		errorSvelte(500, { message: error });
 	}

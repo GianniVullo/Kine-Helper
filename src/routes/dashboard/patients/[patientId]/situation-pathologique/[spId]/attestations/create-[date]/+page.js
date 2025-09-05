@@ -1,14 +1,9 @@
 import { appState } from '../../../../../../../../lib/managers/AppState.svelte.js';
-import { groupSeanceInAttestations } from '../../../../../../../../lib/cloud/components/forms/attestation/AttestationSchema.js';
+import { groupSeanceInAttestations } from '../../../../../../../../lib/components/forms/utils/attestationUtils.js';
 import dayjs from 'dayjs';
-import { error } from '@sveltejs/kit';
-import { date } from 'valibot';
-/**
- *
- ** En fait, pour l'instant on ne fait pas "tarifer jusqu'ici"
- **	On fait seulement 1 attestation à la fois
- */
+
 export async function load({ url, parent, params }) {
+	console.log('load function called with params:', params);
 	/**
 	 ** Il faut :
 	 ** 	- Itérer au travers des séances de la sp
@@ -33,11 +28,13 @@ export async function load({ url, parent, params }) {
 	} else {
 		date = dayjs(params.date);
 	}
+	console.log('date in load function:', date.format('YYYY-MM-DD'));
 	const { sp, patient } = await parent();
 	let prescription_id;
 	let fromYear;
 	const seancesToDealWith = [];
 	for (const seance of sp.seances) {
+		console.log('seance in load function:', seance);
 		if (seance.has_been_attested || seance.attestation_id) continue;
 		if (seance.seance_type === 3) {
 			// TODO Set the valeur (L'amende)
@@ -55,13 +52,16 @@ export async function load({ url, parent, params }) {
 			fromYear = dayjs(seance.date).year();
 		}
 		if (seance.prescription_id !== prescription_id) {
+			console.log('Prescription ID mismatch, skipping seance:', seance);
 			continue;
 		}
 		if (dayjs(seance.date).year() !== fromYear) {
+			console.log('Year mismatch, skipping seance:', seance);
 			continue;
 		}
 		// We better not tarify seance that are in the future
 		if (dayjs(seance.date).isAfter(date)) {
+			console.log('Seance is in the future, skipping:', seance);
 			continue;
 		}
 		seancesToDealWith.push(seance);
@@ -71,9 +71,10 @@ export async function load({ url, parent, params }) {
 		sp,
 		patient,
 		null,
-		sp.prescriptions.find((p) => p.prescription_id === prescription_id),
+		sp.prescriptions.find((p) => p.prescription_id === prescription_id)
 	);
 	let numero = await appState.db.getItem('num_attestation');
+	console.log('numero in load function:', numero);
 	return {
 		numero,
 		valeur_totale: valeur_totale.toFixed(2).replace('.', ','),
@@ -86,5 +87,7 @@ export async function load({ url, parent, params }) {
 
 /** @type {import('./$types').EntryGenerator} */
 export function entries() {
-	return [{ patientId: 'test-patient', spId: '0b017e35-2b9a-4462-8723-fa2740af5ca2', date: 'none' }];
+	return [
+		{ patientId: 'test-patient', spId: '0b017e35-2b9a-4462-8723-fa2740af5ca2', date: 'none' }
+	];
 }

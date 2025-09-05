@@ -1,24 +1,23 @@
-import { retrievePatient } from '../../../../lib/user-ops-handlers/patients';
 import { appState } from '../../../../lib/managers/AppState.svelte.js';
 import { trace } from '@tauri-apps/plugin-log';
-import { retrieveSituationPathologique } from '../../../../lib/user-ops-handlers/situations_pathologiques.js';
 import { error as errorKit } from '@sveltejs/kit';
+import { terminal } from 'virtual:terminal';
 
 export async function load({ params, depends }) {
 	depends('patient:layout');
 	trace('Entering load function, engaging patient retrival');
 	await appState.init({});
-	let { data: patient, error } = await retrievePatient({ patient_id: params.patientId });
+	// db.retrievePatient tries to retrieve the patient and its related situations pathologiques from the local database and if it is not found, it will try to fetch it from Supabase.
+	let { data: patient, error } = await appState.db.retrievePatient(params.patientId);
 	if (error) {
 		errorKit(500, { message: error.message });
 	}
 	if (!patient) {
 		patient = 'none';
 	}
-
 	let sp;
 	if (params.spId) {
-		const { data, error } = await retrieveSituationPathologique({ sp_id: params.spId });
+		const { data, error } = await appState.db.retrieve_sp({ sp_id: params.spId });
 		if (error) {
 			errorKit(500, { message: error.message });
 		}

@@ -1,11 +1,7 @@
 <script>
 	import dayjs from 'dayjs';
-	import { OpenIcon, DeleteIcon, UpdateIcon, PlusIcon } from '$lib/ui/svgs/index';
+	import { PlusIcon } from '$lib/ui/svgs/index';
 	import { t } from '../../../../../../../lib/i18n';
-	import {
-		deletePrescription,
-		openPrescription
-	} from '../../../../../../../lib/user-ops-handlers/prescriptions';
 	import { invalidateAll } from '$app/navigation';
 	import { page } from '$app/state';
 	import Modal from '../../../../../../../lib/cloud/libraries/overlays/Modal.svelte';
@@ -14,6 +10,7 @@
 	import SectionTitle from '../../../../../../../lib/components/SectionTitle.svelte';
 	import BoutonPrincipalAvecIcone from '../../../../../../../lib/components/BoutonPrincipalAvecIcone.svelte';
 	import CardTable from '../../../../../../../lib/components/CardTable.svelte';
+	import { deletePrescription, openPrescription } from '../../../../../../../lib/components/forms/onSubmits.svelte';
 
 	let { data } = $props();
 

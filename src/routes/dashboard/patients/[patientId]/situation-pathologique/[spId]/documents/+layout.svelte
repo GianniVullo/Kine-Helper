@@ -10,7 +10,7 @@
 	import { openModal } from '../../../../../../../lib/cloud/libraries/overlays/modalUtilities.svelte';
 	import DocumentSelectionModal from '../../../../../../../lib/ui/DocumentSelectionModal.svelte';
 	import Drawer from '../../../../../../../lib/cloud/libraries/overlays/Drawer.svelte';
-	import AccordForm from '../../../../../../../lib/cloud/components/forms/documents/accords/AccordForm.svelte';
+	import AccordForm from '../../../../../../../lib/components/forms/AccordForm.svelte';
 
 	let { data, children } = $props();
 
@@ -22,23 +22,20 @@
 	const homeUrl = () =>
 		`/dashboard/patients/${patient.patient_id}/situation-pathologique/${sp.sp_id}`;
 
-	let tabs = $derived([
+	let tabs = [
 		{
-			nom: 'Accords',
-			href: homeUrl() + `/documents`,
-			actif: page.url.pathname === homeUrl() + `/documents`
+			label: 'Accords',
+			value: homeUrl() + `/documents`
 		},
 		{
-			nom: 'Renouvellements',
-			href: homeUrl() + `/documents/renouvellements`,
-			actif: page.url.pathname === homeUrl() + `/documents/renouvellements`
+			label: 'Renouvellements',
+			value: homeUrl() + `/documents/renouvellements`
 		},
 		{
-			nom: 'Testings',
-			href: homeUrl() + `/documents/testings`,
-			actif: page.url.pathname === homeUrl() + `/documents/testings`
+			label: 'Testings',
+			value: homeUrl() + `/documents/testings`
 		}
-	]);
+	];
 </script>
 
 <Drawer
@@ -70,7 +67,7 @@
 	body="Veuillez sélectionner un document à ajouter.">
 	<DocumentSelectionModal {accords} />
 </Modal>
-<SectionTitleWithTabs titre="Documents" className="space-x-2" {tabs}>
+<SectionTitleWithTabs titre="Documents" className="space-x-2" {tabs} selectId="accords-tabs-select">
 	{#snippet actions()}
 		<BoutonPrincipalAvecIcone
 			onclick={() => {

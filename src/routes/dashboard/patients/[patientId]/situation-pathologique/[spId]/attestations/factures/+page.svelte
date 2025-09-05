@@ -4,7 +4,10 @@
 	import { getContext } from 'svelte';
 	import dayjs from 'dayjs';
 	import { cloneDeep } from 'lodash';
-	import { deleteFacture, getFacturePDF } from '../../../../../../../../lib/user-ops-handlers/documents';
+	import {
+		deleteFacture,
+		getFacturePDF
+	} from '../../../../../../../../lib/user-ops-handlers/documents';
 	import Modal from '../../../../../../../../lib/cloud/libraries/overlays/Modal.svelte';
 	import CardTable from '../../../../../../../../lib/components/CardTable.svelte';
 	import { openModal } from '../../../../../../../../lib/cloud/libraries/overlays/modalUtilities.svelte';
@@ -25,6 +28,7 @@
 		let facture = page.state.modal?.facture;
 		if (!facture) return;
 		await deleteFacture(facture);
+		console.log('Facture deleted', facture);
 		factures.splice(factures.indexOf(facture), 1);
 		history.back();
 	}} />
@@ -90,5 +94,5 @@
 		{/snippet}
 	</CardTable>
 {:else}
-	<p>{$t('attestation.list', 'empty')}</p>
+	<p>Aucune facture trouvée.</p>
 {/if}

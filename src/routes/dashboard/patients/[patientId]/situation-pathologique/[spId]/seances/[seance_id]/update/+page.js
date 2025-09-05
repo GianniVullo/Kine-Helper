@@ -1,6 +1,6 @@
 import { error as errorPage } from '@sveltejs/kit';
 import { appState } from '../../../../../../../../../lib/managers/AppState.svelte';
-import { gatherTarifsforpageLoad } from '../../../../../../../../../lib/cloud/components/forms/tarification-fields/tarifHelpers.js';
+import { gatherTarifsforpageLoad } from '../../../../../../../../../lib/components/forms/utils/tarifHelpers.js';
 import { Seance } from '../../../../../../../../../lib/user-ops-handlers/models.js';
 
 export async function load({ params }) {

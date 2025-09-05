@@ -1,20 +1,17 @@
 <script>
 	import dayjs from 'dayjs';
-	import OpenIcon from '../../../../../../../lib/ui/svgs/OpenIcon.svelte';
-	import DeleteIcon from '../../../../../../../lib/ui/svgs/DeleteIcon.svelte';
-	import UpdateIcon from '../../../../../../../lib/ui/svgs/UpdateIcon.svelte';
 	import { t } from '../../../../../../../lib/i18n';
 	import { getContext } from 'svelte';
 	import { deleteAccord, getAccordPDF } from '../../../../../../../lib/user-ops-handlers/documents';
-	import AccordUpdateForm from '../../../../../../../lib/cloud/components/forms/documents/accords/AccordUpdateForm.svelte';
+	import AccordUpdateForm from '../../../../../../../lib/components/forms/AccordUpdateForm.svelte';
 	import Modal from '../../../../../../../lib/cloud/libraries/overlays/Modal.svelte';
 	import { page } from '$app/state';
 	import { openModal } from '../../../../../../../lib/cloud/libraries/overlays/modalUtilities.svelte';
 	import { cloneDeep } from 'lodash';
-	import { invalidate } from '$app/navigation';
 	import Drawer from '../../../../../../../lib/cloud/libraries/overlays/Drawer.svelte';
 	import CardTable from '../../../../../../../lib/components/CardTable.svelte';
 	import { openDrawer } from '../../../../../../../lib/cloud/libraries/overlays/drawerUtilities.svelte';
+	import { appState } from '../../../../../../../lib/managers/AppState.svelte';
 
 	let { data } = $props();
 	let { patient, sp } = data;
@@ -36,7 +33,7 @@
 	buttonTextConfirm={$t('shared', 'confirm')}
 	buttonTextCancel={$t('shared', 'cancel')}
 	onAccepted={async () => {
-		await deleteAccord(page.state.modal.accord);
+		await appState.db.delete('accords', [['id', page.state.modal.accord.id]]);
 		let delIdx = accords.findIndex((a) => a.id === page.state.modal.accord.id);
 		accords.splice(delIdx, 1);
 		history.back();

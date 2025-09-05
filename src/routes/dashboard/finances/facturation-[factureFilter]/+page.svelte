@@ -8,15 +8,10 @@
 	import TableWithCheckbox from '../../../../lib/components/TableWithCheckbox.svelte';
 	import { openModal } from '../../../../lib/cloud/libraries/overlays/modalUtilities.svelte';
 	import { cloneDeep } from 'lodash';
-	import Dropdown from '../../../../lib/components/dropdowns/Dropdown.svelte';
-	import { t } from '../../../../lib/i18n';
-	import { dropdownItemWithIcon } from '../../../../lib/components/dropdowns/DropdownSnippets.svelte';
-	import { iconBadge } from '../../../../lib/components/snippets/BadgesSnippets.svelte';
-	import { buildingIcon, userIcon } from '../../../../lib/ui/svgs/IconSnippets.svelte';
 	import dayjs from 'dayjs';
 	import Modal from '../../../../lib/cloud/libraries/overlays/Modal.svelte';
-	import AttestationPreview from '../../../../lib/cloud/components/forms/attestation/AttestationPreview.svelte';
-	import Field from '../../../../lib/cloud/components/forms/abstract-components/Field.svelte';
+	import AttestationPreview from '../../../../lib/components/forms/fields/AttestationPreview.svelte';
+	import Field from '../../../../lib/components/forms/blocks/Field.svelte';
 	import { mutualites } from '../../../../lib/stores/codeDetails';
 
 	/** @type {{ data: import('./$types').PageData }} */

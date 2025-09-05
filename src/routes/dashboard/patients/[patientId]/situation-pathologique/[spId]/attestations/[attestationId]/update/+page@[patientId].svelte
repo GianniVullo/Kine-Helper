@@ -1,5 +1,5 @@
 <script>
-	import AttestationForm from '../../../../../../../../../lib/cloud/components/forms/attestation/AttestationForm.svelte';
+	import AttestationForm from '../../../../../../../../../lib/components/forms/AttestationForm.svelte';
 	import { page } from '$app/stores';
 	import { t } from '../../../../../../../../../lib/i18n';
 	import { fetchCodeDesSeances } from '../../../../../../../../../lib/utils/nomenclatureManager';

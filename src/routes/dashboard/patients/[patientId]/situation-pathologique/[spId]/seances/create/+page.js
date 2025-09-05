@@ -1,5 +1,5 @@
 import { appState } from '../../../../../../../../lib/managers/AppState.svelte';
-import { gatherTarifsforpageLoad } from '../../../../../../../../lib/cloud/components/forms/tarification-fields/tarifHelpers.js';
+import { gatherTarifsforpageLoad } from '../../../../../../../../lib/components/forms/utils/tarifHelpers.js';
 
 export const load = async ({ params }) => {
 	if (!appState.db) {
