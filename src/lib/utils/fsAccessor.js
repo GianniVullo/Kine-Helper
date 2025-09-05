@@ -17,7 +17,8 @@ import { appLocalDataDir, documentDir } from '@tauri-apps/api/path';
 import { supabase } from '../stores/supabaseClient';
 import { user } from '../stores/UserStore';
 import { get } from 'svelte/store';
-
+import { appState } from '../managers/AppState.svelte';
+import { save } from '@tauri-apps/plugin-dialog';
 
 async function completePath() {
 	if (platform() === 'windows') {
@@ -58,10 +59,26 @@ export async function file_exists(path) {
 	return await exists(path, { baseDir: baseDir() });
 }
 
-export async function save_to_disk(path, fileName, fileContent) {
-	console.log('in save_to_disk with ', path, fileName, fileContent);
+export async function save_local_file(path, fileName, fileContent) {
+	console.log('in save_local_file with ', path, fileName, fileContent);
+	let { formatedPath, error } = await setupBeforeSaveLocalFile(path, fileName);
+	if (error) {
+		console.error('Error setting up path before saving file:', error);
+		throw error;
+	}
+	let dirPath = (await completePath()) + (platform() === 'windows' ? '\\' : '/') + formatedPath;
+
+	let response = await invoke('setup_path', {
+		dirPath,
+		filePath: dirPath + (platform() === 'windows' ? '\\' : '/') + fileName,
+		fileContent: Array.isArray(fileContent) ? fileContent : Array.from(await fileContent.bytes())
+	});
+	return response;
+}
+
+async function setupBeforeSaveLocalFile(path, fileName) {
+	console.log('in setupBeforeSaveLocalFile with ', path, fileName);
 	let formatedPath = await pathFormat(path);
-	let normalizedFileName = fileName;
 	//* We might eventually catch a (directory already exist) wich is not a problem
 	console.log('in save_to_disk with ', formatedPath);
 	try {
@@ -69,30 +86,58 @@ export async function save_to_disk(path, fileName, fileContent) {
 			await create_directories(formatedPath);
 		}
 	} catch (error) {
-		return error;
+		return { error };
 	}
-	console.log('trying to write file');
+	return { formatedPath };
+}
+
+export async function saveRemoteFile(fileName, fileContent) {
+	let { data, error: uploadError } = await supabase.storage
+		.from('users')
+		.upload(appState.user.id + '/prescriptions/' + fileName, fileContent);
+	if (uploadError) {
+		console.error('Error uploading file to Supabase:', uploadError);
+		throw uploadError;
+	}
+	console.log('File uploaded successfully:', data);
+}
+// In the cloud version this needs to insert the file in the supabase storage
+export async function save_to_disk(path, fileName, fileContent) {
+	console.log('in save_to_disk with ', path, fileName, fileContent);
 
 	try {
-		let dirPath = (await completePath()) + (platform() === 'windows' ? '\\' : '/') + formatedPath;
-		let file_content = Array.from(fileContent);
-		console.log(dirPath, fileName);
-		let response = await invoke('setup_path', {
-			dirPath,
-			filePath: dirPath + (platform() === 'windows' ? '\\' : '/') + normalizedFileName,
-			fileContent: file_content
-		});
-		console.log(response);
-	} catch (error) {
-		return error;
+		//* First insert into Supabase storage
+		await saveRemoteFile(fileName, fileContent);
+		//* Then save to local disk
+		let localResponse = await save_local_file(path, fileName, fileContent);
+		console.log('localResponse', localResponse);
+	} catch (saveError) {
+		console.error('Error saving file:', saveError);
+		return saveError;
 	}
 }
 
 export async function remove_file(path, { recursive = false }) {
-	console.log('in remove_file');
+	console.log('in remove_file with ', path, recursive);
 
 	try {
-		return await remove(path, { baseDir: baseDir(), recursive });
+		//* First remove from Supabase storage
+		let pathSplits = path.split('/');
+		let fileName = pathSplits.pop();
+		let removePath = `${appState.user.id}/prescriptions/${fileName}`;
+		let { error } = await supabase.storage.from('users').remove([removePath]);
+		console.log('remove_file error', error);
+		if (error) {
+			return error;
+		}
+		try {
+			let resp = await remove(path, { baseDir: baseDir(), recursive });
+			console.log('File removed successfully', resp);
+			return null;
+		} catch (removeError) {
+			console.error('Error removing file from fs:', removeError);
+			return removeError;
+		}
 	} catch (error) {
 		return error;
 	}
