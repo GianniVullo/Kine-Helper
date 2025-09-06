@@ -1,11 +1,9 @@
 <script>
-	import { FormWrapper, TextFieldV2, DefaultFieldWrapper, CheckboxFieldV2 } from '../forms/index';
-	import { user } from '../stores/UserStore';
-	import { get } from 'svelte/store';
 	import { supabase } from '../stores/supabaseClient';
 	import SubmitButton from '../forms/ui/SubmitButton.svelte';
 	import { t } from '../i18n';
 	import { appState } from '../managers/AppState.svelte';
+	import { Formulaire } from '../cloud/libraries/formHandler.svelte';
 
 	// Form Data
 	const request = {
@@ -20,6 +18,14 @@
 		isValid
 	};
 
+	let formHandler = new Formulaire({
+		initialValues: request,
+		schema: formSchema,
+		onValid: async (form) => {
+			console.log('Form is valid:', form);
+			await isValid({ formData: form, submitter: document.querySelector('#bug-report-submit') });
+		}
+	});
 	async function isValid({ formData, submitter }) {
 		let { data, error } = await supabase.from('user_messages').insert({
 			titre: request.titre,

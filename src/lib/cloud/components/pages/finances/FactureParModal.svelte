@@ -5,9 +5,9 @@
 	import { appState } from '../../../../managers/AppState.svelte';
 	import { mutualites } from '../../../../stores/codeDetails';
 	import Modal from '../../../libraries/overlays/Modal.svelte';
-	import CheckboxGroup from '../../forms/fields/CheckboxGroup.svelte';
-	import TwuiRadioGroupWithDescription from '../../forms/fields/TWUIRadioGroupWithDescription.svelte';
-	import ComboBox from '../../ui/ComboBox.svelte';
+	import CheckboxGroup from '../../../../components/forms/fields/CheckboxGroup.svelte';
+	import TwuiRadioGroupWithDescription from '../../../../components/forms/fields/TWUIRadioGroupWithDescription.svelte';
+	import ComboBox from '../../../../cloud/components/ui/ComboBox.svelte';
 
 	let patientList;
 	let options = $state([]);

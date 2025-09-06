@@ -24,6 +24,7 @@
 	})}
 	onAccepted={async () => {
 		await deleteFacture(facture);
+		console.log('Facture deleted', facture);
 		factures.splice(factures.indexOf(facture), 1);
 		history.back();
 	}} />

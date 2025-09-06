@@ -11,6 +11,8 @@
 	import Modal from '../cloud/libraries/overlays/Modal.svelte';
 	import { pushState, goto } from '$app/navigation';
 	import { archiveBoxArrowDownIcon, eyeIcon } from '../ui/svgs/IconSnippets.svelte';
+	import { supabase } from '../stores/supabaseClient';
+	import { appState } from '../managers/AppState.svelte';
 
 	const modal = {
 		title: get(t)('patients.detail', 'pdeleteModal.title'),
@@ -29,8 +31,7 @@
 	opened={page.state.modal === 'patientDeleteModal'}
 	{...modal}
 	onAccepted={async () => {
-		const { error } = await deletePatient(patient);
-		console.log('error', error);
+		const { error } = await appState.db.delete('patients', [['patient_id', patient.patient_id]]);
 		goto('/dashboard/patients');
 	}} />
 <PageTitle srOnly="Résumé du patient">

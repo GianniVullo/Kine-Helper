@@ -2,7 +2,6 @@
 	import { page } from '$app/state';
 	import { t } from '../i18n';
 	import { get } from 'svelte/store';
-	import { deleteSituationPathologique } from '../user-ops-handlers/situations_pathologiques';
 	import PageTitle from '../components/PageTitle.svelte';
 	import BoutonPrincipalAvecIcone from '../components/BoutonPrincipalAvecIcone.svelte';
 	import Dropdown from '../components/dropdowns/Dropdown.svelte';
@@ -10,17 +9,10 @@
 		dividerDropper,
 		dropdownItemWithIcon
 	} from '../components/dropdowns/DropdownSnippets.svelte';
-	import {
-		editIcon,
-		linkIcon,
-		deleteIcon,
-		euroIcon,
-		pagePlusIcon,
-		calendarIcon
-	} from '../ui/svgs/IconSnippets.svelte';
-	import dayjs from 'dayjs';
+	import { editIcon, linkIcon, deleteIcon } from '../ui/svgs/IconSnippets.svelte';
 	import { goto, pushState } from '$app/navigation';
 	import Modal from '../cloud/libraries/overlays/Modal.svelte';
+	import { appState } from '../managers/AppState.svelte';
 
 	const modal = {
 		title: get(t)('patients.detail', 'deleteModal.title'),
@@ -66,10 +58,7 @@
 	opened={page.state.modal === 'deleteSp'}
 	{...modal}
 	onAccepted={async () => {
-		await deleteSituationPathologique({
-			sp_id: page.params.spId,
-			patient_id: page.params.patientId
-		});
+		await appState.db.delete('situations_pathologiques', [['sp_id', page.params.spId]]);
 		goto('/dashboard/patients/' + page.params.patientId);
 	}} />
 <PageTitle srOnly="Résumé de la situation pathologique">

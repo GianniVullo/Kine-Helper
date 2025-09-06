@@ -6,7 +6,7 @@
 	import { get } from 'svelte/store';
 	import { NomenclatureManager } from '../../../lib/utils/nomenclatureManager';
 	import { appState } from '../../../lib/managers/AppState.svelte';
-	import PageTitle from '../../../lib/ui/PageTitle.svelte';
+	import PageTitle from '../../../lib/cloud/components/layout/PageTitle.svelte';
 	import EventCalendar from '../../../lib/EventCalendar.svelte';
 	import Modal from '../../../lib/cloud/libraries/overlays/Modal.svelte';
 	import { page } from '$app/state';
@@ -49,7 +49,7 @@
 	title={page.state.modal?.title}
 	body=""
 	leading={undefined}
-	buttonTextConfirm="Voir la situation pathologique"
+	buttonTextConfirm={$t('agenda', 'viewSP', {}, 'View pathological situation')}
 	buttonTextConfirmCSS="!bg-blue-500 !text-white"
 	onAccepted={() => {
 		goto(
@@ -57,29 +57,32 @@
 		);
 	}} />
 
-<PageTitle titre="Agenda" />
-<EventCalendar
-	bind:ec
-	eventSources={[
-		{
-			events(fetchInfo, successCallback, failureCallback) {
-				console.log('In the events list function', fetchInfo);
-				queryMonthEvents(fetchInfo.start, fetchInfo.end).then((events) => {
-					successCallback(events);
-				});
+
+<PageTitle titre={$t('sidebar', 'agenda', {}, 'Agenda')} />
+<div class="mt-12">
+	<EventCalendar
+		bind:ec
+		eventSources={[
+			{
+				events(fetchInfo, successCallback, failureCallback) {
+					console.log('In the events list function', fetchInfo);
+					queryMonthEvents(fetchInfo.start, fetchInfo.end).then((events) => {
+						successCallback(events);
+					});
+				}
 			}
-		}
-	]}
-	options={{
-		eventClick(info) {
-			console.log('eventClick', info);
-			openModal({
-				name: 'eventCalendarOnclick',
-				title: `Séance pour ${info.event.title}`,
-				event: info.event
-			});
-		},
-		loading(info) {
-			console.log('loading', info);
-		}
-	}} />
+		]}
+		options={{
+			eventClick(info) {
+				console.log('eventClick', info);
+				openModal({
+					name: 'eventCalendarOnclick',
+					title: $t('agenda', 'sessionFor', { patientName: info.event.title }, `Session for ${info.event.title}`),
+					event: info.event
+				});
+			},
+			loading(info) {
+				console.log('loading', info);
+			}
+		}} />
+</div>
