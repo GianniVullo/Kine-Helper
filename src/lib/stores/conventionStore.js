@@ -1,29 +1,31 @@
 import { invoke } from '@tauri-apps/api/core';
 import { supabase } from './supabaseClient';
-import { LocalDatabase } from './databaseInitializer';
-import { appState } from '../managers/AppState.svelte';
+// import { LocalDatabase } from './databaseInitializer';
+import { terminal } from 'virtual:terminal';
+import { platform } from '@tauri-apps/plugin-os';
+import { fetch as nativeFetch } from '@tauri-apps/plugin-http';
 
-export async function initializeConventions(submiter) {
-	let db = new LocalDatabase();
-	// D'abord lister les fichiers dans le bucket static/codes
-	let remoteFilesList = await supabase.storage.from('static').list('codes');
-	remoteFilesList = remoteFilesList.data.map((val) => val.name);
-	console.log('GZ stocké sur le bucket drive', remoteFilesList);
-	// Ensuite fetcher les fichiers dans la base de données
-	let localFilesList = await db.select('SELECT documents from conventions;');
-	localFilesList = localFilesList.map((val) => val.documents);
-	console.log(localFilesList);
-	for (const convFile of remoteFilesList) {
-		// Comparer la réponse avec la base de donnée
-		if (!localFilesList.includes(convFile)) {
-			console.log('Fetching', convFile);
-			submiter.innerHTML = `Téléchargement de ${convFile}`;
-			// Si le fichiers n'est pas dans notre DB alors on fetch du bucket et on peuple notre db
-			await populateDB(db, convFile);
-			submiter.innerHTML = `Traitement de ${convFile} terminé`;
-		}
-	}
-}
+// export async function initializeConventions(submiter) {
+// 	let db = new LocalDatabase();
+// 	// D'abord lister les fichiers dans le bucket static/codes
+// 	let remoteFilesList = await supabase.storage.from('static').list('codes');
+// 	remoteFilesList = remoteFilesList.data.map((val) => val.name);
+// 	terminal.log('GZ stocké sur le bucket drive', remoteFilesList);
+// 	// Ensuite fetcher les fichiers dans la base de données
+// 	let localFilesList = await db.select('SELECT documents from conventions;');
+// 	localFilesList = localFilesList.map((val) => val.documents);
+// 	terminal.log('localFilesList', localFilesList);
+// 	for (const convFile of remoteFilesList) {
+// 		// Comparer la réponse avec la base de donnée
+// 		if (!localFilesList.includes(convFile)) {
+// 			terminal.log('Fetching', convFile);
+// 			submiter.innerHTML = `Téléchargement de ${convFile}`;
+// 			// Si le fichiers n'est pas dans notre DB alors on fetch du bucket et on peuple notre db
+// 			await populateDB(db, convFile);
+// 			submiter.innerHTML = `Traitement de ${convFile} terminé`;
+// 		}
+// 	}
+// }
 
 export async function checkAndUpdateConventions(submiter, db) {
 	// D'abord lister les fichiers dans le bucket static/codes
@@ -32,7 +34,7 @@ export async function checkAndUpdateConventions(submiter, db) {
 		return { error: remoteFilesList.error };
 	}
 	remoteFilesList = remoteFilesList.data.map((val) => val.name);
-	console.log('GZ stocké sur le bucket drive', remoteFilesList);
+	terminal.log('GZ stocké sur le bucket drive', remoteFilesList);
 	// Ensuite fetcher les fichiers dans la base de données
 	let { data: localFilesList, error: localFileError } = await db.select(
 		'SELECT documents from conventions;'
@@ -41,29 +43,51 @@ export async function checkAndUpdateConventions(submiter, db) {
 		return { error: localFileError };
 	}
 	localFilesList = localFilesList.map((val) => val.documents);
-	console.log(localFilesList);
+	terminal.log('localFilesList', localFilesList);
 	for (const convFile of remoteFilesList) {
 		// Comparer la réponse avec la base de donnée
 		if (!localFilesList.includes(convFile)) {
-			console.log('Fetching', convFile);
+			terminal.log('Fetching', convFile);
 			submiter = `Téléchargement de ${convFile}`;
 			// Si le fichiers n'est pas dans notre DB alors on fetch du bucket et on peuple notre db
 			await populateDB(db, convFile);
 			submiter = `Traitement de ${convFile} terminé`;
 		}
 	}
-	console.log('Conventions mises à jour');
+	terminal.log('Conventions mises à jour');
 	return { data: 'Conventions mises à jour' };
 }
 
 async function populateDB(db, convFile) {
-	// Récupérer le binary sur le serveur
-	let { data, error } = await supabase.storage.from('static').download(`codes/${convFile}`);
-	console.log(data);
+	terminal.log('populateDB', convFile);
+	let data;
+
+	if (platform() === 'ios') {
+		terminal.log('Fetching convention data for iOS');
+		let { data: urlData, error } = supabase.storage
+			.from('static')
+			.getPublicUrl(`codes/${convFile}`);
+		terminal.log('urlData', urlData);
+		const res = await nativeFetch(urlData.publicUrl, {
+			method: 'GET',
+			credentials: 'omit',
+			headers: {
+				Accept: 'application/octet-stream'
+			}
+		});
+		terminal.log('response status', res.status);
+		data = Array.from(await res.bytes());
+	} else {
+		// Récupérer le binary sur le serveur
+		let { data: blob, error } = await supabase.storage.from('static').download(`codes/${convFile}`);
+		terminal.log('fetched convention data', blob);
+		terminal.log('Error fetching convention data', error);
+		data = blob;
+	}
 
 	// Décompresser le fichier avec Rust
 	let convention = await deflateFile(data);
-	console.log(convention);
+	terminal.log('convention_id', convention.convention_id);
 	// Insérer la convention d'abord
 	const { data: convInsertionData, error: convInsertionError } = await db.execute(
 		'INSERT into conventions (convention_id, titre, documents, created_at, year, month, day) VALUES ($1, $2, $3, $4, $5, $6, $7)',
@@ -77,12 +101,12 @@ async function populateDB(db, convFile) {
 			convention.day
 		]
 	);
-	console.log('convention inserted');
+	terminal.log('convention inserted');
 	if (convInsertionError) {
-		console.log('Error inserting convention', convInsertionError);
+		terminal.log('Error inserting convention', convInsertionError);
 		return { error: convInsertionError };
 	} else {
-		console.log('Convention inserted', convInsertionData);
+		terminal.log('Convention inserted', convInsertionData);
 	}
 
 	// Ensuite insérer les codes avec l'ID de convention en FK
@@ -107,18 +131,25 @@ async function populateDB(db, convFile) {
 			]
 		);
 		if (codeInsertionError) {
-			console.log('Error inserting code', codeInsertionError);
+			terminal.log('Error inserting code', codeInsertionError);
 			return { error: codeInsertionError };
 		} else {
-			console.log('Code inserted', codeInsertionData);
+			terminal.log('Code inserted', code.code_reference, codeInsertionData);
 		}
 	}
 	return { data: 'Conventions mises à jour' };
 }
 async function deflateFile(data) {
-	let arr = data.stream();
-	let reader = arr.getReader();
-	return await invoke('convention_decompression', {
-		value: Array.from((await reader.read()).value)
-	});
+	if (platform() === 'ios') {
+		// iOS specific implementation
+		return await invoke('convention_decompression', {
+			value: data
+		});
+	} else {
+		let arr = data.stream();
+		let reader = arr.getReader();
+		return await invoke('convention_decompression', {
+			value: Array.from((await reader.read()).value)
+		});
+	}
 }
