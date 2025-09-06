@@ -44,7 +44,7 @@
 	<div class="w-full bg-white md:flex md:items-center md:justify-between">
 		<div class="min-w-0 flex-1">
 			<h2 class="text-2xl/7 font-bold text-gray-900 sm:truncate sm:text-3xl sm:tracking-tight">
-				Patients
+				{$t('sidebar', 'patients', {}, 'Patients')}
 			</h2>
 		</div>
 		<div class="flex flex-col items-start sm:flex-row">
@@ -85,7 +85,7 @@
 							d="M2 2.75A.75.75 0 0 1 2.75 2h9.5a.75.75 0 0 1 0 1.5h-9.5A.75.75 0 0 1 2 2.75ZM2 6.25a.75.75 0 0 1 .75-.75h5.5a.75.75 0 0 1 0 1.5h-5.5A.75.75 0 0 1 2 6.25Zm0 3.5A.75.75 0 0 1 2.75 9h3.5a.75.75 0 0 1 0 1.5h-3.5A.75.75 0 0 1 2 9.75ZM9.22 9.53a.75.75 0 0 1 0-1.06l2.25-2.25a.75.75 0 0 1 1.06 0l2.25 2.25a.75.75 0 0 1-1.06 1.06l-.97-.97v5.69a.75.75 0 0 1-1.5 0V8.56l-.97.97a.75.75 0 0 1-1.06 0Z"
 							clip-rule="evenodd" />
 					</svg>
-					Sort
+					{$t('patients.list', 'sort', {}, 'Sort')}
 				</button>
 			</div>
 			<div class="mt-3 sm:ml-4 sm:mt-0">
@@ -104,13 +104,13 @@
 	<CardTable>
 		{#snippet header()}
 			<th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-0"
-				>Nom</th>
-			<th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Adresse</th>
-			<th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Status</th>
+				>{$t('patients.list', 'tableHeaders.name', {}, 'Name')}</th>
+			<th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">{$t('patients.list', 'tableHeaders.address', {}, 'Address')}</th>
+			<th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">{$t('patients.list', 'tableHeaders.status', {}, 'Status')}</th>
 			<!-- <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
 			>Comptabilité</th> -->
 			<th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-0">
-				<span class="sr-only">Consultation</span>
+				<span class="sr-only">{$t('patients.detail', 'consult', {}, 'Consultation')}</span>
 			</th>
 		{/snippet}
 		{#snippet body()}
@@ -125,7 +125,7 @@
 							<div class="ml-4">
 								<div class="font-medium text-gray-900">{patient.nom} {patient.prenom}</div>
 								<div class="mt-1 text-gray-500">
-									{patient.tel ?? patient.email ?? "pas d'infos de contact"}
+									{patient.tel ?? patient.email ?? $t('patients.list', 'noContact', {}, 'no contact info')}
 								</div>
 							</div>
 						</div>
@@ -137,13 +137,13 @@
 					<td class="whitespace-nowrap px-3 py-5 text-sm text-gray-500">
 						<span
 							class="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20"
-							>Active</span>
+							>{$t('patients.list', 'active', {}, 'Active')}</span>
 					</td>
 					<!-- <td class="whitespace-nowrap px-3 py-5 text-sm text-gray-500">Member</td> -->
 					<td
 						class="relative whitespace-nowrap py-5 pl-3 pr-4 text-right text-sm font-medium sm:pr-0">
 						<p class="mr-4 text-indigo-600 hover:text-indigo-900">
-							Consulter<span class="sr-only">, {patient.nom} {patient.prenom}</span>
+							{$t('patients.list', 'consult', {}, 'Consult')}<span class="sr-only">, {patient.nom} {patient.prenom}</span>
 						</p>
 					</td>
 				</tr>

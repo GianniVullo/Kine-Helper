@@ -4,7 +4,7 @@
 	import Title from '$lib/patient-detail/Title.svelte';
 	import CardTable from '../../../../lib/components/CardTable.svelte';
 	import { goto } from '$app/navigation';
-	import { arrowRightIcon, chevronRightIcon } from '../../../../lib/ui/svgs/IconSnippets.svelte';
+	import { chevronRightIcon } from '../../../../lib/ui/svgs/IconSnippets.svelte';
 
 	let { data } = $props();
 	let sps = data.patient?.situations_pathologiques?.length > 0;
@@ -14,19 +14,22 @@
 {#if sps}
 	<div
 		class="mt-10 w-full border-b border-gray-200 pb-5 sm:flex sm:items-center sm:justify-between">
-		<h3 class="text-base font-semibold text-gray-900">Situations pathologiques</h3>
+		<h3 class="text-base font-semibold text-gray-900">
+			{$t('shared', 'pathologicalSituations', {}, 'Situations pathologiques')}
+		</h3>
 		<div class="mt-3 sm:mt-0 sm:ml-4">
 			<a
 				href={`/dashboard/patients/${data.patient.patient_id}/situation-pathologique/create`}
 				class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-				>Ajouter une situation pathologique</a>
+				>{$t('sp.create', 'title', {}, 'Ajouter une situation pathologique')}</a>
 		</div>
 	</div>
 
 	<ul role="list" class="w-full divide-y divide-gray-100">
 		<CardTable>
 			{#snippet header()}
-				<th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Motif</th>
+				<th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+					>{$t('sp.detail', 'reason', {}, 'Motif')}</th>
 				<th
 					scope="col"
 					class="py-3.5 pr-3 pl-4 text-left text-sm font-semibold text-gray-900 sm:pl-0">Date</th>
@@ -37,7 +40,7 @@
 			{#snippet body()}
 				{#each data.patient?.situations_pathologiques as sp}
 					<tr
-					class="hover:cursor-pointer"
+						class="hover:cursor-pointer"
 						onclick={() => {
 							goto(
 								'/dashboard/patients/' +
@@ -53,7 +56,7 @@
 							{dayjs(sp.created_at).format('DD/MM/YYYY')}
 						</td>
 						<td
-							class="relative py-5 pr-4 pl-3 text-right text-sm font-medium whitespace-nowrap sm:pr-0 flex items-center justify-end">
+							class="relative flex items-center justify-end py-5 pr-4 pl-3 text-right text-sm font-medium whitespace-nowrap sm:pr-0">
 							<p class="text-indigo-500 group-hover:text-indigo-700">Consulter</p>
 							{@render chevronRightIcon('size-5 flex-none text-indigo-400 mr-5')}
 						</td>

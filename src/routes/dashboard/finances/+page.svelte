@@ -21,12 +21,12 @@
 
 	let tabs = $derived([
 		{
-			nom: 'Attestations',
+			nom: $t('finances', 'tabs.attestations', {}, 'Attestations'),
 			href: homeUrl() + `/attestations`,
 			actif: page.url.pathname === homeUrl() + `/attestations`
 		},
 		{
-			nom: 'Factures',
+			nom: $t('finances', 'tabs.invoices', {}, 'Invoices'),
 			href: homeUrl() + `/attestations/factures`,
 			actif: page.url.pathname === homeUrl() + `/attestations/factures`
 		}
@@ -54,25 +54,25 @@
 <FactureParModal />
 <Modal
 	opened={page.state.modal?.name === 'noFacture'}
-	title="Aucunes séances à facturer"
-	body="Vous êtes en ordre! Vous pouvez fixer de nouveaux rendez-vous à facturer."
+	title={$t('finances', 'modals.noSessions.title', {}, 'No sessions to bill')}
+	body={$t('finances', 'modals.noSessions.body', {}, 'You are up to date! You can schedule new appointments to bill.')}
 	buttonTextCancel="none"
-	buttonTextConfirm="Ok" />
+	buttonTextConfirm={$t('finances', 'buttons.ok', {}, 'Ok')} />
 
 <Modal
 	opened={page.state.modal?.name === 'buildingFactures'}
-	title="Vos factures sont en cours de construction"
-	body="Vous serez redirigé lorsque la construction sera terminée.">
+	title={$t('finances', 'modals.buildingInvoices.title', {}, 'Your invoices are being built')}
+	body={$t('finances', 'modals.buildingInvoices.body', {}, 'You will be redirected when the construction is complete.')}>
 	<div class="my-10 flex items-center justify-center">
 		<Spiner width="size-14" thickness="border-4" />
-		<p class="ml-5">Opération en cours...</p>
+		<p class="ml-5">{$t('finances', 'modals.buildingInvoices.operation', {}, 'Operation in progress...')}</p>
 	</div>
 </Modal>
 
 <div class="md:flex md:items-center md:justify-between">
 	<div class="min-w-0 flex-1">
 		<h2 class="text-2xl/7 font-bold text-gray-900 sm:truncate sm:text-3xl sm:tracking-tight">
-			Finances
+			{$t('finances', 'title', {}, 'Finances')}
 		</h2>
 	</div>
 	<div class="mt-4 flex md:mt-0 md:ml-4">
@@ -83,7 +83,7 @@
 		<BoutonPrincipal
 			className="ml-3 inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
 			href="/dashboard/finances/tarifs-form"
-			inner="Gérer vos tarifs et suppléments" />
+			inner={$t('finances', 'manageTariffs', {}, 'Manage your rates and supplements')} />
 	</div>
 </div>
 
@@ -110,7 +110,7 @@
 					}
 				}}
 				icon={pagePlusIcon}
-				inner="Facturer par [•••]" />
+				inner={$t('finances', 'buttons.billBy', {}, 'Bill by [•••]')} />
 			<BoutonPrincipalAvecIcone
 				onclick={async () => {
 					if ((await getTotal()) > 0) {
@@ -121,10 +121,10 @@
 					}
 				}}
 				icon={pagePlusIcon}
-				inner="Facturer tout" />
+				inner={$t('finances', 'buttons.billAll', {}, 'Bill all')} />
 		</div>
 	{/snippet}
 </SectionTitleWithTabs>
  -->
 
- <p class="my-5">En construction : à venir un générateur d'attestations et de factures par mutuelle</p>
+ <p class="my-5">{$t('finances', 'underConstruction', {}, 'Under construction: coming soon, a generator for attestations and invoices by insurance company')}</p>
