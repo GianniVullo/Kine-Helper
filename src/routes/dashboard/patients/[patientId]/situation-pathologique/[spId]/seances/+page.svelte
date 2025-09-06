@@ -46,7 +46,7 @@
 	opened={page.state.drawer?.name === 'seanceCalendarDetail'}
 	title="Votre séance"
 	description="Panel de contrôle de votre rendez-vous.">
-	<CalendarEventModal event={page.state.drawer?.event} seance={page.state.drawer?.seance} {ec} />
+	<CalendarEventModal {ec} />
 </Drawer>
 
 <SectionTitle titre={`Séances (${sp?.seances?.length})`} className="space-x-2">
