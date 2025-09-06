@@ -13,27 +13,27 @@
 		{
 			href: homeUrl(),
 			nom: 'Home',
-			actif: page.url.pathname === homeUrl()
+			actif: page.route.id === homeUrl()
 		},
 		{
 			href: homeUrl() + `/prescriptions`,
 			nom: $t('sp.detail', 'prescriptions'),
-			actif: page.url.pathname === homeUrl() + `/prescriptions`
+			actif: page.route.id === homeUrl() + `/prescriptions`
 		},
 		{
 			href: homeUrl() + `/attestations`,
 			nom: $t('form.generateur', 'tarification.title'),
-			actif: page.url.pathname.startsWith(homeUrl() + `/attestations`)
+			actif: page.route.id.includes('attestations')
 		},
 		{
 			href: homeUrl() + `/documents`,
 			nom: $t('sp.detail', 'documents'),
-			actif: page.url.pathname.includes(`/documents`)
+			actif: page.route.id.includes(`/documents`)
 		},
 		{
 			href: homeUrl() + `/seances`,
 			nom: $t('patients.detail', 'prestations'),
-			actif: page.url.pathname === homeUrl() + `/seances`
+			actif: page.route.id === homeUrl() + `/seances`
 		}
 	]);
 </script>
@@ -45,7 +45,7 @@
 	<div class="-mt-5 mb-5 flex w-full items-center justify-start px-4 py-1 sm:py-1"></div>
 	<!--* Tabs -->
 	<Tabs
-		className="w-full text-center flex justify-center sm:block border-b border-gray-300 shadow-sm"
+		className="w-full text-center flex justify-center sm:block pb-1 sm:pb-0 border-b border-gray-300"
 		{tabs} />
 	{@render children()}
 {/if}

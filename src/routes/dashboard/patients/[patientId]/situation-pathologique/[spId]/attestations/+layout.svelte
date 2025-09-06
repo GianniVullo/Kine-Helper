@@ -22,18 +22,16 @@
 	const homeUrl = () =>
 		`/dashboard/patients/${patient.patient_id}/situation-pathologique/${sp.sp_id}`;
 
-	let tabs = $derived([
+	let tabs = [
 		{
-			nom: 'Attestations',
-			href: homeUrl() + `/attestations`,
-			actif: page.url.pathname === homeUrl() + `/attestations`
+			label: 'Attestations',
+			value: homeUrl() + `/attestations`
 		},
 		{
-			nom: 'Factures',
-			href: homeUrl() + `/attestations/factures`,
-			actif: page.url.pathname === homeUrl() + `/attestations/factures`
+			label: 'Factures',
+			value: homeUrl() + `/attestations/factures`
 		}
-	]);
+	];
 </script>
 
 <Modal
