@@ -1,74 +1,81 @@
 <script>
-	import EditorJS from '@editorjs/editorjs';
-	import { onMount } from 'svelte';
-	import Header from '@editorjs/header';
-	import Paragraph from '@editorjs/paragraph';
-	let editor = $state();
-	// let editor;
+	import { t } from '../../../i18n';
+	import { RichTextEditorSetup } from './RichText.svelte.js';
+	import './rtecss.css';
 
-	onMount(() => {
-		editor = new EditorJS({
-			placeholder: 'Start writing your content here...',
-			holder: 'editorjs',
-			autofocus: true,
-			tools: {
-				header: {
-					class: Header,
-					inlineToolbar: ['link'],
-					config: {
-						placeholder: 'Enter a header',
-						levels: [1, 2, 3],
-						defaultLevel: 2
-					}
-				},
-				paragraph: {
-					class: Paragraph,
-					inlineToolbar: true
-				}
-				// Add other tools as needed
-			},
-			data: {
-				time: 1751791485944,
-				blocks: [
-					{
-						id: 'mhTl6ghSkV',
-						type: 'paragraph',
-						data: {
-							text: 'Hey. Meet the new Editor. On this picture you can see it in action. Then, try a demo 🤓'
-						}
-					},
-					{
-						id: 'l98dyx3yjb',
-						type: 'header',
-						data: {
-							text: 'Key features',
-							level: 3
-						}
-					}
-				]
-			},
-			onReady: () => {
-				console.log('Editor.js is ready');
-			},
-			i18n: {
-				/**
-				 * @type {I18nDictionary}
-				 */
-			}
-		});
-	});
+	let rTE = new RichTextEditorSetup({});
+	function formatLastSaved(date) {
+		if (!date) return '';
+
+		const now = new Date();
+		const diff = Math.floor((now - date) / 1000);
+
+		if (diff < 60) return $t('richTextEditor', 'saveStatus.justSaved', {}, 'Just saved');
+		if (diff < 3600)
+			return $t(
+				'richTextEditor',
+				'saveStatus.minutesAgo',
+				{ minutes: Math.floor(diff / 60) },
+				`Saved ${Math.floor(diff / 60)} minutes ago`
+			);
+		if (diff < 86400)
+			return $t(
+				'richTextEditor',
+				'saveStatus.hoursAgo',
+				{ hours: Math.floor(diff / 3600) },
+				`Saved ${Math.floor(diff / 3600)} hours ago`
+			);
+		return $t(
+			'richTextEditor',
+			'saveStatus.savedOn',
+			{ date: date.toLocaleDateString() },
+			`Saved on ${date.toLocaleDateString()}`
+		);
+	}
 </script>
 
-testing
-<div class="prose" id="editorjs"></div>
-<button
-	onclick={() => {
-		editor
-			.save()
-			.then((outputData) => {
-				console.log('Data saved: ', outputData);
-			})
-			.catch((error) => {
-				console.error('Saving failed: ', error);
-			});
-	}}>Save</button>
+<div class="editor-wrapper">
+	<div class="editor-header">
+		<div class="editor-title">
+			<h2>{$t('richTextEditor', 'title', {}, 'Patient Report')}</h2>
+			{#if rTE.lastSaved}
+				<span class="save-status">{formatLastSaved(rTE.lastSaved)}</span>
+			{/if}
+		</div>
+		<div class="editor-actions">
+			<button onclick={rTE.clearEditor} class="btn btn-secondary" disabled={rTE.editor?.readOnly}>
+				{$t('richTextEditor', 'buttons.clear', {}, 'Clear')}
+			</button>
+			<button
+				onclick={rTE.saveReport}
+				class="btn btn-primary"
+				disabled={rTE.isSaving || rTE.editor?.readOnly}>
+				{rTE.isSaving
+					? $t('richTextEditor', 'buttons.saving', {}, 'Saving...')
+					: $t('richTextEditor', 'buttons.saveReport', {}, 'Save Report')}
+			</button>
+		</div>
+	</div>
+
+	<div class="editor-container" bind:this={rTE.editorHolder}></div>
+
+	<div class="editor-footer">
+		<div class="editor-tips">
+			<span class="tip-label">{$t('richTextEditor', 'tips.label', {}, 'Tips:')}</span>
+			<span class="tip"
+				>{@html $t(
+					'richTextEditor',
+					'tips.tabForBlocks',
+					{},
+					'Press <kbd>Tab</kbd> to see available blocks'
+				)}</span>
+			<span class="tip"
+				>{@html $t(
+					'richTextEditor',
+					'tips.slashForCommands',
+					{},
+					'Use <kbd>/</kbd> for quick commands'
+				)}</span>
+		</div>
+	</div>
+</div>
