@@ -6,7 +6,7 @@
 		"frontendDist": "../build"
 	},
 	"productName": "Kine Helper",
-	"version": "1.0.6",
+	"version": "1.0.0",
 	"identifier": "be.kinehelper.prod",
 	"bundle": {
 		"active": true,
