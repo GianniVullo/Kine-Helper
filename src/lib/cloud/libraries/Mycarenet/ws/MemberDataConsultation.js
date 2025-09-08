@@ -64,12 +64,10 @@ export class BodyElement extends SecurityElement {
 	 * @param {AttributeQuery} param0.query
 	 */
 	constructor({ request_uuid, issueInstant, isTest = true, attribute_query_id, query }) {
+		super();
 		//* <mcp:CommonInput>
 		this.commonInputElement = new CommonInputElement({
-			packageName,
-			licence_user,
-			licence_pass,
-			attribute_query_id: this.attribute_query_id,
+			attribute_query_id,
 			isTest
 		});
 
@@ -82,7 +80,7 @@ export class BodyElement extends SecurityElement {
 		//? Optionnel? <mcp:Xades> I don't know what this is about...
 
 		//* <mcn:MemberDataConsultationRequest> (Top level element)
-		this.canonicalized = `<soap-env:Body xmlns:soap-env="http://schemas.xmlsoap.org/soap/envelope/"><ns0:MemberDataConsultationRequest xmlns:ns0="urn:be:fgov:ehealth:mycarenet:memberdata:protocol:v1" Id="${request_uuid}" IssueInstant="${issueInstant}">${this.commonInputElement.canonicalized}${this.routingElement.canonicalized}${this.detailElement.canonicalized}}</ns0:MemberDataConsultationRequest></soap-env:Body>`;
+		this.canonicalized = `<soap-env:Body xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd" wsu:Id="id-${body_uuid}"><ns0:MemberDataConsultationRequest xmlns:ns0="urn:be:fgov:ehealth:mycarenet:memberdata:protocol:v1" Id="${request_uuid}" IssueInstant="${issueInstant}">${this.commonInputElement.canonicalized}${this.routingElement.canonicalized}${this.detailElement.canonicalized}</ns0:MemberDataConsultationRequest></soap-env:Body>`;
 	}
 }
 
