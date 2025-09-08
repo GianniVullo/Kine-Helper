@@ -14,31 +14,12 @@ export class RequestSecurityToken extends SOAPService {
 		SOAPAction: 'urn:be:fgov:ehealth:sts:protocol:v1:RequestSecurityToken'
 	};
 
-	constructor({ onCreateEnveloppe, onResponse, certificate, pin }) {
+	constructor({ onCreateEnveloppe, onResponse, certificate, pin, ssin }) {
 		super({ onCreateEnveloppe, onResponse, certificate, pin });
+		this.ssin = ssin;
 	}
 
-	async perform({ ssin }) {
-		info('getSAMLToken called');
-		info('Generating STS Enveloppe');
-		await this.createSTSEnveloppe({ ssin });
-		if (this.onCreateEnveloppe) {
-			await this.onCreateEnveloppe(this.enveloppe);
-		}
-		info('Enveloppe:', this.enveloppe);
-
-		await this.sendRequest();
-
-		const saml_token = samlTokenExtractor(text);
-
-		appState.set_eHealth({
-			ssin,
-			certificate: this.certificate,
-			saml_token
-		});
-	}
-
-	async createSTSEnveloppe({ ssin }) {
+	async createEnveloppe() {
 		/**----------------------------------
 		 ** Définition des matières premières
 		 * ----------------------------------
@@ -56,7 +37,7 @@ export class RequestSecurityToken extends SOAPService {
 		const body = new STSBodyElement({
 			body_uuid,
 			context_uuid,
-			ssin,
+			ssin: this.ssin,
 			e_health_certificate: this.certificate
 		});
 		info('Body:', body);
@@ -71,8 +52,10 @@ class STSBodyElement extends SecurityElement {
 		super();
 		dayjs.extend(utc);
 		dayjs.extend(timezone);
-		this.validity_start = dayjs.tz(Date.now(), 'Europe/Brussels').format();
-		this.validity_end = dayjs.tz(Date.now(), 'Europe/Brussels').add(1, 'day').format();
+		const validity_format = 'YYYY-MM-DDTHH:mm:ss.SSSZ';
+		const now = dayjs.tz(Date.now(), 'Europe/Brussels');
+		this.validity_start = now.format(validity_format);
+		this.validity_end = now.add(1, 'day').format(validity_format);
 
 		this.uuid = body_uuid;
 		this.canonicalized = `<SOAP-ENV:Body xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd" wsu:Id="id-${body_uuid}"><wst:RequestSecurityToken xmlns:wst="http://docs.oasis-open.org/ws-sx/ws-trust/200512" Context="${context_uuid}"><wst:TokenType>http://docs.oasis-open.org/wss/oasis-wss-saml-token-profile-1.1#SAMLV1.1</wst:TokenType><wst:RequestType>http://docs.oasis-open.org/ws-sx/ws-trust/200512/Issue</wst:RequestType><wst:Claims Dialect="http://docs.oasis-open.org/wsfed/authorization/200706/authclaims"><auth:ClaimType xmlns:auth="http://docs.oasis-open.org/wsfed/authorization/200706" Uri="urn:be:fgov:ehealth:1.0:certificateholder:person:ssin"><auth:Value>${ssin}</auth:Value></auth:ClaimType><auth:ClaimType xmlns:auth="http://docs.oasis-open.org/wsfed/authorization/200706" Uri="urn:be:fgov:person:ssin"><auth:Value>${ssin}</auth:Value></auth:ClaimType><auth:ClaimType xmlns:auth="http://docs.oasis-open.org/wsfed/authorization/200706" Uri="urn:be:fgov:person:ssin:ehealth:1.0:nihii:physiotherapist:nihii11"></auth:ClaimType><auth:ClaimType xmlns:auth="http://docs.oasis-open.org/wsfed/authorization/200706" Uri="urn:be:fgov:person:ssin:ehealth:1.0:professional:physiotherapist:boolean"></auth:ClaimType></wst:Claims><wst:Lifetime><wsu:Created>${this.validity_start}</wsu:Created><wsu:Expires>${this.validity_end}</wsu:Expires></wst:Lifetime><wst:KeyType>http://docs.oasis-open.org/ws-sx/wstrust/200512/PublicKey</wst:KeyType><wst:UseKey><wsse:SecurityTokenReference xmlns:wsse="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd"><ds:X509Data xmlns:ds="http://www.w3.org/2000/09/xmldsig#"><ds:X509Certificate>${e_health_certificate}</ds:X509Certificate></ds:X509Data></wsse:SecurityTokenReference></wst:UseKey></wst:RequestSecurityToken></SOAP-ENV:Body>`;

@@ -33,6 +33,8 @@ export class SOAPService {
 	}
 
 	async sendRequest() {
+		console.log('Sending request with headers:', this.headers);
+		console.log('sending request to', this.endpoint);
 		const response = await fetch(this.endpoint, {
 			method: 'POST',
 			body: this.enveloppe,
@@ -69,7 +71,7 @@ export class SOAPService {
 			siTokenInfo = { bst_uuid: bst.uuid, bst_digest: await bst.hash() };
 		} else if (this.samlToken) {
 			token = new AssertionElement({ raw_saml_assertion: this.samlToken.raw_assertion_xml });
-			siTokenInfo = { saml: token };
+			siTokenInfo = { saml: token, saml_digest: await token.hash() };
 		} else {
 			throw new Error('Unsupported security token type');
 		}
@@ -83,6 +85,7 @@ export class SOAPService {
 			ts_digest: await ts.hash(),
 			...siTokenInfo
 		});
+		console.log('SignedInfoElement:', si);
 		const hash = await si.hash();
 		console.log('SignedInfoElement hash:', hash);
 		console.log('Using pin:', this.pin);
@@ -117,7 +120,7 @@ export class SOAPHeader {
 		signature_value
 	} = {}) {
 		this.keyInfoElement = new KeyInfoElement({
-			bst_uuid: bst.uuid,
+			bst_uuid: bst?.uuid,
 			key_info_uuid,
 			str_uuid,
 			saml_assertion_id: saml?.saml_assertion_id
@@ -157,27 +160,32 @@ class SignedInfoElement extends SecurityElement {
 		saml_digest
 	} = {}) {
 		super();
-		let bodyReference = '';
-		let lastRef = '';
+		this.canonicalized = `<ds:SignedInfo xmlns:ds="http://www.w3.org/2000/09/xmldsig#"><ds:CanonicalizationMethod Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#"></ds:CanonicalizationMethod><ds:SignatureMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-sha256"></ds:SignatureMethod>${this.bodyReference({ canonical: true, body_uuid, body_digest })}<ds:Reference URI="#TS-${ts_uuid}"><ds:Transforms><ds:Transform Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#"></ds:Transform></ds:Transforms><ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"></ds:DigestMethod><ds:DigestValue>${ts_digest}</ds:DigestValue></ds:Reference>${this.BSTSAMLOrNullReference({ canonical: true, saml, saml_digest, bst_uuid, bst_digest, str_uuid })}</ds:SignedInfo>`;
+		this.xmlString = `<ds:SignedInfo><ds:CanonicalizationMethod Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#"/><ds:SignatureMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-sha256"/>${this.bodyReference({ body_uuid, body_digest })}<ds:Reference URI="#TS-${ts_uuid}"><ds:Transforms><ds:Transform Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#"/></ds:Transforms><ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"/><ds:DigestValue>${ts_digest}</ds:DigestValue></ds:Reference>${this.BSTSAMLOrNullReference({ saml, saml_digest, bst_uuid, bst_digest, str_uuid })}</ds:SignedInfo>`;
+	}
+
+	bodyReference({ canonical = false, body_uuid, body_digest } = {}) {
 		if (body_uuid && body_digest) {
-			bodyReference = `<ds:Reference URI="#id-${body_uuid}"><ds:Transforms><ds:Transform Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#"></ds:Transform></ds:Transforms><ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"></ds:DigestMethod><ds:DigestValue>${body_digest}</ds:DigestValue></ds:Reference>`;
+			return `<ds:Reference URI="#id-${body_uuid}"><ds:Transforms><ds:Transform Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#"${canonical ? '></ds:Transform' : '/'}></ds:Transforms><ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"${canonical ? '></ds:DigestMethod' : '/'}><ds:DigestValue>${body_digest}</ds:DigestValue></ds:Reference>`;
 		}
+	}
+
+	BSTSAMLOrNullReference({ canonical = false, saml, saml_digest, bst_uuid, bst_digest, str_uuid }) {
 		if (saml) {
-			lastRef = `<ds:Reference URI="#STR-${str_uuid}"><ds:Transforms><ds:Transform Algorithm="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-soap-message-security-1.0#STR-Transform"><wsse:TransformationParameters xmlns:wsse="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd"><ds:CanonicalizationMethod Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#"></ds:CanonicalizationMethod></wsse:TransformationParameters></ds:Transform></ds:Transforms><ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"></ds:DigestMethod><ds:DigestValue>${saml_digest}</ds:DigestValue></ds:Reference>`;
-			lastRefNatural = lastRef;
+			return `<ds:Reference URI="#STR-${str_uuid ?? crypto.randomUUID()}"><ds:Transforms><ds:Transform Algorithm="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-soap-message-security-1.0#STR-Transform"><wsse:TransformationParameters xmlns:wsse="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd"><ds:CanonicalizationMethod Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#"${canonical ? '></ds:CanonicalizationMethod' : '/'}></wsse:TransformationParameters></ds:Transform></ds:Transforms><ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"${canonical ? '></ds:DigestMethod' : '/'}><ds:DigestValue>${saml_digest}</ds:DigestValue></ds:Reference>`;
 		} else if (bst_uuid && bst_digest) {
-			lastRef = `<ds:Reference URI="#X509-${bst_uuid}"><ds:Transforms><ds:Transform Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#"></ds:Transform></ds:Transforms><ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"></ds:DigestMethod><ds:DigestValue>${bst_digest}</ds:DigestValue></ds:Reference>`;
+			return `<ds:Reference URI="#X509-${bst_uuid}"><ds:Transforms><ds:Transform Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#"${canonical ? '></ds:Transform' : '/'}></ds:Transforms><ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"${canonical ? '></ds:DigestMethod' : '/'}><ds:DigestValue>${bst_digest}</ds:DigestValue></ds:Reference>`;
 		} else {
 			console.log('NO THIRD REF ?');
-			lastRef = '';
+			return '';
 		}
-		this.canonicalized = `<ds:SignedInfo xmlns:ds="http://www.w3.org/2000/09/xmldsig#"><ds:CanonicalizationMethod Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#"></ds:CanonicalizationMethod><ds:SignatureMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-sha256"></ds:SignatureMethod>${bodyReference}<ds:Reference URI="#TS-${ts_uuid}"><ds:Transforms><ds:Transform Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#"></ds:Transform></ds:Transforms><ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"></ds:DigestMethod><ds:DigestValue>${ts_digest}</ds:DigestValue></ds:Reference>${lastRef}</ds:SignedInfo>`;
-		this.xmlString = `<ds:SignedInfo><ds:CanonicalizationMethod Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#"/><ds:SignatureMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-sha256"/>${bodyReference}<ds:Reference URI="#TS-${ts_uuid}"><ds:Transforms><ds:Transform Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#"/></ds:Transforms><ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"/><ds:DigestValue>${ts_digest}</ds:DigestValue></ds:Reference>${lastRef}</ds:SignedInfo>`;
 	}
 
 	async hash() {
-		info('Canonicalized SignedInfo:', this.canonicalized);
+		info('Canonicalized SignedInfo:', this.canonicalized.substring(0, 20));
+		// console.warn(this.canonicalized);
 		this.digest = await invoke('sha256_hash_bytes', { data: this.canonicalized });
+		console.log(this.digest);
 		info('SignedInfo digest (base64):', this.digest);
 		return this.digest;
 	}
@@ -186,7 +194,7 @@ class SignedInfoElement extends SecurityElement {
 class KeyInfoElement {
 	constructor({ bst_uuid, saml_assertion_id, key_info_uuid, str_uuid } = {}) {
 		if (saml_assertion_id) {
-			this.xmlString = `<ds:KeyInfo Id="KI-${key_info_uuid}"><wsse:SecurityTokenReference wsse11:TokenType="http://docs.oasis-open.org/wss/oasis-wss-saml-token-profile-1.1#SAMLV1.1"><wsse:KeyIdentifier ValueType="http://docs.oasis-open.org/wss/oasis-wss-saml-token-profile-1.0#SAMLAssertionID">${saml_assertion_id}</wsse:KeyIdentifier></wsse:SecurityTokenReference></ds:KeyInfo>`;
+			this.xmlString = `<ds:KeyInfo xmlns:wsse11="http://docs.oasis-open.org/wss/oasis-wss-wssecurity-secext-1.1.xsd" Id="KI-${key_info_uuid}"><wsse:SecurityTokenReference wsse11:TokenType="http://docs.oasis-open.org/wss/oasis-wss-saml-token-profile-1.1#SAMLV1.1"><wsse:KeyIdentifier ValueType="http://docs.oasis-open.org/wss/oasis-wss-saml-token-profile-1.0#SAMLAssertionID">${saml_assertion_id}</wsse:KeyIdentifier></wsse:SecurityTokenReference></ds:KeyInfo>`;
 		} else {
 			this.xmlString = `<ds:KeyInfo Id="KI-${key_info_uuid}"><wsse:SecurityTokenReference wsu:Id="STR-${str_uuid}"><wsse:Reference URI="#X509-${bst_uuid}" ValueType="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-x509-token-profile-1.0#X509v3"/></wsse:SecurityTokenReference></ds:KeyInfo>`;
 		}
