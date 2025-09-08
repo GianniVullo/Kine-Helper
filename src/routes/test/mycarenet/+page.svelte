@@ -13,6 +13,7 @@
 	import FormSection from '../../../lib/components/forms/blocks/FormSection.svelte';
 	import PageTitle from '../../../lib/cloud/components/layout/PageTitle.svelte';
 	import Scenarios from '../../../lib/cloud/libraries/Mycarenet/Scenarios.svelte';
+	import { RequestSecurityToken } from '../../../lib/cloud/libraries/Mycarenet/ws/RequestSecurityToken.js';
 
 	/** @type {{ data: import('./$types').PageData }} */
 	let { data } = $props();
@@ -61,7 +62,19 @@
 				</button>
 			</div>
 		</PageTitle>
-	
+
+		<button
+			onclick={async () => {
+				dayjs.extend(utc);
+				dayjs.extend(timezone);
+				const validity_format = 'YYYY-MM-DDTHH:mm:ss.SSSZ';
+				const now = dayjs.tz(Date.now(), 'Europe/Brussels');
+				const validity_start = now.format(validity_format);
+				const validity_end = now.add(1, 'day').format(validity_format);
+
+				console.log(validity_start, validity_end);
+			}}>TEST SIGNEDINFO</button>
+
 		<Scenarios bind:feedbackController />
 		<div class="mt-10">
 			{#await initialized then _}
@@ -107,6 +120,5 @@
 			{/await}
 		</div>
 	</div>
-	
 </div>
 <h1 id="canon"></h1>
