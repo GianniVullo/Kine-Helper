@@ -53,7 +53,7 @@ pub async fn sign_eid_data(hash: Vec<u8>, pin: String) -> Result<String, String>
     let card = get_card()?;
     let signature_value = sign(&card, hash, &pin)?;
     println!("Signature value (base64): {}", &signature_value);
-    Ok(STANDARD.encode(&signature_value))
+    Ok(signature_value)
 }
 
 #[tauri::command]
