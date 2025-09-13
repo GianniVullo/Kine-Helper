@@ -1,6 +1,6 @@
 import { checkAndUpdateConventions } from '../../stores/conventionStore';
 import { appState } from '../../managers/AppState.svelte';
-import { trace, error as errorLog, info } from '@tauri-apps/plugin-log';
+import { trace, error as errorLog } from '@tauri-apps/plugin-log';
 import { supabase } from '../../stores/supabaseClient';
 import { t } from '../../i18n';
 import { goto, invalidate } from '$app/navigation';
@@ -12,6 +12,7 @@ import { prescriptionPath } from './utils/prescriptionPath';
 import {
 	file_exists,
 	open_file,
+	open_remote_file,
 	remove_file,
 	save_local_file,
 	save_to_disk
@@ -26,6 +27,7 @@ import {
 	getFacturePatientPDFHandler
 } from '../../user-ops-handlers/documents';
 import { terminal } from 'virtual:terminal';
+import { info } from '../../cloud/libraries/logging';
 
 // --------------------------------------------
 // ON SUBMITS FUNCTIONS
@@ -79,6 +81,14 @@ export async function onLogin(data) {
 	trace('Remote user data fetching');
 	this.message = get(t)('login', 'submission.profil');
 
+	// Fetch either the locally last selected Organization or the first organisation owned by the user
+	let organizations = getOrganizationsForUser(user.id);
+
+	trace('Initialising AppState for the first time');
+	terminal.warn('Initializing AppState for the first time');
+	// Initialiser l'objet "AppState"
+	await appState.init({ user, session, organizations });
+
 	// Peupler la base de données locale avec les patients si le client a le cloud activé
 	try {
 		await fetchPatients(this.message, user);
@@ -88,11 +98,6 @@ export async function onLogin(data) {
 
 	// Récupérer les settings
 	this.message = get(t)('login', 'submission.settings', null, 'Gathering settings');
-
-	trace('Initialising AppState for the first time');
-	terminal.warn('Initializing AppState for the first time');
-	// Initialiser l'objet "AppState"
-	await appState.init({ user, session });
 
 	// REDIRECTION :
 	// Si le profil de l'utilisateur est incomplet
@@ -757,11 +762,10 @@ export async function openPrescription(prescription) {
 		// TRYING TO OPEN THE FILE FROM CLOUD STORAGE
 		// --------------------------------------------
 		try {
-			let { data, error: downloadError } = await supabase.storage
-				.from('users')
-				.download(
-					`${appState.user.id}/prescriptions/${prescription.prescription_id}.${prescription.file_name.ext}`
-				);
+			let { data, error: downloadError } = await open_remote_file(
+				'users',
+				`${appState.user.id}/prescriptions/${prescription.prescription_id}.${prescription.file_name.ext}`
+			);
 			if (downloadError) {
 				console.error('Error downloading file from cloud:', downloadError);
 				return { error: downloadError };
@@ -977,4 +981,46 @@ async function createAttestationSideEffects(data) {
 		factureMutuelle.open();
 		// factureMutuelle.print();
 	}
+}
+
+async function getOrganizationsForUser(user_id) {
+	// Fetch either the locally last selected Organization or the first organisation owned by the user
+	let locallyLastSelectedOrganization = appState.db.getItem(`lastSelectedOrgBy-${user_id}`);
+
+	let { data: organizations, error } = await supabase
+		.from('organizations')
+		.select(`*, organization_members!inner(user_id, user_roles(role:roles(name)))`)
+		.eq('organization_members.user_id', user_id);
+
+	info(organizations);
+
+	// Use the organization we found
+	const selectedOrg =
+		organizations.find((o) => o.id === locallyLastSelectedOrganization) || organizations[0];
+
+	let v_organisations = [];
+	// Adding the selected prop on organization for future UI manipulations
+	// Adding the logo prop containing the logo blob
+	for (const org of organizations) {
+		const { data: logo, error } = await open_remote_file('team-logos', org.logo_path);
+		v_organisations.push({
+			id: org.id,
+			name: org.name,
+			selected: org === selectedOrg,
+			slug: org.slug,
+			settings: org.settings,
+			logo: error ? undefined : logo,
+			created_at: org.created_at,
+			updated_at: org.updated_at
+		});
+	}
+	organizations.map((o) =>
+		o === selectedOrg ? { ...o, selected: true } : { ...o, selected: false }
+	);
+
+	if (selectedOrg) {
+		// Store/update the last selected org
+		appState.db.setItem(`lastSelectedOrgBy-${user.id}`, selectedOrg.id);
+	}
+	return organizations;
 }

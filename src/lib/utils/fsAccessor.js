@@ -18,7 +18,8 @@ import { supabase } from '../stores/supabaseClient';
 import { user } from '../stores/UserStore';
 import { get } from 'svelte/store';
 import { appState } from '../managers/AppState.svelte';
-import { save } from '@tauri-apps/plugin-dialog';
+import { fetch as nativeFetch } from '@tauri-apps/plugin-http';
+import { info } from '../cloud/libraries/logging';
 
 async function completePath() {
 	if (platform() === 'windows') {
@@ -71,6 +72,8 @@ export async function save_local_file(path, fileName, fileContent) {
 	let response = await invoke('setup_path', {
 		dirPath,
 		filePath: dirPath + (platform() === 'windows' ? '\\' : '/') + fileName,
+		// This is bad Design... Should be corrected one day...
+		// the fix should start from the open_remote_file and similar API. It needs to output allways the same type. Either Blob or Array of u8
 		fileContent: Array.isArray(fileContent) ? fileContent : Array.from(await fileContent.bytes())
 	});
 	return response;
@@ -222,9 +225,7 @@ export async function retrieve_user_file(filePath, fileName) {
 		case 'cloud':
 			try {
 				// Retrieve the file from cloud storage
-				let { data, error } = await supabase.storage
-					.from('users')
-					.download(`${filePath}/${fileName}`);
+				let { data, error } = await open_remote_file('users', `${filePath}/${fileName}`);
 				if (error) {
 					throw error;
 				}
@@ -238,5 +239,32 @@ export async function retrieve_user_file(filePath, fileName) {
 		default:
 			console.log("Could not infer user's offer. Ouille aïe ouille.");
 			break;
+	}
+}
+
+export async function open_remote_file(bucket, path) {
+	try {
+		if (platform() === 'ios') {
+			info('Fetching convention data for iOS');
+			let { data: urlData, error } = supabase.storage.from(bucket).getPublicUrl(path);
+			info('urlData', urlData);
+			const res = await nativeFetch(urlData.publicUrl, {
+				method: 'GET',
+				credentials: 'omit',
+				headers: {
+					Accept: 'application/octet-stream'
+				}
+			});
+			info('response status', res.status);
+			return { data: Array.from(await res.bytes()) };
+		} else {
+			// Récupérer le binary sur le serveur
+			let { data: blob, error } = await supabase.storage.from(bucket).download(path);
+			info('fetched convention data', blob);
+			info('Error fetching convention data', error);
+			return { data: blob };
+		}
+	} catch (error) {
+		return { error };
 	}
 }

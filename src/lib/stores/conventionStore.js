@@ -4,28 +4,7 @@ import { supabase } from './supabaseClient';
 import { terminal } from 'virtual:terminal';
 import { platform } from '@tauri-apps/plugin-os';
 import { fetch as nativeFetch } from '@tauri-apps/plugin-http';
-
-// export async function initializeConventions(submiter) {
-// 	let db = new LocalDatabase();
-// 	// D'abord lister les fichiers dans le bucket static/codes
-// 	let remoteFilesList = await supabase.storage.from('static').list('codes');
-// 	remoteFilesList = remoteFilesList.data.map((val) => val.name);
-// 	terminal.log('GZ stocké sur le bucket drive', remoteFilesList);
-// 	// Ensuite fetcher les fichiers dans la base de données
-// 	let localFilesList = await db.select('SELECT documents from conventions;');
-// 	localFilesList = localFilesList.map((val) => val.documents);
-// 	terminal.log('localFilesList', localFilesList);
-// 	for (const convFile of remoteFilesList) {
-// 		// Comparer la réponse avec la base de donnée
-// 		if (!localFilesList.includes(convFile)) {
-// 			terminal.log('Fetching', convFile);
-// 			submiter.innerHTML = `Téléchargement de ${convFile}`;
-// 			// Si le fichiers n'est pas dans notre DB alors on fetch du bucket et on peuple notre db
-// 			await populateDB(db, convFile);
-// 			submiter.innerHTML = `Traitement de ${convFile} terminé`;
-// 		}
-// 	}
-// }
+import { open_remote_file } from '../utils/fsAccessor';
 
 export async function checkAndUpdateConventions(submiter, db) {
 	// D'abord lister les fichiers dans le bucket static/codes
@@ -60,33 +39,16 @@ export async function checkAndUpdateConventions(submiter, db) {
 
 async function populateDB(db, convFile) {
 	terminal.log('populateDB', convFile);
-	let data;
+	let { data, error } = await open_remote_file('static', `codes/${convFile}`);
 
-	if (platform() === 'ios') {
-		terminal.log('Fetching convention data for iOS');
-		let { data: urlData, error } = supabase.storage
-			.from('static')
-			.getPublicUrl(`codes/${convFile}`);
-		terminal.log('urlData', urlData);
-		const res = await nativeFetch(urlData.publicUrl, {
-			method: 'GET',
-			credentials: 'omit',
-			headers: {
-				Accept: 'application/octet-stream'
-			}
-		});
-		terminal.log('response status', res.status);
-		data = Array.from(await res.bytes());
-	} else {
-		// Récupérer le binary sur le serveur
-		let { data: blob, error } = await supabase.storage.from('static').download(`codes/${convFile}`);
-		terminal.log('fetched convention data', blob);
-		terminal.log('Error fetching convention data', error);
-		data = blob;
+	if (error) {
+		throw new Error(error);
 	}
 
 	// Décompresser le fichier avec Rust
-	let convention = await deflateFile(data);
+	let convention = await deflateFile(
+		Array.isArray(data) ? data : Array.from(await fileContent.bytes())
+	);
 	terminal.log('convention_id', convention.convention_id);
 	// Insérer la convention d'abord
 	const { data: convInsertionData, error: convInsertionError } = await db.execute(
