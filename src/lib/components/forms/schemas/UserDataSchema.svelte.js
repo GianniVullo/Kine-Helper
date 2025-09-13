@@ -56,7 +56,8 @@ export let validateurs = {
 		)
 	),
 	bce: pipe(stringLengthMoreThan1(), length(10, get(t)('form.postSignup', 'validation.bce'))),
-	conventionne: boolean()
+	conventionne: boolean(),
+	organization_id: uuidVal()
 };
 
 export const UserDataSchema = pipe(

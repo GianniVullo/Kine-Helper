@@ -35,7 +35,8 @@
 			mutualite: patient?.mutualite,
 			email: patient?.email,
 			tel: patient?.tel,
-			gsm: patient?.gsm
+			gsm: patient?.gsm,
+			organization_id: appState.selectedOrg.id
 		},
 		onValid: onPatientUpsert,
 		mode

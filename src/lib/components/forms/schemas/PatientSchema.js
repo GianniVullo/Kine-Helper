@@ -7,7 +7,6 @@ import {
 	nissValidator,
 	postCodeValidator,
 	stringLengthMoreThan1,
-	stringVal,
 	uuidVal
 } from '../validators/baseValidators';
 
@@ -63,7 +62,8 @@ export const validateurs = {
 	// Contact
 	tel,
 	gsm,
-	email
+	email,
+	organization_id: uuidVal()
 };
 
 export const PatientSchema = pipe(

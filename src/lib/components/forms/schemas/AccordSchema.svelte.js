@@ -1,4 +1,4 @@
-import { pipe, string, boolean, transform, isoDate, object } from 'valibot';
+import { pipe, string, boolean, transform, isoDate, object, uuid } from 'valibot';
 import { t } from '../../../i18n';
 import { accordSituationValidator, stringVal, uuidVal } from '../validators/baseValidators';
 
@@ -27,7 +27,8 @@ export const validateurs = {
 	metadata,
 	situation,
 	buildable,
-	notification
+	notification,
+	organization_id: uuidVal()
 };
 
 export const AccordSchema = pipe(

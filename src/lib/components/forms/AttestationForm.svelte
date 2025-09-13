@@ -68,7 +68,8 @@
 			generateFactureMutuelle: patient.tiers_payant,
 			printFactureMutuelle: patient.tiers_payant,
 			numero: attestation?.numero ?? numero,
-			has_been_printed: attestation?.has_been_printed ?? false
+			has_been_printed: attestation?.has_been_printed ?? false,
+			organization_id: appState.selectedOrg.id
 		},
 		onValid: onAttestationCreate,
 		mode

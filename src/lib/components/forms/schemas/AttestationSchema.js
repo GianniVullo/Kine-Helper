@@ -86,7 +86,8 @@ export const validateurs = {
 	ticket_moderateur,
 	bim,
 	numero,
-	seances
+	seances,
+	organization_id: uuidVal()
 };
 
 /**

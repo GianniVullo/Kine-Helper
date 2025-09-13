@@ -49,7 +49,8 @@
 				p4e: doc?.metadata?.p4e,
 				p4f: doc?.metadata?.p4f,
 				p5a: doc?.metadata?.p5a
-			}
+			},
+			organization_id: appState.selectedOrg.id
 		},
 		schema: ListeESchema,
 		validateurs,

@@ -26,7 +26,8 @@
 			date: accord?.date ?? dayjs().format('YYYY-MM-DD'),
 			situation: accord?.situation ?? undefined,
 			buildable: true,
-			metadata: { doc: page.params.docType }
+			metadata: { doc: page.params.docType },
+			organization_id: appState.selectedOrg.id
 		},
 		onValid: onAccordUpsert,
 		mode

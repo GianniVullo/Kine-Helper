@@ -15,7 +15,7 @@
 		id: uuidVal(),
 		valid_from: isoDate(),
 		valid_to: isoDate(),
-		reference: string()
+		reference: string(),
 	};
 
 	let formHandler = new Formulaire({

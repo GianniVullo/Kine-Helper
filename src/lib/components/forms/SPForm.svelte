@@ -34,7 +34,8 @@
 			duree: sp?.duree,
 			patho_lourde_type: sp?.patho_lourde_type,
 			...getTarificationInitialValues(sp, tarifs),
-			supplements: sp?.metadata?.ss ?? []
+			supplements: sp?.metadata?.ss ?? [],
+			organization_id: appState.selectedOrg.id
 		},
 		onValid: onSPUpsert,
 		mode

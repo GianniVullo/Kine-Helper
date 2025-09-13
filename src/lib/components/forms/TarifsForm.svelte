@@ -45,6 +45,7 @@
 					nom: 'tarif_seance',
 					valeur: null,
 					created_at: now,
+					organization_id: appState.selectedOrg.id,
 					metadata: JSON.stringify({ t_s: true })
 				},
 				tarif_indemnite: tarif_indemnite ?? {
@@ -53,6 +54,7 @@
 					nom: 'tarif_indemnite',
 					valeur: null,
 					created_at: now,
+					organization_id: appState.selectedOrg.id,
 					metadata: JSON.stringify({ t_id: true })
 				},
 				tarif_rapport_ecrit: tarif_rapport_ecrit ?? {
@@ -61,6 +63,7 @@
 					nom: 'tarif_rapport_ecrit',
 					valeur: null,
 					created_at: now,
+					organization_id: appState.selectedOrg.id,
 					metadata: JSON.stringify({ t_re: true })
 				},
 				tarif_consultatif: tarif_consultatif ?? {
@@ -69,6 +72,7 @@
 					nom: 'tarif_consultatif',
 					valeur: null,
 					created_at: now,
+					organization_id: appState.selectedOrg.id,
 					metadata: JSON.stringify({ t_c: true })
 				},
 				tarif_seconde_seance: tarif_seconde_seance ?? {
@@ -77,6 +81,7 @@
 					nom: 'tarif_seconde_seance',
 					valeur: null,
 					created_at: now,
+					organization_id: appState.selectedOrg.id,
 					metadata: JSON.stringify({ t_sec: true })
 				},
 				tarif_intake: tarif_intake ?? {
@@ -85,6 +90,7 @@
 					nom: 'tarif_intake',
 					valeur: null,
 					created_at: now,
+					organization_id: appState.selectedOrg.id,
 					metadata: JSON.stringify({ t_in: true })
 				},
 				tarif_no_show: tarif_no_show ?? {
@@ -93,8 +99,10 @@
 					nom: 'tarif_no_show',
 					valeur: null,
 					created_at: now,
+					organization_id: appState.selectedOrg.id,
 					metadata: JSON.stringify({ t_ns: true })
-				}
+				},
+				organization_id: appState.selectedOrg.id
 			},
 			onValid: onTarifsModification
 		});
@@ -103,8 +111,20 @@
 
 <Modal
 	opened={page?.state?.modal?.name === 'tarifs' || page?.state?.modal?.name === 'supplements'}
-	title={$t('tarifsForm', 'deleteModal.title', { type: page?.state?.modal?.name || '' }, 'Delete from {{type}}')}
-	body={page?.state?.modal?.nom ? $t('tarifsForm', 'deleteModal.body', { name: '"' + page.state.modal.nom + '"' }, 'Are you sure you want to delete {{name}}?') : $t('tarifsForm', 'deleteModal.bodyGeneric', {}, 'Are you sure you want to delete this item?')}
+	title={$t(
+		'tarifsForm',
+		'deleteModal.title',
+		{ type: page?.state?.modal?.name || '' },
+		'Delete from {{type}}'
+	)}
+	body={page?.state?.modal?.nom
+		? $t(
+				'tarifsForm',
+				'deleteModal.body',
+				{ name: '"' + page.state.modal.nom + '"' },
+				'Are you sure you want to delete {{name}}?'
+			)
+		: $t('tarifsForm', 'deleteModal.bodyGeneric', {}, 'Are you sure you want to delete this item?')}
 	buttonTextConfirm={$t('tarifsForm', 'deleteModal.confirm', {}, 'Delete')}
 	buttonTextCancel={$t('tarifsForm', 'deleteModal.cancel', {}, 'Cancel')}
 	onAccepted={async () => {
@@ -114,11 +134,19 @@
 		history.back();
 	}} />
 
-<Form id={form_id} title={$t('tarifsForm', 'title', {}, 'Manage your rates')} message={formHandler.message}>
+<Form
+	id={form_id}
+	title={$t('tarifsForm', 'title', {}, 'Manage your rates')}
+	message={formHandler.message}>
 	{#if !appState.user.conventionne}
 		<FormSection
 			titre={$t('tarifsForm', 'sections.rates.title', {}, 'Your rates')}
-			description={$t('tarifsForm', 'sections.rates.description', {}, 'You can define the value of your services and physio acts here. If you leave a box blank, the current convention rates will be taken by default.')}>
+			description={$t(
+				'tarifsForm',
+				'sections.rates.description',
+				{},
+				'You can define the value of your services and physio acts here. If you leave a box blank, the current convention rates will be taken by default.'
+			)}>
 			<!--* tarif_seance -->
 			<DefaultTarifField
 				outerCSS="col-span-full sm:col-span-3 md:col-span-2"
@@ -181,7 +209,12 @@
 				id="tarif_no_show"
 				name="tarif_no_show"
 				label={$t('tarifsForm', 'fields.missedSession', {}, 'Missed session')}
-				help={$t('tarifsForm', 'fields.missedSessionHelp', {}, 'If the patient did not show up or cancelled outside your acceptable deadlines')} />
+				help={$t(
+					'tarifsForm',
+					'fields.missedSessionHelp',
+					{},
+					'If the patient did not show up or cancelled outside your acceptable deadlines'
+				)} />
 
 			<!--* tarifs -->
 			<TarifsListField
@@ -212,14 +245,24 @@
 					openModal({ name: 'tarifs', id: custom_tarif.id, nom: custom_tarif.nom });
 				}}>
 				<p class="mt-3 text-sm/6 text-gray-600">
-					{$t('tarifsForm', 'fields.customRatesHelp', {}, 'Custom rates allow you to quickly define the prices of your physio acts in the pathological situation, session and attestation forms.')}
+					{$t(
+						'tarifsForm',
+						'fields.customRatesHelp',
+						{},
+						'Custom rates allow you to quickly define the prices of your physio acts in the pathological situation, session and attestation forms.'
+					)}
 				</p>
 			</TarifsListField>
 		</FormSection>
 	{/if}
 	<FormSection
 		titre={$t('tarifsForm', 'sections.supplements.title', {}, 'Your supplements')}
-		description={$t('tarifsForm', 'sections.supplements.description', {}, 'You can define your supplements here. For example, if you charge a supplement for sessions performed on weekends or if you had to use consumables for the care provided.')}>
+		description={$t(
+			'tarifsForm',
+			'sections.supplements.description',
+			{},
+			'You can define your supplements here. For example, if you charge a supplement for sessions performed on weekends or if you had to use consumables for the care provided.'
+		)}>
 		<!--* supplements -->
 		<TarifsListField
 			label={$t('tarifsForm', 'fields.supplements', {}, 'Supplements')}

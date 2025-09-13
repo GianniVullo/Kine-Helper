@@ -13,10 +13,7 @@ import {
 	pipeAsync
 } from 'valibot';
 import { appState } from '$lib/managers/AppState.svelte';
-import {
-	modelingMetadata,
-	tarifUnitValidator
-} from '../utils/tarifHelpers';
+import { modelingMetadata, tarifUnitValidator } from '../utils/tarifHelpers';
 import { cloneDeep, isEqual } from 'lodash';
 import { Seance } from '$lib/user-ops-handlers/models';
 import {
@@ -153,7 +150,8 @@ export const validateurs = {
 	tarif_no_show_custom,
 	mode,
 	is_paid,
-	payment_method
+	payment_method,
+	organization_id: uuidVal()
 };
 
 export const seance_prototype_validateur = {
@@ -355,6 +353,7 @@ export function initialSeanceValues({ patient, sp, seance, prescriptions, tarifs
 		...tarifMetadata,
 		supplements: seance?.metadata?.supplements ?? [],
 		is_paid: seance?.is_paid ?? false,
-		payment_method: seance?.payment_method ?? null
+		payment_method: seance?.payment_method ?? null,
+		organization_id: appState.selectedOrg.id
 	};
 }

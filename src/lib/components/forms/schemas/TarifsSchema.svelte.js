@@ -1,5 +1,6 @@
 import { nullish, array, object } from 'valibot';
 import { tarifUnitValidator } from '../utils/tarifHelpers';
+import { uuidVal } from '../validators/baseValidators';
 
 // Tarifaction fields
 const tarif_seance = nullish(tarifUnitValidator(true, 'custom'));
@@ -24,7 +25,8 @@ export const validateurs = {
 	tarif_seconde_seance,
 	tarif_intake,
 	tarif_no_show,
-	tarifs
+	tarifs,
+	organization_id: uuidVal()
 };
 
 export const TarifsSchema = object(validateurs);

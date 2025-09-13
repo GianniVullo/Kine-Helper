@@ -24,7 +24,8 @@
 			sp_id: sp.sp_id,
 			prescription_id: crypto.randomUUID(),
 			created_at: dayjs().format('YYYY-MM-DD'),
-			scans: 0
+			scans: 0,
+			organization_id: appState.selectedOrg.id
 		},
 		onValid: onPrescriptionUpsert,
 		mode

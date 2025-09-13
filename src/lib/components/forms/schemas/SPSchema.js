@@ -105,7 +105,8 @@ export const validateurs = {
 	tarif_seconde_seance_custom,
 	tarif_intake_custom,
 	tarif_no_show,
-	tarif_no_show_custom
+	tarif_no_show_custom,
+	organization_id: uuidVal()
 };
 
 export const SPSchema = pipe(

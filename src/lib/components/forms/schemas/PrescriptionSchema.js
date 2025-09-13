@@ -58,7 +58,8 @@ export const validateurs = {
 	file,
 	file_name,
 	froms,
-	deja_faites
+	deja_faites,
+	organization_id: uuidVal()
 };
 export const PrescriptionSchema = pipe(
 	valibotObject({

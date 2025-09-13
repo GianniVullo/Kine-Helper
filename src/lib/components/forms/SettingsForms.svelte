@@ -27,7 +27,8 @@
 			validateurs,
 			initialValues: {
 				...appState.user,
-				conventionne: appState.user?.conventionne ?? false
+				conventionne: appState.user?.conventionne ?? false,
+				organization_id: appState.selectedOrg.id
 			},
 			onValid: onKineUpsert,
 			submiter: '#user-data-button',

@@ -55,7 +55,8 @@ export const validateurs = {
 		p4e: integerValidator,
 		p4f: stringWithMaxLength(2000),
 		p5a: stringWithMaxLength(1080)
-	})
+	}),
+	organization_id: uuidVal()
 };
 
 export const ListeESchema = object(validateurs);
