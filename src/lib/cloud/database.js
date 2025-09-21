@@ -1,9 +1,7 @@
-import { trace, error as errorLog, info } from '@tauri-apps/plugin-log';
 import Database from '@tauri-apps/plugin-sql';
 import { supabase } from '../stores/supabaseClient';
 import { Patient, SituationPathologique } from '../user-ops-handlers/models';
-import { terminal } from 'virtual:terminal';
-
+import { info } from '$lib/cloud/libraries/logging.js';
 /**
  ** Update est une fonction qui aide à la création d'expresion SQL update. Elle vient
  * @param {Object.<string, boolean>} touched
@@ -71,26 +69,26 @@ export class DatabaseManager {
 		// first try to update in Supabase
 		let query = supabase.from(table).update(formData);
 		for (const filter of filters ?? []) {
-			terminal.log('Adding filter:', filter);
+			info('Adding filter:', filter);
 			query.eq(filter[0], filter[1]);
 		}
 
 		let supabaseResponse = await query;
 		if (supabaseResponse.error) {
-			errorLog(`Error updating in ${table}: ${supabaseResponse.error.message}`);
+			info(`Error updating in ${table}: ${supabaseResponse.error.message}`);
 			return { data: null, error: supabaseResponse.error };
 		}
 		// If successful, update the local database (used as a cache)
 		let localResponse = await this.updateLocal(table, filters, formData);
 		if (localResponse.error) {
-			errorLog(`Error updating local database ${table}: ${localResponse.error.message}`);
+			info(`Error updating local database ${table}: ${localResponse.error.message}`);
 			return { data: null, error: localResponse.error };
 		}
 		return { data: supabaseResponse.data, error: null };
 	}
 
 	async updateLocal(table, filters, formData) {
-		terminal.log('In DatabaseManager.updateLocal with', table, filters, formData);
+		info('In DatabaseManager.updateLocal with', table, filters, formData);
 		let updateStmt = Object.keys(formData).reduce((acc, key, idx) => {
 			return `${acc}${idx > 0 ? ', ' : ''}${key} = $${idx + 1}`;
 		}, '');
@@ -104,9 +102,9 @@ export class DatabaseManager {
 			...Object.values(formData),
 			...filters.map(([_, filterValue]) => filterValue)
 		];
-		terminal.log('Statement to execute:', statement, 'with bind values:', bindValues);
+		info('Statement to execute:', statement, 'with bind values:', bindValues);
 		const { data: stmt, error } = await this.execute(statement, bindValues);
-		terminal.log('updated successfully now closing db', stmt);
+		info('updated successfully now closing db', stmt);
 		return { stmt, error };
 	}
 
@@ -118,7 +116,7 @@ export class DatabaseManager {
 		let statement = `UPDATE ${table} SET ${updateStmt} WHERE ${whereStmt}`;
 		const bindValues = [...Object.values(formData), ...ids];
 		const { data: stmt, error } = await this.execute(statement, bindValues);
-		terminal.log('updated successfully now closing db', stmt);
+		info('updated successfully now closing db', stmt);
 		return { stmt, error };
 	}
 
@@ -131,13 +129,13 @@ export class DatabaseManager {
 
 		let supabaseResponse = await query;
 		if (supabaseResponse.error) {
-			errorLog(`Error deleting from ${table}: ${supabaseResponse.error.message}`);
+			info(`Error deleting from ${table}: ${supabaseResponse.error.message}`);
 			return { data: null, error: supabaseResponse.error };
 		}
 		// If successful, delete from the local database (used as a cache)
 		let localResponse = await this.deleteLocal(table, filters);
 		if (localResponse.error) {
-			errorLog(`Error deleting from local database ${table}: ${localResponse.error.message}`);
+			info(`Error deleting from local database ${table}: ${localResponse.error.message}`);
 			return { data: null, error: localResponse.error };
 		}
 		return { data: supabaseResponse.data, error: null };
@@ -151,7 +149,7 @@ export class DatabaseManager {
 			filterValues.push(filter[1]);
 		}
 		const stt = `DELETE FROM ${table} WHERE ${whereClauses.join(', ')}`;
-		terminal.log(stt);
+		info(stt);
 
 		const { data: stmt, error } = await this.execute(stt, filterValues);
 		return { data: stmt, error };
@@ -168,18 +166,18 @@ export class DatabaseManager {
 		if (data.length === 1) {
 			console.log('Patient found:', data[0]);
 			let patient = new Patient(data[0]);
-			trace('Engaging SP summary fetch');
+			info('Engaging SP summary fetch');
 			let { data: spResult, error: spError } = await this.select(
 				`SELECT * FROM situations_pathologiques WHERE patient_id = $1`,
 				[patient_id]
 			);
-			trace('SP summary fetch completed');
+			info('SP summary fetch completed');
 			if (spError) {
 				return { data: patient, error: spError };
 			}
 			if (spResult.length === 0) {
 				console.log('No SP found locally, trying Supabase');
-				trace(
+				info(
 					'No situations pathologiques found for this patient, attempting to fetch from Supabase'
 				);
 				let { data: spData, error: spError } = await supabase
@@ -190,20 +188,20 @@ export class DatabaseManager {
 					console.error('Error fetching situations pathologiques from Supabase:', spError);
 					return { data: patient, error: spError };
 				}
-				console.log('\n\nSPDATA\n\n',spData);
+				console.log('\n\nSPDATA\n\n', spData);
 				spResult = spData;
 				if (spResult.length === 0) {
-					trace('No situations pathologiques found for this patient in Supabase either');
+					info('No situations pathologiques found for this patient in Supabase either');
 					spResult = [];
 				} else {
-					trace('Found situations pathologiques in Supabase, inserting into local database');
+					info('Found situations pathologiques in Supabase, inserting into local database');
 					// Set the data in the DB cache
 					let { error: splocalinsertionError } = await this.insertLocal(
 						'situations_pathologiques',
 						spResult
 					);
 					if (splocalinsertionError) {
-						errorLog(
+						info(
 							`Error inserting situations_pathologiques into local database: ${splocalinsertionError.message}`
 						);
 						return { data: patient, error: splocalinsertionError };
@@ -221,7 +219,7 @@ export class DatabaseManager {
 		// first try to retrieve from local database
 		let { data: completeSp, error: localResponseError } = await this.retrieve_spLocal(sp_id);
 
-		terminal.log('Retrieved SP from local database:', completeSp);
+		info('Retrieved SP from local database:', completeSp);
 
 		let sp = new SituationPathologique(completeSp);
 
@@ -236,53 +234,53 @@ export class DatabaseManager {
 			.from('situations_pathologiques')
 			.select(
 				`*,
-					seances (*),
-					accords (*),
-					factures (*),
-					prescriptions (*),
-					attestations (*)`
+					seances!sp_id (*),
+					accords!sp_id (*),
+					factures!sp_id (*),
+					prescriptions!sp_id (*),
+					attestations!sp_id (*)`
 			)
 			.eq('sp_id', sp_id)
 			.single();
-		terminal.log('Supabase response:', supabaseResponse);
+		info('Supabase response:', supabaseResponse);
 		if (supabaseResponse.error) {
-			errorLog(`Error retrieving from Supabase: ${supabaseResponse.error.message}`);
+			info(`Error retrieving from Supabase: ${supabaseResponse.error.message}`);
 			return { data: null, error: supabaseResponse.error };
 		}
 		sp = new SituationPathologique(supabaseResponse.data);
 		// If successful, record the data in the local database
 		let { error: localError } = await this.insertLocal('situations_pathologiques', [sp.toDB]);
 		if (localError) {
-			errorLog(`Error inserting into local database: ${localError.message}`);
+			info(`Error inserting into local database: ${localError.message}`);
 		}
 		if (sp.prescriptions.length > 0) {
 			let { error: prescriptionsError } = await this.insertLocal('prescriptions', sp.prescriptions);
 			if (prescriptionsError) {
-				errorLog(`Error inserting into local database: ${prescriptionsError.message}`);
+				info(`Error inserting into local database: ${prescriptionsError.message}`);
 			}
 		}
 		if (sp.accords.length > 0) {
 			let { error: accordsError } = await this.insertLocal('accords', sp.accords);
 			if (accordsError) {
-				errorLog(`Error inserting into local database: ${accordsError.message}`);
+				info(`Error inserting into local database: ${accordsError.message}`);
 			}
 		}
 		if (sp.attestations.length > 0) {
 			let { error: attestationsError } = await this.insertLocal('attestations', sp.attestations);
 			if (attestationsError) {
-				errorLog(`Error inserting into local database: ${attestationsError.message}`);
+				info(`Error inserting into local database: ${attestationsError.message}`);
 			}
 		}
 		if (sp.factures.length > 0) {
 			let { error: facturesError } = await this.insertLocal('factures', sp.factures);
 			if (facturesError) {
-				errorLog(`Error inserting into local database: ${facturesError.message}`);
+				info(`Error inserting into local database: ${facturesError.message}`);
 			}
 		}
 		if (sp.seances.length > 0) {
 			let { error: seancesError } = await this.insertLocal('seances', sp.seances);
 			if (seancesError) {
-				errorLog(`Error inserting into local database: ${seancesError.message}`);
+				info(`Error inserting into local database: ${seancesError.message}`);
 			}
 		}
 		sp.upToDate = true;
@@ -290,7 +288,7 @@ export class DatabaseManager {
 	}
 
 	async retrieve_spLocal(sp_id) {
-		trace('Entering AppState.db.retrieve_sp');
+		info('Entering AppState.db.retrieve_sp');
 		let { data: latestPs, error } = await this.select(
 			'SELECT * FROM situations_pathologiques WHERE sp_id = $1',
 			[sp_id]
@@ -299,13 +297,13 @@ export class DatabaseManager {
 			return { data: null, error };
 		}
 		if (latestPs.length === 0) {
-			trace('No sp found');
+			info('No sp found');
 			// No record found
 			return { data: null, error };
 		}
 
 		// Fetch related data for each table
-		trace('Fetching Séances');
+		info('Fetching Séances');
 		let { data: seances, error: seancesError } = await this.select(
 			`SELECT * FROM seances WHERE sp_id = $1 ORDER BY date ASC`,
 			[sp_id]
@@ -322,7 +320,7 @@ export class DatabaseManager {
 			typeof seance.ticket_moderateur === 'string' &&
 				(seance.ticket_moderateur = JSON.parse(seance.ticket_moderateur));
 		});
-		trace('Fetching Prescriptions');
+		info('Fetching Prescriptions');
 		let { data: prescriptions, error: prescriptionsError } = await this.select(
 			`SELECT * FROM prescriptions WHERE sp_id = $1 ORDER BY created_at ASC`,
 			[sp_id]
@@ -331,7 +329,7 @@ export class DatabaseManager {
 			return { data: null, error: prescriptionsError };
 		}
 
-		trace('Fetching Attestations');
+		info('Fetching Attestations');
 		let { data: attestations, error: attestationsError } = await this.select(
 			`SELECT * FROM attestations WHERE sp_id = $1 ORDER BY created_at ASC`,
 			[sp_id]
@@ -346,18 +344,18 @@ export class DatabaseManager {
 				(attestation.patient_paid = JSON.parse(attestation.patient_paid));
 		});
 
-		// trace("Fetching ")
+		// info("Fetching ")
 		// let generateurs = await this.db.select(
 		// 	`SELECT * FROM generateurs_de_seances WHERE sp_id = $1`,
 		// 	[sp_id]
 		// );
 
-		trace('Fetching Accords');
+		info('Fetching Accords');
 		let { data: accords, error: accordsError } = await this.select(
 			`SELECT * FROM accords WHERE sp_id = $1 ORDER BY date ASC`,
 			[sp_id]
 		);
-		terminal.log('accords', accords);
+		info('accords', accords);
 		if (accordsError) {
 			return { data: null, error: accordsError };
 		}
@@ -366,7 +364,7 @@ export class DatabaseManager {
 			typeof accord.metadata === 'string' && (accord.metadata = JSON.parse(accord.metadata));
 		});
 
-		trace('Fetching Factures');
+		info('Fetching Factures');
 		let { data: factures, error: documentsError } = await this.select(
 			`SELECT * FROM factures WHERE sp_id = $1 ORDER BY date ASC`,
 			[sp_id]
@@ -395,7 +393,7 @@ export class DatabaseManager {
 		filters,
 		{ selectStatement, limit, orderBy, ascending = true } = { selectStatement: '*' }
 	) {
-		trace('In DatabaseManager.list');
+		info('In DatabaseManager.list');
 		let liteQuery = `SELECT ${selectStatement} FROM ${table}`;
 
 		// Adding filters
@@ -417,7 +415,7 @@ export class DatabaseManager {
 		if (limit) {
 			liteQuery += ` LIMIT ${limit}`;
 		}
-		terminal.log(
+		info(
 			'in DBManager.list() Before query',
 			liteQuery,
 			'with args',
@@ -428,13 +426,13 @@ export class DatabaseManager {
 			liteQuery,
 			filters?.map(([_, filterValue]) => filterValue)
 		);
-		terminal.log('in DBManager.list() After query', data);
+		info('in DBManager.list() After query', data);
 		return { data, error };
 	}
 
 	//! Attention il faut modifier pour utiliser this.execute
 	async update_seances(seances_array, key) {
-		terminal.log('in DBManager.update_seances() with', seances_array);
+		info('in DBManager.update_seances() with', seances_array);
 
 		for (const seance of seances_array) {
 			// Construct the update query for each seance
@@ -456,21 +454,21 @@ export class DatabaseManager {
 	}
 
 	async selectRemote(query, bindValues, { table, statement, filters } = {}) {
-		terminal.log('In DatabaseManager.select with', query, bindValues, table, statement, filters);
+		info('In DatabaseManager.select with', query, bindValues, table, statement, filters);
 		let localResponse = { data: [], error: null };
 		// first try to select from Local database
 		if (query) {
 			localResponse = await this.select(query, bindValues);
 		}
-		terminal.log('Local response:', localResponse);
+		info('Local response:', localResponse);
 		if (localResponse.error || localResponse.data.length === 0) {
 			let supabaseResponse = await supabase
 				.from(table)
 				.select(statement)
 				.match(filters ?? {});
-			terminal.log('Supabase response:', supabaseResponse);
+			info('Supabase response:', supabaseResponse);
 			if (supabaseResponse.error) {
-				errorLog(`Error selecting from Supabase: ${supabaseResponse.error.message}`);
+				info(`Error selecting from Supabase: ${supabaseResponse.error.message}`);
 				return { data: null, error: supabaseResponse.error };
 			}
 			// If successful, return the data
@@ -480,14 +478,14 @@ export class DatabaseManager {
 			// Update the local database with the fetched data
 			let insertResponse = await this.insertLocal(table, supabaseResponse.data);
 			if (insertResponse.error) {
-				errorLog(`Error inserting into local database ${table}: ${insertResponse.error}`);
-				terminal.error(`Error inserting into local database ${table}: ${insertResponse.error}`);
+				info(`Error inserting into local database ${table}: ${insertResponse.error}`);
+				info(`Error inserting into local database ${table}: ${insertResponse.error}`);
 				return { data: null, error: insertResponse.error };
 			}
-			terminal.log('Inserted into local database successfully');
+			info('Inserted into local database successfully');
 			// Return the data fetched from Supabase
-			terminal.log('Fetched from Supabase successfully');
-			terminal.log('Supabase data: ', supabaseResponse.data);
+			info('Fetched from Supabase successfully');
+			info('Supabase data: ', supabaseResponse.data);
 			return { data: supabaseResponse.data, error: null };
 		}
 		// If successful, return the data
@@ -499,10 +497,10 @@ export class DatabaseManager {
 		let errorThrown;
 
 		try {
-			trace('In DatabaseManager.select with ' + query);
+			info('In DatabaseManager.select with ' + query);
 			data = await this.db.select(query, bindValues);
 		} catch (error) {
-			errorLog(`In the DatabaseManager.select with error : ${error}`);
+			info(`In the DatabaseManager.select with error : ${error}`);
 			if (error === 'attempted to acquire a connection on a closed pool') {
 				try {
 					await this.initializing();
@@ -522,16 +520,16 @@ export class DatabaseManager {
 		// TODO. I am reconsidering working with an async Task queue. The main problem is the lack of a postgrest client for Rust. There is the postrest crate but it is not maintained and I am scared that I might be locked into a dead end.
 
 		// TODO. Having such a feature would be amazing as I could send data to Supabase in the background then set the Synched Column of the patients's row in the local db to true. This would happen seamlessly for the user raising the percepted performances to a new level.
-		terminal.log('In DatabaseManager.insert with', table, formData);
+		info('In DatabaseManager.insert with', table, formData);
 		let supabaseResponse = await supabase.from(table).insert(formData);
 		if (supabaseResponse.error) {
-			errorLog(`Error inserting into ${table}: ${supabaseResponse.error.message}`);
+			info(`Error inserting into ${table}: ${supabaseResponse.error.message}`);
 			return { data: null, error: supabaseResponse.error };
 		}
 		// If successful, update the local database (used as a cache)
 		let localResponse = this.insertLocal(table, formData);
 		if (localResponse.error) {
-			errorLog(`Error inserting into local database ${table}: ${localResponse.error.message}`);
+			info(`Error inserting into local database ${table}: ${localResponse.error.message}`);
 			return { data: null, error: localResponse.error };
 		}
 		return { data: supabaseResponse.data, error: null };
@@ -542,7 +540,7 @@ export class DatabaseManager {
 		let placeholders;
 		let values = [];
 		if (Array.isArray(formData)) {
-			terminal.log('Preparing save statement with : ');
+			info('Preparing save statement with : ');
 			let placeholderIdx = 1;
 			columns = Object.keys(formData[0]).join(', ');
 			placeholders = [];
@@ -557,16 +555,16 @@ export class DatabaseManager {
 				values = [...values, ...Object.values(item)];
 			}
 			placeholders = placeholders.map((val) => `(${val.join(', ')})`).join(', ');
-			terminal.log('Prepared save statement with : ', columns, placeholders);
+			info('Prepared save statement with : ', columns, placeholders);
 		} else {
-			terminal.log('Preparing save statement with : ');
+			info('Preparing save statement with : ');
 			columns = Object.keys(formData).join(', ');
 			placeholders = Object.keys(formData)
 				.map((val, idx) => `$${idx + 1}`)
 				.join(', ');
 			placeholders = `(${placeholders})`;
 			values = Object.values(formData);
-			terminal.log('Prepared save statement with : ', columns, placeholders, values);
+			info('Prepared save statement with : ', columns, placeholders, values);
 		}
 		// Prepare and run the INSERT statement
 		let { data, error } = await this.select(
@@ -585,19 +583,19 @@ export class DatabaseManager {
 		let data;
 		let errorThrown;
 		try {
-			trace('In DatabaseManager.execute with ' + query);
+			info('In DatabaseManager.execute with ' + query);
 
 			data = await this.db.execute(query, bindValues);
-			terminal.log('In DatabaseManager.execute with data : ');
+			info('In DatabaseManager.execute with data : ');
 			// await this.db.close();
 		} catch (error) {
-			errorLog(`In the DatabaseManager.execute with error : ${error}`);
+			info(`In the DatabaseManager.execute with error : ${error}`);
 			if (error === 'attempted to acquire a connection on a closed pool') {
 				await this.initializing();
 				try {
 					data = await this.db.execute(query, bindValues);
 				} catch (error) {
-					errorLog(`In the DatabaseManager.execute with error : ${error}`);
+					info(`In the DatabaseManager.execute with error : ${error}`);
 					errorThrown = error;
 				}
 			} else {
