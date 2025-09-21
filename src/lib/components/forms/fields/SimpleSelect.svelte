@@ -12,16 +12,6 @@
 		readonly = false,
 		id = 'location'
 	} = $props();
-	terminal.log('SimpleSelect', {
-		label,
-		options,
-		name,
-		value,
-		placeholder,
-		onchange,
-		readonly,
-		id
-	});
 </script>
 
 <div>

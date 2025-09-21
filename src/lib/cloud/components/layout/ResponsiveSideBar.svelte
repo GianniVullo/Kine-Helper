@@ -1,6 +1,6 @@
 <script>
 	import { supabase } from '../../../stores/supabaseClient';
-	import logo from '$lib/assets/logocab.png';
+	import logo from '$lib/assets/logo.png';
 	import { page } from '$app/state';
 	import { t, locale } from '$lib/i18n/index';
 	import { get } from 'svelte/store';
@@ -53,7 +53,6 @@
 		page;
 		showDrawer = false;
 	});
-	const cabName = 'Cabinet Vullo';
 </script>
 
 <Modal
@@ -93,7 +92,7 @@
 {#snippet TeamWidgetDesktop()}
 	<li class="-mx-6 mt-auto">
 		<a
-			href="/dashboard/profile"
+			href="/dashboard/settings/organisation"
 			class="flex items-center gap-x-4 px-6 py-3 text-sm/6 font-semibold text-gray-900 hover:bg-gray-50">
 			<div
 				class="flex size-8 items-center justify-center rounded-full bg-gray-300 text-gray-600"
@@ -123,12 +122,12 @@
 		class={{
 			'flex flex-col px-2': sidePanel.isOpen,
 			'mb-5 px-2 pb-4': !sidePanel.isOpen,
-			'pb-4 mb-5': true
+			'mb-5 pb-4': true
 		}}>
 		<div
 			class={[
 				'grid h-16 shrink-0 grid-cols-6 items-center',
-				sidePanel.isOpen ? 'flex-row space-x-5' : 'my-5 flex-col items-center space-y-5'
+				sidePanel.isOpen ? 'flex-row justify-between' : 'my-5 flex-col items-center space-y-5'
 			]}>
 			{#if sidePanel.isOpen}
 				<img class="col-span-1 h-auto w-auto p-1" src={logo} alt="Kiné Helper" />
@@ -148,7 +147,7 @@
 					class="col-span-full flex w-full items-center justify-center">
 					<button
 						id="swappable-btn"
-						class="flex hidden size-16 items-center justify-center rounded-full text-white cursor-pointer"
+						class="flex hidden size-16 cursor-pointer items-center justify-center rounded-full text-white"
 						aria-label="Open sidebar"
 						onclick={sidePanel.onClickCollapseButton.bind(sidePanel)}
 						disabled={sidePanel.loading}>{@render viewColumnIcon('size-5 text-gray-200')}</button>
@@ -156,13 +155,15 @@
 				</div>
 			{/if}
 			<div class={{ 'col-span-4 overflow-hidden': sidePanel.isOpen, hidden: !sidePanel.isOpen }}>
-				<h5 class="text-xl font-semibold whitespace-nowrap text-gray-800">{cabName}</h5>
+				<h5 class="text-center text-xl font-semibold whitespace-nowrap text-gray-800">
+					Kiné Helper
+				</h5>
 			</div>
 			{#if sidePanel.isOpen}
 				<button
 					onclick={() => sidePanel.toggle()}
 					disabled={sidePanel.loading}
-					class="col-span-1 flex w-full items-end justify-end cursor-pointer"
+					class="col-span-1 flex w-full cursor-pointer items-end justify-end"
 					>{@render viewColumnIcon('size-5 text-gray-500 cursor-pointer')}</button>
 			{/if}
 		</div>
@@ -254,13 +255,13 @@
 												class={[
 													'group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold',
 													page.url.pathname === href
-														? 'bg-gray-50 text-sidebar-600'
-														: 'text-gray-700 hover:bg-gray-50 hover:text-sidebar-600'
+														? 'text-sidebar-600 bg-gray-50'
+														: 'hover:text-sidebar-600 text-gray-700 hover:bg-gray-50'
 												]}>
 												<svg
 													class="size-6 shrink-0 {page.url.pathname === href
-														? 'bg-gray-50 text-sidebar-600'
-														: 'text-gray-400 group-hover:text-sidebar-600'}"
+														? 'text-sidebar-600 bg-gray-50'
+														: 'group-hover:text-sidebar-600 text-gray-400'}"
 													fill="none"
 													viewBox="0 0 24 24"
 													stroke-width="1.5"
@@ -282,11 +283,11 @@
 									<li>
 										<button
 											onclick={() => openModal({ name: 'signout' })}
-											class="group flex w-full gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-gray-700 hover:bg-gray-50 hover:text-sidebar-600">
+											class="group hover:text-sidebar-600 flex w-full gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-gray-700 hover:bg-gray-50">
 											<span
-												class="flex size-6 shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-white text-[0.625rem] font-medium text-gray-400 group-hover:border-sidebar-600 group-hover:text-sidebar-600">
+												class="group-hover:border-sidebar-600 group-hover:text-sidebar-600 flex size-6 shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-white text-[0.625rem] font-medium text-gray-400">
 												<SignOutIcon
-													class="size-4 shrink-0 text-gray-400 group-hover:text-sidebar-600" />
+													class="group-hover:text-sidebar-600 size-4 shrink-0 text-gray-400" />
 											</span>
 											{$t('sidebar', 'logout', null, 'Log out')}
 										</button>
@@ -295,16 +296,16 @@
 									<li>
 										<button
 											onclick={() => openModal({ name: 'docModal' })}
-											class="group flex w-full gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-gray-700 hover:bg-gray-50 hover:text-sidebar-600">
+											class="group hover:text-sidebar-600 flex w-full gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-gray-700 hover:bg-gray-50">
 											<span
-												class="flex size-6 shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-white text-[0.625rem] font-medium text-gray-400 group-hover:border-sidebar-600 group-hover:text-sidebar-600">
+												class="group-hover:border-sidebar-600 group-hover:text-sidebar-600 flex size-6 shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-white text-[0.625rem] font-medium text-gray-400">
 												<svg
 													xmlns="http://www.w3.org/2000/svg"
 													fill="none"
 													viewBox="0 0 24 24"
 													stroke-width="1.5"
 													stroke="currentColor"
-													class="size-4 shrink-0 text-gray-400 group-hover:text-sidebar-600">
+													class="group-hover:text-sidebar-600 size-4 shrink-0 text-gray-400">
 													<path
 														stroke-linecap="round"
 														stroke-linejoin="round"
@@ -318,9 +319,9 @@
 									<li>
 										<button
 											onclick={() => openModal({ name: 'bugReport' })}
-											class="group flex w-full gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-gray-700 hover:bg-gray-50 hover:text-sidebar-600">
+											class="group hover:text-sidebar-600 flex w-full gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-gray-700 hover:bg-gray-50">
 											<span
-												class="flex size-6 shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-white text-xs font-medium text-gray-400 group-hover:border-sidebar-600 group-hover:text-sidebar-600"
+												class="group-hover:border-sidebar-600 group-hover:text-sidebar-600 flex size-6 shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-white text-xs font-medium text-gray-400"
 												>?</span>
 											{$t('sidebar', 'bugReport')}
 										</button>
@@ -360,13 +361,13 @@
 										class={[
 											'group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold',
 											active || page.url.pathname === href
-												? 'bg-gray-50 text-sidebar-600'
-												: 'text-gray-700 hover:bg-gray-50 hover:text-sidebar-600',
+												? 'text-sidebar-600 bg-gray-50'
+												: 'hover:text-sidebar-600 text-gray-700 hover:bg-gray-50',
 											sidePanel.isOpen ? '' : 'items-center justify-center'
 										]}>
 										<svg
 											class="size-6 shrink-0 {active || page.url.pathname === href
-												? 'bg-gray-50 text-sidebar-600'
+												? 'text-sidebar-600 bg-gray-50'
 												: 'text-sidebar-400 group-hover:text-sidebar-600'}"
 											fill="none"
 											viewBox="0 0 24 24"
@@ -397,12 +398,12 @@
 									<button
 										onclick={() => openModal({ name: modalName })}
 										class={[
-											'group flex w-full gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-gray-700  hover:text-sidebar-600',
+											'group hover:text-sidebar-600 flex w-full gap-x-3 rounded-md p-2 text-sm/6 font-semibold  text-gray-700',
 											sidePanel.isOpen ? '' : 'justify-center text-center'
 										]}>
 										<span
 											class={[
-												'flex size-6 shrink-0 items-center justify-center rounded-lg border border-gray-200 text-[0.625rem] font-medium text-gray-400 group-hover:border-sidebar-600 group-hover:text-sidebar-600',
+												'group-hover:border-sidebar-600 group-hover:text-sidebar-600 flex size-6 shrink-0 items-center justify-center rounded-lg border border-gray-200 text-[0.625rem] font-medium text-gray-400',
 												sidePanel.isOpen ? 'bg-white' : 'bg-gray-400'
 											]}>
 											{@render icon(className)}
@@ -428,7 +429,7 @@
 							{#snippet questionMark(cls)}
 								<span class={cls}>?</span>
 							{/snippet}
-							<!--! Bouton pour signaler un bug/une seggestion -->
+							<!--! Bouton pour signaler un bug/une suggestion -->
 							{@render secondaryAction({
 								modalName: 'bugReport',
 								icon: questionMark,
@@ -446,7 +447,7 @@
 	</div>
 
 	<div
-		class="sticky top-0 z-40 flex items-center justify-between gap-x-6 bg-white px-4 py-4 border-b-2 border-sidebar-500 shadow-sm sm:px-6 lg:hidden">
+		class="border-sidebar-500 sticky top-0 z-40 flex items-center justify-between gap-x-6 border-b-2 bg-white px-4 py-4 shadow-sm sm:px-6 lg:hidden">
 		{#if !showDrawer}
 			<button
 				onclick={() => {

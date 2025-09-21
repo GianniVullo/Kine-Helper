@@ -1,5 +1,6 @@
-import { appState } from '../../../managers/AppState.svelte';
+import { appState } from '../../managers/AppState.svelte';
 import { terminal } from 'virtual:terminal';
+
 export class SidePanel {
 	isOpen = $state(true);
 	loading = $state(false);
@@ -23,10 +24,15 @@ export class SidePanel {
 
 	toggle() {
 		this.loading = true;
-		appState.db.setItem('sidePanelState', !this.isOpen).then((state) => {
+		if (appState.db) {
+			appState.db.setItem('sidePanelState', !this.isOpen).then((state) => {
+				this.loading = false;
+				this.isOpen = !this.isOpen;
+			});
+		} else {
 			this.loading = false;
 			this.isOpen = !this.isOpen;
-		});
+		}
 	}
 	getSwappables() {
 		let swappableBtn = document.getElementById('swappable-btn');
