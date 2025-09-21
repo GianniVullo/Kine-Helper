@@ -1,12 +1,10 @@
 import { checkAndUpdateConventions } from '../../stores/conventionStore';
 import { appState } from '../../managers/AppState.svelte';
-import { trace, error as errorLog } from '@tauri-apps/plugin-log';
 import { supabase } from '../../stores/supabaseClient';
 import { t } from '../../i18n';
 import { goto, invalidate } from '$app/navigation';
 import { get } from 'svelte/store';
 import { cloneDeep, isEmpty } from 'lodash';
-import { successIcon } from '../../ui/svgs/IconSnippets.svelte';
 import { diffArrays } from './utils/tarifHelpers';
 import { prescriptionPath } from './utils/prescriptionPath';
 import {
@@ -26,7 +24,6 @@ import {
 	getFactureMutuellePDFHandler,
 	getFacturePatientPDFHandler
 } from '../../user-ops-handlers/documents';
-import { terminal } from 'virtual:terminal';
 import { info } from '../../cloud/libraries/logging';
 
 // --------------------------------------------
@@ -34,23 +31,23 @@ import { info } from '../../cloud/libraries/logging';
 // --------------------------------------------
 
 export async function onLogin(data) {
-	trace('In the LoginForm onValid');
+	info('In the LoginForm onValid');
 	await appState.initializeDatabase();
-	terminal.log('AppState initialized with database', appState.db);
+	info('AppState initialized with database', appState.db);
 	// Connecter l'utilisateur
 	let { data: signInData, error } = await supabase.auth.signInWithPassword({
 		email: data.email.toLowerCase(),
 		password: data.password
 	});
-	terminal.log('User signed in', signInData);
+	info('User signed in', signInData);
 	let { user, session } = signInData;
 	//  TODO STEP 1a : Error handling
 	if (error) {
-		terminal.error('Error while signing in:', error);
+		info('Error while signing in:', error);
 		return { error };
 	}
 	if (error) {
-		errorLog(`Erreur dans LoginForm onValid : ${error}`);
+		info(`Erreur dans LoginForm onValid : ${error}`);
 		switch (error.message) {
 			case 'Invalid login credentials':
 				return (this.message = 'Identifiants incorrects');
@@ -65,27 +62,27 @@ export async function onLogin(data) {
 	try {
 		await synchConventions(this.message);
 	} catch (error) {
-		pluginTerminal.error('Error while updating conventions:', error);
+		info('Error while updating conventions:', error);
 	}
 
 	// This will stay here for now for retrocompatibility
-	trace('Fetching remote user data');
+	info('Fetching remote user data');
 	let { data: remoteUser, error: remoteUserError } = await supabase
 		.from('kinesitherapeutes')
 		.select('*')
 		.eq('id', user.id)
 		.single();
-	console.log('Remote user data:', remoteUser, remoteUserError);
+	info('Remote user data:', remoteUser, remoteUserError);
 	user = { ...user, ...(remoteUser ? remoteUser : {}) };
 
-	trace('Remote user data fetching');
+	info('Remote user data fetching');
 	this.message = get(t)('login', 'submission.profil');
 
 	// Fetch either the locally last selected Organization or the first organisation owned by the user
-	let organizations = getOrganizationsForUser(user.id);
+	let organizations = await getOrganizationsForUser(user.id);
 
-	trace('Initialising AppState for the first time');
-	terminal.warn('Initializing AppState for the first time');
+	info('Initialising AppState for the first time');
+	info('Initializing AppState for the first time');
 	// Initialiser l'objet "AppState"
 	await appState.init({ user, session, organizations });
 
@@ -93,7 +90,7 @@ export async function onLogin(data) {
 	try {
 		await fetchPatients(this.message, user);
 	} catch (error) {
-		terminal.error('Error while fetching patients:', error);
+		info('Error while fetching patients:', error);
 	}
 
 	// Récupérer les settings
@@ -108,13 +105,13 @@ export async function onLogin(data) {
 	}
 
 	// Check si l'utilisateur a au moins un appareil enregistré
-	trace('Fetching user devices');
+	info('Fetching user devices');
 	let { data: appareil, error: appareilError } = await appState.db.select(
 		"SELECT * FROM appareils WHERE role = 'raw_printer';"
 	);
 
 	if (appareilError) {
-		console.log('appareil Error : ', appareilError);
+		info('appareil Error : ', appareilError);
 
 		return (this.message = appareilError);
 	}
@@ -132,7 +129,7 @@ export async function onLogin(data) {
 }
 
 export async function onKineUpsert(formData) {
-	console.log('Form data submitted:', formData, this.form);
+	info('Form data submitted:', formData, this.form);
 	/**
 	 * * On valide les données du formulaire et on crée le profil utilisateur.
 	 ** Puis on le redirige vers la page de configuration de l'imprimante/scanner ou de tarifs/suppléments si nécessaire.
@@ -141,12 +138,12 @@ export async function onKineUpsert(formData) {
 		await appState.init({});
 	}
 	const filteredData = this.filtrerLesChampsAUpdater(formData);
-	console.log('Filtered data for DB operation', filteredData);
+	info('Filtered data for DB operation', filteredData);
 	if (!isEmpty(filteredData)) {
 		const { data: profileData, error: profileError } = await supabase
 			.from('kinesitherapeutes')
 			.upsert({ ...formData, id: appState.user.id });
-		console.log('profileData, error and formData', profileData, formData);
+		info('profileData, error and formData', profileData, formData);
 		if (profileError) {
 			this.message = error;
 			return;
@@ -157,7 +154,7 @@ export async function onKineUpsert(formData) {
 			'SELECT * FROM kines WHERE user_id = $1',
 			[appState.user.id]
 		);
-		console.log('User existence check:', user);
+		info('User existence check:', user);
 		if (user && user.length > 0) {
 			// Update the existing record
 			const { error: updateError } = await appState.db.updateLocal(
@@ -165,7 +162,7 @@ export async function onKineUpsert(formData) {
 				[['user_id', appState.user.id]],
 				retrocompatibility
 			);
-			console.log('Update error', updateError);
+			info('Update error', updateError);
 		} else {
 			retrocompatibility.user_id = appState.user.id;
 			delete retrocompatibility.id;
@@ -185,7 +182,7 @@ export async function onKineUpsert(formData) {
 					retrocompatibility.conventionne
 				]
 			);
-			console.log('DB Response:', dbResponse, 'DB Error:', dbError);
+			info('DB Response:', dbResponse, 'DB Error:', dbError);
 		}
 		//* Reset the user object in AppState otherwise the user data will be outdated
 		await appState.init({
@@ -193,7 +190,7 @@ export async function onKineUpsert(formData) {
 			session: appState.session
 		});
 		this.reset();
-		console.log('now toasting');
+		info('now toasting');
 		toast.trigger({
 			title: 'Yes !',
 			description: 'Données utilisateur modifiées avec succès.',
@@ -204,10 +201,10 @@ export async function onKineUpsert(formData) {
 }
 
 export async function onPatientUpsert(data) {
-	trace('In PatientForm.onValid');
+	info('In PatientForm.onValid');
 
 	if (this.mode === 'create') {
-		trace('Engaging Patient creation');
+		info('Engaging Patient creation');
 		// <!--* CREATE PROCEDURE -->
 		let { data: response, error } = await appState.db.insert('patients', data);
 		if (error) {
@@ -215,7 +212,7 @@ export async function onPatientUpsert(data) {
 		}
 		info('Patient Creation done Successfully');
 	} else {
-		trace('Engaging Patient modification');
+		info('Engaging Patient modification');
 		// <!--* UPDATE PROCEDURE -->
 		const { error } = await appState.db.update(
 			'patients',
@@ -225,7 +222,7 @@ export async function onPatientUpsert(data) {
 			],
 			this.filtrerLesChampsAUpdater(data)
 		);
-		trace('Patient Updated');
+		info('Patient Updated');
 		if (error) {
 			return (this.message = error.message);
 		}
@@ -238,10 +235,10 @@ export async function onPatientUpsert(data) {
 }
 
 export async function onSPUpsert(data) {
-	trace('In SPForm.onValid');
+	info('In SPForm.onValid');
 
 	if (this.mode === 'create') {
-		trace('Engaging SP creation');
+		info('Engaging SP creation');
 		// <!--* CREATE PROCEDURE -->
 		const { error } = await appState.db.insert('situations_pathologiques', data);
 		if (error) {
@@ -250,7 +247,7 @@ export async function onSPUpsert(data) {
 		}
 		info('SP Creation done Successfully');
 	} else {
-		trace('Engaging sp modification');
+		info('Engaging sp modification');
 		// <!--* UPDATE PROCEDURE -->
 		const updatedFields = this.filtrerLesChampsAUpdater(data);
 		if (!isEmpty(updatedFields)) {
@@ -260,7 +257,7 @@ export async function onSPUpsert(data) {
 				updatedFields
 			);
 			if (error) {
-				errorLog('Error while updating SP', error);
+				info('Error while updating SP', error);
 				this.message = error;
 				return;
 			}
@@ -273,10 +270,10 @@ export async function onSPUpsert(data) {
 }
 
 export async function onPrescriptionUpsert(data) {
-	trace('In PrescriptionForm.onValid');
+	info('In PrescriptionForm.onValid');
 
 	if (this.mode === 'create') {
-		trace('Engaging Prescription creation');
+		info('Engaging Prescription creation');
 		// <!--* CREATE PROCEDURE -->
 		let { data: prescription, error } = await createPrescription(
 			data,
@@ -289,7 +286,7 @@ export async function onPrescriptionUpsert(data) {
 		// TODO : Handle Error
 		info('SP Creation done Successfully');
 	} else {
-		trace('Engaging Patient modification');
+		info('Engaging Patient modification');
 		// <!--* UPDATE PROCEDURE -->
 		const { error } = await updatePrescription(data, $state.snapshot(this.form.file)?.[0]);
 		if (error) {
@@ -303,10 +300,10 @@ export async function onPrescriptionUpsert(data) {
 }
 
 export async function onSeanceUpsert(data) {
-	trace('In SeanceForm.onValid');
+	info('In SeanceForm.onValid');
 
 	if (this.mode === 'create') {
-		trace('Engaging Seance creation');
+		info('Engaging Seance creation');
 		// <!--* CREATE PROCEDURE -->
 		const { error } = await appState.db.insert('seances', data);
 		if (error) {
@@ -315,10 +312,10 @@ export async function onSeanceUpsert(data) {
 		await invalidate('patient:layout');
 		info('Seance Creation done Successfully');
 	} else {
-		trace('Engaging Seance modification');
+		info('Engaging Seance modification');
 		const updateFields = this.filtrerLesChampsAUpdater(data);
 		const modificationDone = !isEmpty(updateFields);
-		console.log('les updateFields', updateFields, 'isEmpty', isEmpty(updateFields));
+		info('les updateFields', updateFields, 'isEmpty', isEmpty(updateFields));
 		// <!--* UPDATE PROCEDURE -->
 		if (modificationDone) {
 			const { error } = await appState.db.update(
@@ -350,10 +347,10 @@ export async function onSeanceUpsert(data) {
 }
 
 export async function onMultipleSeanceUpsert(data) {
-	trace('In MultipleSeanceForm.onValid');
+	info('In MultipleSeanceForm.onValid');
 
-	// trace('in onValid with data' + JSON.stringify(data));
-	console.log('onValid', data);
+	// info('in onValid with data' + JSON.stringify(data));
+	info('onValid', data);
 	// <!--* CREATE PROCEDURE -->
 	const { error } = await appState.db.insert('seances', data);
 	if (error) {
@@ -372,10 +369,10 @@ export async function onMultipleSeanceUpsert(data) {
 }
 
 export async function onAttestationCreate(data) {
-	trace('In AttestationSchema.onValid');
+	info('In AttestationSchema.onValid');
 
 	if (this.mode === 'create') {
-		trace('Engaging Attestation creation');
+		info('Engaging Attestation creation');
 		// <!--* CREATE PROCEDURE -->
 		// first we do it on the server
 		const supabaseArgs = {
@@ -393,34 +390,34 @@ export async function onAttestationCreate(data) {
 			supabaseArgs.p_facture_patient.total = parseFloat(data.facturePatient.total);
 			supabaseArgs.p_facture_mutuelle.total = parseFloat(data.factureMutuelle.total);
 		} catch (error) {
-			errorLog('Error while preparing Supabase args for Attestation creation: ', error);
+			info('Error while preparing Supabase args for Attestation creation: ', error);
 		}
-		console.log('Supabase args for Attestation creation:', supabaseArgs);
+		info('Supabase args for Attestation creation:', supabaseArgs);
 		let { data: response, error: supabaseError } = await supabase.rpc(
 			'create_attestation_rpc',
 			supabaseArgs
 		);
-		console.log('Attestation creation response:', response, 'Error:', supabaseError);
+		info('Attestation creation response:', response, 'Error:', supabaseError);
 		if (supabaseError || !response) {
-			errorLog('Error while creating attestation: ', supabaseError);
+			info('Error while creating attestation: ', supabaseError);
 			return (this.message = supabaseError.message);
 		}
 		//then we do it on the local db
 		let { error: localError } = await createLocalAttestation(data);
 		if (localError) {
-			errorLog('Error while creating local attestation: ', localError);
+			info('Error while creating local attestation: ', localError);
 			return (this.message = localError.message);
 		}
 		//then we do the side effects
 		let { error: sideEffectsError } = await createAttestationSideEffects(data);
 		if (sideEffectsError) {
-			errorLog('Error while creating attestation side effects: ', sideEffectsError);
+			info('Error while creating attestation side effects: ', sideEffectsError);
 			return (this.message = sideEffectsError.message);
 		}
 
 		info('Attestation Creation done Successfully');
 	} else {
-		trace('Engaging Attestation modification');
+		info('Engaging Attestation modification');
 		// <!--* UPDATE PROCEDURE -->
 		// TODO
 		info('Attestation modified done Successfully');
@@ -464,7 +461,7 @@ export async function onAccordUpsert(accord) {
 }
 
 export async function onTarifsModification(data) {
-	trace('In TarifsForm.onValid');
+	info('In TarifsForm.onValid');
 	/**
 	 ** Ici trois cas de figures :
 	 **		- ou bien le tarifs/suppléments existe déjà => update
@@ -475,7 +472,7 @@ export async function onTarifsModification(data) {
 	for (const fieldKey of Object.keys(data)) {
 		const field = data[fieldKey];
 		const initialValue = this.initialValues[fieldKey];
-		console.log('in loop with : ', fieldKey);
+		info('in loop with : ', fieldKey);
 
 		if (Array.isArray(field)) {
 			const { created, updated, deleted } = diffArrays(initialValue, $state.snapshot(field));
@@ -536,13 +533,13 @@ export async function onTarifsModification(data) {
 async function synchConventions(message) {
 	const { error: conventionUpdateError } = await checkAndUpdateConventions(message, appState.db);
 	if (conventionUpdateError) {
-		errorLog('Error while updating conventions : ', conventionUpdateError);
+		info('Error while updating conventions : ', conventionUpdateError);
 		return (message = conventionUpdateError);
 	}
 }
 
 async function fetchPatients(message, user) {
-	trace('Populating local database with patients');
+	info('Populating local database with patients');
 	message = 'Récupération des patients...';
 	const { error: patientsError } = await appState.db.selectRemote(null, null, {
 		table: 'patients',
@@ -550,14 +547,14 @@ async function fetchPatients(message, user) {
 		filters: { user_id: user.id }
 	});
 	if (patientsError) {
-		errorLog('Error while populating local database with patients: ', patientsError);
+		info('Error while populating local database with patients: ', patientsError);
 		return (message = patientsError);
 	}
 	info('Local database successfully populated with patients');
 }
 
 async function createPrescription(data, file) {
-	trace('in createPrescription');
+	info('in createPrescription');
 	if (data.file_name) {
 		delete data.file_name;
 	}
@@ -579,9 +576,9 @@ async function createPrescription(data, file) {
 	if (Array.isArray(data.froms)) {
 		data.file_name = { ext: 'avif', n_p: data.froms.length };
 		const applocaldataDir = await get_precription_file_dir();
-		console.log('the froms', data.froms);
+		info('the froms', data.froms);
 		for (const from of data.froms) {
-			console.log('the from', from);
+			info('the from', from);
 			await appState.queue.addToQueue({
 				label: 'Compressing prescription scan',
 				job: 'CompressAndSendPrescription',
@@ -594,7 +591,7 @@ async function createPrescription(data, file) {
 		}
 	}
 	delete data.froms;
-	console.log('the data', data);
+	info('the data', data);
 
 	const { data: prescription, error } = await appState.db.insert('prescriptions', data);
 	if (error) {
@@ -604,19 +601,19 @@ async function createPrescription(data, file) {
 }
 
 async function updatePrescription(data, file) {
-	console.log('in updatePrescription with data', data, 'and file', file);
+	info('in updatePrescription with data', data, 'and file', file);
 	// TODO 1 : Il faut enregistrer le filename en fait car il faut pouvoir supprimer l'ancienne prescription même si l'extension de fichier n'est pas le même.
 	// TODO 2 Implement the saveFile with supabase API
 	//* comme c'est update, il n'y a pas besoin de changer l'image si elle n'a pas été transformée
 	if (file) {
-		console.log('there is a file', file);
+		info('there is a file', file);
 
 		const filePath = prescriptionPath();
 		const fileExtension = file.name.split('.').pop();
 		const fileName = `${data.prescription_id}.${fileExtension}`;
 
 		if (data.file_name) {
-			console.log(
+			info(
 				'deleting old file, with name',
 				prescriptionFileName(data, data.file_name),
 				data.file_name
@@ -627,7 +624,7 @@ async function updatePrescription(data, file) {
 					recursive: true
 				}
 			);
-			console.log('delError', delError);
+			info('delError', delError);
 			// if (delError) {
 			// 	return { error: delError };
 			// }
@@ -635,7 +632,7 @@ async function updatePrescription(data, file) {
 		let fsError = await save_to_disk(filePath, fileName, file);
 
 		if (fsError) {
-			console.log('ERRor! ', fsError);
+			info('ERRor! ', fsError);
 			return { data, error: fsError };
 		}
 		data.file_name = { ext: fileExtension };
@@ -664,10 +661,10 @@ async function updatePrescription(data, file) {
 		const applocaldataDir = await get_precription_file_dir();
 		const filePath = prescriptionPath();
 
-		console.log('the froms', data.froms);
+		info('the froms', data.froms);
 
 		for (const from of data.froms) {
-			console.log('the from', from);
+			info('the from', from);
 			await appState.queue.addToQueue({
 				label: 'Compressing prescription scan',
 				job: 'CompressAndSendPrescription',
@@ -689,7 +686,7 @@ async function updatePrescription(data, file) {
 		],
 		data
 	);
-	console.log('the error', error);
+	info('the error', error);
 	if (error) {
 		return { error };
 	}
@@ -701,7 +698,7 @@ export async function deletePrescription(prescription) {
 		['prescription_id', prescription.prescription_id]
 	]);
 	if (error) {
-		console.log(error);
+		info(error);
 
 		return { data: null, error };
 	}
@@ -712,7 +709,7 @@ export async function deletePrescription(prescription) {
 		if (await file_exists(completePath)) {
 			let fserror = await remove_file(completePath, { recursive: false });
 			if (fserror) {
-				console.log(fserror);
+				info(fserror);
 
 				return { data: null, error: fserror };
 			}
@@ -739,12 +736,12 @@ export async function openPrescription(prescription) {
 			console.error('Error parsing file_name:', error);
 		}
 	}
-	console.log('the prescription', prescription);
+	info('the prescription', prescription);
 	let path = prescriptionPath();
 	// the prescription file name has a ?? call for retro compatibility.
 	const fileName = `${prescription.prescription_id}.${prescription.file_name?.ext ?? prescription.file_name}`;
 	const completePath = `${path}/${fileName}`;
-	console.log('the complete path', completePath);
+	info('the complete path', completePath);
 
 	// --------------------------------------------
 	// TRYING TO OPEN THE FILE FROM LOCAL STORAGE
@@ -757,7 +754,7 @@ export async function openPrescription(prescription) {
 			return { error: fsError };
 		}
 	} else {
-		console.log('File does not exist locally, trying to fetch from cloud');
+		info('File does not exist locally, trying to fetch from cloud');
 		// --------------------------------------------
 		// TRYING TO OPEN THE FILE FROM CLOUD STORAGE
 		// --------------------------------------------
@@ -773,10 +770,10 @@ export async function openPrescription(prescription) {
 			// --------------------------------------------
 			// SAVING THE FILE LOCALLY
 			// --------------------------------------------
-			console.log('File downloaded successfully from cloud:', data);
+			info('File downloaded successfully from cloud:', data);
 			try {
 				let response = await save_local_file(path, fileName, data);
-				console.log('File saved locally:', response);
+				info('File saved locally:', response);
 			} catch (fsError) {
 				console.error('Error saving file locally:', fsError);
 				return { error: fsError };
@@ -803,12 +800,12 @@ async function get_precription_file_dir() {
 
 function prescriptionFileName(prescription, ext) {
 	if (ext) {
-		console.log('ext is a string', ext);
+		info('ext is a string', ext);
 		if (typeof ext === 'string') {
 			try {
-				console.log('Parsing ext as JSON', ext);
+				info('Parsing ext as JSON', ext);
 				const prescriptionName = `${prescription.prescription_id}.${JSON.parse(ext).ext}`;
-				console.log('Parsed prescription name:', prescriptionName);
+				info('Parsed prescription name:', prescriptionName);
 				return prescriptionName;
 			} catch (error) {
 				console.error('Error parsing ext:', error);
@@ -834,13 +831,13 @@ async function createLocalAttestation(data) {
 	 */
 
 	// Création de l'attestation
-	console.log('createAttestation', data);
+	info('createAttestation', data);
 	let { data: attestation, error: attestationError } = await appState.db.insertLocal(
 		'attestations',
 		data.attestation
 	);
 
-	console.log('attestation', attestation);
+	info('attestation', attestation);
 	if (attestationError) {
 		return { error: attestationError };
 	}
@@ -852,7 +849,7 @@ async function createLocalAttestation(data) {
 			[['prescription_id', data.attestation.prescription_id]],
 			{ jointe_a: data.attestation.date }
 		);
-		console.log('prescription', prescription);
+		info('prescription', prescription);
 		if (prescriptionError) {
 			return { error: prescriptionError };
 		}
@@ -860,18 +857,18 @@ async function createLocalAttestation(data) {
 
 	// Mise à jour des séances
 	let seanceCodeMap = data.seances.reduce((seanceMap, s) => {
-		console.log('seanceMap', seanceMap);
-		console.log('s', s);
+		info('seanceMap', seanceMap);
+		info('s', s);
 		if (!seanceMap[s.code_id]) seanceMap[s.code_id] = [];
 		seanceMap[s.code_id].push(s.seance_id);
 		return seanceMap;
 	}, {});
-	console.log('seanceCodeMap', seanceCodeMap);
+	info('seanceCodeMap', seanceCodeMap);
 	let caseStatements = Object.entries(seanceCodeMap)
 		.map(([code, seanceIds]) => `WHEN seance_id IN ('${seanceIds.join("', '")}') THEN '${code}'`)
 		.join('\n');
 
-	console.log('caseStatements', caseStatements);
+	info('caseStatements', caseStatements);
 
 	// Il faut remplacer les tarifs et suppléments par une valeur "metadata.valeur_totale" qui additionne le prix de la séance + le prix des suppléments
 	// cette addition doit être réalisée dans AttestationSchema et metadata doit être updaté ici
@@ -885,7 +882,7 @@ async function createLocalAttestation(data) {
 				END
 		WHERE seance_id IN ('${data.seances.map((s) => s.seance_id).join("', '")}');`;
 
-	console.log(sqlQuery);
+	info(sqlQuery);
 	let { data: seances, error: seancesError } = await appState.db.execute(sqlQuery, [
 		data.attestation.attestation_id
 	]);
@@ -897,12 +894,12 @@ async function createLocalAttestation(data) {
 		if (metadataUpdateError) {
 			return { error: metadataUpdateError };
 		}
-		console.log('metadataUpdateStatus', metadataUpdateStatus);
+		info('metadataUpdateStatus', metadataUpdateStatus);
 	}
 	if (seancesError) {
 		return { error: seancesError };
 	}
-	console.log('seances', seances);
+	info('seances', seances);
 
 	// Génération des fatcures
 	if (data.generateFacturePatient) {
@@ -918,13 +915,15 @@ async function createLocalAttestation(data) {
 				facture_id: data.facturePatient.id,
 				attestation_id: data.attestation.attestation_id
 			});
-		console.log('factureAttestation', factureAttestation);
+		info('factureAttestation', factureAttestation);
 		if (factureAttestationError) {
 			return { error: factureAttestationError };
 		}
-		console.log('facturePatient', facturePatient);
+		info('facturePatient', facturePatient);
+		console.log(facturePatient);
 	}
 	if (data.generateFactureMutuelle) {
+		console.log('need to generateFactureMutuelle')
 		let { data: factureMutuelle, error: factureMutuelleError } = await appState.db.insertLocal(
 			'factures',
 			data.factureMutuelle
@@ -940,7 +939,7 @@ async function createLocalAttestation(data) {
 		if (factureAttestationError) {
 			return { error: factureAttestationError };
 		}
-		console.log('factureMutuelle', factureMutuelle);
+		info('factureMutuelle', factureMutuelle);
 	}
 }
 
@@ -953,7 +952,7 @@ async function createAttestationSideEffects(data) {
 			'num_attestation',
 			parseInt(data.attestation.numero) + 1
 		);
-		console.log('numeroQueryResult', numero);
+		info('numeroQueryResult', numero);
 
 		if (storeError) {
 			return { error: storeError };
@@ -985,7 +984,7 @@ async function createAttestationSideEffects(data) {
 
 async function getOrganizationsForUser(user_id) {
 	// Fetch either the locally last selected Organization or the first organisation owned by the user
-	let locallyLastSelectedOrganization = appState.db.getItem(`lastSelectedOrgBy-${user_id}`);
+	let locallyLastSelectedOrganization = await appState.db.getItem(`lastSelectedOrgBy-${user_id}`);
 
 	let { data: organizations, error } = await supabase
 		.from('organizations')
@@ -1014,13 +1013,13 @@ async function getOrganizationsForUser(user_id) {
 			updated_at: org.updated_at
 		});
 	}
-	organizations.map((o) =>
-		o === selectedOrg ? { ...o, selected: true } : { ...o, selected: false }
+	organizations = organizations.map((o) =>
+		o === selectedOrg ? { ...o, selected: true, membres: [] } : { ...o, selected: false }
 	);
 
 	if (selectedOrg) {
 		// Store/update the last selected org
-		appState.db.setItem(`lastSelectedOrgBy-${user.id}`, selectedOrg.id);
+		await appState.db.setItem(`lastSelectedOrgBy-${user_id}`, selectedOrg.id);
 	}
 	return organizations;
 }

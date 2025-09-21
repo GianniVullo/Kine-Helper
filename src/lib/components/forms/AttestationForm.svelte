@@ -31,7 +31,6 @@
 		numero
 	} = $props();
 
-	console.log('START AttestationForm.svelte', lines, seances);
 	let formHandler = new Formulaire({
 		validateurs,
 		schema: AttestationSchema,
@@ -74,7 +73,6 @@
 		onValid: onAttestationCreate,
 		mode
 	});
-	console.log('END AttestationForm.svelte');
 	const isMobile = ['ios, android'].includes(platform());
 </script>
 
