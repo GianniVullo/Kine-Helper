@@ -1,5 +1,5 @@
 <script>
-	import {  nullish, object, pipe, string, uuid } from 'valibot';
+	import { nullish, object, pipe, string, uuid } from 'valibot';
 	import { Formulaire } from '../../../../lib/cloud/libraries/formHandler.svelte';
 	import { Form, FormSection, SubmitButton } from '../../../../lib/components/forms/blocks';
 	import { appState } from '../../../../lib/managers/AppState.svelte.js';
@@ -78,6 +78,7 @@
 					}
 					return o;
 				});
+				await appState.updateOrgs();
 			}
 		},
 		formElement: '#organisation-form',

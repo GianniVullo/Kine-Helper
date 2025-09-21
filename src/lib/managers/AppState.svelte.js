@@ -121,10 +121,14 @@ class AppState {
 			selected: o.id === organization_id
 		}));
 		try {
-			await invoke('set_organizations', { organizations: this.organizations });
+			await this.updateOrgs();
 		} catch (error) {
 			console.error('Error setting organizations in Rust:', error);
 		}
+	}
+
+	async updateOrgs() {
+		await invoke('set_organizations', { organizations: this.organizations });
 	}
 
 	get contrat() {
