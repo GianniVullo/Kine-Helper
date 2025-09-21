@@ -21,7 +21,7 @@ import { appState } from '../managers/AppState.svelte';
 import { fetch as nativeFetch } from '@tauri-apps/plugin-http';
 import { info } from '../cloud/libraries/logging';
 
-async function completePath() {
+export async function completePath() {
 	if (platform() === 'windows') {
 		return await documentDir();
 	}
@@ -30,7 +30,7 @@ async function completePath() {
 	return localDir;
 }
 
-function baseDir() {
+export function baseDir() {
 	if (platform() === 'windows') {
 		return BaseDirectory.Document;
 	}

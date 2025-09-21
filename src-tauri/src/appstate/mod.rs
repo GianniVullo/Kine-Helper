@@ -1,6 +1,6 @@
 use log::warn;
-use serializers::{Session, User};
-use std::sync::Mutex;
+use serializers::{Organization, Session, User};
+use std::sync::{Mutex, MutexGuard};
 
 mod serializers;
 
@@ -24,6 +24,7 @@ pub struct AppState {
     pub session: Option<Session>,
     pub db: Option<String>,
     pub e_health: Option<EHealth>,
+    pub organizations: Vec<Organization>,
 }
 
 #[tauri::command]
@@ -43,6 +44,7 @@ pub fn set_app_state(
     user: User,
     session: Session,
     db: String,
+    organizations: Vec<Organization>,
 ) -> Result<bool, String> {
     warn!("Setting app state");
     let mut state = match app_state.lock() {
@@ -57,6 +59,26 @@ pub fn set_app_state(
     state.session = Some(session);
     state.user = Some(user);
     state.db = Some(db);
+    state.organizations = organizations;
+    Ok(true)
+}
+
+#[tauri::command]
+pub fn set_organizations(
+    app_state: tauri::State<'_, Mutex<AppState>>,
+    organizations: Vec<Organization>,
+) -> Result<bool, String> {
+    warn!("Setting app state");
+    let mut state = match app_state.lock() {
+        Ok(state) => state,
+        Err(err) => {
+            return Err(format!(
+                "Panic: cannot reatrive the appState from Mutex {}",
+                err
+            ))
+        }
+    };
+    state.organizations = organizations;
     Ok(true)
 }
 

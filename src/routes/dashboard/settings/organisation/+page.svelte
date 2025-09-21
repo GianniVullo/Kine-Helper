@@ -1,8 +1,7 @@
 <script>
-	import SimpleSelect from '../../../../lib/components/forms/fields/SimpleSelect.svelte';
-	import ColorForm from './ColorForm.svelte';
 	import OrganisationUpsertForm from './OrganisationUpsertForm.svelte';
-	import { terminal } from 'virtual:terminal';
+	import InvitationForm from './InvitationForm.svelte';
+	import MyInvitations from './MyInvitations.svelte';
 
 	/** @type {{ data: import('./$types').PageData }} */
 	let { data } = $props();
@@ -10,4 +9,6 @@
 
 <OrganisationUpsertForm />
 
-<ColorForm />
+<InvitationForm />
+
+<MyInvitations />
