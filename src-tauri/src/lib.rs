@@ -30,7 +30,7 @@ use setup_functions::mobile::CustomInit;
 #[cfg(target_os = "macos")]
 use apple_api::{get_scan, get_scanners, stop_browsing};
 
-use cloud::queue::enqueue_job;
+use cloud::{image_compression::compress_img_at_path, queue::enqueue_job};
 use nomenclature::convention_decompression;
 
 #[cfg(any(target_os = "macos", target_os = "linux"))]
@@ -46,8 +46,9 @@ use printer::{pdf_printer::windows::print_pdf, raw_printer::windows::print_attes
 #[cfg(desktop)]
 use printers::{common::base::printer::Printer, get_printers};
 
+use printer::escp::test_document_generation;
 // use apple_api::commands::start_list_scanners;
-use appstate::{get_app_state, set_app_state, set_e_health};
+use appstate::{get_app_state, set_app_state, set_e_health, set_organizations};
 use cryptage::{
     decrypt_string, does_private_key_exist, encrypt_string, from_base64_to_bytes,
     from_bytes_to_base64, generate_encryption_key, setup_stronghold_key,
@@ -167,6 +168,7 @@ fn setup_desktop() {
             get_app_state,
             set_app_state,
             set_e_health,
+            set_organizations,
             generate_encryption_key,
             does_private_key_exist,
             encrypt_string,
@@ -191,7 +193,9 @@ fn setup_desktop() {
             print_pdf,
             #[cfg(target_os = "macos")]
             stop_browsing,
-            enqueue_job
+            enqueue_job,
+            test_document_generation,
+            compress_img_at_path
         ])
         .build(tauri::generate_context!())
         .expect("error while building tauri application")
@@ -241,7 +245,8 @@ fn setup_mobile() {
             from_bytes_to_base64,
             setup_stronghold_key,
             setup_path,
-            enqueue_job
+            enqueue_job,
+            set_organizations
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

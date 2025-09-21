@@ -49,8 +49,7 @@ impl Job {
                 let json_data: DocumentDetails =
                     serde_json::from_str(data.get("data").unwrap()).unwrap();
 
-                let avif_bytes =
-                    tiff_to_avif(&json_data.from, &json_data.file_path, &json_data.file_name);
+                let avif_bytes = tiff_to_avif(&json_data.from);
                 let to = format!("{}/{}", &json_data.file_path, &json_data.file_name);
 
                 // Check if path exists
