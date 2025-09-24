@@ -179,7 +179,8 @@ export const AttestationSchema = pipe(
 				valeur_totale: input.valeur_totale,
 				mutuelle_paid: input.mutuelle_paid,
 				patient_paid: input.patient_paid,
-				numero: input.numero
+				numero: input.numero,
+				organization_id: input.organization_id
 			},
 			facturePatient: {
 				id: crypto.randomUUID(),
@@ -188,7 +189,8 @@ export const AttestationSchema = pipe(
 				sp_id: input.sp_id,
 				date: input.date,
 				type: 'patient',
-				total: input.total_recu
+				total: input.total_recu,
+				organization_id: input.organization_id
 			},
 			factureMutuelle: {
 				id: crypto.randomUUID(),
@@ -197,7 +199,8 @@ export const AttestationSchema = pipe(
 				sp_id: input.sp_id,
 				date: input.date,
 				type: 'mutuelle',
-				total: factureMutuelle_total
+				total: factureMutuelle_total,
+				organization_id: input.organization_id
 			},
 			seances: input.seances,
 			lines: input.lines.map((line) => ({
@@ -212,6 +215,11 @@ export const idFields = [
 	{
 		id: 'patient_id',
 		name: 'patient_id',
+		inputType: 'hidden'
+	},
+	{
+		id: 'organization_id',
+		name: 'organization_id',
 		inputType: 'hidden'
 	},
 	{

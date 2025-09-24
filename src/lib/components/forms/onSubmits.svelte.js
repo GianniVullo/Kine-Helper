@@ -409,10 +409,14 @@ export async function onAttestationCreate(data) {
 			return (this.message = localError.message);
 		}
 		//then we do the side effects
-		let { error: sideEffectsError } = await createAttestationSideEffects(data);
-		if (sideEffectsError) {
-			info('Error while creating attestation side effects: ', sideEffectsError);
-			return (this.message = sideEffectsError.message);
+		try {
+			let { error: sideEffectsError } = await createAttestationSideEffects(data);
+			if (sideEffectsError) {
+				info('Error while creating attestation side effects: ', sideEffectsError);
+				return (this.message = sideEffectsError.message);
+			}
+		} catch (unknownError) {
+			console.error(unknownError);
 		}
 
 		info('Attestation Creation done Successfully');
@@ -423,7 +427,7 @@ export async function onAttestationCreate(data) {
 		info('Attestation modified done Successfully');
 	}
 	await invalidate('patient:layout');
-
+	info('NOW SENDING THE USER TO THE DASHBOARD');
 	goto(
 		'/dashboard/patients/' +
 			data.attestation.patient_id +
@@ -858,7 +862,6 @@ async function createLocalAttestation(data) {
 	// Mise à jour des séances
 	let seanceCodeMap = data.seances.reduce((seanceMap, s) => {
 		info('seanceMap', seanceMap);
-		info('s', s);
 		if (!seanceMap[s.code_id]) seanceMap[s.code_id] = [];
 		seanceMap[s.code_id].push(s.seance_id);
 		return seanceMap;
@@ -920,10 +923,9 @@ async function createLocalAttestation(data) {
 			return { error: factureAttestationError };
 		}
 		info('facturePatient', facturePatient);
-		console.log(facturePatient);
 	}
 	if (data.generateFactureMutuelle) {
-		console.log('need to generateFactureMutuelle')
+		console.log('need to generateFactureMutuelle');
 		let { data: factureMutuelle, error: factureMutuelleError } = await appState.db.insertLocal(
 			'factures',
 			data.factureMutuelle
@@ -941,6 +943,8 @@ async function createLocalAttestation(data) {
 		}
 		info('factureMutuelle', factureMutuelle);
 	}
+	// THis is because fcts accrss my code desctructure the result
+	return {};
 }
 
 async function createAttestationSideEffects(data) {
@@ -960,14 +964,20 @@ async function createAttestationSideEffects(data) {
 	}
 	if (data.printFacturePatient) {
 		// TODO : implement PDF printing
-		const { facture: facturePatient, error: facturePatientError } =
-			await getFacturePatientPDFHandler(data.facturePatient);
-		if (facturePatientError) {
-			return { error: facturePatientError };
+		try {
+			const { facture: facturePatient, error: facturePatientError } =
+				await getFacturePatientPDFHandler(data.facturePatient);
+
+			if (facturePatientError) {
+				return { error: facturePatientError };
+			}
+			// TODO Mettre la fonction print lorsque l'API sera prête
+			facturePatient.open();
+			// facturePatient.print();
+		} catch (error) {
+			console.error(error);
+			return { error };
 		}
-		// TODO Mettre la fonction print lorsque l'API sera prête
-		facturePatient.open();
-		// facturePatient.print();
 	}
 	if (data.printFactureMutuelle) {
 		// TODO : implement PDF printing
@@ -980,6 +990,7 @@ async function createAttestationSideEffects(data) {
 		factureMutuelle.open();
 		// factureMutuelle.print();
 	}
+	return {};
 }
 
 async function getOrganizationsForUser(user_id) {

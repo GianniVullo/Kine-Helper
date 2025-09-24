@@ -4,6 +4,7 @@ import { FactureMutuelle } from '../pdfs/factureMutuelle';
 import { indmeniteCategory } from '../stores/codeDetails';
 import { AnnexeA } from '../pdfs/annexeA';
 import { AnnexeB } from '../pdfs/annexeB';
+import { info } from '../cloud/libraries/logging';
 
 export async function getAccordPDF(accord) {
 	console.log('in getAccordPDF with accord :', accord);
@@ -166,6 +167,7 @@ export async function listDocuments(data) {}
 export async function retrieveDocument(params) {}
 
 async function getpsp(facture) {
+	info('THE FACTURE OBJ IN getPSP', facture);
 	let { data: patientArray, error: patientError } = await appState.db.select(
 		'SELECT * FROM patients WHERE patient_id = $1',
 		[facture.patient_id]
@@ -174,15 +176,12 @@ async function getpsp(facture) {
 		return { error: patientError };
 	}
 	let patient = patientArray[0];
-	console.log('patient', patient);
-	let { data: sp, error: spError } = await appState.db.select(
-		'SELECT * FROM situations_pathologiques WHERE sp_id = $1',
-		[facture.sp_id]
-	);
+	console.log('patient IN getPSP', patient);
+	let { data: sp, error: spError } = await appState.db.retrieve_sp(facture);
 	if (spError) {
 		return { error: spError };
 	}
-	console.log('sp', sp);
+	console.log('sp IN getPSP', sp);
 	return { patient, sp, error: null };
 }
 async function getData(facture) {
@@ -195,7 +194,7 @@ async function getData(facture) {
 	if (attestationsError) {
 		return { error: attestationsError };
 	}
-	console.log('attestations', attestations);
+	console.log('attestations in getData', attestations);
 
 	const { data: code_ids, error: codesError } = await appState.db.select(
 		`SELECT DISTINCT s.code_id
