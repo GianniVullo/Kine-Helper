@@ -46,6 +46,7 @@ use printer::{pdf_printer::windows::print_pdf, raw_printer::windows::print_attes
 #[cfg(desktop)]
 use printers::{common::base::printer::Printer, get_printers};
 
+#[cfg(desktop)]
 use printer::escp::test_document_generation;
 // use apple_api::commands::start_list_scanners;
 use appstate::{get_app_state, set_app_state, set_e_health, set_organizations};
