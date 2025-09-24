@@ -13,6 +13,7 @@
 	import { appState } from '../../../lib/managers/AppState.svelte';
 	import { goto } from '$app/navigation';
 	import Spiner from '../../../lib/cloud/components/layout/Spiner.svelte';
+	import PageTitle from '../../../lib/cloud/components/layout/PageTitle.svelte';
 
 	/** @type {{ data: import('./$types').PageData }} */
 	let { data } = $props();
@@ -55,26 +56,32 @@
 <Modal
 	opened={page.state.modal?.name === 'noFacture'}
 	title={$t('finances', 'modals.noSessions.title', {}, 'No sessions to bill')}
-	body={$t('finances', 'modals.noSessions.body', {}, 'You are up to date! You can schedule new appointments to bill.')}
+	body={$t(
+		'finances',
+		'modals.noSessions.body',
+		{},
+		'You are up to date! You can schedule new appointments to bill.'
+	)}
 	buttonTextCancel="none"
 	buttonTextConfirm={$t('finances', 'buttons.ok', {}, 'Ok')} />
 
 <Modal
 	opened={page.state.modal?.name === 'buildingFactures'}
 	title={$t('finances', 'modals.buildingInvoices.title', {}, 'Your invoices are being built')}
-	body={$t('finances', 'modals.buildingInvoices.body', {}, 'You will be redirected when the construction is complete.')}>
+	body={$t(
+		'finances',
+		'modals.buildingInvoices.body',
+		{},
+		'You will be redirected when the construction is complete.'
+	)}>
 	<div class="my-10 flex items-center justify-center">
 		<Spiner width="size-14" thickness="border-4" />
-		<p class="ml-5">{$t('finances', 'modals.buildingInvoices.operation', {}, 'Operation in progress...')}</p>
+		<p class="ml-5">
+			{$t('finances', 'modals.buildingInvoices.operation', {}, 'Operation in progress...')}
+		</p>
 	</div>
 </Modal>
-
-<div class="md:flex md:items-center md:justify-between">
-	<div class="min-w-0 flex-1">
-		<h2 class="text-2xl/7 font-bold text-gray-900 sm:truncate sm:text-3xl sm:tracking-tight">
-			{$t('finances', 'title', {}, 'Finances')}
-		</h2>
-	</div>
+<PageTitle titre={$t('finances', 'title', {}, 'Finances')}>
 	<div class="mt-4 flex md:mt-0 md:ml-4">
 		<!-- <button
 			type="button"
@@ -85,7 +92,8 @@
 			href="/dashboard/finances/tarifs-form"
 			inner={$t('finances', 'manageTariffs', {}, 'Manage your rates and supplements')} />
 	</div>
-</div>
+
+</PageTitle>
 
 <!-- <p class="mt-10">
 	Bienvenue dans la page tarifs qui permet aux kinés déconventionnés de définir des tarifs
@@ -127,4 +135,11 @@
 </SectionTitleWithTabs>
  -->
 
- <p class="my-5">{$t('finances', 'underConstruction', {}, 'Under construction: coming soon, a generator for attestations and invoices by insurance company')}</p>
+<p class="my-5">
+	{$t(
+		'finances',
+		'underConstruction',
+		{},
+		'Under construction: coming soon, a generator for attestations and invoices by insurance company'
+	)}
+</p>

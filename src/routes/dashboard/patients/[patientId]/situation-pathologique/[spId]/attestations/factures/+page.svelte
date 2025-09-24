@@ -36,28 +36,26 @@
 {#if sp.factures.length > 0}
 	<CardTable>
 		{#snippet header()}
-			<th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Date</th>
-			<th scope="col" class="py-3.5 pr-3 pl-4 text-left text-sm font-semibold text-gray-900 sm:pl-0"
-				>Type</th>
-			<th scope="col" class="py-3.5 pr-3 pl-4 text-left text-sm font-semibold text-gray-900 sm:pl-0"
-				>Total</th>
-			<th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+			<th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold">Date</th>
+			<th scope="col" class="py-3.5 pr-3 pl-4 text-left text-sm font-semibold sm:pl-0">Type</th>
+			<th scope="col" class="py-3.5 pr-3 pl-4 text-left text-sm font-semibold sm:pl-0">Total</th>
+			<th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold"
 				><span class="sr-only">Supprimer</span></th>
-			<th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+			<th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold"
 				><span class="sr-only">Ouvrir</span></th>
 		{/snippet}
 		{#snippet body()}
 			{#each factures as facture}
 				<tr>
-					<td class="px-3 py-5 text-sm whitespace-nowrap text-gray-500">
+					<td class="px-3 py-5 text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
 						{dayjs(facture.date ?? facture.created_at).format('DD/MM/YYYY')}
 					</td>
-					<td class="px-3 py-5 text-sm whitespace-nowrap text-gray-500">
+					<td class="px-3 py-5 text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
 						{@html facture.type === 'patient'
 							? $t('otherModal', 'facture.patient')
 							: $t('otherModal', 'facture.mutuelle')}
 					</td>
-					<td class="px-3 py-5 text-sm whitespace-nowrap text-gray-500">
+					<td class="px-3 py-5 text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
 						{facture.total.replace('.', ',')}€
 					</td>
 					<td
@@ -71,7 +69,7 @@
 									facture: cloneDeep(facture)
 								});
 							}}
-							class="mr-4 text-red-600 hover:text-red-900">
+							class="mr-4 text-red-600 hover:text-red-900 dark:text-red-500 dark:hover:text-red-400">
 							Supprimer<span class="sr-only">, {patient.nom} {patient.prenom}</span>
 						</button>
 					</td>
@@ -85,7 +83,7 @@
 								let { facture: f } = await getFacturePDF(facture);
 								await f.open();
 							}}
-							class="mr-4 text-indigo-600 hover:text-indigo-900">
+							class="mr-4 text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300">
 							Ouvrir<span class="sr-only">, {patient.nom} {patient.prenom}</span>
 						</button>
 					</td>

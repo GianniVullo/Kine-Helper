@@ -14,7 +14,7 @@
 {#if sps}
 	<div
 		class="mt-10 w-full border-b border-gray-200 pb-5 sm:flex sm:items-center sm:justify-between">
-		<h3 class="text-base font-semibold text-gray-900">
+		<h3 class="text-base font-semibold text-gray-900 dark:text-white">
 			{$t('shared', 'pathologicalSituations', {}, 'Situations pathologiques')}
 		</h3>
 		<div class="mt-3 sm:mt-0 sm:ml-4">
@@ -28,12 +28,12 @@
 	<ul role="list" class="w-full divide-y divide-gray-100">
 		<CardTable>
 			{#snippet header()}
-				<th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+				<th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold"
 					>{$t('sp.detail', 'reason', {}, 'Motif')}</th>
 				<th
 					scope="col"
-					class="py-3.5 pr-3 pl-4 text-left text-sm font-semibold text-gray-900 sm:pl-0">Date</th>
-				<th scope="col" class="sr-only px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+					class="py-3.5 pr-3 pl-4 text-left text-sm font-semibold sm:pl-0">Date</th>
+				<th scope="col" class="sr-only px-3 py-3.5 text-left text-sm font-semibold"
 					>Consulter</th>
 				<!-- TODO Ici j'ai mis action parce que, en fait, il va falloir mettre Modifier, Supprimer, Imprimer, Marquer comme payée par la mutuelle, par le patient, et qui sait quoi d'autres encore -->
 			{/snippet}
@@ -49,10 +49,10 @@
 									sp.sp_id
 							);
 						}}>
-						<td class="px-3 py-5 text-sm whitespace-nowrap text-gray-700">
+						<td class="px-3 py-5 text-sm whitespace-nowrap">
 							{sp.motif}
 						</td>
-						<td class="px-3 py-5 text-sm whitespace-nowrap text-gray-500">
+						<td class="px-3 py-5 text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
 							{dayjs(sp.created_at).format('DD/MM/YYYY')}
 						</td>
 						<td
@@ -80,7 +80,7 @@
 				stroke-width="2"
 				d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
 		</svg>
-		<h3 class="mt-2 text-sm font-semibold text-gray-900">
+		<h3 class="mt-2 text-sm font-semibold text-gray-900 dark:text-gray-50">
 			Vous n'avez pas encore de situation pathologique
 		</h3>
 		<p class="mt-1 text-sm text-gray-500">{$t('patients.detail', 'start')}</p>

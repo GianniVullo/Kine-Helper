@@ -40,6 +40,7 @@
 	{#snippet actions()}
 		<BoutonPrincipalAvecIcone
 			href={`/dashboard/patients/${patient.patient_id}/situation-pathologique/${sp.sp_id}/prescriptions/create`}
+			size="base"
 			icon={PlusIcon}
 			inner={`&nbsp;${$t('prescription.list', 'add')}`} />
 	{/snippet}
@@ -48,16 +49,16 @@
 {#if sp.prescriptions.length > 0}
 	<CardTable>
 		{#snippet header()}
-			<th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Date</th>
-			<th scope="col" class="py-3.5 pr-3 pl-4 text-left text-sm font-semibold text-gray-900 sm:pl-0"
+			<th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold">Date</th>
+			<th scope="col" class="py-3.5 pr-3 pl-4 text-left text-sm font-semibold sm:pl-0"
 				>Prescripteur</th>
-			<th scope="col" class="py-3.5 pr-3 pl-4 text-left text-sm font-semibold text-gray-900 sm:pl-0"
+			<th scope="col" class="py-3.5 pr-3 pl-4 text-left text-sm font-semibold sm:pl-0"
 				>Nombre</th>
-			<th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+			<th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold"
 				><span class="sr-only">Supprimer</span></th>
-			<th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+			<th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold"
 				><span class="sr-only">Modifier</span></th>
-			<th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+			<th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold"
 				><span class="sr-only">Ouvrir</span></th>
 		{/snippet}
 		{#snippet body()}
@@ -66,17 +67,17 @@
 					sp.seances.filter((s) => s.prescription_id === prescription.prescription_id).length === 0}
 
 				<tr>
-					<td class="px-3 py-5 text-sm whitespace-nowrap text-gray-500">
+					<td class="px-3 py-5 text-sm whitespace-nowrap text-gray-500 dark:text-gray-300">
 						{dayjs(prescription.date).format('DD/MM/YYYY')}
 					</td>
-					<td class="px-3 py-5 text-sm whitespace-nowrap text-gray-500">
-						<div class="text-gray-900">
+					<td class="px-3 py-5 text-sm whitespace-nowrap text-gray-500 dark:text-gray-300">
+						<div class="">
 							{prescription.prescripteur.nom}
 							{prescription.prescripteur.prenom}
 						</div>
-						<div class="mt-1 text-gray-500">{prescription.prescripteur.inami}</div>
+						<div class="mt-1 text-gray-500 dark:text-gray-300">{prescription.prescripteur.inami}</div>
 					</td>
-					<td class="px-3 py-5 text-sm whitespace-nowrap text-gray-500">
+					<td class="px-3 py-5 text-sm whitespace-nowrap text-gray-500 dark:text-gray-300">
 						{prescription.nombre_seance}
 						{$t('patients.detail', 'prestations')}
 					</td>

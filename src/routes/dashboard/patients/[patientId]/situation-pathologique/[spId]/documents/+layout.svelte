@@ -22,20 +22,23 @@
 	const homeUrl = () =>
 		`/dashboard/patients/${patient.patient_id}/situation-pathologique/${sp.sp_id}`;
 
-	let tabs = [
+	let tabs = $derived([
 		{
-			label: 'Accords',
-			value: homeUrl() + `/documents`
+			nom: 'Accords',
+			href: homeUrl() + `/documents`,
+			actif: homeUrl() + `/documents` === page.url.pathname
 		},
 		{
-			label: 'Renouvellements',
-			value: homeUrl() + `/documents/renouvellements`
+			nom: 'Renouvellements',
+			href: homeUrl() + `/documents/renouvellements`,
+			actif: homeUrl() + `/documents/renouvellements` === page.url.pathname
 		},
 		{
-			label: 'Testings',
-			value: homeUrl() + `/documents/testings`
+			nom: 'Testings',
+			href: homeUrl() + `/documents/testings`,
+			actif: homeUrl() + `/documents/testings` === page.url.pathname
 		}
-	];
+	]);
 </script>
 
 <Drawer
@@ -67,7 +70,7 @@
 	body="Veuillez sélectionner un document à ajouter.">
 	<DocumentSelectionModal {accords} />
 </Modal>
-<SectionTitleWithTabs titre="Documents" className="space-x-2" {tabs} selectId="accords-tabs-select">
+<SectionTitleWithTabs titre="Documents" className="space-x-2" {tabs} selectId="accords-tabs-select" tabsClassName="mb-0">
 	{#snippet actions()}
 		<BoutonPrincipalAvecIcone
 			onclick={() => {

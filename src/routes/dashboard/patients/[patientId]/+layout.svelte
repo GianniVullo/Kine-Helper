@@ -14,7 +14,7 @@
 	{#if data.patient === 'none'}
 		{$t('patients.detail', '404')}
 	{:else}
-		<div class="flex h-full w-full flex-col items-start justify-start">
+		<div class="flex h-full w-full flex-col items-start justify-start" style="view-transition-name: filariane;">
 			<Breadcrumbs currentSp={data.sp} patient={data.patient} />
 			{@render children()}
 			<!-- <div class="flex h-full w-full flex-col md:flex-row">

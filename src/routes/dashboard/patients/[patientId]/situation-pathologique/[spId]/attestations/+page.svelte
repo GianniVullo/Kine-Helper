@@ -30,6 +30,7 @@
 	import Modal from '../../../../../../../lib/cloud/libraries/overlays/Modal.svelte';
 	import { pushState } from '$app/navigation';
 	import { cloneDeep } from 'lodash';
+	import TwDropdown from '../../../../../../../lib/components/TWElements/TWDropdown.svelte';
 
 	let { data } = $props();
 	let { patient, sp } = data;
@@ -52,27 +53,26 @@
 		attestation[`${key}_paid`] = !attestation[`${key}_paid`];
 	};
 
-	let menuItemsList = $state([
+	const menuItemsList = (attestation) => [
 		...(patient.tiers_payant
 			? [
 					{
-						onclick: (attestation) => async () => {
+						onclick: async () => {
 							await updatePaidStatuses(attestation, 'mutuelle');
 						},
-						icon: ({ mutuelle_paid }) =>
-							mutuelle_paid ? buildingIconWithCheck : buildingIconWithCross,
-						inner: ({ mutuelle_paid }) => (mutuelle_paid ? 'Impayé' : 'Payé')
+						icon: attestation.mutuelle_paid ? buildingIconWithCheck : buildingIconWithCross,
+						label: attestation.mutuelle_paid ? 'Impayé' : 'Payé'
 					}
 				]
 			: []),
 		...(patient.ticket_moderateur
 			? [
 					{
-						onclick: (attestation) => async () => {
+						onclick: async () => {
 							await updatePaidStatuses(attestation, 'patient');
 						},
-						icon: ({ patient_paid }) => (patient_paid ? userIconWithCheck : userIconWithCross),
-						inner: ({ patient_paid }) => (patient_paid ? 'Impayé' : 'Payé')
+						icon: attestation.patient_paid ? userIconWithCheck : userIconWithCross,
+						label: attestation.patient_paid ? 'Impayé' : 'Payé'
 					}
 				]
 			: [])
@@ -93,7 +93,7 @@
 		 * 	inner: (_) => 'Supprimer'
 		 * }
 		 */
-	]);
+	];
 </script>
 
 <!-- TODO Devrais-je rajouter que l'attestation porte la prescription ?  -->
@@ -119,44 +119,31 @@
 	<!--* ATTESTATIONS LIST -->
 	<CardTable>
 		{#snippet header()}
-			<th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Date</th>
-			<th scope="col" class="py-3.5 pr-3 pl-4 text-left text-sm font-semibold text-gray-900 sm:pl-0"
-				>Total</th>
-			<th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
-				>Part personnelle</th>
-			<th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
-				>Paiement</th>
-			<th scope="col" class="sr-only px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
-				>Statut</th>
-			<th scope="col" class="sr-only px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
-				>Imprimer</th>
+			<th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold">Date</th>
+			<th scope="col" class="py-3.5 pr-3 pl-4 text-left text-sm font-semibold sm:pl-0">Total</th>
+			<th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold">Part personnelle</th>
+			<th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold">Paiement</th>
+			<th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold"
+				><span class="sr-only">Statut</span></th>
+			<th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold"
+				><span class="sr-only">Imprimer</span></th>
 			<!-- TODO Ici j'ai mis action parce que, en fait, il va falloir mettre Modifier, Supprimer, Imprimer, Marquer comme payée par la mutuelle, par le patient, et qui sait quoi d'autres encore -->
 		{/snippet}
 		{#snippet body()}
 			{#each attestations as attestation}
 				<tr>
-					<td class="px-3 py-5 text-sm whitespace-nowrap text-gray-500">
+					<td class="px-3 py-5 text-sm whitespace-nowrap text-gray-500 dark:text-gray-300">
 						{dayjs(attestation.date).format('DD/MM/YYYY')}
 					</td>
 					<td class="py-5 pr-3 pl-4 text-sm whitespace-nowrap sm:pl-0">
-						<div class="flex items-center">
-							<div class="ml-4">
-								<div class="font-medium text-gray-900">{patient.nom} {patient.prenom}</div>
-								{#if attestation.porte_prescr}
-									<div class="mt-1 text-gray-500">
-										{$t('attestation.detail', 'porte_prescr')}
-									</div>
-								{/if}
-							</div>
-						</div>
+						<div>{attestation.valeur_totale}€</div>
 					</td>
-					<td class="px-3 py-5 text-sm whitespace-nowrap text-gray-500">
-						<div class="text-gray-900">{patient.adresse}</div>
-						<div class="mt-1 text-gray-500">{patient.cp} {patient.localite}</div>
+					<td class="px-3 py-5 text-sm whitespace-nowrap text-gray-500 dark:text-gray-300">
+						<div class="">{attestation.total_recu}€</div>
 					</td>
-					<td class="px-3 py-5 text-sm whitespace-nowrap text-gray-500">
+					<td class="px-3 py-5 text-sm whitespace-nowrap text-gray-500 dark:text-gray-300">
 						{#if patient.tiers_payant}
-							<div class="text-gray-900">
+							<div class="">
 								{@render iconBadge(
 									`mutuelle ${attestation.mutuelle_paid ? 'a' : "n'a pas"} payé!`,
 									buildingIcon,
@@ -165,7 +152,7 @@
 							</div>
 						{/if}
 						{#if patient.ticket_moderateur}
-							<div class="mt-1 text-gray-500">
+							<div class="mt-1 text-gray-500 dark:text-gray-300">
 								{@render iconBadge(
 									`${attestation.patient_paid ? '' : 'im'}payé!`,
 									userIcon,
@@ -176,40 +163,22 @@
 					</td>
 					<td
 						class="relative py-5 pr-4 pl-3 text-left text-sm font-medium whitespace-nowrap sm:pr-0">
-						<Dropdown inner="Statut" className="" id={attestation.attestation_id}>
-							{#snippet dropper(menuItems, menuState)}
-								<div
-									id={attestation.attestation_id}
-									style="width: max-content;"
-									class="fixed z-10 mt-2 origin-bottom-right divide-y divide-gray-100 rounded-md bg-white shadow-lg ring-1 ring-black/5 transition duration-200 focus:outline-none {menuState
-										? 'scale-100 opacity-100 ease-out'
-										: 'pointer-events-none scale-95 opacity-0 ease-in'}"
-									role="menu"
-									aria-orientation="vertical"
-									aria-labelledby="mobile-menu-button"
-									tabindex="-1">
-									<!-- Active: "bg-gray-100 outline-none", Not Active: "" -->
-									{#each menuItemsList as { href, onclick, inner, icon }}
-										{@render dropdownItemWithIcon(
-											href ? href(attestation) : undefined,
-											onclick ? onclick(attestation) : undefined,
-											inner(attestation),
-											icon(attestation)
-										)}
-									{/each}
-								</div>
-							{/snippet}
-						</Dropdown>
+						<TwDropdown triggerText="Statut" items={[menuItemsList(attestation)]} />
 					</td>
 					<td
 						class="relative py-5 pr-4 pl-3 text-left text-sm font-medium whitespace-nowrap sm:pr-0">
 						<button
-							class="flex space-x-1 group"
+							class="group flex space-x-1"
 							onclick={async () => {
 								await printHandler(attestation);
 							}}>
-							{@render printerIcon('size-5 text-indigo-500 group-hover:text-indigo-700')}
-							<p class="group-hover:text-indigo-700 text-indigo-500">Imprimer</p>
+							{@render printerIcon(
+								'size-5 text-indigo-500 group-hover:text-indigo-700 dark:text-indigo-400 dark:group-hover:text-indigo-500'
+							)}
+							<p
+								class="text-indigo-500 group-hover:text-indigo-700 dark:text-indigo-400 dark:group-hover:text-indigo-500">
+								Imprimer
+							</p>
 						</button>
 					</td>
 				</tr>

@@ -48,38 +48,32 @@
 				{#if accords.length > 0}
 					<CardTable>
 						{#snippet header()}
-							<th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
-								>ID</th>
-							<th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
-								>Date</th>
-							<th
-								scope="col"
-								class="py-3.5 pr-3 pl-4 text-left text-sm font-semibold text-gray-900 sm:pl-0"
+							<th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold">ID</th>
+							<th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold">Date</th>
+							<th scope="col" class="py-3.5 pr-3 pl-4 text-left text-sm font-semibold sm:pl-0"
 								>Accord</th>
-							<th
-								scope="col"
-								class="py-3.5 pr-3 pl-4 text-left text-sm font-semibold text-gray-900 sm:pl-0"
+							<th scope="col" class="py-3.5 pr-3 pl-4 text-left text-sm font-semibold sm:pl-0"
 								>Validité</th>
-							<th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+							<th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold"
 								><span class="sr-only">Supprimer</span></th>
-							<th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+							<th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold"
 								><span class="sr-only">Modifier</span></th>
-							<th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+							<th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold"
 								><span class="sr-only">Ouvrir</span></th>
 						{/snippet}
 						{#snippet body()}
 							{#each accords as accord}
 								<tr>
-									<td class="px-3 py-5 text-sm whitespace-nowrap text-gray-500">
+									<td class="px-3 py-5 text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
 										{accord.id}
 									</td>
-									<td class="px-3 py-5 text-sm whitespace-nowrap text-gray-500">
+									<td class="px-3 py-5 text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
 										{dayjs(accord.date).format('DD/MM/YYYY')}
 									</td>
-									<td class="px-3 py-5 text-sm whitespace-nowrap text-gray-500">
+									<td class="px-3 py-5 text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
 										{accord.metadata.doc}
 									</td>
-									<td class="px-3 py-5 text-sm whitespace-nowrap text-gray-500">
+									<td class="px-3 py-5 text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
 										{#if accord.valid_from}
 											{accord.valid_from} ->
 										{:else}
@@ -98,7 +92,7 @@
 													accord: cloneDeep($state.snapshot(accord))
 												});
 											}}
-											class="mr-4 text-red-600 hover:text-red-900">
+											class="mr-4 text-red-600 hover:text-red-900 dark:text-red-500 dark:hover:text-red-400">
 											Supprimer<span class="sr-only">, {patient.nom} {patient.prenom}</span>
 										</button>
 									</td>
@@ -113,7 +107,8 @@
 													accord: cloneDeep($state.snapshot(accord))
 												});
 											}}
-											class="mr-4 text-yellow-600 hover:text-yellow-900">Modifier</button>
+											class="mr-4 text-yellow-600 hover:text-yellow-900 dark:text-yellow-500 dark:hover:text-yellow-400"
+											>Modifier</button>
 									</td>
 
 									<td
@@ -124,7 +119,7 @@
 												console.log('annexe', annexe);
 												await annexe.open();
 											}}
-											class="mr-4 text-indigo-600 hover:text-indigo-900">
+											class="mr-4 text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300">
 											Ouvrir<span class="sr-only">, {patient.nom} {patient.prenom}</span>
 										</button>
 									</td>

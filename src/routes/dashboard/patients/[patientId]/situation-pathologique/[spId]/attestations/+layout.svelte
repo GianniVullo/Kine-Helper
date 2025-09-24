@@ -16,22 +16,23 @@
 	let { patient, sp } = data;
 
 	let factures = $state(sp.factures);
-	console.log('factures In layuot', factures);
 	setContext('factures', factures);
 
 	const homeUrl = () =>
 		`/dashboard/patients/${patient.patient_id}/situation-pathologique/${sp.sp_id}`;
 
-	let tabs = [
+	let tabs = $derived([
 		{
-			label: 'Attestations',
-			value: homeUrl() + `/attestations`
+			nom: 'Attestations',
+			href: homeUrl() + `/attestations`,
+			actif: page.url.pathname === homeUrl() + `/attestations`
 		},
 		{
-			label: 'Factures',
-			value: homeUrl() + `/attestations/factures`
+			nom: 'Factures',
+			href: homeUrl() + `/attestations/factures`,
+			actif: page.url.pathname === homeUrl() + `/attestations/factures`
 		}
-	];
+	]);
 </script>
 
 <Modal
@@ -82,6 +83,7 @@
 <SectionTitleWithTabs
 	titre={$t('form.generateur', 'tarification.title')}
 	className="space-x-2"
+	tabsClassName="mb-0"
 	{tabs}>
 	{#snippet actions()}
 		<BoutonSecondaireAvecIcone
@@ -109,7 +111,7 @@
 					);
 				}
 			}}
-			className="ml-3 inline-flex items-center bg-indigo-600 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500  focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+			additionnalCSS="ml-3"
 			inner="Attestation"
 			icon={addIcon} />
 	{/snippet}

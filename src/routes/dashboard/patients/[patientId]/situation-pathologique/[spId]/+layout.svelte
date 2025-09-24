@@ -13,12 +13,12 @@
 		{
 			href: homeUrl(),
 			nom: 'Home',
-			actif: page.route.id === homeUrl()
+			actif: page.url.pathname === homeUrl()
 		},
 		{
 			href: homeUrl() + `/prescriptions`,
 			nom: $t('sp.detail', 'prescriptions'),
-			actif: page.route.id === homeUrl() + `/prescriptions`
+			actif: page.url.pathname === homeUrl() + `/prescriptions`
 		},
 		{
 			href: homeUrl() + `/attestations`,
@@ -33,19 +33,22 @@
 		{
 			href: homeUrl() + `/seances`,
 			nom: $t('patients.detail', 'prestations'),
-			actif: page.route.id === homeUrl() + `/seances`
+			actif: page.url.pathname === homeUrl() + `/seances`
 		}
 	]);
+	console.log('Page route Id ', page.url.pathname === homeUrl());
 </script>
 
 {#if data.sp === 'none'}
 	Error, no sp found
 {:else}
-	<SpTitle patient={data.patient} currentSp={data.sp} />
-	<div class="-mt-5 mb-5 flex w-full items-center justify-start px-4 py-1 sm:py-1"></div>
-	<!--* Tabs -->
-	<Tabs
-		className="w-full text-center flex justify-center sm:block pb-1 sm:pb-0 border-b border-gray-300"
-		{tabs} />
-	{@render children()}
+	<div class="w-full" style="view-transition-name: sptitle;">
+		<SpTitle patient={data.patient} currentSp={data.sp} />
+		<div class="-mt-5 mb-5 flex w-full items-center justify-start px-4 py-1 sm:py-1"></div>
+		<!--* Tabs -->
+		<Tabs
+			className="mb-10 w-full text-center flex justify-center sm:block pb-1 sm:pb-0 border-b border-gray-300 dark:border-gray-600"
+			{tabs} />
+		{@render children()}
+	</div>
 {/if}
