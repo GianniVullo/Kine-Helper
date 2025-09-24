@@ -21,13 +21,14 @@
 		onchange,
 		oninput,
 		checkboxDescription = undefined,
-		constraints
+		constraints,
+		outerCSS
 	} = $props();
 </script>
 
 <div
 	class={[
-		'mt-2',
+		outerCSS ?? 'mt-2',
 		['text', 'password', 'email', 'date', 'time', 'number', 'textarea'].includes(inputType) &&
 			'relative rounded-md'
 	]}>
@@ -83,7 +84,8 @@
 				</div>
 			</div>
 			<div class="text-sm/6">
-				<label for={id} class="font-medium text-gray-900 select-none">{@html checkboxLabel}</label>
+				<label for={id} class="font-medium text-gray-900 select-none dark:text-white"
+					>{@html checkboxLabel}</label>
 				{#if checkboxDescription}
 					<p id="{name}-description" class="cursor-default text-gray-500 select-none">
 						{@html checkboxDescription}
@@ -102,15 +104,15 @@
 			aria-autocomplete={autocomplete ? 'both' : 'none'}
 			class:pl-7={leading}
 			class={[
-				'block w-full rounded-md border-0 py-1.5 shadow-xs ring-1 ring-inset focus:ring-2 focus:ring-inset disabled:cursor-not-allowed disabled:bg-gray-200 disabled:text-gray-500 disabled:ring-gray-200 sm:text-sm/6',
-				error && 'pr-10 text-red-900 ring-red-300 placeholder:text-red-300 focus:ring-red-500',
+				'block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500',
+				error &&
+					'pr-10 text-red-900 ring-red-300 placeholder:text-red-300 focus:ring-red-500 dark:text-red-400',
 				warning &&
-					'!focus:ring-yellow-500 pr-10 text-yellow-900 ring-yellow-300 placeholder:text-yellow-300',
-				!error &&
-					!warning &&
-					'text-gray-900 ring-gray-300 placeholder:text-gray-400 focus:ring-indigo-600',
+					'!focus:ring-yellow-500 pr-10 text-yellow-900 ring-yellow-300 placeholder:text-yellow-300 dark:text-yellow-400',
+				!error && !warning && 'ring-gray-300 placeholder:text-gray-400 focus:ring-indigo-600',
 				removeArrows &&
-					'[appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none'
+					'[appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none',
+				className
 			]}
 			aria-invalid={error ? 'true' : undefined}
 			{placeholder}

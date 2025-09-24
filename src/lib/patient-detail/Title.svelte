@@ -49,12 +49,12 @@
 				{/if}
 			</div>
 			<div class="mt-4 text-center sm:mt-0 sm:pt-1 sm:text-left">
-				<p class="text-xl font-bold text-gray-900 sm:text-2xl">
+				<p class="text-xl font-bold text-gray-900 sm:text-2xl dark:text-white">
 					{patient?.nom}
 					{patient?.prenom}
 				</p>
 				{#if patient.mutualite}
-					<p class="text-sm font-medium text-gray-600">Mutualité : {patient.mutualite}</p>
+					<p class="text-sm font-medium text-gray-600 dark:text-gray-400">Mutualité : {patient.mutualite}</p>
 				{/if}
 			</div>
 		</div>

@@ -31,8 +31,6 @@
 
 	const dropdownItemIconClasses =
 		'mr-3 size-5 text-gray-400 group-focus/item:text-gray-500 dark:text-gray-500 dark:group-focus/item:text-white';
-
-	console.log(items);
 </script>
 
 {#snippet dropdownItem({ href, onclick, icon, actionCSS, ...rest })}

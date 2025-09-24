@@ -7,6 +7,7 @@
 	import NotFoundPanel from './NotFoundPanel.svelte';
 	import ActionRapidePanel from './ActionRapidePanel.svelte';
 	import { t } from '$lib/i18n';
+	import Kbd from '../../../components/KBD.svelte';
 
 	let commandPalette = new CommandPaletteController();
 	let patientPromise = $state(commandPalette.patientsPromise());
@@ -50,7 +51,7 @@
 		<div
 			id="command-palette"
 			class={[
-				'mx-auto max-w-xl transform divide-y divide-gray-100 overflow-hidden rounded-xl bg-white shadow-2xl ring-1 ring-black/5 transition-all',
+				'mx-auto max-w-xl transform divide-y divide-gray-100 overflow-hidden rounded-xl bg-white shadow-2xl ring-1 ring-black/5 transition-all dark:divide-gray-700 dark:border dark:border-gray-800 dark:bg-gray-900 dark:shadow-gray-800/80',
 				commandPalette.inner.opened && 'scale-100 opacity-100 duration-300 ease-out',
 				!commandPalette.inner.opened && 'scale-95 opacity-0 duration-200 ease-in'
 			]}>
@@ -60,7 +61,7 @@
 						id="command-palette-input"
 						bind:this={commandPalette.searchInput}
 						type="text"
-						class="col-start-1 row-start-1 h-12 w-full border-none pr-4 pl-11 text-base text-gray-900 outline-hidden placeholder:text-gray-400 focus:ring-0 sm:text-sm"
+						class="col-start-1 row-start-1 block h-12 w-full rounded-md border-none bg-white px-3 py-1.5 pr-4 pl-11 text-base text-gray-900 outline-hidden outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:ring-0 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
 						placeholder={$t('commandPalette', 'placeholder', {}, 'Search...')}
 						bind:value={commandPalette.inner.search}
 						role="combobox"
@@ -85,35 +86,10 @@
 						class="max-h-80 transform-gpu scroll-py-10 scroll-pb-2 space-y-4 overflow-y-auto p-4 pb-2"
 						id="options"
 						role="listbox">
-						<!-- <li>
-							<h2 class="text-xs font-semibold text-gray-900">Projects</h2>
-							<ul class="-mx-4 mt-2 text-sm text-gray-700">
-								Active: "bg-indigo-600 text-white outline-hidden" 
-								<li
-									class="group flex cursor-default items-center px-4 py-2 select-none"
-									id="option-1"
-									role="option"
-									tabindex="-1">
-									Active: "text-white forced-colors:text-[Highlight]", Not Active: "text-gray-400"
-									<svg
-										class="size-6 flex-none text-gray-400"
-										fill="none"
-										viewBox="0 0 24 24"
-										stroke-width="1.5"
-										stroke="currentColor"
-										aria-hidden="true"
-										data-slot="icon">
-										<path
-											stroke-linecap="round"
-											stroke-linejoin="round"
-											d="M2.25 12.75V12A2.25 2.25 0 0 1 4.5 9.75h15A2.25 2.25 0 0 1 21.75 12v.75m-8.69-6.44-2.12-2.12a1.5 1.5 0 0 0-1.061-.44H4.5A2.25 2.25 0 0 0 2.25 6v12a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9a2.25 2.25 0 0 0-2.25-2.25h-5.379a1.5 1.5 0 0 1-1.06-.44Z" />
-									</svg>
-									<span class="ml-3 flex-auto truncate">Workflow Inc. / Website Redesign</span>
-								</li>
-							</ul>
-						</li> -->
 						<li>
-							<h2 class="text-xs font-semibold text-gray-900">{$t('commandPalette', 'patients', {}, 'Patients')}</h2>
+							<h2 class="text-xs font-semibold text-gray-900">
+								{$t('commandPalette', 'patients', {}, 'Patients')}
+							</h2>
 							<div class="-mx-4 mt-2 text-sm text-gray-700">
 								<!-- Active: "bg-indigo-600 text-white outline-hidden" -->
 								{#each commandPalette.filteredPatients as patient}
@@ -131,7 +107,8 @@
 											{patient.nom?.substring(0, 1)}
 											{patient.prenom?.substring(0, 1)}
 										</div>
-										<span class="ml-3 flex-auto truncate">{patient.nom} {patient.prenom}</span>
+										<span class="ml-3 flex-auto truncate dark:text-gray-200"
+											>{patient.nom} {patient.prenom}</span>
 									</button>
 								{/each}
 							</div>
@@ -166,11 +143,13 @@
 				{/if}
 
 				<!-- Footer -->
-				<div class="flex flex-wrap items-center bg-gray-50 px-4 py-2.5 text-xs text-gray-700">
+				<div
+					class="flex flex-wrap items-center bg-gray-50 px-4 py-2.5 text-xs text-gray-700 dark:bg-gray-900 dark:text-gray-300">
 					{$t('commandPalette', 'helpFooter', {}, 'Type')}
-					<kbd
-						class="mx-1 flex size-5 items-center justify-center rounded-sm border border-gray-400 bg-white font-semibold text-gray-900 sm:mx-2"
-						>?</kbd> {$t('commandPalette', 'helpFooter2', {}, 'for help.')}
+
+					<Kbd content="?" className="mx-1" />
+
+					{$t('commandPalette', 'helpFooter2', {}, 'for help.')}
 				</div>
 			{/await}
 		</div>

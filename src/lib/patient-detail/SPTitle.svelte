@@ -4,15 +4,11 @@
 	import { get } from 'svelte/store';
 	import PageTitle from '../components/PageTitle.svelte';
 	import BoutonPrincipalAvecIcone from '../components/BoutonPrincipalAvecIcone.svelte';
-	import Dropdown from '../components/dropdowns/Dropdown.svelte';
-	import {
-		dividerDropper,
-		dropdownItemWithIcon
-	} from '../components/dropdowns/DropdownSnippets.svelte';
 	import { editIcon, linkIcon, deleteIcon } from '../ui/svgs/IconSnippets.svelte';
 	import { goto, pushState } from '$app/navigation';
 	import Modal from '../cloud/libraries/overlays/Modal.svelte';
 	import { appState } from '../managers/AppState.svelte';
+	import TwDropdown from '../components/TWElements/TWDropdown.svelte';
 
 	const modal = {
 		title: get(t)('patients.detail', 'deleteModal.title'),
@@ -23,34 +19,23 @@
 
 	let { patient, currentSp } = $props();
 	let items = [
-		// {
-		// 	name: get(t)('patients.detail', 'attestation'),
-		// 	href: `/dashboard/patients/${patient.patient_id}/situation-pathologique/${currentSp.sp_id}/attestations/create`,
-		// 	condition:
-		// 		currentSp?.seances.filter((seance) => {
-		// 			return (
-		// 				dayjs(dayjs(seance.date).format('YYYY-MM-DD')).isBefore(dayjs()) &&
-		// 				!seance.attestation_id
-		// 			);
-		// 		}).length > 0,
-		// 	icon: euroIcon
-		// },
-		// {
-		// 	name: get(t)('patients.detail', 'prescription'),
-		// 	href:
-		// 		`/dashboard/patients/${patient.patient_id}/situation-pathologique/${currentSp.sp_id}` +
-		// 		'/prescriptions/create',
-		// 	condition: true,
-		// 	icon: pagePlusIcon
-		// },
-		// {
-		// 	name: get(t)('patients.detail', 'prestations'),
-		// 	href:
-		// 		`/dashboard/patients/${patient.patient_id}/situation-pathologique/${currentSp.sp_id}` +
-		// 		'/generateurs/create',
-		// 	condition: true,
-		// 	icon: calendarIcon
-		// }
+		[
+			{
+				href: `/dashboard/patients/${page.params.patientId}/situation-pathologique/${page.params.spId}/details`,
+				icon: linkIcon,
+				label: 'Détails'
+			},
+			{
+				href: `/dashboard/patients/${page.params.patientId}/situation-pathologique/${page.params.spId}/update`,
+				icon: editIcon,
+				label: 'Modifier'
+			},
+			{
+				onclick: () => pushState('', { ...page.state, modal: 'deleteSp' }),
+				label: 'Supprimer',
+				icon: deleteIcon
+			}
+		]
 	];
 </script>
 
@@ -65,50 +50,17 @@
 	{#snippet title()}
 		<div class="sm:flex sm:space-x-5">
 			<div class="mt-4 text-center sm:mt-0 sm:pt-1 sm:text-left">
-				<p class="truncate text-xl font-bold text-gray-900">
+				<p class="truncate text-xl font-bold text-gray-900 dark:text-white">
 					{currentSp?.motif?.split(' ')?.slice(0, 3).join(' ')}
 					{currentSp?.motif?.split(' ')?.length > 3 ? '...' : ''}
 				</p>
-				<p class="text-sm font-medium text-gray-600">{patient?.nom} {patient?.prenom}</p>
+				<p class="text-sm font-medium text-gray-600 dark:text-gray-400">{patient?.nom} {patient?.prenom}</p>
 			</div>
 		</div>
 	{/snippet}
 	{#snippet actions()}
 		<div class="mt-5 flex justify-center sm:justify-start lg:mt-0 lg:ml-4">
-			<Dropdown inner="Actions" className="ml-3">
-				{#snippet dropper(menuItems, menuState)}
-					{@render dividerDropper(menuItems, menuState)}
-				{/snippet}
-				{#snippet menuItems()}
-					<div class="py-1">
-						{#each items as { href, name, condition, icon }}
-							{#if condition}
-								{@render dropdownItemWithIcon(href, null, name, icon)}
-							{/if}
-						{/each}
-					</div>
-					{@render dropdownItemWithIcon(
-						`/dashboard/patients/${page.params.patientId}/situation-pathologique/${page.params.spId}/details`,
-						null,
-						'Détails',
-						linkIcon
-					)}
-					<div class="py-1" role="none">
-						{@render dropdownItemWithIcon(
-							`/dashboard/patients/${page.params.patientId}/situation-pathologique/${page.params.spId}/update`,
-							null,
-							'Modifier',
-							editIcon
-						)}
-						{@render dropdownItemWithIcon(
-							undefined,
-							() => pushState('', { ...page.state, modal: 'deleteSp' }),
-							'Supprimer',
-							deleteIcon
-						)}
-					</div>
-				{/snippet}
-			</Dropdown>
+			<TwDropdown triggerText="Actions" {items} />
 
 			<span class="sm:ml-3">
 				<BoutonPrincipalAvecIcone

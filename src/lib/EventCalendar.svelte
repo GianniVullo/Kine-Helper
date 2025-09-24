@@ -113,5 +113,7 @@
 </script>
 
 {#await defaultView then view}
-	<Calendar bind:this={ec} {plugins} options={{ ...base_options, view }} />
+	<div class="w-full text-gray-900 dark:text-white">
+		<Calendar bind:this={ec} {plugins} options={{ ...base_options, view }} />
+	</div>
 {/await}

@@ -1,15 +1,14 @@
 <script>
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
+	import { info } from '../cloud/libraries/logging';
 	import { t } from '../i18n';
 	import {
+		chevronRightIcon,
 		clipBoardDocIcon,
-		homeIcon,
-		userIcon,
 		userIdIcon,
 		userMultipleIcon
 	} from '../ui/svgs/IconSnippets.svelte';
-	import { terminal } from 'virtual:terminal';
 
 	let { currentSp, patient } = $props();
 	const regex =
@@ -20,37 +19,24 @@
 	let isPatientDetailPage = $derived(patientRegex.test(page.url.pathname));
 </script>
 
-{#snippet chevronRight()}
-	<svg
-		class="size-5 shrink-0 text-gray-400"
-		viewBox="0 0 20 20"
-		fill="currentColor"
-		aria-hidden="true"
-		data-slot="icon">
-		<path
-			fill-rule="evenodd"
-			d="M8.22 5.22a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06-1.06L11.94 10 8.22 6.28a.75.75 0 0 1 0-1.06Z"
-			clip-rule="evenodd" />
-	</svg>
-{/snippet}
-{#snippet breadcrumbsItem({ href, label, className, first, icon, isActive })}
+{#snippet breadcrumbsItem({ href, label, className, first, icon, isActive, bypass = false })}
 	<li>
 		<div class={['flex', first ? undefined : 'items-center']}>
 			{#if !first}
-				{@render chevronRight()}
+				{@render chevronRightIcon('size-5 shrink-0 text-gray-400')}
 			{/if}
 			<button
 				onclick={() => {
-					terminal.log('breadcrumbsItem clicked', isActive);
-					if (!isActive) {
+					info('breadcrumbsItem clicked', isActive);
+					if (!isActive || bypass) {
 						goto(href);
 					}
 				}}
 				class={[
-					'text-sm font-medium text-gray-500 hover:text-gray-700',
+					'text-sm font-medium text-gray-400 hover:text-gray-700 sm:text-gray-500 dark:hover:text-gray-300 dark:sm:hover:text-gray-400',
 					className,
 					!first && 'ml-2 sm:ml-4',
-					isActive && 'text-indigo-600',
+					isActive && 'text-indigo-600 dark:text-indigo-300',
 					!isActive && 'hover:underline'
 				]}>
 				{#if icon}
@@ -67,26 +53,6 @@
 {/snippet}
 
 <div>
-	<!-- <nav class="sm:hidden" aria-label="Back">
-		<button
-			onclick={() => {
-				history.back();
-			}}
-			class="flex items-center text-sm font-medium text-gray-500 hover:text-gray-700">
-			<svg
-				class="-ml-1 mr-1 size-5 shrink-0 text-gray-400"
-				viewBox="0 0 20 20"
-				fill="currentColor"
-				aria-hidden="true"
-				data-slot="icon">
-				<path
-					fill-rule="evenodd"
-					d="M11.78 5.22a.75.75 0 0 1 0 1.06L8.06 10l3.72 3.72a.75.75 0 1 1-1.06 1.06l-4.25-4.25a.75.75 0 0 1 0-1.06l4.25-4.25a.75.75 0 0 1 1.06 0Z"
-					clip-rule="evenodd" />
-			</svg>
-			Retour
-		</button>
-	</nav> -->
 	<nav class="flex" aria-label="Breadcrumb">
 		<ol role="list" class="flex items-center space-x-2 sm:space-x-4">
 			{@render breadcrumbsItem({
@@ -123,7 +89,8 @@
 							currentSp.sp_id +
 							'/attestations',
 						label: 'Tarification',
-						isActive: true
+						isActive: true,
+						bypass: true
 					})}
 				{:else if page.route.id.includes('seances')}
 					{@render breadcrumbsItem({
@@ -134,7 +101,8 @@
 							currentSp.sp_id +
 							'/seances',
 						label: $t('patients.detail', 'prestations', {}, 'Sessions'),
-						isActive: true
+						isActive: true,
+						bypass: true
 					})}
 				{:else if page.route.id.includes('prescriptions')}
 					{@render breadcrumbsItem({
@@ -145,7 +113,8 @@
 							currentSp.sp_id +
 							'/prescriptions',
 						label: $t('sp.detail', 'prescriptions', {}, 'Prescriptions'),
-						isActive: true
+						isActive: true,
+						bypass: true
 					})}
 				{:else if page.route.id.includes('documents')}
 					{@render breadcrumbsItem({
@@ -156,7 +125,8 @@
 							currentSp.sp_id +
 							'/documents',
 						label: $t('sp.detail', 'documents', {}, 'Documents'),
-						isActive: true
+						isActive: true,
+						bypass: true
 					})}
 				{/if}
 			{/if}

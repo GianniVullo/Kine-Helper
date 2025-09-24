@@ -1,5 +1,5 @@
 <script>
-	let { display, color = 'bg-gray-500/25', z = 'z-50' } = $props();
+	let { display, color = 'bg-gray-500/25 dark:bg-gray-900/90', z = 'z-50' } = $props();
 </script>
 
 <div

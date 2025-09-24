@@ -1,5 +1,5 @@
 <script>
-	import logo from '$lib/assets/logo.png';
+	import logo from '$lib/assets/logo.avif';
 	import { viewColumnIcon } from '../../ui/svgs/IconSnippets.svelte';
 	import CommandPaletteManualOpener from '../../cloud/libraries/command-palette/CommandPaletteManualOpener.svelte';
 
@@ -43,7 +43,10 @@
 			</div>
 		{/if}
 		<div class={{ 'col-span-4 overflow-hidden': sidePanel.isOpen, hidden: !sidePanel.isOpen }}>
-			<h5 class="text-center text-xl font-semibold whitespace-nowrap text-gray-800">Kiné Helper</h5>
+			<h5
+				class="text-center text-xl font-semibold whitespace-nowrap text-gray-800 dark:text-gray-400">
+				Kiné Helper
+			</h5>
 		</div>
 		{#if sidePanel.isOpen}
 			<button

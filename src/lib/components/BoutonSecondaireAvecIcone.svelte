@@ -8,7 +8,8 @@
 		iconCSS = undefined,
 		rtl = false,
 		children,
-		className = 'inline-flex items-center bg-white text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50'
+		className = 'inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-xs inset-ring inset-ring-gray-300 hover:bg-gray-50 dark:bg-white/10 dark:text-white dark:shadow-none dark:inset-ring-white/5 dark:hover:bg-white/20',
+		overiddeIconCSS
 	} = $props();
 
 	const sizes = {
@@ -22,20 +23,20 @@
 
 {#if href}
 	<a {href} class={[className + sizes[size], rtl ? 'flex-row-reverse' : '']}>
-		{@render icon(iconClassName)}
+		{@render icon(overiddeIconCSS ?? iconClassName)}
 		{#if inner}
 			{inner}
 		{:else if children}
-			{@render children()}
+			{@render children?.()}
 		{/if}
 	</a>
 {:else}
 	<button {onclick} class={[className + sizes[size], rtl ? 'flex-row-reverse' : '']}>
-		{@render icon(iconClassName)}
+		{@render icon(overiddeIconCSS ?? iconClassName)}
 		{#if inner}
 			{inner}
 		{:else if children}
-			{@render children()}
+			{@render children?.()}
 		{/if}
 	</button>
 {/if}

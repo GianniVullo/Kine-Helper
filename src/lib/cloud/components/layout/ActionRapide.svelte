@@ -1,12 +1,10 @@
 <script>
-	import { calendarIcon, cogIcon, euroIcon, userIcon } from '../../../ui/svgs/IconSnippets.svelte';
-
 	let { actionRapides, label } = $props();
 </script>
 
 {#if !label}
-	<h2 class="mt-20 text-base font-semibold text-gray-900">Actions rapides</h2>
-	<p class="mt-1 text-sm text-gray-500">
+	<h2 class="mt-20 text-base font-semibold text-gray-900 dark:text-white">Actions rapides</h2>
+	<p class="mt-1 text-sm text-gray-500 dark:text-gray-400 mb-2">
 		Utilisez les actions rapides ci-dessous pour démarrer rapidement votre session.
 	</p>
 {:else}
@@ -22,7 +20,7 @@
 					</span>
 				</div>
 				<div class="min-w-0 flex-1">
-					<div class="text-sm font-medium text-gray-900">
+					<div class="text-sm font-medium text-gray-900 dark:text-white">
 						{#if onclick}
 							<button {onclick}>{titre}</button>
 						{:else}
@@ -32,7 +30,7 @@
 							</a>
 						{/if}
 					</div>
-					<p class="text-sm text-gray-500">{description}</p>
+					<p class="text-sm text-gray-500 dark:text-gray-400">{description}</p>
 				</div>
 				<div class="shrink-0 self-center">
 					<svg

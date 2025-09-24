@@ -6,7 +6,8 @@
 		icon,
 		size = 'lg',
 		iconCSS = undefined,
-		className = 'inline-flex items-center bg-indigo-600 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600'
+		className = 'inline-flex items-center bg-indigo-600 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600',
+		additionnalCSS
 	} = $props();
 
 	const sizes = {
@@ -19,12 +20,12 @@
 </script>
 
 {#if href}
-	<a {href} class={className + sizes[size]}>
+	<a {href} class={[className, sizes[size], additionnalCSS]}>
 		{@render icon(iconClassName)}
 		{@html inner}
 	</a>
 {:else}
-	<button {onclick} class={className + sizes[size]}>
+	<button {onclick} class={[className, sizes[size], additionnalCSS]}>
 		{@render icon(iconClassName)}
 		{@html inner}
 	</button>

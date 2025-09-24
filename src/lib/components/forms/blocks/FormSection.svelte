@@ -15,9 +15,9 @@
 </script>
 
 <div class={['border-b border-gray-900/10 pb-12', className]}>
-	<h2 class="text-base/7 font-semibold text-gray-900">{titre}</h2>
+	<h2 class="text-base/7 font-semibold text-gray-900 dark:text-white">{titre}</h2>
 	{#if description}
-		<p class="mt-1 text-sm/6 text-gray-600">
+		<p class="mt-1 text-sm/6 text-gray-600 dark:text-gray-500">
 			{@html description}
 		</p>
 	{/if}

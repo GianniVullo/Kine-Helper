@@ -5,27 +5,27 @@
 	import { openModal } from '../../cloud/libraries/overlays/modalUtilities.svelte';
 	import MenuHeader from './MenuHeader.svelte';
 	import OrganizationWidget from './OrganizationWidget.svelte';
+	import DarkModeSwitch from '../../cloud/libraries/DarkModeSwitch.svelte';
+
 	let { sidePanel, menuItems } = $props();
 </script>
 
 <div
 	id="main-sidebar"
 	class={[
-		'hidden duration-300 lg:fixed lg:inset-y-0 lg:z-10 lg:flex lg:flex-col',
+		'hidden duration-300 lg:fixed lg:inset-y-0 lg:z-10 lg:flex lg:flex-col dark:bg-gray-900',
 		sidePanel.isOpen ? 'lg:w-72' : 'lg:w-20'
 	]}>
 	<!-- Sidebar component, swap this element with another sidebar if you like -->
 	<div
-		class={[
-			'flex grow flex-col gap-y-5 overflow-y-auto border-r border-gray-200',
-			sidePanel.isOpen ? 'bg-gray-300/60' : 'bg-gray-800'
-		]}>
+		class="flex grow flex-col gap-y-5 overflow-y-auto border-r border-gray-200 bg-white dark:border-white/10 dark:bg-black/10">
 		<MenuHeader {sidePanel} />
 		<nav class="flex flex-1 flex-col px-6">
 			<ul role="list" class="flex flex-1 flex-col gap-y-7">
 				<li>
-					<div class="text-xs/6 font-semibold text-gray-400">Menu</div>
+					<div class="text-xs/6 font-semibold text-gray-400 dark:text-gray-500">Menu</div>
 					<ul role="list" class="-mx-2 mt-2 space-y-1">
+						<!-- Current: "bg-gray-50 dark:bg-white/5 text-indigo-600 dark:text-white", Default: "text-gray-700 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-white/5" -->
 						{#each menuItems as { href, svg, name, active }}
 							<li aria-current={active ? 'page' : undefined}>
 								<a
@@ -33,14 +33,14 @@
 									class={[
 										'group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold',
 										active || page.url.pathname === href
-											? 'text-sidebar-600 bg-gray-50'
-											: 'hover:text-sidebar-600 text-gray-700 hover:bg-gray-50',
+											? 'bg-gray-50 text-indigo-600 dark:bg-white/5 dark:text-white'
+											: 'text-gray-700 hover:bg-gray-50 hover:text-indigo-600 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-white',
 										sidePanel.isOpen ? '' : 'items-center justify-center'
 									]}>
 									<svg
 										class="size-6 shrink-0 {active || page.url.pathname === href
-											? 'text-sidebar-600 bg-gray-50'
-											: 'text-sidebar-400 group-hover:text-sidebar-600'}"
+											? 'text-indigo-600 dark:text-indigo-400'
+											: 'text-sidebar-600'}"
 										fill="none"
 										viewBox="0 0 24 24"
 										stroke-width="1.5"
@@ -58,24 +58,25 @@
 					</ul>
 				</li>
 				<li>
-					<div class="text-xs/6 font-semibold text-gray-400">Actions</div>
+					<!-- Current: "bg-gray-50 dark:bg-white/5 text-indigo-600 dark:text-white", Default: "text-gray-700 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-white/5" -->
+					<div class="text-xs/6 font-semibold text-gray-400 dark:text-gray-500">Actions</div>
 					<ul role="list" class="-mx-2 mt-2 space-y-1">
 						{#snippet secondaryAction({
 							icon,
 							modalName,
 							label,
-							className = 'size-4 shrink-0 text-gray-700 group-hover:text-sidebar-600'
+							className = 'size-4 shrink-0 text-gray-700 dark:text-gray-500 flex items-center justify-center'
 						})}
 							<li>
 								<button
 									onclick={() => openModal({ name: modalName })}
 									class={[
-										'group hover:text-sidebar-600 flex w-full gap-x-3 rounded-md p-2 text-sm/6 font-semibold  text-gray-700',
+										'group flex w-full gap-x-3 rounded-md p-2 text-sm/6 font-semibold  text-gray-700 hover:bg-gray-50 hover:text-indigo-600 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-white',
 										sidePanel.isOpen ? '' : 'justify-center text-center'
 									]}>
 									<span
 										class={[
-											'group-hover:border-sidebar-600 group-hover:text-sidebar-600 flex size-6 shrink-0 items-center justify-center rounded-lg border border-gray-200 text-[0.625rem] font-medium text-gray-400',
+											'flex size-6 shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-white text-[0.625rem] font-medium text-gray-400 group-hover:border-indigo-600 group-hover:text-indigo-600 dark:border-white/10 dark:bg-white/5 dark:group-hover:border-white/20 dark:group-hover:text-white',
 											sidePanel.isOpen ? 'bg-white' : 'bg-gray-400'
 										]}>
 										{@render icon(className)}
@@ -105,11 +106,9 @@
 						{@render secondaryAction({
 							modalName: 'bugReport',
 							icon: questionMark,
-							className: sidePanel.isOpen
-								? 'flex size-6 shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-white text-xs font-medium text-gray-700 group-hover:border-sidebar-600 group-hover:text-sidebar-600'
-								: 'flex size-6 shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-gray-400 text-xs font-medium text-gray-700 group-hover:border-sidebar-600 group-hover:text-sidebar-600',
 							label: $t('sidebar', 'bugReport')
 						})}
+						<DarkModeSwitch isOpen={sidePanel.isOpen} />
 					</ul>
 				</li>
 				<!-- {@render TeamWidgetDesktop()} -->

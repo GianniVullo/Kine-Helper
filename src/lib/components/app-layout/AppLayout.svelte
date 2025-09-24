@@ -1,5 +1,5 @@
 <script>
-	import logo from '$lib/assets/logo.png';
+	import logo from '$lib/assets/logo.avif';
 	import { page } from '$app/state';
 	import { t, locale } from '$lib/i18n/index';
 	import { get } from 'svelte/store';
@@ -51,7 +51,7 @@
 
 <Modals />
 
-<div>
+<div class="bg-white dark:bg-gray-900">
 	<!-- Off-canvas menu for mobile, show/hide based on off-canvas menu state. -->
 	<MobileDrawer bind:showDrawer {logo} {menuItems} />
 	<!-- Static sidebar for desktop -->

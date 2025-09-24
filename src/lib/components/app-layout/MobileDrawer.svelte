@@ -3,6 +3,7 @@
 	import BackDrop from '../../cloud/libraries/command-palette/BackDrop.svelte';
 	import { openModal } from '../../cloud/libraries/overlays/modalUtilities.svelte';
 	import SignOutIcon from '../../ui/svgs/SignOutIcon.svelte';
+	import DarkModeSwitch from '../../cloud/libraries/DarkModeSwitch.svelte';
 
 	import { t } from '../../i18n';
 
@@ -55,29 +56,32 @@
 			</div>
 
 			<!-- Sidebar component, swap this element with another sidebar if you like -->
-			<div class="flex grow flex-col gap-y-5 overflow-y-auto bg-gray-100 px-6 pb-2">
+			<div
+				class="flex grow flex-col gap-y-5 overflow-y-auto bg-white px-6 pb-2 dark:bg-gray-900 dark:ring dark:ring-white/10 dark:before:pointer-events-none dark:before:absolute dark:before:inset-0 dark:before:bg-black/10">
 				<div class="flex h-16 shrink-0 items-center">
 					<img class="h-8 w-auto" src={logo} alt="Kiné Helper" />
 				</div>
-				<nav class="flex flex-1 flex-col">
+				<nav class="mt-4 flex flex-1 flex-col">
 					<ul role="list" class="flex flex-1 flex-col gap-y-7">
 						<li>
 							<ul role="list" class="-mx-2 space-y-1">
-								<!-- Current: "", Default: "" -->
 								{#each menuItems as { href, svg, name }}
 									<li>
+										<!--
+										Current: "bg-gray-50 dark:bg-white/5 text-indigo-600 dark:text-white",
+										 Default: "text-gray-700 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-white/5" -->
 										<a
 											{href}
 											class={[
 												'group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold',
 												page.url.pathname === href
-													? 'text-sidebar-600 bg-gray-50'
-													: 'hover:text-sidebar-600 text-gray-700 hover:bg-gray-50'
+													? 'bg-gray-50 text-indigo-600 dark:bg-white/5 dark:text-white'
+													: 'text-gray-700 hover:bg-gray-50 hover:text-indigo-600 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-white'
 											]}>
 											<svg
 												class="size-6 shrink-0 {page.url.pathname === href
-													? 'text-sidebar-600 bg-gray-50'
-													: 'group-hover:text-sidebar-600 text-gray-400'}"
+													? 'text-gray-700 hover:bg-gray-50 hover:text-indigo-600 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-white'
+													: 'text-gray-700 group-hover:text-indigo-600 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-white'}"
 												fill="none"
 												viewBox="0 0 24 24"
 												stroke-width="1.5"
@@ -94,16 +98,16 @@
 						</li>
 						<li>
 							<div class="text-xs/6 font-semibold text-gray-400">Actions</div>
+							<!-- Current: "bg-gray-50 dark:bg-white/5 text-indigo-600 dark:text-white", Default: "text-gray-700 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-white/5" -->
 							<ul role="list" class="-mx-2 mt-2 space-y-1">
 								<!--! Bouton pour se déconnecter -->
 								<li>
 									<button
 										onclick={() => openModal({ name: 'signout' })}
-										class="group hover:text-sidebar-600 flex w-full gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-gray-700 hover:bg-gray-50">
+										class="group flex w-full gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-gray-700 hover:bg-gray-50 hover:text-indigo-600 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-white">
 										<span
-											class="group-hover:border-sidebar-600 group-hover:text-sidebar-600 flex size-6 shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-white text-[0.625rem] font-medium text-gray-400">
-											<SignOutIcon
-												class="group-hover:text-sidebar-600 size-4 shrink-0 text-gray-400" />
+											class="flex size-6 shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-white text-[0.625rem] font-medium text-gray-400 group-hover:border-indigo-600 group-hover:text-indigo-600 dark:border-white/10 dark:bg-white/5 dark:group-hover:border-white/20 dark:group-hover:text-white">
+											<SignOutIcon class="size-4 shrink-0 text-gray-400" />
 										</span>
 										{$t('sidebar', 'logout', null, 'Log out')}
 									</button>
@@ -112,16 +116,16 @@
 								<li>
 									<button
 										onclick={() => openModal({ name: 'docModal' })}
-										class="group hover:text-sidebar-600 flex w-full gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-gray-700 hover:bg-gray-50">
+										class="group flex w-full gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-gray-700 hover:bg-gray-50 hover:text-indigo-600 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-white">
 										<span
-											class="group-hover:border-sidebar-600 group-hover:text-sidebar-600 flex size-6 shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-white text-[0.625rem] font-medium text-gray-400">
+											class="flex size-6 shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-white text-[0.625rem] font-medium text-gray-400 group-hover:border-indigo-600 group-hover:text-indigo-600 dark:border-white/10 dark:bg-white/5 dark:group-hover:border-white/20 dark:group-hover:text-white">
 											<svg
 												xmlns="http://www.w3.org/2000/svg"
 												fill="none"
 												viewBox="0 0 24 24"
 												stroke-width="1.5"
 												stroke="currentColor"
-												class="group-hover:text-sidebar-600 size-4 shrink-0 text-gray-400">
+												class="size-4 shrink-0 text-gray-400">
 												<path
 													stroke-linecap="round"
 													stroke-linejoin="round"
@@ -135,13 +139,14 @@
 								<li>
 									<button
 										onclick={() => openModal({ name: 'bugReport' })}
-										class="group hover:text-sidebar-600 flex w-full gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-gray-700 hover:bg-gray-50">
+										class="group flex w-full gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-gray-700 hover:bg-gray-50 hover:text-indigo-600 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-white">
 										<span
-											class="group-hover:border-sidebar-600 group-hover:text-sidebar-600 flex size-6 shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-white text-xs font-medium text-gray-400"
+											class="flex size-6 shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-white text-[0.625rem] font-medium text-gray-400 group-hover:border-indigo-600 dark:border-white/10 dark:bg-white/5 dark:group-hover:border-white/20"
 											>?</span>
 										{$t('sidebar', 'bugReport')}
 									</button>
 								</li>
+								<DarkModeSwitch isOpen={true} />
 							</ul>
 						</li>
 					</ul>
