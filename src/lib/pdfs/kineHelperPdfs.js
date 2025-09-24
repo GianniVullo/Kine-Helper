@@ -11,6 +11,7 @@ import {
 } from '../utils/fsAccessor';
 import { appState } from '../managers/AppState.svelte';
 import { invoke } from '@tauri-apps/api/core';
+import { info } from '../cloud/libraries/logging';
 
 function yPositionStore(initialValue) {
 	const yStore = writable(initialValue);
@@ -66,6 +67,7 @@ export class PDFGeneration {
 		return dirPath;
 	}
 	async save_file() {
+		info('In PDFGeneration.save_file');
 		this.buildPdf();
 		console.log('in save_file, pdf built');
 		let docOutput = this.doc.output('arraybuffer');
@@ -119,6 +121,7 @@ export class PDFGeneration {
 
 		//! ça ne sert à rien de stocker le pdf dans le cloud. Ce n'est pas très conséquent de le générer à chaque fois
 		if (!(await file_exists(path))) {
+			info("in PDFGeneration.open and, obviously file doesn't exist so we save it");
 			//* Si le pdf n'existe pas dans le filesystem on le crée
 			await this.save_file();
 		}

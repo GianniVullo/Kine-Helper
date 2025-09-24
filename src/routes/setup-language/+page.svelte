@@ -7,14 +7,14 @@
 	import { writable } from 'svelte/store';
 	import { CircleArrowIcon } from '../../lib/ui/svgs/index';
 	import { tick } from 'svelte';
-	import { terminal } from 'virtual:terminal';
 	import Database from '@tauri-apps/plugin-sql';
+	import { info } from '../../lib/cloud/libraries/logging';
 
 	let items = writable(['FR', 'NL', 'DE', 'EN']);
 	let message;
 
 	async function onSelectedLanguage(selectedLocale) {
-		terminal.log('selectedLocale', selectedLocale);
+		info('selectedLocale', selectedLocale);
 		let button = document.getElementById(selectedLocale);
 		button.disabled = true;
 		let buttonSpinner = document.getElementById(`inner-${selectedLocale}`);
@@ -26,10 +26,10 @@
 		// Ensuite on va chercher sur le serveur la dernière version des traductions en 2 étapes : d'abord query le JSON des traductions (similaire au json des update de Tauri)
 		// Finalement on va faire ça avec la DB
 		let { data, error } = await supabase.from('translations').select().eq('code', selectedLocale);
-		terminal.log('data', data);
-		terminal.log('error', error);
+		info('data', data);
+		info('error', error);
 		if (error) {
-			terminal.error('error', error);
+			info('error', error);
 			message = `
                 <div class="flex flex-col space-y-2">
                     <h5>Erreur lors de la récupération des traductions, veuillez réessayer plus tard</h5>
@@ -42,7 +42,7 @@
 			return;
 		}
 		let translation = data[0];
-		terminal.log('translation', translation);
+		info('translation', translation);
 
 		//! travailler avec un bête JSON ne fonctionnait pas sur Windows ou iOS, j'ignore la raison...
 		let transFile = {
@@ -56,8 +56,8 @@
 			d[selectedLocale] = transFile.translations[selectedLocale];
 			return d;
 		});
-		terminal.log('transFile', transFile);
-		terminal.log('dictionnary', $dictionnary);
+		info('transFile', transFile);
+		info('dictionnary', $dictionnary);
 		try {
 			let db = await Database.load('sqlite:kinehelper.db');
 			await db.execute(
@@ -73,7 +73,7 @@
 			);
 			await db.close()
 		} catch (error) {
-			terminal.log('Error writing settings.json', error);
+			info('Error writing settings.json', error);
 		}
 		// Ensuite on va mettre à jour le store des traductions
 		locale.set(selectedLocale);

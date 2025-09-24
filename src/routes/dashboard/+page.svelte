@@ -5,7 +5,6 @@
 	import { calendarIcon, cogIcon, euroIcon, userIcon } from '../../lib/ui/svgs/IconSnippets.svelte';
 	import { goto } from '$app/navigation';
 	import ActionRapide from '../../lib/cloud/components/layout/ActionRapide.svelte';
-	import { terminal } from 'virtual:terminal';
 	// import OnBoardingWidget from '../../lib/cloud/components/layout/on-boarding/OnBoardingWidget.svelte';
 
 	let { data } = $props();

@@ -4,18 +4,18 @@
 	import { onMount } from 'svelte';
 	import Notification from '../lib/cloud/libraries/overlays/Notification.svelte';
 	import { onNavigate } from '$app/navigation';
-	import { terminal } from 'virtual:terminal';
+	import { info } from '../lib/cloud/libraries/logging';
 	// import Modal2 from '../lib/cloud/libraries/overlays/Modal2.svelte';
 
 	let { children } = $props();
 
 	onMount(() => {
-		terminal.log('App layout mounted');
+		info('App layout mounted');
 		const myEvent = new CustomEvent('svelteLoaded', {
 			detail: { key: 'value' }
 		});
 		document.dispatchEvent(myEvent);
-		terminal.log('Custom event svelteLoaded dispatched');
+		info('Custom event svelteLoaded dispatched');
 	});
 
 	onNavigate((navigation) => {

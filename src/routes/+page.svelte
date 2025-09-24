@@ -5,9 +5,7 @@
 	import { onDestroy } from 'svelte';
 	import { platform } from '@tauri-apps/plugin-os';
 	import { goto } from '$app/navigation';
-	import logoUrl from '$lib/assets/logo head.png';
-	// import { scan, checkPermissions, requestPermissions } from '@tauri-apps/plugin-barcode-scanner';
-	import { terminal } from 'virtual:terminal';
+	import logoUrl from '$lib/assets/logo head.avif';
 	// import RichTextEditor from '../lib/cloud/libraries/rich-text-editor/RichTextEditor.svelte';
 	// import TemplateCreatorModal from '../lib/cloud/libraries/rich-text-editor/TemplateCreatorModal.svelte';
 	// `windowed: true` actually sets the webview to transparent
@@ -37,24 +35,6 @@
 	let message = '';
 </script>
 
-<!-- <RichTextEditor /> -->
-<!-- <TemplateCreatorModal /> -->
-<!-- <button
-	onclick={async () => {
-		terminal.log('Button clicked');
-		let permissions = await checkPermissions();
-		terminal.log('Permissions:', permissions);
-		if (permissions !== 'granted') {
-			permissions = await requestPermissions();
-			terminal.log('Requested Permissions:', permissions);
-			if (permissions.camera !== 'granted') {
-				message = 'no grant';
-				return;
-			}
-		}
-		terminal.log('Scanning...');
-		scan({ windowed: false, formats: [''] });
-	}}>TEST</button> -->
 <div class="flex min-h-full flex-col justify-center px-6 py-12 lg:px-8">
 	<div class="sm:mx-auto sm:w-full sm:max-w-sm">
 		<div class="flex flex-col items-center justify-center">

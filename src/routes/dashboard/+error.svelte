@@ -1,6 +1,5 @@
 <script>
-    import { page } from '$app/stores';
-	import ResponsiveSideBar from '../../lib/cloud/components/layout/ResponsiveSideBar.svelte';
+	import { page } from '$app/stores';
 </script>
 
 <div class="error-container">

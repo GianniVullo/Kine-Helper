@@ -10,8 +10,8 @@
 	import { supabase } from '../../lib';
 	import Spiner from '../../lib/cloud/components/layout/Spiner.svelte';
 	import { platform } from '@tauri-apps/plugin-os';
-	import { terminal } from 'virtual:terminal';
 	import Database from '@tauri-apps/plugin-sql';
+	import { info } from '../../lib/cloud/libraries/logging';
 
 	// <!--* Idée de ce composant -->
 	// Ici il faut attendre que le Dom soit complètement chargé pour éviter tout flickering.
@@ -26,7 +26,7 @@
 	let contentSize;
 	let indexOfContentDownload;
 	onMount(() => {
-		terminal.log('splashscreen mounted');
+		info('splashscreen mounted');
 		const myEvent = new CustomEvent('svelteLoaded', {
 			detail: { key: 'value' }
 		});
@@ -39,12 +39,12 @@
 	// <!--* Initialization et mise-à-jour de l'application -->
 	function lookingForUpdateAndInstallOrContinue() {
 		return new Promise((resolve, reject) => {
-			terminal.log('initializing check');
+			info('initializing check');
 			const platformName = platform();
 			if (platformName !== 'ios' && platformName !== 'android') {
 				check()
 					.then((update) => {
-						terminal.log('update', update);
+						info('update', update);
 						// <!--? Si une MAJ est trouvée -->
 						if (update?.available) {
 							// <!--? ETAPE 1 : Update l'UI pour signaler le téléchargement -->
@@ -82,7 +82,7 @@
 									resolve();
 								})
 								.catch((e) => {
-									terminal.log('erreur dans le downloadAndInstall', e);
+									info('erreur dans le downloadAndInstall', e);
 								});
 						} else {
 							// <!--? Si aucune MAJ n'est trouvée -->
@@ -100,7 +100,7 @@
 						);
 					});
 			} else {
-				terminal.log('Mobile platform detected, skipping update check and going to lang update');
+				info('Mobile platform detected, skipping update check and going to lang update');
 				loadingStatus.push(
 					`${get(t)('splash', 'mobilePlatform', null, 'Mobile platform detected, skipping update check')}`
 				);
@@ -111,22 +111,22 @@
 	}
 
 	async function updateLang(resolve, reject) {
-		terminal.log('updateLangPromise');
+		info('updateLangPromise');
 		// D'abord vérifier si le fichier /settings.json existe
-		terminal.log('Checking if translations are already in the database');
+		info('Checking if translations are already in the database');
 		let settingsExists = false;
 		let db;
 		let translations;
 		try {
 			db = await Database.load('sqlite:kinehelper.db');
-			terminal.log('db loaded', db);
+			info('db loaded', db);
 			translations = await db.select('SELECT * FROM translations');
-			terminal.log('translations', translations);
+			info('translations', translations);
 			settingsExists = translations.length > 0;
 		} catch (error) {
-			terminal.error('Error loading database', error);
+			info('Error loading database', error);
 		}
-		terminal.log('settingsExists', settingsExists);
+		info('settingsExists', settingsExists);
 		if (settingsExists) {
 			translations = translations.map((t) => {
 				t.translation = JSON.parse(t.translation);
@@ -134,21 +134,21 @@
 			});
 			let defaultTranslation = translations.find((t) => t.is_default);
 			let currentVersion = defaultTranslation.version;
-			terminal.log('currentVersion', currentVersion);
+			info('currentVersion', currentVersion);
 			// On call l'API pour récupérer la version la plus récente du fichier de traduction et on compare avec la version actuelle.
 			const { data, error } = await supabase
 				.from('translations')
 				.select('version')
 				.eq('code', defaultTranslation.code);
-			terminal.log('data', data);
-			terminal.log('error', error);
+			info('data', data);
+			info('error', error);
 			if (error) {
 				// if error let's not block users because the i18n is supposed to be optional (through the fallback args from $t)
 				goto('/');
 				return resolve();
 			}
 			let newVersion = data[0].version;
-			terminal.log('newVersion', newVersion);
+			info('newVersion', newVersion);
 			if (newVersion > currentVersion) {
 				// Si la version est différente
 				loadingStatus.push(
@@ -188,8 +188,8 @@
 	}
 	async function queryDictionnary(defaultLocale) {
 		const { data, error } = await supabase.from('translations').select().eq('code', defaultLocale);
-		terminal.log('data', data);
-		terminal.log('error', error);
+		info('data', data);
+		info('error', error);
 		if (error) {
 			// Pareil, tant pis on abandonne
 			return;

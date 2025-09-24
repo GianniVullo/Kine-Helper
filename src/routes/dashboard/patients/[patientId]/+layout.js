@@ -1,7 +1,6 @@
 import { appState } from '../../../../lib/managers/AppState.svelte.js';
 import { trace } from '@tauri-apps/plugin-log';
 import { error as errorKit } from '@sveltejs/kit';
-import { terminal } from 'virtual:terminal';
 
 export async function load({ params, depends }) {
 	depends('patient:layout');

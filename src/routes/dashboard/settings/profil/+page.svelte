@@ -13,7 +13,6 @@
 	import BoutonPrincipal from '../../../../lib/components/BoutonPrincipal.svelte';
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
-	import { terminal } from 'virtual:terminal';
 	import { openModal } from '../../../../lib/cloud/libraries/overlays/modalUtilities.svelte';
 	import {
 		lazy,
@@ -33,6 +32,8 @@
 		stringLengthMoreThan1
 	} from '../../../../lib/components/forms/validators/baseValidators';
 	import { get } from 'svelte/store';
+	import DarkModeSwitch from '../../../../lib/cloud/libraries/DarkModeSwitch.svelte';
+	import { info } from '../../../../lib/cloud/libraries/logging';
 
 	let { data } = $props();
 
@@ -110,7 +111,7 @@
 	});
 
 	async function setLangAsDefault(lang) {
-		terminal.log('Setting language as default:', lang);
+		info('Setting language as default:', lang);
 		await appState.db.execute('UPDATE translations SET is_default = $1', [false]);
 		await appState.db.execute('UPDATE translations SET is_default = $1 WHERE code = $2', [
 			true,
@@ -120,7 +121,7 @@
 
 	async function changingLanguage(event) {
 		const lang = event.target.value;
-		terminal.log('Changing language to', lang);
+		info('Changing language to', lang);
 		if (lang === $locale) return;
 		// d'abord on cherche si le dictionnaire se trouve déjà dans le cache
 		let remoteVersion;
@@ -131,7 +132,7 @@
 				.select('version')
 				.eq('code', lang);
 			remoteVersion = versionList[0].version;
-			terminal.log('Version on the server :', versionList);
+			info('Version on the server :', versionList);
 			// Si le dictionnaire est à jour, on fait rien
 			if ($dictionnary[lang].version) {
 				if (versionList[0].version === $dictionnary[lang].version) {
@@ -148,10 +149,10 @@
 			'SELECT * FROM translations WHERE code = $1',
 			[lang]
 		);
-		terminal.log('Local version:', localVersion?.[0]?.version);
+		info('Local version:', localVersion?.[0]?.version);
 		const foundLocale = localVersion.length > 0;
 		if (foundLocale && localVersion?.[0]?.version === remoteVersion) {
-			terminal.log('Using local version of the dictionary');
+			info('Using local version of the dictionary');
 			locale.set(lang);
 			await setLangAsDefault(lang);
 			dictionnary.update((d) => {
@@ -172,13 +173,13 @@
 		});
 		// On sauve dans la db locale
 		if (foundLocale) {
-			terminal.log('Updating local version of the dictionary');
+			info('Updating local version of the dictionary');
 			await appState.db.execute(
 				'UPDATE translations SET translation = $1, version = $2 WHERE code = $3',
 				[data[0].translation, data[0].version, lang]
 			);
 		} else {
-			terminal.log('Inserting new local version of the dictionary');
+			info('Inserting new local version of the dictionary');
 			await appState.db.execute(
 				'INSERT INTO translations (id, created_at, code, translation, version) VALUES ($1, $2, $3, $4, $5)',
 				[data[0].id, data[0].created_at, lang, data[0].translation, data[0].version]
@@ -198,7 +199,7 @@
 		<div class="col-span-full">
 			<SimpleSelect
 				onchange={async (e) => {
-					// terminal.log('Changing language to', e.target.value);
+					// info('Changing language to', e.target.value);
 					await changingLanguage(e);
 				}}
 				value={$locale}

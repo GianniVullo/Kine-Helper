@@ -1,5 +1,4 @@
 import { appState } from '../../managers/AppState.svelte';
-import { terminal } from 'virtual:terminal';
 
 export class SidePanel {
 	isOpen = $state(true);

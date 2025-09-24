@@ -1,5 +1,4 @@
 <script>
-	import { terminal } from 'virtual:terminal';
 	import { t } from '../../../../lib/i18n';
 	import { platform } from '@tauri-apps/plugin-os';
 	import WindowsSelectionField from '../../../../lib/components/forms/fields/WindowsSelectionField.svelte';
@@ -10,16 +9,17 @@
 	import { untrack } from 'svelte';
 	import SimpleSelect from '../../../../lib/components/forms/fields/SimpleSelect.svelte';
 	import BoutonPrincipal from '../../../../lib/components/BoutonPrincipal.svelte';
+	import { info } from '../../../../lib/cloud/libraries/logging';
 
 	let imprimanteMatricielleP = new Promise(async (resolve, reject) => {
 		let { data: iM, error } = await appState.db.getRawPrinter();
 		if (error) {
-			terminal.log('error getting the imprimante', error);
+			info('error getting the imprimante', error);
 			reject(error);
 		}
 		imprimanteMatricielle = iM?.name;
 		pinNumber = iM?.metadata?.is_nine_pin;
-		terminal.log(pinNumber);
+		info(pinNumber);
 		resolve(iM);
 	});
 
@@ -27,7 +27,7 @@
 	let pinNumber = $state();
 	async function changePrinter() {
 		const { data: imprimante, error: imprimanteQueryError } = await appState.db.getRawPrinter();
-		terminal.log('imprimante', imprimante);
+		info('imprimante', imprimante);
 		if (imprimanteQueryError) {
 			toast.trigger({
 				titre: 'Erreur!',
@@ -97,7 +97,7 @@
 		pinNumber;
 		console.log('bite');
 		appState.db.getRawPrinter().then(({ data: value, error }) => {
-			terminal.log('imprimanteMatricielle', value);
+			info('imprimanteMatricielle', value);
 
 			if (imprimanteMatricielle !== value?.name || pinNumber !== value?.metadata?.is_nine_pin) {
 				untrack(() => (modified = true));
@@ -112,11 +112,11 @@
 	{#await imprimanteMatricielleP then _}
 		<FormSection titre="Périphériques" description={$t('settings', 'printer')}>
 			{#if platform() === 'windows'}
-				{terminal.log('platform is windows')}
+				{info('platform is windows')}
 				<div class="col-span-full">
 					<WindowsSelectionField
 						cb={() => {
-							terminal.log('in cb');
+							info('in cb');
 						}}
 						bind:printerField={imprimanteMatricielle} />
 				</div>

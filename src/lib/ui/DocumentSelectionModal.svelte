@@ -8,7 +8,7 @@
 	import { goto } from '$app/navigation';
 	import Field from '../components/forms/blocks/Field.svelte';
 	import BoutonPrincipal from '../components/BoutonPrincipal.svelte';
-	import { terminal } from 'virtual:terminal';
+	import { info } from '../cloud/libraries/logging';
 
 	let { accords } = $props();
 
@@ -19,8 +19,8 @@
 	];
 
 	function onValid(data) {
-		terminal.log('in onValid', data);
-		terminal.log(
+		info('in onValid', data);
+		info(
 			'going to ',
 			`/dashboard/patients/${page.params.patientId}/situation-pathologique/${page.params.spId}/documents/create-${data.docType}`
 		);

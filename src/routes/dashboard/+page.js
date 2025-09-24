@@ -1,5 +1,5 @@
+import { info } from '../../lib/cloud/libraries/logging';
 import { appState } from '../../lib/managers/AppState.svelte';
-import { terminal } from 'virtual:terminal';
 
 /** @type {import('./$types').PageLoad} */
 export async function load() {
@@ -13,7 +13,7 @@ export async function load() {
 	);
 	// si patients > 0 on peut par exemple fetch les séances facturables pour inciter le kiné à accéder à la page finance
 	if (fetchPatientError) {
-		terminal.error('fetchPatientError', fetchPatientError);
+		info('fetchPatientError', fetchPatientError);
 	}
 	if (patients.length === 0) {
 		return {
@@ -33,7 +33,7 @@ export async function load() {
 	// 		total = 0;
 	// 	}
 	// 	if (error) {
-	// 		terminal.error('Error fetching total:', error);
+
 	// 		reject(error);
 	// 		return;
 	// 	}
