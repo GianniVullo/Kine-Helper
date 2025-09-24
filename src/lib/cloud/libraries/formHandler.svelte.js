@@ -2,7 +2,7 @@ import { trace } from '@tauri-apps/plugin-log';
 import { onMount } from 'svelte';
 import { safeParse, safeParseAsync } from 'valibot';
 import { cloneDeep, isEqual } from 'lodash';
-import { terminal } from 'virtual:terminal';
+import { info } from './logging';
 //* API de validation de formulaire
 /**
  ** les features nécessaires :
@@ -82,11 +82,11 @@ export class Formulaire {
 				this.setup();
 			});
 		}
-		console.log('this.initialValues', this.initialValues);
+		info('this.initialValues', this.initialValues);
 	}
 
 	reset() {
-		console.log('resetting the form');
+		info('resetting the form');
 		for (const fieldName of Object.keys(this.validateurs)) {
 			trace('Registering ' + fieldName);
 			this.errors[fieldName] = false;
@@ -99,13 +99,13 @@ export class Formulaire {
 		let formEl = document.querySelector(this.formElement);
 		formEl.onsubmit = async (e) => {
 			e.preventDefault();
-			terminal.log('Form submitted with id', e.submitter.id);
+			info('Form submitted with id', e.submitter.id);
 
 			if (e.submitter.id !== document.querySelector(this.submiter).id) {
 				return;
 			}
 			this.loading = true;
-			terminal.log('Submitting form with id', e.submitter.id);
+			info('Submitting form with id', e.submitter.id);
 			await this.validateAndTerminate();
 			this.loading = false;
 		};
@@ -119,26 +119,28 @@ export class Formulaire {
 	}
 
 	async validateAndTerminate() {
-		terminal.log('Validating form');
+		info('Validating form');
 		let validData;
 		if (this.isAsynchronous) {
 			trace('Asynchronous validation');
-			terminal.log('Asynchronous validation with schema', this.schema);
+			info('Asynchronous validation with schema', this.schema);
 			validData = await safeParseAsync(this.schema, this.form);
 		} else {
-			terminal.group();
-			terminal.log('Synchronous validation with schema');
-			terminal.log(typeof this.schema);
-			terminal.groupEnd();
+			info('Synchronous validation with schema');
+			info(typeof this.schema);
 			try {
 				validData = safeParse(this.schema, this.form);
 			} catch (error) {
-				console.error('Validation error:', this.schema["~run"]);
+				console.error('Validation error:', this.schema['~run']);
 				validData = safeParse(this.schema, this.form);
 			}
 		}
 		if (validData.success) {
-			await this.onValid(validData.output);
+			try {
+				await this.onValid(validData.output);
+			} catch (error) {
+				info(error);
+			}
 		} else {
 			await this.onError(validData);
 		}
@@ -154,7 +156,7 @@ export class Formulaire {
 	}
 
 	evaluateAndValidate() {
-		console.log('in evaluateAndValidate with', $state.snapshot(this.form));
+		info('in evaluateAndValidate with', $state.snapshot(this.form));
 		for (const field of Object.keys(this.form)) {
 			if (this.touched[field]) {
 				trace(field + ' is touched');
@@ -167,7 +169,7 @@ export class Formulaire {
 	}
 
 	defaultOnError(data) {
-		console.log('in onError with ', data);
+		info('in onError with ', data);
 		this.extractErrorForSchema(data);
 		if (this.scrollable) {
 			document.getElementById(this.scrollable).scrollTo({ top: 0, behavior: 'smooth' });
@@ -195,9 +197,9 @@ export class Formulaire {
 	extractErrorForField(validationState) {
 		if (validationState.issues && validationState.issues.length > 0) {
 			for (const issue of validationState.issues) {
-				console.log('issue', issue);
+				info('issue', issue);
 				const fieldName = issue.path?.[0]?.key;
-				console.log('fieldName', fieldName);
+				info('fieldName', fieldName);
 				this.errors[fieldName] = issue.message;
 			}
 		}
@@ -213,7 +215,7 @@ export class Formulaire {
 		}
 		for (const field of Object.keys(this.touched)) {
 			const isTouched = this.touched[field];
-			console.log('isTouched', isTouched, 'for field', field);
+			info('isTouched', isTouched, 'for field', field);
 			if (!isTouched) {
 				delete data[field];
 			}
