@@ -188,7 +188,8 @@ export const seance_prototype_validateur = {
 	tarif_no_show_custom,
 	mode,
 	is_paid,
-	payment_method
+	payment_method,
+	organization_id: uuidVal()
 };
 
 function refineSeance(input) {

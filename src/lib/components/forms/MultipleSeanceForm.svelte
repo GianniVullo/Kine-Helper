@@ -15,7 +15,7 @@
 		initialSeanceValues
 	} from './schemas/SeanceSchema.svelte';
 	import { onMultipleSeanceUpsert } from './onSubmits.svelte';
-	import { appState } from '$lib/managers/AppState.svelte';
+	import { appState } from '../../managers/AppState.svelte.js';
 	import { onMount } from 'svelte';
 	import { page } from '$app/state';
 	import dayjs from 'dayjs';
@@ -136,7 +136,8 @@
 							seance_id: crypto.randomUUID(),
 							date: clickedDate.format('YYYY-MM-DD'),
 							seanceType: 'kiné',
-							start: clickedDate.format('HH:mm')
+							start: clickedDate.format('HH:mm'),
+							organization_id: appState.selectedOrg.id
 						};
 						console.log('newSeance', newSeance);
 
@@ -356,7 +357,10 @@
 		validations={[
 			() => {
 				console.log('Validating step 0', seance_prototype_validateur);
-				let valid = safeParse(object(seance_prototype_validateur), formHandler.form.seance_prototype);
+				let valid = safeParse(
+					object(seance_prototype_validateur),
+					formHandler.form.seance_prototype
+				);
 				console.log('Seance prototype valid:', valid);
 				if (
 					!valid.success &&
