@@ -1,7 +1,7 @@
 <script>
 	import { page } from '$app/state';
 	import AccordForm from '../../../../../../../../lib/components/forms/AccordForm.svelte';
-	import ListeEForm from '../../../../../../../../lib/components/forms/ListeEForm.svelte';
+	// import ListeEForm from '../../../../../../../../lib/components/forms/ListeEForm.svelte';
 
 	let { data } = $props();
 	const { patient, sp } = data;
@@ -23,7 +23,7 @@
 {:else if docType === 'E'}
 	{@render title("Création d'une Demande pour Pathologies Lourdes")}
 	<!-- Future implementation for Demande pour Pathologies Lourdes -->
-	<ListeEForm />
+	<!-- <ListeEForm /> -->
 {:else}
 	<p class="text-red-500">Type de document inconnu : {docType}</p>
 {/if}
