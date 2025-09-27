@@ -1,4 +1,5 @@
 <script>
+	import { pushState } from '$app/navigation';
 	import {
 		ArrowCircle,
 		errorIcon,
@@ -18,7 +19,9 @@
 	{@render errorIcon('size-5 stroke-red-400 fill-transparent')}
 {/if}
 <p class="mx-1 mr-2">{message}</p>
-<button class="flex space-x-1" onclick={() => openModal({ name: 'cloudModal' })}>
+<button
+	class="flex space-x-1"
+	onclick={() => pushState('', { modal: { component: 'cloudModal' } })}>
 	<p class="text-sm text-gray-300">voir les détails</p>
 	{@render openOutsideIcon('size-5 stroke-gray-400')}
 </button>
