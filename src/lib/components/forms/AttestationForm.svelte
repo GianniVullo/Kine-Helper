@@ -16,7 +16,7 @@
 	import { appState } from '../../managers/AppState.svelte';
 	import dayjs from 'dayjs';
 	import { onAttestationCreate } from './onSubmits.svelte';
-	import { platform } from '@tauri-apps/plugin-os';
+	import { isMobile } from '../../utils/platformwhoami';
 
 	let {
 		patient,
@@ -67,13 +67,12 @@
 			generateFactureMutuelle: patient.tiers_payant,
 			printFactureMutuelle: patient.tiers_payant,
 			numero: attestation?.numero ?? numero,
-			has_been_printed: attestation?.has_been_printed ?? false,
+			has_been_printed: isMobile() ? false : (attestation?.has_been_printed ?? false),
 			organization_id: appState.selectedOrg.id
 		},
 		onValid: onAttestationCreate,
 		mode
 	});
-	const isMobile = ['ios, android'].includes(platform());
 </script>
 
 <Form title="Création d'une nouvelle attestation" message={formHandler.message}>
@@ -84,20 +83,20 @@
 		titre="Actions"
 		description="Veuillez sélectionner les actions à effectuer pour cette attestation.">
 		{#each actionFields as field}
-			{#if !isMobile}
+			{#if !isMobile()}
 				<Field {field} bind:value={formHandler.form[field.name]} />
 			{/if}
 		{/each}
 		{#if patient.ticket_moderateur}
 			{#each patient_field as field}
-				{#if !isMobile || field.id !== 'printFacturePatient'}
+				{#if !isMobile() || field.id !== 'printFacturePatient'}
 					<Field {field} bind:value={formHandler.form[field.name]} />
 				{/if}
 			{/each}
 		{/if}
 		{#if patient.tiers_payant}
 			{#each mutuelleFields as field}
-				{#if !isMobile || field.id !== 'printFactureMutuelle'}
+				{#if !isMobile() || field.id !== 'printFactureMutuelle'}
 					<Field {field} bind:value={formHandler.form[field.name]} />
 				{/if}
 			{/each}

@@ -1,4 +1,5 @@
 import { boolean, isoDate, array, object, number, string, pipe, transform } from 'valibot';
+import { isMobile } from '../../../utils/platformwhoami';
 import { t } from '$lib/i18n';
 import { get } from 'svelte/store';
 import {
@@ -297,7 +298,7 @@ export const actionFields = [
 	{
 		id: 'has_been_printed',
 		name: 'has_been_printed',
-		inputType: 'checkbox',
+		inputType: isMobile() ? 'hidden' : 'checkbox',
 		checkboxLabel: "Imprimer l'attestation immédiatement",
 		checkboxDescription:
 			"Cochez cette case si vous souhaitez lancer l'impression de votre attestation immédiatement après son enregistrement dans la base de donnée.",
