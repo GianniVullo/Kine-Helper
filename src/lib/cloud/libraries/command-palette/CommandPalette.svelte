@@ -18,6 +18,9 @@
 			patientPromise = commandPalette.patientsPromise();
 		}
 	});
+	function focusNode(node) {
+		node.focus();
+	}
 </script>
 
 <div
@@ -58,8 +61,8 @@
 			{#await patientPromise then _}
 				<div class="grid grid-cols-1">
 					<input
+						{@attach focusNode}
 						id="command-palette-input"
-						bind:this={commandPalette.searchInput}
 						type="text"
 						class="col-start-1 row-start-1 block h-12 w-full rounded-md border-none bg-white px-3 py-1.5 pr-4 pl-11 text-base text-gray-900 outline-hidden outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:ring-0 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
 						placeholder={$t('commandPalette', 'placeholder', {}, 'Search...')}
