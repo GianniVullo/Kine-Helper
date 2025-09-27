@@ -2,12 +2,9 @@
 	import { Formulaire } from '../../cloud/libraries/formHandler.svelte';
 	import { Form, FormSection, Field, SubmitButton } from './blocks';
 	import { appState } from '$lib/managers/AppState.svelte';
-	import { page } from '$app/state';
 	import { SupplementField, TarifsListField, TarifField, SimpleSelect } from './fields/index';
 	import dayjs from 'dayjs';
 	import { clock } from '$lib/ui/svgs/IconSnippets.svelte';
-	import { pushState } from '$app/navigation';
-	import Modal from '$lib/cloud/libraries/overlays/Modal.svelte';
 	import { initialSeanceValues, SeanceSchema, validateurs } from './schemas/SeanceSchema.svelte';
 	import { onSeanceUpsert } from './onSubmits.svelte';
 	import {
@@ -17,8 +14,6 @@
 		checkboxesFields,
 		SingleSeanceSetup
 	} from './utils/SeanceReactiveSetup.svelte';
-
-	let now = dayjs().format('YYYY-MM-DD');
 
 	let { patient, sp, seance, tarifs, supplements, prescriptions, mode = 'create' } = $props();
 
@@ -43,22 +38,10 @@
 	});
 </script>
 
-<Modal
-	opened={page?.state?.modal?.display}
-	title={'Supprimer de ' + page?.state?.modal?.key}
-	body={`Êtes-vous sûr de vouloir supprimer ${page?.state?.modal?.nom ? '"' + page.state.modal.nom + '"' : 'cet élément'} ?`}
-	buttonTextConfirm="Supprimer"
-	buttonTextCancel="Annuler"
-	onAccepted={async () => {
-		formHandler.form[page?.state?.modal?.key] = formHandler.form[page?.state?.modal?.key].filter(
-			(tarif) => tarif.id !== page?.state?.modal?.id
-		);
-		history.back();
-	}} />
-
 <Form
 	title={formHandler.mode === 'create' ? 'Créer une Séance' : 'Modifier la séance'}
-	message={formHandler.message}>
+	message={formHandler.message}
+	isDirty={formHandler.isDirty}>
 	<FormSection titre="Informations générales">
 		<!--* Id fields -->
 		{#each idFieldSchema as idField}
@@ -191,31 +174,9 @@
 				errors={formHandler.errors?.supplements}
 				{supplements} />
 			<TarifsListField
-				label="Suppléments ponctuels"
 				key="supplements_ponctuels"
-				bind:tarifList={formHandler.form.supplements_ponctuels}
-				addButtonLabel="Ajouter un supplément ponctuel"
-				removeButtonLabel="Supprimer"
-				addButtonHandler={async (e) => {
-					e.preventDefault();
-					formHandler.form.supplements_ponctuels = [
-						...formHandler.form.supplements_ponctuels,
-						{
-							id: crypto.randomUUID(),
-							nom: null,
-							valeur: null,
-							created_at: now,
-							user_id: appState.user.id
-						}
-					];
-				}}
-				removeButtonHandler={(custom_tarif) => (e) => {
-					e.preventDefault();
-					pushState('', {
-						...page.state,
-						modal: { key: 'supplements_ponctuels', display: true, ...custom_tarif }
-					});
-				}} />
+				label="Suppléments ponctuels"
+				bind:tarifList={formHandler.form.supplements_ponctuels} />
 		{/if}
 	</FormSection>
 	<SubmitButton loading={formHandler.loading} id="seance-submit" className="col-span-full" />

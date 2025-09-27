@@ -17,18 +17,14 @@
 	import { onMultipleSeanceUpsert } from './onSubmits.svelte';
 	import { appState } from '../../managers/AppState.svelte.js';
 	import { onMount } from 'svelte';
-	import { page } from '$app/state';
 	import dayjs from 'dayjs';
 	import { clock } from '$lib/ui/svgs/IconSnippets.svelte';
-	import { pushState } from '$app/navigation';
-	import Modal from '../../cloud/libraries/overlays/Modal.svelte';
 	import EventCalendar from '$lib/EventCalendar.svelte';
 	import { eventFormater } from '$lib/utils/calendarEventFormater';
 	import Stepper from '../../cloud/components/ui/Stepper.svelte';
 	import { array, object, safeParse } from 'valibot';
 
 	let ec;
-	let now = dayjs().format('YYYY-MM-DD');
 
 	let { patient, sp, seance, tarifs, supplements, prescriptions, mode = 'create' } = $props();
 
@@ -323,34 +319,15 @@
 			<TarifsListField
 				label="Suppléments ponctuels"
 				key="supplements_ponctuels"
-				bind:tarifList={formHandler.form.seance_prototype.supplements_ponctuels}
-				addButtonLabel="Ajouter un supplément ponctuel"
-				removeButtonLabel="Supprimer"
-				addButtonHandler={async (e) => {
-					e.preventDefault();
-					formHandler.form.seance_prototype.supplements_ponctuels = [
-						...formHandler.form.seance_prototype.supplements_ponctuels,
-						{
-							id: crypto.randomUUID(),
-							nom: null,
-							valeur: null,
-							created_at: now,
-							user_id: appState.user.id
-						}
-					];
-				}}
-				removeButtonHandler={(custom_tarif) => (e) => {
-					e.preventDefault();
-					pushState('', {
-						...page.state,
-						modal: { key: 'supplements_ponctuels', display: true, ...custom_tarif }
-					});
-				}} />
+				bind:tarifList={formHandler.form.seance_prototype.supplements_ponctuels} />
 		{/if}
 	</FormSection>
 {/snippet}
 
-<Form title="Création de multiple séances" message={formHandler.message}>
+<Form
+	title="Création de multiple séances"
+	message={formHandler.message}
+	isDirty={formHandler.isDirty}>
 	<Stepper
 		steps={[step0, step1]}
 		bind:currentStep
@@ -381,16 +358,5 @@
 		<SubmitButton loading={formHandler.loading} id="seance-submit" className="col-span-full" />
 	</div>
 </Form>
-<Modal
-	opened={page?.state?.modal?.display}
-	title={'Supprimer de ' + page?.state?.modal?.key}
-	body={`Êtes-vous sûr de vouloir supprimer ${page?.state?.modal?.nom ? '"' + page.state.modal.nom + '"' : 'cet élément'} ?`}
-	buttonTextConfirm="Supprimer"
-	buttonTextCancel="Annuler"
-	onAccepted={async () => {
-		formHandler.form.seance_prototype[page?.state?.modal?.key] = formHandler.form.seance_prototype[
-			page?.state?.modal?.key
-		].filter((tarif) => tarif.id !== page?.state?.modal?.id);
-		history.back();
-	}} />
+
 <!-- {JSON.stringify(formHandler.form.seance_prototype)} -->

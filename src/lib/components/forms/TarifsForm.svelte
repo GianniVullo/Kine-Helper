@@ -3,14 +3,11 @@
 	import { TarifsSchema, validateurs } from './schemas/TarifsSchema.svelte.js';
 	import { Form, FormSection, SubmitButton } from './blocks';
 	import { appState } from '../../managers/AppState.svelte';
-	import { page } from '$app/state';
 	import DefaultTarifField from './fields/DefaultTarifField.svelte';
 	import dayjs from 'dayjs';
 	import { onTarifsModification } from './onSubmits.svelte.js';
 	import { t } from '../../i18n';
 	import TarifsListField from './fields/TarifsListField.svelte';
-	import Modal from '../../cloud/libraries/overlays/Modal.svelte';
-	import { openModal } from '../../cloud/libraries/overlays/modalUtilities.svelte';
 
 	let now = dayjs().format('YYYY-MM-DD');
 
@@ -109,31 +106,6 @@
 	}
 </script>
 
-<Modal
-	opened={page?.state?.modal?.name === 'tarifs' || page?.state?.modal?.name === 'supplements'}
-	title={$t(
-		'tarifsForm',
-		'deleteModal.title',
-		{ type: page?.state?.modal?.name || '' },
-		'Delete from {{type}}'
-	)}
-	body={page?.state?.modal?.nom
-		? $t(
-				'tarifsForm',
-				'deleteModal.body',
-				{ name: '"' + page.state.modal.nom + '"' },
-				'Are you sure you want to delete {{name}}?'
-			)
-		: $t('tarifsForm', 'deleteModal.bodyGeneric', {}, 'Are you sure you want to delete this item?')}
-	buttonTextConfirm={$t('tarifsForm', 'deleteModal.confirm', {}, 'Delete')}
-	buttonTextCancel={$t('tarifsForm', 'deleteModal.cancel', {}, 'Cancel')}
-	onAccepted={async () => {
-		formHandler.form[page?.state?.modal?.name] = formHandler.form[page?.state?.modal?.name].filter(
-			(tarif) => tarif.id !== page?.state?.modal?.id
-		);
-		history.back();
-	}} />
-
 <Form
 	id={form_id}
 	title={$t('tarifsForm', 'title', {}, 'Manage your rates')}
@@ -221,29 +193,17 @@
 				label={$t('tarifsForm', 'fields.customRates', {}, 'Custom rates')}
 				key="tarifs_custom"
 				bind:tarifList={formHandler.form.tarifs}
-				addButtonLabel={$t('tarifsForm', 'buttons.addCustomRate', {}, 'Add custom rate')}
-				removeButtonLabel={$t('tarifsForm', 'buttons.remove', {}, 'Remove')}
-				addButtonHandler={async (e) => {
-					e.preventDefault();
-					formHandler.form.tarifs = [
-						...formHandler.form.tarifs,
-						{
-							id: crypto.randomUUID(),
-							nom: null,
-							valeur: null,
-							created_at: now,
-							user_id: appState.user.id,
-							metadata: JSON.stringify({
-								custom: true
-							})
-						}
-					];
-				}}
-				removeButtonHandler={(custom_tarif) => (e) => {
-					e.preventDefault();
-					console.log('custom_tarif', custom_tarif);
-					openModal({ name: 'tarifs', id: custom_tarif.id, nom: custom_tarif.nom });
-				}}>
+				tarifPrototype={() => ({
+					id: crypto.randomUUID(),
+					nom: null,
+					valeur: null,
+					created_at: now,
+					user_id: appState.user.id,
+					organization_id: appState.selectedOrg.id,
+					metadata: JSON.stringify({
+						custom: true
+					})
+				})}>
 				<p class="mt-3 text-sm/6 text-gray-600">
 					{$t(
 						'tarifsForm',
@@ -267,26 +227,7 @@
 		<TarifsListField
 			label={$t('tarifsForm', 'fields.supplements', {}, 'Supplements')}
 			key="supplement"
-			bind:tarifList={formHandler.form.supplements}
-			addButtonLabel={$t('tarifsForm', 'buttons.addSupplement', {}, 'Add supplement')}
-			removeButtonLabel={$t('tarifsForm', 'buttons.remove', {}, 'Remove')}
-			addButtonHandler={async (e) => {
-				e.preventDefault();
-				formHandler.form.supplements = [
-					...formHandler.form.supplements,
-					{
-						id: crypto.randomUUID(),
-						nom: null,
-						valeur: null,
-						created_at: now,
-						user_id: appState.user.id
-					}
-				];
-			}}
-			removeButtonHandler={(custom_tarif) => (e) => {
-				e.preventDefault();
-				openModal({ name: 'supplements', id: custom_tarif.id, nom: custom_tarif.nom });
-			}} />
+			bind:tarifList={formHandler.form.supplements} />
 	</FormSection>
 	<SubmitButton id="seance-submit" className="col-span-full" loading={formHandler.loading} />
 </Form>

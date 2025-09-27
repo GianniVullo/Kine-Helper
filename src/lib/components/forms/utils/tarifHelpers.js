@@ -1,7 +1,8 @@
 import { pipe, string, object, transform, nullish, isoDate } from 'valibot';
 import { error } from '@sveltejs/kit';
-import { appState } from '$lib/managers/AppState.svelte';
+import { appState } from '../../../managers/AppState.svelte.js';
 import { uuidVal, numericalStringPrimitive } from '../validators/baseValidators';
+import { supabase } from '../../../stores/supabaseClient';
 
 function assignRelevantTarif(value, id) {
 	const parsedMetadata = JSON.parse(value.metadata);
@@ -163,20 +164,24 @@ export function modelingMetadata(input) {
 }
 
 export async function gatherTarifsforpageLoad(sp_id) {
-	let { data: tarifs, error: dbError } = await appState.db.select(
-		`SELECT * FROM tarifs WHERE user_id = $1`,
-		[appState.user.id]
-	);
+	let { data: tarifs, error: dbError } = await supabase
+		.from('tarifs')
+		.select()
+		.eq('organization_id', appState.selectedOrg.id)
+		.eq('user_id', appState.user.id);
 
-	let { data: supplements, error: dbError2 } = await appState.db.select(
-		`SELECT * FROM supplements WHERE user_id = $1`,
-		[appState.user.id]
-	);
+	let { data: supplements, error: dbError2 } = await supabase
+		.from('supplements')
+		.select()
+		.eq('organization_id', appState.selectedOrg.id)
+		.eq('user_id', appState.user.id);
 
-	let { data: prescriptions, error: dbError3 } = await appState.db.select(
-		`SELECT * FROM prescriptions WHERE user_id = $1 AND sp_id = $2`,
-		[appState.user.id, sp_id]
-	);
+	let { data: prescriptions, error: dbError3 } = await supabase
+		.from('prescriptions')
+		.select()
+		.eq('organization_id', appState.selectedOrg.id)
+		.eq('user_id', appState.user.id)
+		.eq('sp_id', sp_id);
 	if (dbError || dbError2 || dbError3) {
 		error(500, { message: dbError + dbError2 + dbError3 });
 	}
@@ -192,15 +197,18 @@ export async function getTarifs(error) {
 		await appState.init({});
 	}
 
-	let { data: tarifs, error: dbError } = await appState.db.select(
-		`SELECT * FROM tarifs WHERE user_id = $1`,
-		[appState.user.id]
-	);
+	let { data: tarifs, error: dbError } = await supabase
+		.from('tarifs')
+		.select()
+		.eq('organization_id', appState.selectedOrg.id)
+		.eq('user_id', appState.user.id);
 
-	let { data: supplements, error: dbError2 } = await appState.db.select(
-		`SELECT * FROM supplements WHERE user_id = $1`,
-		[appState.user.id]
-	);
+	let { data: supplements, error: dbError2 } = await supabase
+		.from('supplements')
+		.select()
+		.eq('organization_id', appState.selectedOrg.id)
+		.eq('user_id', appState.user.id);
+
 	if (dbError || dbError2) {
 		error(500, { message: dbError + dbError2 });
 	}
