@@ -1,14 +1,14 @@
 <script>
 	import logo from '$lib/assets/logo.avif';
 	import { page } from '$app/state';
-	import { t, locale } from '$lib/i18n/index';
+	import { t } from '$lib/i18n/index';
 	import { get } from 'svelte/store';
-	import { afterNavigate } from '$app/navigation';
+	import { afterNavigate, pushState } from '$app/navigation';
 	import { SidePanel } from './SidePanel.svelte';
-	import Modals from './Modals.svelte';
 	import DesktopSideBar from './DesktopSideBar.svelte';
 	import MobileDrawer from './MobileDrawer.svelte';
 	import MobileTopBar from './MobileTopBar.svelte';
+	import { setContext } from 'svelte';
 
 	let { children } = $props();
 	let sidePanel = new SidePanel();
@@ -42,14 +42,41 @@
 			active: page.route.id.includes('settings')
 		}
 	]);
+	setContext('appLayoutModals', {
+		signout: () =>
+			pushState('', {
+				modal: {
+					title: 'Déconnexion',
+					description: $t('sidebar', 'logout.confirm'),
+					buttonTextCancel: $t('shared', 'cancel'),
+					buttonTextConfirm: $t('shared', 'confirm'),
+					action: 'signout',
+					href: '/'
+				}
+			}),
+		gotoOnlineDoc: () =>
+			pushState('', {
+				modal: {
+					action: 'gotoOnlineDoc',
+					title: 'Attention, vous allez être redirigé',
+					description: $t(
+						'sidebar',
+						'docModal.body',
+						null,
+						'Attention vous allez être redirigé vers le site de la documentation'
+					),
+					buttonTextCancel: $t('shared', 'cancel'),
+					buttonTextConfirm: 'Consulter la documentation'
+				}
+			}),
+		bugReport: () => pushState('', { modal: { component: 'bugReport' } })
+	});
 
 	afterNavigate(() => {
 		page;
 		showDrawer = false;
 	});
 </script>
-
-<Modals />
 
 <div class="bg-white dark:bg-gray-900">
 	<!-- Off-canvas menu for mobile, show/hide based on off-canvas menu state. -->

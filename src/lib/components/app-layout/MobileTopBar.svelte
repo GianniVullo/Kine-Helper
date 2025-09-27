@@ -1,5 +1,6 @@
 <script>
 	import CommandPaletteManualOpener from '../../cloud/libraries/command-palette/CommandPaletteManualOpener.svelte';
+	import { appState } from '../../managers/AppState.svelte';
 	import { burgerIcon, crossIcon } from '../../ui/svgs/IconSnippets.svelte';
 	import OrganizationWidget from './OrganizationWidget.svelte';
 
@@ -25,7 +26,10 @@
 		<!-- {menuItems.find((p) => p.href === page.url.pathname)?.name} -->
 		<CommandPaletteManualOpener shrink={true} />
 	</div>
-	<h5 class="text-lg font-semibold text-gray-900">Mon cabinet</h5>
+	<div
+		class="line-clamp-1 h-full overflow-hidden text-center text-lg font-semibold text-gray-900 dark:text-gray-300">
+		{appState.selectedOrg.name}
+	</div>
 	<!-- {@render TeamWidgetMobile()} -->
 	<OrganizationWidget {sidePanel} />
 </div>

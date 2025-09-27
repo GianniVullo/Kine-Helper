@@ -88,7 +88,7 @@
 			<button
 				class={[
 					'flex h-full w-full items-center justify-center pr-4 duration-300 md:border-l md:border-gray-300 md:pr-0 md:group-hover:border-gray-500 md:group-hover:bg-gray-300 md:hover:bg-gray-200 dark:md:border-gray-800 dark:md:group-hover:bg-gray-800',
-					!sidePanel.isOpen && 'py-4'
+					!sidePanel.isOpen && 'md:py-4'
 				]}>
 				<div class={['inline', sidePanel.isOpen && 'md:hidden']}>
 					{@render logoOrDefault(selectedOrg, {

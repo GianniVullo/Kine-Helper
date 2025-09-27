@@ -6,7 +6,9 @@
 	import MenuHeader from './MenuHeader.svelte';
 	import OrganizationWidget from './OrganizationWidget.svelte';
 	import DarkModeSwitch from '../../cloud/libraries/DarkModeSwitch.svelte';
+	import { getContext } from 'svelte';
 
+	const modals = getContext('appLayoutModals');
 	let { sidePanel, menuItems } = $props();
 </script>
 
@@ -69,7 +71,7 @@
 						})}
 							<li>
 								<button
-									onclick={() => openModal({ name: modalName })}
+									onclick={modals[modalName]}
 									class={[
 										'group flex w-full gap-x-3 rounded-md p-2 text-sm/6 font-semibold  text-gray-700 hover:bg-gray-50 hover:text-indigo-600 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-white',
 										sidePanel.isOpen ? '' : 'justify-center text-center'
@@ -96,7 +98,7 @@
 						<!--! Bouton pour accéder à la documentation -->
 						{@render secondaryAction({
 							icon: bookIcon,
-							modalName: 'docModal',
+							modalName: 'gotoOnlineDoc',
 							label: $t('sidebar', 'doc')
 						})}
 						{#snippet questionMark(cls)}

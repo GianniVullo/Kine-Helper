@@ -1,11 +1,12 @@
 <script>
 	import { page } from '$app/state';
 	import BackDrop from '../../cloud/libraries/command-palette/BackDrop.svelte';
-	import { openModal } from '../../cloud/libraries/overlays/modalUtilities.svelte';
 	import SignOutIcon from '../../ui/svgs/SignOutIcon.svelte';
 	import DarkModeSwitch from '../../cloud/libraries/DarkModeSwitch.svelte';
-
 	import { t } from '../../i18n';
+	import { getContext } from 'svelte';
+
+	const modals = getContext('appLayoutModals');
 
 	let { showDrawer = $bindable(), logo, menuItems } = $props();
 </script>
@@ -103,7 +104,7 @@
 								<!--! Bouton pour se déconnecter -->
 								<li>
 									<button
-										onclick={() => openModal({ name: 'signout' })}
+										onclick={modals.signout}
 										class="group flex w-full gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-gray-700 hover:bg-gray-50 hover:text-indigo-600 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-white">
 										<span
 											class="flex size-6 shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-white text-[0.625rem] font-medium text-gray-400 group-hover:border-indigo-600 group-hover:text-indigo-600 dark:border-white/10 dark:bg-white/5 dark:group-hover:border-white/20 dark:group-hover:text-white">
@@ -115,7 +116,7 @@
 								<!--! Bouton pour accéder à la documentation -->
 								<li>
 									<button
-										onclick={() => openModal({ name: 'docModal' })}
+										onclick={modals.gotoOnlineDoc}
 										class="group flex w-full gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-gray-700 hover:bg-gray-50 hover:text-indigo-600 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-white">
 										<span
 											class="flex size-6 shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-white text-[0.625rem] font-medium text-gray-400 group-hover:border-indigo-600 group-hover:text-indigo-600 dark:border-white/10 dark:bg-white/5 dark:group-hover:border-white/20 dark:group-hover:text-white">
@@ -138,7 +139,7 @@
 								<!--! Bouton pour signaler un bug/une seggestion -->
 								<li>
 									<button
-										onclick={() => openModal({ name: 'bugReport' })}
+										onclick={modals.bugReport}
 										class="group flex w-full gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-gray-700 hover:bg-gray-50 hover:text-indigo-600 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-white">
 										<span
 											class="flex size-6 shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-white text-[0.625rem] font-medium text-gray-400 group-hover:border-indigo-600 dark:border-white/10 dark:bg-white/5 dark:group-hover:border-white/20"
