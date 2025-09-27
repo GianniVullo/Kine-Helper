@@ -1,50 +1,47 @@
 <script>
-	import { PlusIcon, PrinterIcon, UpdateIcon, DeleteIcon } from '$lib/ui/svgs/index';
 	import { page } from '$app/state';
 	import dayjs from 'dayjs';
 	import { printAttestation } from '../../../../../../../lib/utils/rawPrinting';
-	import { fetchCodeDesSeances } from '../../../../../../../lib/utils/nomenclatureManager';
-	import FactureBox from '../../../../../../../lib/ui/FactureBox.svelte';
 	import { t } from '../../../../../../../lib/i18n';
 	import CardTable from '../../../../../../../lib/components/CardTable.svelte';
-	import Dropdown from '../../../../../../../lib/components/dropdowns/Dropdown.svelte';
-	import {
-		dividerDropper,
-		dropdownItemWithIcon
-	} from '../../../../../../../lib/components/dropdowns/DropdownSnippets.svelte';
 	import {
 		buildingIcon,
 		buildingIconWithCheck,
 		buildingIconWithCross,
-		editIcon,
 		printerIcon,
 		userIcon,
 		userIconWithCheck,
 		userIconWithCross
 	} from '../../../../../../../lib/ui/svgs/IconSnippets.svelte';
 	import { iconBadge } from '../../../../../../../lib/components/snippets/BadgesSnippets.svelte';
-	import {
-		markAsPaid,
-		updateAttestation
-	} from '../../../../../../../lib/user-ops-handlers/attestations';
-	import Modal from '../../../../../../../lib/cloud/libraries/overlays/Modal.svelte';
+	import { markAsPaid } from '../../../../../../../lib/user-ops-handlers/attestations';
 	import { pushState } from '$app/navigation';
 	import { cloneDeep } from 'lodash';
 	import TwDropdown from '../../../../../../../lib/components/TWElements/TWDropdown.svelte';
+	import { isMobile } from '../../../../../../../lib/utils/platformwhoami';
+	import { onDestroy, onMount } from 'svelte';
+	import { on } from 'svelte/events';
 
 	let { data } = $props();
 	let { patient, sp } = data;
-	function prescription(prescriptionId) {
-		return sp.prescriptions.find((prescription) => prescription.prescription_id === prescriptionId);
-	}
+
+	let printEventHandler;
 
 	const attestations = $state(sp.attestations);
 
 	const printHandler = async (attestation) => {
-		console.log(attestation);
 		pushState('', {
 			...page.state,
-			modal: { name: 'printAttestation', attestation: cloneDeep($state.snapshot(attestation)) }
+			modal: {
+				action: 'signalConfirmation',
+				title: $t('attestation.detail', 'printModal.title'),
+				description: $t('attestation.detail', 'printModal.body', {
+					date: dayjs(attestation.date).format('DD/MM/YYYY')
+				}),
+				buttonTextConfirm: $t('attestation.detail', 'printModal.confirm'),
+				buttonTextCancel: $t('shared', 'cancel'),
+				attestation: cloneDeep($state.snapshot(attestation))
+			}
 		});
 	};
 
@@ -94,30 +91,39 @@
 		 * }
 		 */
 	];
-</script>
-
-<!-- TODO Devrais-je rajouter que l'attestation porte la prescription ?  -->
-
-<Modal
-	opened={page.state?.modal?.name === 'printAttestation'}
-	title={$t('attestation.detail', 'printModal.title')}
-	body={$t('attestation.detail', 'printModal.body', {
-		date: dayjs(page.state.modal.attestation.date).format('DD/MM/YYYY')
-	})}
-	buttonTextConfirm={$t('attestation.detail', 'printModal.confirm')}
-	buttonTextCancel={$t('shared', 'cancel')}
-	onAccepted={async () => {
-		console.log(page.state.modal.attestation);
-		const { error } = await printAttestation(null, page.state.modal.attestation);
-		if (error) {
-			console.log(error);
+	$effect(() => {
+		let motive = page.url.searchParams.get('motive');
+		if (motive === 'no_seance_found') {
+			console.log('motive is no seance found');
+			setTimeout(() => {
+				pushState('', {
+					modal: {
+						title: 'Aucunes séances à traiter',
+						description:
+							'Si vous souhaitez attester des séances que vous n\'avez pas encore effectuées, veuillez utiliser l\'option "Tarifer jusqu\'ici" de l\'onglet "séances"'
+					}
+				});
+			}, 400);
 		}
-		history.back();
-	}} />
+	});
+	onMount(() => {
+		printEventHandler = on(window, 'Dialog:Confirmed', async (e) => {
+			e.detail.attestation.total_recu = `${e.detail.attestation.total_recu}`;
+			const { error } = await printAttestation(null, e.detail.attestation);
+			if (error) {
+				console.warn('Error while printing Attestation', error);
+			}
+		});
+	});
+	onDestroy(() => {
+		printEventHandler();
+	});
+</script>
 
 {#if sp.attestations.length > 0}
 	<!--* ATTESTATIONS LIST -->
 	<CardTable>
+		<!-- TODO Devrais-je rajouter que l'attestation porte la prescription ?  -->
 		{#snippet header()}
 			<th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold">Date</th>
 			<th scope="col" class="py-3.5 pr-3 pl-4 text-left text-sm font-semibold sm:pl-0">Total</th>
@@ -125,8 +131,10 @@
 			<th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold">Paiement</th>
 			<th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold"
 				><span class="sr-only">Statut</span></th>
-			<th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold"
-				><span class="sr-only">Imprimer</span></th>
+			{#if !isMobile()}
+				<th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold"
+					><span class="sr-only">Imprimer</span></th>
+			{/if}
 			<!-- TODO Ici j'ai mis action parce que, en fait, il va falloir mettre Modifier, Supprimer, Imprimer, Marquer comme payée par la mutuelle, par le patient, et qui sait quoi d'autres encore -->
 		{/snippet}
 		{#snippet body()}
@@ -165,22 +173,24 @@
 						class="relative py-5 pr-4 pl-3 text-left text-sm font-medium whitespace-nowrap sm:pr-0">
 						<TwDropdown triggerText="Statut" items={[menuItemsList(attestation)]} />
 					</td>
-					<td
-						class="relative py-5 pr-4 pl-3 text-left text-sm font-medium whitespace-nowrap sm:pr-0">
-						<button
-							class="group flex space-x-1"
-							onclick={async () => {
-								await printHandler(attestation);
-							}}>
-							{@render printerIcon(
-								'size-5 text-indigo-500 group-hover:text-indigo-700 dark:text-indigo-400 dark:group-hover:text-indigo-500'
-							)}
-							<p
-								class="text-indigo-500 group-hover:text-indigo-700 dark:text-indigo-400 dark:group-hover:text-indigo-500">
-								Imprimer
-							</p>
-						</button>
-					</td>
+					{#if !isMobile()}
+						<td
+							class="relative py-5 pr-4 pl-3 text-left text-sm font-medium whitespace-nowrap sm:pr-0">
+							<button
+								class="group flex space-x-1"
+								onclick={async () => {
+									await printHandler(attestation);
+								}}>
+								{@render printerIcon(
+									'size-5 text-indigo-500 group-hover:text-indigo-700 dark:text-indigo-400 dark:group-hover:text-indigo-500'
+								)}
+								<p
+									class="text-indigo-500 group-hover:text-indigo-700 dark:text-indigo-400 dark:group-hover:text-indigo-500">
+									Imprimer
+								</p>
+							</button>
+						</td>
+					{/if}
 				</tr>
 			{/each}
 		{/snippet}

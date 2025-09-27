@@ -1,6 +1,7 @@
 import { appState } from '../../../../../../../../lib/managers/AppState.svelte.js';
 import { groupSeanceInAttestations } from '../../../../../../../../lib/components/forms/utils/attestationUtils.js';
 import dayjs from 'dayjs';
+import { redirect } from '@sveltejs/kit';
 
 export async function load({ url, parent, params }) {
 	console.log('load function called with params:', params);
@@ -65,6 +66,13 @@ export async function load({ url, parent, params }) {
 			continue;
 		}
 		seancesToDealWith.push(seance);
+	}
+	if (seancesToDealWith.length === 0) {
+		console.log('Was Not able to gather any seance')
+		redirect(
+			303,
+			`/dashboard/patients/${patient.patient_id}/situation-pathologique/${sp.sp_id}/attestations?motive=no_seance_found`
+		);
 	}
 	const { seances, valeur_totale, total_recu, lines } = await groupSeanceInAttestations(
 		seancesToDealWith,

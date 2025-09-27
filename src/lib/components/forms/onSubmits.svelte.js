@@ -25,6 +25,8 @@ import {
 	getFacturePatientPDFHandler
 } from '../../user-ops-handlers/documents';
 import { info } from '../../cloud/libraries/logging';
+import { FacturePatient } from '../../pdfs/facturePatient';
+import { FactureMutuelle } from '../../pdfs/factureMutuelle';
 
 // --------------------------------------------
 // ON SUBMITS FUNCTIONS
@@ -530,6 +532,49 @@ export async function onTarifsModification(data) {
 	goto('/dashboard/finances');
 }
 
+export async function onFactureCreate(data, attestation_ids, produce_pdf = true) {
+	console.log('in createFacture with data, attestation_ids :', data, attestation_ids);
+	/**
+	 ** - Enregistrer une facture
+	 ** - Lier les attestations à la facture
+	 ** - Produire un PDF
+	 */
+
+	// facture creation
+	let { data: facture, error: factureError } = await appState.db.insert('factures', data);
+	if (factureError) {
+		return { error: factureError };
+	}
+	console.log('facture', facture);
+
+	// attestation linking
+	for (const attestation_id of attestation_ids) {
+		let { data: factureAttestation, error: factureAttestationError } = await appState.db.insert(
+			'factures_attestations',
+			{
+				facture_id: data.id,
+				attestation_id,
+				user_id: appState.user.id,
+				organization_id: appState.selectedOrg.id
+			}
+		);
+		if (factureAttestationError) {
+			return { error: factureAttestationError };
+		}
+		console.log('factureAttestation', factureAttestation);
+	}
+
+	// pdf production
+	if (produce_pdf) {
+		const { facture: facturePDF, error: facturePDFError } = await getFacturePDF(data);
+		if (facturePDFError) {
+			return { error: facturePDFError };
+		}
+		await facturePDF.open();
+	}
+	return { data: facture[0] };
+}
+
 // --------------------------------------------
 // UTILS FUNCTIONS
 // --------------------------------------------
@@ -817,6 +862,9 @@ function prescriptionFileName(prescription, ext) {
 			return `${prescription.prescription_id}.${ext}`;
 		}
 	} else {
+		if (!prescription.file_name?.ext) {
+			return null;
+		}
 		return `${prescription.prescription_id}.${prescription.file_name.ext}`;
 	}
 }
