@@ -1,8 +1,17 @@
 <script>
-	// import { extractErrorForField } from '../../../libraries/formHandler.svelte';
+	import RequiresExitConfirmation from '../../../cloud/components/pages/RequiresExitConfirmation.svelte';
 	import FormTitle from './FormTitle.svelte';
 
-	let { id = 'default-form', title, action = undefined, multipart, children, message, className } = $props();
+	let {
+		id = 'default-form',
+		title,
+		action = undefined,
+		multipart,
+		children,
+		message,
+		className,
+		isDirty
+	} = $props();
 </script>
 
 {#if title}
@@ -14,13 +23,16 @@
 		{message}
 	</p>
 {/if}
-<form
-	{id}
-	{action}
-	class={className || "mt-10 flex flex-col items-start w-full"}
-	method="POST"
-	enctype={multipart ? undefined : 'multipart/form-data'}>
-	<div class="space-y-12 w-full">
-		{@render children()}
-	</div>
-</form>
+
+<RequiresExitConfirmation {isDirty}>
+	<form
+		{id}
+		{action}
+		class={className || 'mt-10 flex w-full flex-col items-start'}
+		method="POST"
+		enctype={multipart ? undefined : 'multipart/form-data'}>
+		<div class="w-full space-y-12">
+			{@render children()}
+		</div>
+	</form>
+</RequiresExitConfirmation>

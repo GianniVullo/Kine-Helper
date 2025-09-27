@@ -293,7 +293,8 @@
 
 <Form
 	title={mode === 'create' ? "Création d'un nouveau patient" : 'Modification du patient'}
-	message={formHandler.message}>
+	message={formHandler.message}
+	isDirty={formHandler.isDirty}>
 	{#if mode === 'create' && !['ios, android'].includes(platform())}
 		<EidReader
 			dataReceiver={(data) => {

@@ -91,6 +91,7 @@ export class Formulaire {
 			trace('Registering ' + fieldName);
 			this.errors[fieldName] = false;
 			this.initialValues[fieldName] = this.form?.[fieldName] ?? null;
+			this.isDirty = Object.values(this.touched).some(Boolean);
 		}
 	}
 
@@ -137,6 +138,9 @@ export class Formulaire {
 		}
 		if (validData.success) {
 			try {
+				// This is necessary to force the requestExitConfirmation to not block the onValid.goto after sublmission successfull
+				// It might be necessary to reset the isDirty in onError
+				this.isDirty = false;
 				await this.onValid(validData.output);
 			} catch (error) {
 				info(error);
