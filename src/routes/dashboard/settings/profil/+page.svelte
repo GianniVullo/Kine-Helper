@@ -11,7 +11,6 @@
 	import { errorIcon } from '../../../../lib/ui/svgs/IconSnippets.svelte';
 	import BoutonPrincipal from '../../../../lib/components/BoutonPrincipal.svelte';
 	import { goto, replaceState } from '$app/navigation';
-	import { openModal } from '../../../../lib/cloud/libraries/overlays/modalUtilities.svelte';
 	import {
 		lazy,
 		object,
