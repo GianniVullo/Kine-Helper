@@ -10,8 +10,6 @@
 	import BoutonPrincipal from '../components/BoutonPrincipal.svelte';
 	import { info } from '../cloud/libraries/logging';
 
-	let { accords } = $props();
-
 	const options = [
 		{ value: 'A', label: get(t)('shared', 'annexe') + ' A' },
 		{ value: 'B', label: get(t)('shared', 'annexe') + ' B' },
@@ -48,7 +46,7 @@
 	});
 </script>
 
-<Form id="select-accord-type-form" message={formHandler.message}>
+<Form className="py-6 px-4" title="Sélectionner un document" id="select-accord-type-form" message={formHandler.message}>
 	<div class="col-span-full">
 		<Field
 			field={{

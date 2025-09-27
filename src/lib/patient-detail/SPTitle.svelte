@@ -5,19 +5,25 @@
 	import PageTitle from '../components/PageTitle.svelte';
 	import BoutonPrincipalAvecIcone from '../components/BoutonPrincipalAvecIcone.svelte';
 	import { editIcon, linkIcon, deleteIcon } from '../ui/svgs/IconSnippets.svelte';
-	import { goto, pushState } from '$app/navigation';
-	import Modal from '../cloud/libraries/overlays/Modal.svelte';
+	import { invalidate } from '$app/navigation';
 	import { appState } from '../managers/AppState.svelte';
 	import TwDropdown from '../components/TWElements/TWDropdown.svelte';
-
-	const modal = {
-		title: get(t)('patients.detail', 'deleteModal.title'),
-		body: get(t)('patients.detail', 'deleteModal.body'),
-		buttonTextConfirm: get(t)('shared', 'confirm'),
-		buttonTextCancel: get(t)('shared', 'cancel')
-	};
+	import { CallBackModal } from '../cloud/libraries/overlays/CallbackModal.svelte.js';
 
 	let { patient, currentSp } = $props();
+	let modal = new CallBackModal(
+		{
+			title: get(t)('patients.detail', 'deleteModal.title'),
+			description: get(t)('patients.detail', 'deleteModal.body'),
+			href: `/dashboard/patients/${page.params.patientId}`
+		},
+		async (e) => {
+			e.preventDefault();
+			await appState.db.delete('situations_pathologiques', [['sp_id', page.params.spId]]);
+			await invalidate('patient:layout');
+		}
+	);
+
 	let items = [
 		[
 			{
@@ -31,21 +37,14 @@
 				label: 'Modifier'
 			},
 			{
-				onclick: () => pushState('', { ...page.state, modal: 'deleteSp' }),
 				label: 'Supprimer',
-				icon: deleteIcon
+				icon: deleteIcon,
+				onclick: modal.open.bind(modal)
 			}
 		]
 	];
 </script>
 
-<Modal
-	opened={page.state.modal === 'deleteSp'}
-	{...modal}
-	onAccepted={async () => {
-		await appState.db.delete('situations_pathologiques', [['sp_id', page.params.spId]]);
-		goto('/dashboard/patients/' + page.params.patientId);
-	}} />
 <PageTitle srOnly="Résumé de la situation pathologique">
 	{#snippet title()}
 		<div class="sm:flex sm:space-x-5">
@@ -54,7 +53,10 @@
 					{currentSp?.motif?.split(' ')?.slice(0, 3).join(' ')}
 					{currentSp?.motif?.split(' ')?.length > 3 ? '...' : ''}
 				</p>
-				<p class="text-sm font-medium text-gray-600 dark:text-gray-400">{patient?.nom} {patient?.prenom}</p>
+				<p class="text-sm font-medium text-gray-600 dark:text-gray-400">
+					{patient?.nom}
+					{patient?.prenom}
+				</p>
 			</div>
 		</div>
 	{/snippet}
