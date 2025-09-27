@@ -10,10 +10,13 @@
 	let { data } = $props();
 
 	let searchQuery = $state('');
-	let inputQuery;
 	let timeOut;
 
-	onMount(() => inputQuery.focus());
+	onMount(() => {
+		const query = document.getElementById('query');
+		console.log('Query', query);
+		query.focus();
+	});
 
 	function filterPatients(event) {
 		clearTimeout(timeOut);
@@ -55,7 +58,6 @@
 						className="col-start-1 row-start-1"
 						leading={magnifyingGlassIcon}
 						leadingCSS="pointer-events-none size-5 text-gray-400 dark:text-white sm:size-4"
-						bind:this={inputQuery}
 						id="query"
 						oninput={filterPatients}
 						aria-label={$t('patients.list', 'search')}
