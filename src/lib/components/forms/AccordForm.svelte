@@ -34,7 +34,7 @@
 	});
 </script>
 
-<Form id="accord-form" message={formHandler.message}>
+<Form title={`Création d'une Annexe ${docType}`} id="accord-form" message={formHandler.message}>
 	<FormSection
 		titre="Informations générales"
 		description="Veuillez sélectionner la date et situation pathologique.">

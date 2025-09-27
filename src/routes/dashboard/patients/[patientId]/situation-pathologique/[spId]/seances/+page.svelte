@@ -172,13 +172,12 @@
 							<td class="px-3 py-5 text-sm whitespace-nowrap text-gray-500 dark:text-gray-300">
 								<div class="">{seance.is_paid}</div>
 							</td>
-							<td
-								class="relative py-5 pr-4 pl-3 text-left text-sm font-medium whitespace-nowrap sm:pr-0">
+							<td class="py-5 pr-4 pl-3 text-left text-sm font-medium whitespace-nowrap sm:pr-0">
 								{#if seance.has_been_attested}
 									Séance attestée
 								{:else}
 									<TwDropdown
-										position="bottom-end"
+										className="relative inline-block"
 										triggerText="Actions"
 										items={menuItemsList(seance)} />
 								{/if}

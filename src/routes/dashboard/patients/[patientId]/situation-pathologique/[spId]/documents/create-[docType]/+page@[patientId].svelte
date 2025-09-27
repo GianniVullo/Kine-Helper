@@ -18,7 +18,6 @@
 {/snippet}
 
 {#if docType === 'A' || docType === 'B'}
-	{@render title(`Création d'une Annexe ${docType}`)}
 	<AccordForm {patient} {sp} {docType} />
 {:else if docType === 'E'}
 	{@render title("Création d'une Demande pour Pathologies Lourdes")}

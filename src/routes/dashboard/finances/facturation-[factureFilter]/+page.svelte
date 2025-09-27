@@ -16,7 +16,6 @@
 
 	/** @type {{ data: import('./$types').PageData }} */
 	let { data } = $props();
-	console.log('data', data);
 
 	const attestationsParMutualite = groupBy(data.patients, (pA) => {
 		let stuff = mutualites[String(pA.patient.mutualite).substring(0, 1) + '00'].name;

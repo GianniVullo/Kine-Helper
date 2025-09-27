@@ -1,6 +1,6 @@
 <script>
 	import { supabase } from '../../stores/supabaseClient';
-	import { SubmitButton, Form, Field } from './blocks';
+	import { SubmitButton, Form, Field, FormSection } from './blocks';
 	import { t } from '../../i18n';
 	import { appState } from '../../managers/AppState.svelte';
 	import { Formulaire } from '../../cloud/libraries/formHandler.svelte';
@@ -45,46 +45,51 @@
 			name: 'fullName',
 			titre: $t('bugModal', 'label.name'),
 			inputType: 'text',
-			readonly: true
+			readonly: true,
+			outerCSS: 'col-span-full'
 		},
 		{
 			id: 'email',
 			name: 'email',
 			titre: $t('form.patient', 'cardLabel.contact'),
 			inputType: 'email',
-			readonly: true
+			readonly: true,
+			outerCSS: 'col-span-full'
 		},
 		{
 			id: 'titre',
 			name: 'titre',
 			titre: $t('bugModal', 'title'),
-			inputType: 'text'
+			inputType: 'text',
+			outerCSS: 'col-span-full'
 		},
 		{
 			id: 'message',
 			name: 'message',
 			titre: $t('bugModal', 'label.message'),
-			inputType: 'textarea'
+			inputType: 'textarea',
+			outerCSS: 'col-span-full'
 		},
 		{
 			id: 'accord',
 			name: 'accord',
 			checkboxLabel: $t('bugModal', 'label.consent'),
-			inputType: 'checkbox'
+			inputType: 'checkbox',
+			outerCSS: 'col-span-full'
 		}
 	];
 </script>
 
-<Form message={formHandler.message}>
-	<div class="grid grid-cols-1 gap-4">
+<Form className="py-6 px-4" message={formHandler.message}>
+	<FormSection titre={$t('sidebar', 'bugReport')} description={$t('bugModal', 'description')}>
 		{#each fieldSchema as field}
 			<Field
 				{field}
 				bind:value={formHandler.form[field.name]}
 				error={formHandler.errors[field.name]} />
 		{/each}
-	</div>
-	<div class="flex items-center justify-around pt-4">
+	</FormSection>
+	<div class="col-span-full flex items-center justify-around pt-4">
 		<BoutonPrincipal
 			color="secondary"
 			onclick={() => {

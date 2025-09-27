@@ -36,7 +36,6 @@
 			actif: page.url.pathname === homeUrl() + `/seances`
 		}
 	]);
-	console.log('Page route Id ', page.url.pathname === homeUrl());
 </script>
 
 {#if data.sp === 'none'}

@@ -44,11 +44,11 @@
 			rows="3"
 			{placeholder}
 			class={{
-				'block w-full rounded-md border-0 py-1.5 shadow-xs ring-1 ring-inset focus:ring-2 focus:ring-inset sm:text-sm/6': true,
+				'block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 sm:text-sm/6 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:placeholder:text-gray-500': true,
 				'pr-10 text-red-900 ring-red-300 placeholder:text-red-300 focus:ring-red-500': error,
 				'pr-10 text-yellow-900 ring-yellow-300 placeholder:text-yellow-300 focus:ring-yellow-500':
 					warning && !error,
-				'text-gray-900 ring-gray-300 placeholder:text-gray-400 focus:ring-indigo-600':
+				'text-gray-900 ring-gray-300 placeholder:text-gray-400 focus:ring-indigo-600 dark:focus:outline-indigo-500':
 					!error && !warning
 			}}
 			bind:value
@@ -142,5 +142,5 @@
 	<p class="mt-2 text-sm text-yellow-600" id={`${name}-warning`}>{@html warning}</p>
 {/if}
 {#if help}
-	<p class="mt-3 text-sm/6 text-gray-600">{@html help}</p>
+	<p class="mt-3 text-sm/6 text-gray-600 dark:text-gray-400">{@html help}</p>
 {/if}

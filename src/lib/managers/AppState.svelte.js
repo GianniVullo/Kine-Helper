@@ -83,7 +83,6 @@ class AppState {
 				trace('Refetch the appState from Rust');
 				let { user, session, db, e_health: eHealth, organizations } = await invoke('get_app_state');
 				dbPath = db;
-				info('Refeted = ', user, session, db);
 
 				this.user = user;
 				this.session = session;
