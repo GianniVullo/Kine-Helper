@@ -5,7 +5,7 @@
 	import Notification from '../lib/cloud/libraries/overlays/Notification.svelte';
 	import { onNavigate } from '$app/navigation';
 	import { info } from '../lib/cloud/libraries/logging';
-	// import Modal2 from '../lib/cloud/libraries/overlays/Modal2.svelte';
+	import Dialog from '../lib/cloud/libraries/overlays/Dialog.svelte';
 
 	let { children } = $props();
 
@@ -31,9 +31,6 @@
 </script>
 
 <Notification />
-
-<!-- <Modal2 /> -->
-<!-- <Toast position="tr" rounded="rounded-lg" shadow="shadow-xl" /> -->
-<!-- <Modal components={modalRegistry} /> -->
+<Dialog />
 
 {@render children()}

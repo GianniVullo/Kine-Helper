@@ -1,19 +1,18 @@
 <script>
 	import StatsOverview from '../../../lib/cloud/components/pages/finances/StatsOverview.svelte';
 	import BoutonPrincipal from '../../../lib/components/BoutonPrincipal.svelte';
-	import BoutonPrincipalAvecIcone from '../../../lib/components/BoutonPrincipalAvecIcone.svelte';
-	import BoutonSecondaireAvecIcone from '../../../lib/components/BoutonSecondaireAvecIcone.svelte';
-	import SectionTitleWithTabs from '../../../lib/components/SectionTitleWithTabs.svelte';
+	// import BoutonPrincipalAvecIcone from '../../../lib/components/BoutonPrincipalAvecIcone.svelte';
+	// import BoutonSecondaireAvecIcone from '../../../lib/components/BoutonSecondaireAvecIcone.svelte';
+	// import SectionTitleWithTabs from '../../../lib/components/SectionTitleWithTabs.svelte';
 	import { t } from '../../../lib/i18n';
 	import { page } from '$app/state';
-	import { pagePlusIcon } from '../../../lib/ui/svgs/IconSnippets.svelte';
-	import { openModal } from '../../../lib/cloud/libraries/overlays/modalUtilities.svelte';
-	import Modal from '../../../lib/cloud/libraries/overlays/Modal.svelte';
-	import FactureParModal from '../../../lib/cloud/components/pages/finances/FactureParModal.svelte';
+	// import { pagePlusIcon } from '../../../lib/ui/svgs/IconSnippets.svelte';
+	// import FactureParModal from '../../../lib/cloud/components/pages/finances/FactureParModal.svelte';
 	import { appState } from '../../../lib/managers/AppState.svelte';
-	import { goto } from '$app/navigation';
+	// import { goto } from '$app/navigation';
 	import Spiner from '../../../lib/cloud/components/layout/Spiner.svelte';
 	import PageTitle from '../../../lib/cloud/components/layout/PageTitle.svelte';
+	import { pushState } from '$app/navigation';
 
 	/** @type {{ data: import('./$types').PageData }} */
 	let { data } = $props();
@@ -49,22 +48,30 @@
 		}
 		return total;
 	}
+	const modals = {
+		noFacture() {
+			pushState('', {
+				modal: {
+					title: $t('finances', 'modals.noSessions.title', {}, 'No sessions to bill'),
+					body: $t(
+						'finances',
+						'modals.noSessions.body',
+						{},
+						'You are up to date! You can schedule new appointments to bill.'
+					),
+					buttonTextCancel: 'none',
+					buttonTextConfirm: $t('finances', 'buttons.ok', {}, 'Ok')
+				}
+			});
+		}
+	};
 </script>
 
 <!-- Modals -->
-<FactureParModal />
-<Modal
-	opened={page.state.modal?.name === 'noFacture'}
-	title={$t('finances', 'modals.noSessions.title', {}, 'No sessions to bill')}
-	body={$t(
-		'finances',
-		'modals.noSessions.body',
-		{},
-		'You are up to date! You can schedule new appointments to bill.'
-	)}
-	buttonTextCancel="none"
-	buttonTextConfirm={$t('finances', 'buttons.ok', {}, 'Ok')} />
+<!-- <FactureParModal /> -->
 
+<!-- 
+! adapter ça avec le nouveau Dialog
 <Modal
 	opened={page.state.modal?.name === 'buildingFactures'}
 	title={$t('finances', 'modals.buildingInvoices.title', {}, 'Your invoices are being built')}
@@ -80,7 +87,7 @@
 			{$t('finances', 'modals.buildingInvoices.operation', {}, 'Operation in progress...')}
 		</p>
 	</div>
-</Modal>
+</Modal> -->
 <PageTitle titre={$t('finances', 'title', {}, 'Finances')}>
 	<div class="mt-4 flex md:mt-0 md:ml-4">
 		<!-- <button
@@ -92,7 +99,6 @@
 			href="/dashboard/finances/tarifs-form"
 			inner={$t('finances', 'manageTariffs', {}, 'Manage your rates and supplements')} />
 	</div>
-
 </PageTitle>
 
 <!-- <p class="mt-10">
@@ -114,7 +120,7 @@
 					if ((await getTotal()) > 0) {
 						openModal({ name: 'FacturePar' });
 					} else {
-						openModal({ name: 'noFacture' });
+						modals.noFacture();
 					}
 				}}
 				icon={pagePlusIcon}
@@ -125,7 +131,7 @@
 						openModal({ name: 'buildingFactures' });
 						goto('/dashboard/finances/facturation-all');
 					} else {
-						openModal({ name: 'noFacture' });
+						modals.noFacture();
 					}
 				}}
 				icon={pagePlusIcon}

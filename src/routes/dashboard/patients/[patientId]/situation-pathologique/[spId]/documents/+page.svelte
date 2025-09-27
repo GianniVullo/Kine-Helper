@@ -4,19 +4,30 @@
 	import { getContext } from 'svelte';
 	import { deleteAccord, getAccordPDF } from '../../../../../../../lib/user-ops-handlers/documents';
 	import AccordUpdateForm from '../../../../../../../lib/components/forms/AccordUpdateForm.svelte';
-	import Modal from '../../../../../../../lib/cloud/libraries/overlays/Modal.svelte';
 	import { page } from '$app/state';
-	import { openModal } from '../../../../../../../lib/cloud/libraries/overlays/modalUtilities.svelte';
 	import { cloneDeep } from 'lodash';
 	import Drawer from '../../../../../../../lib/cloud/libraries/overlays/Drawer.svelte';
 	import CardTable from '../../../../../../../lib/components/CardTable.svelte';
 	import { openDrawer } from '../../../../../../../lib/cloud/libraries/overlays/drawerUtilities.svelte';
 	import { appState } from '../../../../../../../lib/managers/AppState.svelte';
+	import { CallBackModal } from '../../../../../../../lib/cloud/libraries/overlays/CallbackModal.svelte';
 
 	let { data } = $props();
 	let { patient, sp } = data;
 
 	let accords = getContext('accords');
+	let modal = new CallBackModal(
+		{
+			title: $t('document.list', 'deleteModal.title'),
+			description: $t('document.list', 'deleteModal.body')
+		},
+		async (e) => {
+			console.log('in cbmodal delateAccord', e);
+			await appState.db.delete('accords', [['id', e.detail.accord_id]]);
+			let delIdx = accords.findIndex((a) => a.id === e.detail.accord_id);
+			accords.splice(delIdx, 1);
+		}
+	);
 </script>
 
 <Drawer
@@ -25,19 +36,6 @@
 	description="Panel de contrôle de votre annexe.">
 	<AccordUpdateForm {patient} {sp} mode="update" accord={page.state.drawer?.accord} />
 </Drawer>
-
-<Modal
-	opened={page.state?.modal?.name === 'deleteAccord'}
-	title={$t('document.list', 'deleteModal.title')}
-	body={$t('document.list', 'deleteModal.body')}
-	buttonTextConfirm={$t('shared', 'confirm')}
-	buttonTextCancel={$t('shared', 'cancel')}
-	onAccepted={async () => {
-		await appState.db.delete('accords', [['id', page.state.modal.accord.id]]);
-		let delIdx = accords.findIndex((a) => a.id === page.state.modal.accord.id);
-		accords.splice(delIdx, 1);
-		history.back();
-	}} />
 
 <div class="ml-2 flex flex-col space-y-4">
 	<!--* Body -->
@@ -86,11 +84,9 @@
 									<td
 										class="relative py-5 pr-4 pl-3 text-left text-sm font-medium whitespace-nowrap sm:pr-0">
 										<button
-											onclick={() => {
-												openModal({
-													name: 'deleteAccord',
-													accord: cloneDeep($state.snapshot(accord))
-												});
+											onclick={(e) => {
+												modal.modal.accord_id = accord.id;
+												modal.open(e);
 											}}
 											class="mr-4 text-red-600 hover:text-red-900 dark:text-red-500 dark:hover:text-red-400">
 											Supprimer<span class="sr-only">, {patient.nom} {patient.prenom}</span>

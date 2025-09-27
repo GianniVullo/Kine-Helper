@@ -1,18 +1,12 @@
 <script>
 	// import EventCalendar from '$lib/EventCalendar.svelte';
 	import dayjs from 'dayjs';
-	import { modalStore } from '$lib/cloud/libraries/overlays/modalUtilities.svelte';
-	import { locale, t } from '../../../lib/i18n';
-	import { get } from 'svelte/store';
-	import { NomenclatureManager } from '../../../lib/utils/nomenclatureManager';
+	import { t } from '../../../lib/i18n';
 	import { appState } from '../../../lib/managers/AppState.svelte';
 	import PageTitle from '../../../lib/cloud/components/layout/PageTitle.svelte';
 	import EventCalendar from '../../../lib/EventCalendar.svelte';
-	import Modal from '../../../lib/cloud/libraries/overlays/Modal.svelte';
-	import { page } from '$app/state';
 	import { eventFormater } from '../../../lib/utils/calendarEventFormater';
-	import { openModal } from '../../../lib/cloud/libraries/overlays/modalUtilities.svelte';
-	import { goto } from '$app/navigation';
+	import { pushState } from '$app/navigation';
 
 	let ec = $state();
 
@@ -42,21 +36,22 @@
 		}
 		return events;
 	}
+	const modal = (info) => {
+		pushState('', {
+			modal: {
+				title: $t(
+					'agenda',
+					'sessionFor',
+					{ patientName: info.event.title },
+					`Session for ${info.event.title}`
+				),
+				buttonTextConfirm: $t('agenda', 'viewSP', {}, 'View pathological situation'),
+				href: `/dashboard/patients/${info.event.extendedProps.seance.patient_id}/situation-pathologique/${info.event.extendedProps.seance.sp_id}`,
+				event: info.event
+			}
+		});
+	};
 </script>
-
-<Modal
-	opened={page.state.modal?.name === 'eventCalendarOnclick'}
-	title={page.state.modal?.title}
-	body=""
-	leading={undefined}
-	buttonTextConfirm={$t('agenda', 'viewSP', {}, 'View pathological situation')}
-	buttonTextConfirmCSS="!bg-blue-500 !text-white"
-	onAccepted={() => {
-		goto(
-			`/dashboard/patients/${page.state.modal.event.extendedProps.seance.patient_id}/situation-pathologique/${page.state.modal.event.extendedProps.seance.sp_id}`
-		);
-	}} />
-
 
 <PageTitle titre={$t('sidebar', 'agenda', {}, 'Agenda')} />
 <div class="mt-12">
@@ -75,11 +70,7 @@
 		options={{
 			eventClick(info) {
 				console.log('eventClick', info);
-				openModal({
-					name: 'eventCalendarOnclick',
-					title: $t('agenda', 'sessionFor', { patientName: info.event.title }, `Session for ${info.event.title}`),
-					event: info.event
-				});
+				modal(info);
 			},
 			loading(info) {
 				console.log('loading', info);

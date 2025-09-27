@@ -2,39 +2,43 @@
 	import dayjs from 'dayjs';
 	import { PlusIcon } from '$lib/ui/svgs/index';
 	import { t } from '../../../../../../../lib/i18n';
-	import { invalidateAll } from '$app/navigation';
+	import { invalidateAll, pushState } from '$app/navigation';
 	import { page } from '$app/state';
-	import Modal from '../../../../../../../lib/cloud/libraries/overlays/Modal.svelte';
-	import { openModal } from '../../../../../../../lib/cloud/libraries/overlays/modalUtilities.svelte';
 	import { cloneDeep } from 'lodash';
 	import SectionTitle from '../../../../../../../lib/components/SectionTitle.svelte';
 	import BoutonPrincipalAvecIcone from '../../../../../../../lib/components/BoutonPrincipalAvecIcone.svelte';
 	import CardTable from '../../../../../../../lib/components/CardTable.svelte';
-	import { deletePrescription, openPrescription } from '../../../../../../../lib/components/forms/onSubmits.svelte';
+	import {
+		deletePrescription,
+		openPrescription
+	} from '../../../../../../../lib/components/forms/onSubmits.svelte';
+	import { CallBackModal } from '../../../../../../../lib/cloud/libraries/overlays/CallbackModal.svelte';
 
 	let { data } = $props();
 
 	let patient = $state(data.patient);
 	let sp = $state(data.sp);
+	const deleteModal = new CallBackModal(
+		{
+			title: $t('prescription.list', 'deleteModal.title'),
+			description: $t('prescription.list', 'deleteModal.body')
+		},
+		async (e) => {
+			console.log('in delete prescription with detail = ', e.detail.prescription);
+			const { error } = await deletePrescription(e.detail.prescription);
+			await invalidateAll();
+			patient = page.data.patient;
+			sp = page.data.sp;
+		}
+	);
+	const noFileModal = () =>
+		pushState('', {
+			modal: {
+				title: $t('prescription.list', 'alertModal.title'),
+				description: $t('prescription.list', 'alertModal.body')
+			}
+		});
 </script>
-
-<Modal
-	opened={page.state?.modal?.name === 'deletePrescription'}
-	title={$t('prescription.list', 'deleteModal.title')}
-	body={$t('prescription.list', 'deleteModal.body')}
-	buttonTextConfirm={$t('shared', 'confirm')}
-	buttonTextCancel={$t('shared', 'cancel')}
-	onAccepted={async () => {
-		const { error } = await deletePrescription(page.state.modal.prescription);
-		await invalidateAll();
-		patient = page.data.patient;
-		sp = page.data.sp;
-	}} />
-
-<Modal
-	opened={page.state?.modal?.name === 'noFile'}
-	title={$t('prescription.list', 'alertModal.title')}
-	body={$t('prescription.list', 'alertModal.body')} />
 
 <SectionTitle titre="Prescriptions">
 	{#snippet actions()}
@@ -52,8 +56,7 @@
 			<th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold">Date</th>
 			<th scope="col" class="py-3.5 pr-3 pl-4 text-left text-sm font-semibold sm:pl-0"
 				>Prescripteur</th>
-			<th scope="col" class="py-3.5 pr-3 pl-4 text-left text-sm font-semibold sm:pl-0"
-				>Nombre</th>
+			<th scope="col" class="py-3.5 pr-3 pl-4 text-left text-sm font-semibold sm:pl-0">Nombre</th>
 			<th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold"
 				><span class="sr-only">Supprimer</span></th>
 			<th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold"
@@ -75,7 +78,9 @@
 							{prescription.prescripteur.nom}
 							{prescription.prescripteur.prenom}
 						</div>
-						<div class="mt-1 text-gray-500 dark:text-gray-300">{prescription.prescripteur.inami}</div>
+						<div class="mt-1 text-gray-500 dark:text-gray-300">
+							{prescription.prescripteur.inami}
+						</div>
 					</td>
 					<td class="px-3 py-5 text-sm whitespace-nowrap text-gray-500 dark:text-gray-300">
 						{prescription.nombre_seance}
@@ -89,11 +94,9 @@
 						}}>
 						{#if hasNoSeancesAttached}
 							<button
-								onclick={() => {
-									openModal({
-										name: 'deletePrescription',
-										prescription: cloneDeep($state.snapshot(prescription))
-									});
+								onclick={(e) => {
+									deleteModal.modal.prescription = cloneDeep($state.snapshot(prescription));
+									deleteModal.open(e);
 								}}
 								class="mr-4 text-red-600 hover:text-red-900">
 								Supprimer<span class="sr-only">, {patient.nom} {patient.prenom}</span>
@@ -126,10 +129,10 @@
 										console.log('the error', error);
 										e.target.disabled = false;
 										if (error) {
-											openModal({ name: 'noFile' });
+											noFileModal();
 										}
 									} else {
-										openModal({ name: 'noFile' });
+										noFileModal();
 									}
 								}}
 								class="mr-4 text-indigo-600 hover:text-indigo-900">

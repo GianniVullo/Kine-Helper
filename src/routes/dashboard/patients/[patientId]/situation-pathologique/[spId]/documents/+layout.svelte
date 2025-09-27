@@ -4,13 +4,8 @@
 	import { addIcon } from '../../../../../../../lib/ui/svgs/IconSnippets.svelte';
 	import { page } from '$app/state';
 	import BoutonPrincipalAvecIcone from '../../../../../../../lib/components/BoutonPrincipalAvecIcone.svelte';
-	import { goto } from '$app/navigation';
+	import { pushState } from '$app/navigation';
 	import { setContext } from 'svelte';
-	import Modal from '../../../../../../../lib/cloud/libraries/overlays/Modal.svelte';
-	import { openModal } from '../../../../../../../lib/cloud/libraries/overlays/modalUtilities.svelte';
-	import DocumentSelectionModal from '../../../../../../../lib/ui/DocumentSelectionModal.svelte';
-	import Drawer from '../../../../../../../lib/cloud/libraries/overlays/Drawer.svelte';
-	import AccordForm from '../../../../../../../lib/components/forms/AccordForm.svelte';
 
 	let { data, children } = $props();
 
@@ -39,45 +34,42 @@
 			actif: homeUrl() + `/documents/testings` === page.url.pathname
 		}
 	]);
+	const modals = {
+		docSelection: () => {
+			pushState('', {
+				modal: {
+					component: 'docSelection'
+				}
+			});
+		},
+		patientIncomplete: () => {
+			pushState('', {
+				modal: {
+					title: 'Patient incomplet',
+					description: `Kiné Helper a besoin que vous complétiez les champs suivant avant de continuer.<br /><ul class="mt-3 font-medium space-y-2">
+					${patient.missing_fields.map((field) => `<li>- ${field}</li>`).join('')}
+					</ul>`,
+					href: `/dashboard/patients/${patient.patient_id}/update`,
+					buttonTextConfirm: 'Compléter les informations du patient'
+				}
+			});
+		}
+	};
 </script>
 
-<Drawer
-	opened={page.state.drawer?.name === 'accordCreate'}
-	title={`Création d'${page.state.drawer?.docType === 'A' ? 'une Annexe A' : 'une Annexe B'}`}
-	description="Panel de contrôle de votre Annexe.">
-	<AccordForm
-		{patient}
-		{sp}
-		docType={page.state.drawer?.docType}
-		accord={page.state.drawer?.accord} />
-</Drawer>
-
-<Modal
-	opened={page.state?.modal?.name === 'patientIncomplete'}
-	title="Patient incomplet"
-	body={'Kiné Helper a besoin que vous complétiez les champs suivant avant de continuer. ' +
-		'<ul class="mt-3 text-gray-900 font-medium space-y-2">' +
-		page.state?.modal?.fields.map((field) => `<li>- ${field}</li>`) +
-		'</ul>'}
-	buttonTextConfirm="Compléter les informations du patient"
-	onAccepted={() => {
-		goto(`/dashboard/patients/${patient.patient_id}/update`);
-	}} />
-
-<Modal
-	opened={page.state?.modal?.name === 'documentSelection'}
-	title="Sélectionner un document"
-	body="Veuillez sélectionner un document à ajouter.">
-	<DocumentSelectionModal {accords} />
-</Modal>
-<SectionTitleWithTabs titre="Documents" className="space-x-2" {tabs} selectId="accords-tabs-select" tabsClassName="mb-0">
+<SectionTitleWithTabs
+	titre="Documents"
+	className="space-x-2"
+	{tabs}
+	selectId="accords-tabs-select"
+	tabsClassName="mb-0">
 	{#snippet actions()}
 		<BoutonPrincipalAvecIcone
 			onclick={() => {
 				if (!patient.is_complete) {
-					openModal({ name: 'patientIncomplete', fields: patient.missing_fields });
+					modals.patientIncomplete();
 				} else {
-					openModal({ name: 'documentSelection' });
+					modals.docSelection();
 				}
 			}}
 			inner={$t('document.list', 'accord')}

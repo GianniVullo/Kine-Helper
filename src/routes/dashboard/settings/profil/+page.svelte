@@ -1,6 +1,5 @@
 <script>
 	import { supabase } from '../../../../lib';
-	import Modal from '../../../../lib/cloud/libraries/overlays/Modal.svelte';
 	import { toast } from '../../../../lib/cloud/libraries/overlays/notificationUtilities.svelte';
 	import SimpleSelect from '../../../../lib/components/forms/fields/SimpleSelect.svelte';
 	import { t, locale, dictionnary } from '../../../../lib/i18n';
@@ -11,8 +10,7 @@
 	import { SubmitButton, FormSection, Field } from '../../../../lib/components/forms/blocks';
 	import { errorIcon } from '../../../../lib/ui/svgs/IconSnippets.svelte';
 	import BoutonPrincipal from '../../../../lib/components/BoutonPrincipal.svelte';
-	import { page } from '$app/state';
-	import { goto } from '$app/navigation';
+	import { goto, replaceState } from '$app/navigation';
 	import { openModal } from '../../../../lib/cloud/libraries/overlays/modalUtilities.svelte';
 	import {
 		lazy,
@@ -32,14 +30,11 @@
 		stringLengthMoreThan1
 	} from '../../../../lib/components/forms/validators/baseValidators';
 	import { get } from 'svelte/store';
-	import DarkModeSwitch from '../../../../lib/cloud/libraries/DarkModeSwitch.svelte';
 	import { info } from '../../../../lib/cloud/libraries/logging';
-
-	let { data } = $props();
+	import { FormModal } from '../../../../lib/cloud/libraries/overlays/FormModal.svelte.js';
 
 	let cpVal = (x) => pipe(stringLengthMoreThan1(), digits(), x);
 
-	let confirmDeletionText = $state('');
 	const validateurs = {
 		id: pipe(string(), uuid()),
 		nom: stringLengthMoreThan1(),
@@ -188,8 +183,50 @@
 		locale.set(lang);
 		await setLangAsDefault(lang);
 	}
-	const btnBaseCSS =
-		'inline-flex w-full justify-center rounded-md  px-3 py-2 text-sm font-semibold text-white shadow-xs  sm:w-auto';
+	let formModal = new FormModal(
+		{
+			title: 'TESTING',
+			description: 'Testing even more... ',
+			form: {
+				fields: [
+					{
+						name: 'confirmation',
+						type: 'text',
+						titre: 'Confirmation',
+						help: 'Écrivez "Delete my account" pour confirmer la suppression de votre compte',
+						placeholder: 'Delete my account',
+						required: true,
+						outerCSS: 'col-span-full'
+					}
+				]
+			}
+		},
+		async (e) => {
+			console.log('In the event handler', e);
+			if (e.detail.confirmation === 'Delete my account') {
+				let { data, error } = await supabase.from('user_messages').insert({
+					titre: 'Kiné Helper : nouvelle demande de Suppression du compte',
+					message: `from <${appState.user.nom + ' ' + appState.user.prenom}> ${
+						appState.user.email
+					} : \n Merci de supprimer mes données de votre serveur`,
+					user_id: appState.user.id
+				});
+				console.log('supprimer mon compte', data, error);
+				// await nukeUsersData();
+				replaceState('', { modal: undefined });
+			} else {
+				if (!toast.fired.some((toast) => toast.titre === 'Erreur!')) {
+					toast.trigger({
+						titre: 'Erreur!',
+						description: 'Le texte saisi ne correspond pas à "Delete my account".',
+						leading: errorIcon,
+						leadingCSS: 'size-6 text-red-400',
+						timeout: 5000
+					});
+				}
+			}
+		}
+	);
 </script>
 
 <main class="flex h-full w-full grid-cols-6 flex-col gap-y-10 overflow-y-scroll">
@@ -227,66 +264,8 @@
 		<div class="col-span-full">
 			<BoutonPrincipal
 				color="error"
-				onclick={() => openModal({ name: 'deleteAccount' })}
+				onclick={formModal.open.bind(formModal)}
 				inner={$t('settings', 'deletionConfirm')} />
 		</div>
 	</FormSection>
 </main>
-
-<Modal
-	opened={page.state?.modal?.name === 'deleteAccount'}
-	title={$t('settings', 'alertTitle')}
-	body={$t('settings', 'alertBody')}>
-	<form
-		class="mt-10"
-		onsubmit={async (event) => {
-			event.preventDefault();
-			if (confirmDeletionText === 'Delete my account') {
-				let { data, error } = await supabase.from('user_messages').insert({
-					titre: 'Kiné Helper : nouvelle demande de Suppression du compte',
-					message: `from <${appState.user.nom + ' ' + appState.user.prenom}> ${
-						appState.user.email
-					} : \n Merci de supprimer mes données de votre serveur`,
-					user_id: appState.user.id
-				});
-				console.log('supprimer mon compte');
-				// await nukeUsersData();
-			} else {
-				if (!toast.fired.some((toast) => toast.titre === 'Erreur!')) {
-					toast.trigger({
-						titre: 'Erreur!',
-						description: 'Le texte saisi ne correspond pas à "Delete my account".',
-						leading: errorIcon,
-						leadingCSS: 'size-6 text-red-400',
-						timeout: 5000
-					});
-				}
-			}
-		}}>
-		<div class="flex flex-col items-start space-y-2">
-			<label for="confirmation" class="text-surface-600 dark:text-surface-300">
-				{$t('settings', 'confirmDeletion')}
-			</label>
-			<Field
-				bind:value={confirmDeletionText}
-				field={{
-					name: 'confirmation',
-					type: 'text',
-					titre: 'Confirmation',
-					help: 'Écrivez "Delete my account" pour confirmer la suppression de votre compte',
-					placeholder: 'Delete my account',
-					required: true,
-					class: 'input'
-				}} />
-			<BoutonPrincipal
-				inner="Supprimer mon compte"
-				id="user-data-button"
-				disabled={!confirmDeletionText || confirmDeletionText !== 'Delete my account'}
-				color="error" />
-			<!-- <button
-				type="submit"
-				disabled={confirmDeletionText !== 'Delete my account'}
-				class={[btnBaseCSS, 'bg-red-600 hover:bg-red-500']}>Supprimer mon compte</button> -->
-		</div>
-	</form>
-</Modal>

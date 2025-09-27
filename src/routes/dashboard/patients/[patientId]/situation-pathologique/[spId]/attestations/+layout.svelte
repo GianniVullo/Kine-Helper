@@ -5,11 +5,8 @@
 	import { addIcon } from '../../../../../../../lib/ui/svgs/IconSnippets.svelte';
 	import { page } from '$app/state';
 	import BoutonPrincipalAvecIcone from '../../../../../../../lib/components/BoutonPrincipalAvecIcone.svelte';
-	import { goto } from '$app/navigation';
+	import { goto, pushState } from '$app/navigation';
 	import { setContext } from 'svelte';
-	import FactureCreationModal from '$lib/ui/FactureCreationModal.svelte';
-	import Modal from '../../../../../../../lib/cloud/libraries/overlays/Modal.svelte';
-	import { openModal } from '../../../../../../../lib/cloud/libraries/overlays/modalUtilities.svelte';
 
 	let { data, children } = $props();
 
@@ -33,52 +30,50 @@
 			actif: page.url.pathname === homeUrl() + `/attestations/factures`
 		}
 	]);
+	const modals = {
+		noAttestation: () => {
+			pushState('', {
+				modal: {
+					title: "Pas d'attestations",
+					description: 'Veuillez créer une attestation avant de continuer.',
+					buttonTextCancel: 'none',
+					buttonTextConfirm: 'Ok'
+				}
+			});
+		},
+		patientIcomplete: () => {
+			pushState('', {
+				modal: {
+					title: 'Patient incomplet',
+					description: `Kiné Helper a besoin que vous complétiez les champs suivant avant de continuer :\n<ul class="mt-3 font-medium space-y-2">${patient.missing_fields.map((field) => `<li>- ${field}</li>`).join('')}</ul>`,
+					buttonTextConfirm: 'Compléter les informations du patient',
+					href: `/dashboard/patients/${patient.patient_id}/update`
+				}
+			});
+		},
+		noPrescription: () => {
+			pushState('', {
+				modal: {
+					title: 'Pas de prescription',
+					description: 'Veuillez ajouter une prescription avant de continuer.',
+					buttonTextConfirm: 'Ajouter une prescription',
+					href: `/dashboard/patients/${patient.patient_id}/situation-pathologique/${sp.sp_id}/prescriptions/create`
+				}
+			});
+		},
+		noSeance: () => {
+			pushState('', {
+				modal: {
+					title: "Il n'y a pas de séance à attester",
+					description: 'Voulez-vous créer une nouvelle séance ?',
+					buttonTextConfirm: 'Créer une nouvelle séance',
+					buttonTextCancel: 'Annuler',
+					href: `/dashboard/patients/${patient.patient_id}/situation-pathologique/${sp.sp_id}/seances/create`
+				}
+			});
+		}
+	};
 </script>
-
-<Modal
-	opened={page.state.modal?.name === 'factureCreationModal'}
-	title={$t('otherModal', 'fcreate.title')}>
-	<FactureCreationModal {sp} {patient} {factures} />
-</Modal>
-<Modal
-	opened={page.state.modal?.name === 'noAttestation'}
-	title="Pas d'attestations"
-	body="Veuillez créer une attestation avant de continuer."
-	buttonTextCancel="none"
-	buttonTextConfirm="Ok" />
-<Modal
-	opened={page.state.modal?.name === 'patientIncomplete'}
-	title="Patient incomplet"
-	,
-	body={'Kiné Helper a besoin que vous complétiez les champs suivant avant de continuer. ' +
-		'<ul class="mt-3 text-gray-900 font-medium space-y-2">' +
-		page.state?.modal?.fields.map((field) => `<li>- ${field}</li>`) +
-		'</ul>'}
-	buttonTextConfirm="Compléter les informations du patient"
-	onAccepted={() => {
-		goto(`/dashboard/patients/${patient.patient_id}/update`);
-	}} />
-<Modal
-	opened={page.state.modal?.name === 'noPrescription'}
-	title="Pas de prescription"
-	body="Veuillez ajouter une prescription avant de continuer."
-	buttonTextConfirm="Ajouter une prescription"
-	onAccepted={() => {
-		goto(
-			`/dashboard/patients/${patient.patient_id}/situation-pathologique/${sp.sp_id}/prescriptions/create`
-		);
-	}} />
-<Modal
-	opened={page.state.modal?.name === 'createSeance'}
-	title="Il n'y a pas de séance à attester"
-	body="Voulez-vous créer une nouvelle séance ?"
-	buttonTextConfirm="Créer une nouvelle séance"
-	buttonTextCancel="Annuler"
-	onAccepted={() => {
-		goto(
-			`/dashboard/patients/${patient.patient_id}/situation-pathologique/${sp.sp_id}/seances/create`
-		);
-	}} />
 
 <SectionTitleWithTabs
 	titre={$t('form.generateur', 'tarification.title')}
@@ -89,31 +84,34 @@
 		<BoutonSecondaireAvecIcone
 			onclick={() => {
 				if (sp.attestations.length > 0) {
-					openModal({ name: 'factureCreationModal' });
+					pushState('', { modal: { component: 'factureCreationModal' } });
 				} else {
-					openModal({ name: 'noAttestation' });
+					modals.noAttestation();
 				}
 			}}
 			inner={$t('attestation.detail', 'bill')}
 			icon={addIcon} />
 		<BoutonPrincipalAvecIcone
-			onclick={() => {
-				console.log(patient);
+			onclick={(e) => {
+				e.target.disabled = true;
 				if (!patient.is_complete) {
-					openModal({ name: 'patientIncomplete', fields: patient.missing_fields });
+					console.log('Patient incomplete !');
+					modals.patientIcomplete();
 				} else if (sp.prescriptions.length === 0) {
-					openModal({ name: 'noPrescription' });
+					modals.noPrescription();
 				} else if (sp.seances.filter((seance) => !seance.has_been_attested).length === 0) {
-					openModal({ name: 'createSeance' });
+					modals.noSeance();
 				} else {
 					goto(
 						`/dashboard/patients/${patient.patient_id}/situation-pathologique/${sp.sp_id}/attestations/create-none`
 					);
 				}
+				e.target.disabled = false;
 			}}
 			additionnalCSS="ml-3"
 			inner="Attestation"
 			icon={addIcon} />
 	{/snippet}
 </SectionTitleWithTabs>
+
 {@render children()}
