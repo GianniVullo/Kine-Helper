@@ -8,16 +8,13 @@
 	 ** 	- display errors
 	 */
 	import { get } from 'svelte/store';
-	import Modal from '$lib/cloud/libraries/overlays/Modal.svelte';
-	import { openModal } from '$lib/cloud/libraries/overlays/modalUtilities.svelte';
 	import { t } from '$lib/i18n';
 	import BoutonPrincipal from '$lib/components/BoutonPrincipal.svelte';
 	import TwUiFileField from '../fields/TwUIFileField.svelte';
-	import { page } from '$app/state';
 	import AvailableScanners from '$lib/cloud/libraries/imageCapture/desktop/AvailableScanners.svelte';
 	import { fly } from 'svelte/transition';
 	import { arrowRightIcon } from '$lib/ui/svgs/IconSnippets.svelte';
-	import { goto } from '$app/navigation';
+	import { goto, pushState } from '$app/navigation';
 	import { readFile } from '@tauri-apps/plugin-fs';
 	import dayjs from 'dayjs';
 	import { platform } from '@tauri-apps/plugin-os';
@@ -62,17 +59,11 @@
 	let xPos = $state(800);
 	let stepIndex = $state(0);
 	let srcimg = $state(null);
+	let previewModal = () => ({
+		title: 'Aperçu de la prescription',
+		src: srcimg
+	});
 </script>
-
-<Modal opened={page.state.modal?.name === 'previewImage'} title="'Aperçu de la prescription'">
-	<img src={srcimg} alt="" />
-	<BoutonPrincipal
-		inner="Fermer"
-		onclick={(e) => {
-			e.preventDefault();
-			history.back();
-		}} />
-</Modal>
 
 {#snippet gotoStepButton(step, label = 'Retour')}
 	<button
@@ -192,8 +183,8 @@
 						class=""
 						onclick={(e) => {
 							e.preventDefault();
-							openModal({
-								name: 'previewImage'
+							pushState('', {
+								modal: previewModal()
 							});
 						}}><img src={srcimg} alt="" class="h-56" /></button>
 				{/if}
