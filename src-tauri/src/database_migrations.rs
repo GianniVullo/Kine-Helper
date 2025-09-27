@@ -140,5 +140,11 @@ pub fn build_migrations() -> Vec<Migration> {
                             sql: include_str!("migrations/20250915133523_added_organization_id_to_business_table.up.sql"),
                             kind: MigrationKind::Up,
                         },
+                        Migration {
+                            version: 23,
+                            description: "Ajout des colonne organization_id à la table business",
+                            sql: include_str!("migrations/20250925133523_added_user_id_to_factures_attestations.up.sql"),
+                            kind: MigrationKind::Up,
+                        },
                     ]
 }

@@ -89,7 +89,9 @@ export async function createFacture(data, attestation_ids, produce_pdf = true) {
 			'factures_attestations',
 			{
 				facture_id: data.id,
-				attestation_id
+				attestation_id,
+				user_id: appState.user.id,
+				organization_id: appState.selectedOrg.id
 			}
 		);
 		if (factureAttestationError) {
@@ -104,9 +106,14 @@ export async function createFacture(data, attestation_ids, produce_pdf = true) {
 		if (facturePDFError) {
 			return { error: facturePDFError };
 		}
-		await facturePDF.open();
+		try {
+			await facturePDF.open();
+		} catch (error) {
+			console.warn('ERR While trying to ope facture pdf', error);
+		}
+		console.log('FACTURE OPENED');
 	}
-	return { data: facture[0] };
+	return { data: 'OK' };
 }
 
 export async function editDocument(data) {}
