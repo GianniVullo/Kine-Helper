@@ -1,4 +1,5 @@
 import { cloneDeep } from 'lodash';
+import { successIcon } from '../../../ui/svgs/IconSnippets.svelte';
 
 class Toast {
 	fired = $state([]);
@@ -11,6 +12,16 @@ class Toast {
 	}
 
 	trigger(component) {
+		if (component.type) {
+			switch (component.type) {
+				case 'success':
+					component.leading = successIcon;
+					component.leadingCSS = 'size-6 text-green-400';
+					break;
+				default:
+					break;
+			}
+		}
 		component.id = crypto.randomUUID();
 		let cloned = cloneDeep(component);
 		this.fired.push(cloned);

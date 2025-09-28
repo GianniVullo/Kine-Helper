@@ -25,7 +25,6 @@ export class CommandPaletteController {
 		console.log('Filtered patients:', filtered);
 		return filtered || [];
 	});
-	searchInput;
 	// These two shortcuts can be unlistened to when the command palette is closed
 	closeShortcut;
 	gotoPatientShortcut;
@@ -41,9 +40,6 @@ export class CommandPaletteController {
 			window.addEventListener('command-palette:open', (event) => {
 				console.log('Command palette open event received');
 				this.inner.opened = true;
-				if (this.searchInput) {
-					this.searchInput.focus();
-				}
 			});
 
 			// The main cmd + k open/close command palette shortcut
@@ -52,9 +48,6 @@ export class CommandPaletteController {
 				if ((this.isMac ? event.metaKey : event.ctrlKey) && event.key === 'k') {
 					event.preventDefault();
 					this.inner.opened = !this.inner.opened;
-					if (this.inner.opened) {
-						this.searchInput?.focus();
-					}
 				}
 			});
 		});

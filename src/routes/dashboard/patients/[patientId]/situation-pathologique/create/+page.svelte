@@ -1,5 +1,5 @@
 <script>
-	import SPForm from '../../../../../../lib/cloud/components/forms/situation-pathologique/SPForm.svelte';
+	import SPForm from '$lib/components/forms/SPForm.svelte';
 
 	let { data } = $props();
 	const { patient, tarifs, supplements } = data;

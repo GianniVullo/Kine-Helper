@@ -1,6 +1,7 @@
 <script>
-    import { page } from '$app/stores';
-	import ResponsiveSideBar from '../../lib/cloud/components/layout/ResponsiveSideBar.svelte';
+	import { page } from '$app/stores';
 </script>
 
-<h1>{$page.status}: {$page.error.message}</h1>
+<div class="error-container">
+	<h1>{$page.status}: {$page.error.message}</h1>
+</div>

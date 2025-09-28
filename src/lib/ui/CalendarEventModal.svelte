@@ -1,18 +1,16 @@
 <script>
 	import { t } from '../i18n';
 	import { appState } from '../managers/AppState.svelte';
-	import { retrievePatient } from '../user-ops-handlers/patients';
-	import { retrieveSituationPathologique } from '../user-ops-handlers/situations_pathologiques';
-
 	import BoutonPrincipalAvecIcone from '../components/BoutonPrincipalAvecIcone.svelte';
 	import { editIcon, euroIcon } from './svgs/IconSnippets.svelte';
 	import BoutonSecondaireAvecIcone from '../components/BoutonSecondaireAvecIcone.svelte';
 	import BoutonPrincipal from '../components/BoutonPrincipal.svelte';
 	import dayjs from 'dayjs';
-	import { goto } from '$app/navigation';
+	import { goto, invalidate } from '$app/navigation';
+	import { page } from '$app/state';
 
-	let { event, seance, ec } = $props();
-
+	let { ec } = $props();
+	let seance = $derived(page.state.drawer?.seance);
 	let deletion = $state(false);
 </script>
 
@@ -20,7 +18,7 @@
 	{#await new Promise(async (resolve, reject) => {
 		if (seance) {
 			await appState.init({});
-			let { data: patient, error } = await retrievePatient({ patient_id: seance.patient_id });
+			let { data: patient, error } = await appState.db.retrievePatient(seance.patient_id);
 			if (error) {
 				/**
 				 * TODO Need to add proper error handling here, not critical tho as it should never break fataly here (users can still access the responsiveSidebar and reset the state)
@@ -32,7 +30,7 @@
 			}
 
 			let sp;
-			const { data, error: err2 } = await retrieveSituationPathologique({ sp_id: seance.sp_id });
+			const { data, error: err2 } = await appState.db.retrieve_sp({ sp_id: seance.sp_id });
 			if (err2) {
 				/**
 				 * TODO Need to add proper error handling here, not critical tho as it should never break fataly here (users can still access the responsiveSidebar and reset the state)
@@ -100,7 +98,7 @@
 						{/snippet}
 					</BoutonSecondaireAvecIcone>
 				{/if}
-				{#if !event.extendedProps.seance.has_been_attested}
+				{#if !page.state.drawer?.event.extendedProps.seance.has_been_attested}
 					<BoutonSecondaireAvecIcone
 						size="sm"
 						className="inline-flex items-center bg-white text-sm font-medium text-red-900 shadow-sm ring-1 ring-inset ring-red-300 hover:bg-red-50 duration-500 self-end"
@@ -141,11 +139,12 @@
 							class="variant-outline btn btn-sm">{$t('patient.create', 'back')}</button>
 						<BoutonPrincipal
 							onclick={async () => {
+								console.log('Deleting seance', seance);
+
 								await appState.db.delete('seances', [['seance_id', seance.seance_id]]);
 								console.log(ec);
-
 								ec.removeEventById(seance.seance_id);
-								history.back();
+								await invalidate('patient:layout');
 							}}
 							size="sm"
 							color="error">{$t('patients.detail', 'deleteModal.confirm')}</BoutonPrincipal>

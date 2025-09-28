@@ -1,9 +1,9 @@
 <script>
+	import { replaceState } from '$app/navigation';
+	import { page } from '$app/state';
 	import BoutonPrincipal from '../../../components/BoutonPrincipal.svelte';
 	import { appState } from '../../../managers/AppState.svelte';
 	import { ArrowCircle, clock, errorIcon, successIcon } from '../../../ui/svgs/IconSnippets.svelte';
-	import Modal from '../overlays/Modal.svelte';
-	import { page } from '$app/state';
 
 	let historyManager = appState.queue;
 	$effect(() => {
@@ -11,11 +11,23 @@
 	});
 </script>
 
-<Modal
-	opened={page.state.modal?.name === 'cloudModal'}
-	title="Cloud Synchronisation"
-	body={'<p>État des opérations de synchronisation avec votre Cloud.' +
-		`<br />Opération(s) en cours : ${historyManager.promiseQueue.operations.filter((p) => p.status === 'pending').length}<br/>Opération(s) terminé(es) avec succès : ${historyManager.promiseQueue.operations.filter((p) => p.status === 'fulfilled').length}</p>`}>
+<div class="mt-3 w-full px-4 py-6 text-center sm:mt-0 sm:ml-4 sm:text-left">
+	<h3 class="text-base font-semibold text-gray-900 dark:text-gray-200" id="modal-title">
+		Cloud Synchronisation
+	</h3>
+	<div class="mt-2">
+		<p class="text-sm text-gray-500 dark:text-gray-400">
+			État des opérations de synchronisation avec votre Cloud. <br />
+
+			Opération(s) en cours :
+
+			{historyManager.promiseQueue.operations.filter((p) => p.status === 'pending').length}<br />
+
+			Opération(s) terminé(es) avec succès :
+
+			{historyManager.promiseQueue.operations.filter((p) => p.status === 'fulfilled').length}
+		</p>
+	</div>
 	<div class="mt-5 mb-3 flow-root">
 		<ul role="list" class="mb-3 max-h-96 overflow-y-scroll">
 			{#each historyManager.promiseQueue.operations as { label, date, status }, index}
@@ -62,7 +74,7 @@
 	</div>
 	<BoutonPrincipal
 		onclick={() => {
-			history.back();
+			replaceState('', { ...page.state, modal: undefined });
 		}}
 		inner="Ok" />
-</Modal>
+</div>

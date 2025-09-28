@@ -3,36 +3,36 @@
 	import { dropdownItem } from '../components/dropdowns/DropdownSnippets.svelte';
 	import { t } from '../i18n';
 	import { get } from 'svelte/store';
-	import { deletePatient } from '../../lib/user-ops-handlers/patients';
 	import PageTitle from '../components/PageTitle.svelte';
 	import BoutonSecondaireAvecIcone from '../components/BoutonSecondaireAvecIcone.svelte';
 	import BoutonPrincipalAvecIcone from '../components/BoutonPrincipalAvecIcone.svelte';
 	import Dropdown from '../components/dropdowns/Dropdown.svelte';
-	import Modal from '../cloud/libraries/overlays/Modal.svelte';
-	import { pushState, goto } from '$app/navigation';
+	import { invalidate } from '$app/navigation';
 	import { archiveBoxArrowDownIcon, eyeIcon } from '../ui/svgs/IconSnippets.svelte';
-
-	const modal = {
-		title: get(t)('patients.detail', 'pdeleteModal.title'),
-		body: get(t)('patients.detail', 'pdeleteModal.body'),
-		buttonTextConfirm: get(t)('shared', 'confirm'),
-		buttonTextCancel: get(t)('shared', 'cancel')
-	};
+	import { appState } from '../managers/AppState.svelte';
+	import { CallBackModal } from '../cloud/libraries/overlays/CallbackModal.svelte.js';
+	import { info } from '../cloud/libraries/logging';
 
 	let { patient } = $props();
+	const modal = new CallBackModal(
+		{
+			title: get(t)('patients.detail', 'pdeleteModal.title'),
+			description: get(t)('patients.detail', 'pdeleteModal.body'),
+			href: '/dashboard/patients'
+		},
+		async () => {
+			const { error } = await appState.db.delete('patients', [['patient_id', patient.patient_id]]);
+			await invalidate('patients:list');
+			if (error) {
+				info('Error while deleting patient', error);
+			}
+		}
+	);
 	const homeUrl = () => {
 		return `/dashboard/patients/${page.params.patientId}`;
 	};
 </script>
 
-<Modal
-	opened={page.state.modal === 'patientDeleteModal'}
-	{...modal}
-	onAccepted={async () => {
-		const { error } = await deletePatient(patient);
-		console.log('error', error);
-		goto('/dashboard/patients');
-	}} />
 <PageTitle srOnly="Résumé du patient">
 	{#snippet title()}
 		<div class="sm:flex sm:space-x-5">
@@ -48,12 +48,14 @@
 				{/if}
 			</div>
 			<div class="mt-4 text-center sm:mt-0 sm:pt-1 sm:text-left">
-				<p class="text-xl font-bold text-gray-900 sm:text-2xl">
+				<p class="text-xl font-bold text-gray-900 sm:text-2xl dark:text-white">
 					{patient?.nom}
 					{patient?.prenom}
 				</p>
 				{#if patient.mutualite}
-					<p class="text-sm font-medium text-gray-600">Mutualité : {patient.mutualite}</p>
+					<p class="text-sm font-medium text-gray-600 dark:text-gray-400">
+						Mutualité : {patient.mutualite}
+					</p>
 				{/if}
 			</div>
 		</div>
@@ -91,9 +93,7 @@
 			</span>
 
 			<span class="ml-3 hidden sm:block">
-				<BoutonSecondaireAvecIcone
-					onclick={() => pushState('', { ...page.state, modal: 'patientDeleteModal' })}
-					inner="Supprimer">
+				<BoutonSecondaireAvecIcone onclick={modal.open.bind(modal)} inner="Supprimer">
 					{#snippet icon(cls)}
 						<svg
 							xmlns="http://www.w3.org/2000/svg"
@@ -120,11 +120,7 @@
 				{#snippet menuItems()}
 					{@render dropdownItem(homeUrl() + '/update', null, 'Modifier')}
 					{@render dropdownItem(homeUrl() + '/details', null, 'Détails')}
-					{@render dropdownItem(
-						undefined,
-						() => pushState('', { ...page.state, modal: 'patientDeleteModal' }),
-						'Supprimer'
-					)}
+					{@render dropdownItem(undefined, modal.open.bind(modal), 'Supprimer')}
 				{/snippet}
 			</Dropdown>
 		</div>

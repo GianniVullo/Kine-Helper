@@ -1,5 +1,11 @@
 import { get } from 'svelte/store';
-import { file_exists, open_file, read_file, remove_file, save_to_disk } from '../utils/fsAccessor';
+import {
+	file_exists,
+	open_file,
+	read_file,
+	remove_file,
+	save_local_file
+} from '../utils/fsAccessor';
 import { appState } from '../managers/AppState.svelte';
 import { invoke } from '@tauri-apps/api/core';
 import { PDFDocument, PDFPage, PDFFont, rgb, StandardFonts } from 'pdf-lib';
@@ -62,7 +68,7 @@ export class BetterPDFGeneration {
 		console.log('in save_file, pdf built');
 		let docOutput = await this.doc.save();
 		let dirPath = await this.buildPath();
-		await save_to_disk(dirPath, this.document.id + '.pdf', docOutput);
+		await save_local_file(dirPath, this.document.id + '.pdf', docOutput);
 		console.log('in save_file, pdf sent');
 		return { dirPath };
 	}
@@ -72,6 +78,7 @@ export class BetterPDFGeneration {
 			await appState.init({});
 		}
 		await appState.db.insert('documents', this.document);
+		return { dirPath, error: null };
 	}
 
 	async delete() {

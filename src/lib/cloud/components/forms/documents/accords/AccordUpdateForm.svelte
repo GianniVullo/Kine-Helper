@@ -10,7 +10,6 @@
 	import dayjs from 'dayjs';
 	import { isoDate, object, string, uuid } from 'valibot';
 	import { arrowRightIcon, arrowBottomIcon } from '../../../../../ui/svgs/IconSnippets.svelte';
-	import { filtrerLesChampsAUpdater } from '../../../../database';
 	import { page } from '$app/state';
 	import { untrack } from 'svelte';
 	import { uuidVal } from '../../validators/commons';
@@ -30,7 +29,7 @@
 		schema: object(validateurs),
 		submiter: '#accord-update-submit',
 		async onValid(data) {
-			let fields = filtrerLesChampsAUpdater(this.touched, data);
+			let fields = this.filtrerLesChampsAUpdater(data);
 			console.log('AccordUpdateForm onValid', page.state.drawer?.accordId);
 			const { data: _, error } = await appState.db.update(
 				'accords',

@@ -2,7 +2,6 @@
 	import { invoke } from '@tauri-apps/api/core';
 	import Spiner from '../components/layout/Spiner.svelte';
 	import { tick } from 'svelte';
-	import { clear } from '@tauri-apps/plugin-clipboard-manager';
 
 	let { dataReceiver } = $props();
 	/**
@@ -50,9 +49,9 @@
 </script>
 
 {#snippet cadre(completed, error)}
-	<div class="col-span-full bg-gray-50 shadow-sm sm:rounded-lg md:col-span-3">
+	<div class="col-span-full bg-gray-50 shadow-sm sm:rounded-lg md:col-span-3 dark:bg-gray-800">
 		<div class="px-4 py-5 sm:p-6">
-			<h3 class="text-base font-semibold text-gray-900">Lecteur de carte eID</h3>
+			<h3 class="text-base font-semibold text-gray-900 dark:text-white">Lecteur de carte eID</h3>
 			<div class="mt-2 sm:flex sm:items-start sm:justify-between">
 				<div class="max-w-xl text-sm text-gray-500">
 					{#if completed}

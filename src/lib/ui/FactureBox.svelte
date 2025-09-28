@@ -7,26 +7,25 @@
 		retrieveFactureAttestions
 	} from '../user-ops-handlers/documents';
 	import { t } from '../i18n';
-	import { page } from '$app/state';
 	import { getContext } from 'svelte';
-	import Modal from '../cloud/libraries/overlays/Modal.svelte';
-	import { pushState } from '$app/navigation';
+	import { CallBackModal } from '../cloud/libraries/overlays/CallbackModal.svelte';
 
 	let factures = getContext('factures');
 	let { facture, patient, sp, className } = $props();
+	const modal = new CallBackModal(
+		{
+			title: $t('shared', 'confirm'),
+			description: $t('otherModal', 'facture.delete', {
+				date: dayjs(facture.date).format('DD/MM/YYYY')
+			})
+		},
+		async () => {
+			await deleteFacture(facture);
+			factures.splice(factures.indexOf(facture), 1);
+		}
+	);
 </script>
 
-<Modal
-	opened={page.state.modal === 'deleteFacture'}
-	title={$t('shared', 'confirm')}
-	body={$t('otherModal', 'facture.delete', {
-		date: dayjs(facture.date).format('DD/MM/YYYY')
-	})}
-	onAccepted={async () => {
-		await deleteFacture(facture);
-		factures.splice(factures.indexOf(facture), 1);
-		history.back();
-	}} />
 <div
 	class="border-surface-400 hover:bg-surface-100 dark:hover:bg-surface-800/50 flex flex-col justify-between rounded-lg border px-4 py-2 shadow duration-200">
 	<div class="flex items-center space-x-4 {className}">
@@ -45,11 +44,7 @@
         <button class="variant-outline-warning btn-icon btn-icon-sm"
             ><UpdateIcon
                 class="h-5 w-5 stroke-surface-600 dark:stroke-surface-200" /></button> -->
-			<button
-				onclick={async () => {
-					pushState('', { ...page.state, modal: 'deleteFacture' });
-				}}
-				class="variant-outline-error btn-icon btn-icon-sm"
+			<button onclick={modal.open.bind(modal)} class="variant-outline-error btn-icon btn-icon-sm"
 				><DeleteIcon class="stroke-surface-600 dark:stroke-surface-200 h-5 w-5" /></button>
 			<button
 				onclick={async () => {

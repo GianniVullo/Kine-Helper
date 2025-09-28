@@ -1,5 +1,5 @@
 <script>
-	import MultipleSeanceForm from '../../../../../../../../lib/cloud/components/forms/seances/MultipleSeanceForm.svelte';
+	import MultipleSeanceForm from '../../../../../../../../lib/components/forms/MultipleSeanceForm.svelte';
 
 	/** @type {{ data: import('./$types').PageData }} */
 	let { data } = $props();

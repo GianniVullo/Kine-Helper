@@ -1,3 +1,4 @@
+import { info } from '../../lib/cloud/libraries/logging';
 import { appState } from '../../lib/managers/AppState.svelte';
 
 /** @type {import('./$types').PageLoad} */
@@ -12,28 +13,30 @@ export async function load() {
 	);
 	// si patients > 0 on peut par exemple fetch les séances facturables pour inciter le kiné à accéder à la page finance
 	if (fetchPatientError) {
-		console.error('fetchPatientError', fetchPatientError);
+		info('fetchPatientError', fetchPatientError);
 	}
 	if (patients.length === 0) {
 		return {
 			noPatientYet: true
 		};
-	} else {
-		// on peut fetch les séances facturables
-		let { data: total, error } = await appState.db.select(
-			'SELECT COUNT(*) as total FROM seances s WHERE s.user_id = $1 AND s.has_been_attested = 0',
-			[appState.user.id]
-		);
-		if (total) {
-			total = total[0].total;
-		} else {
-			total = 0;
-		}
-		if (error) {
-			console.error('Error fetching total:', error);
-			reject(error);
-			return;
-		}
-		return { total };
 	}
+	// * On s'abstient de fetch les séances facturables pour l'instant car cela risque de mettre trop de pression sur la db. Ne sachant pas encore la charge à gérer je préfère ne pas le faire.
+	//  else {
+	// 	// on peut fetch les séances facturables
+	// 	let { data: total, error } = await appState.db.select(
+	// 		'SELECT COUNT(*) as total FROM seances s WHERE s.user_id = $1 AND s.has_been_attested = 0',
+	// 		[appState.user.id]
+	// 	);
+	// 	if (total) {
+	// 		total = total[0].total;
+	// 	} else {
+	// 		total = 0;
+	// 	}
+	// 	if (error) {
+
+	// 		reject(error);
+	// 		return;
+	// 	}
+	// 	return { total };
+	// }
 }

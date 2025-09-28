@@ -126,7 +126,6 @@ extern_protocol!(
         #[unsafe(method_family = none)]
         unsafe fn scannerDeviceDidBecomeAvailable(&self, scanner: &ICScannerDevice);
 
-
         /// This message is sent when a functional unit is selected on the scanner device.
         ///
         /// A functional unit is selected immediately after the scanner device is instantiated and in response to "requestSelectFunctionalUnit:" message.
@@ -161,7 +160,6 @@ extern_protocol!(
         #[unsafe(method(scannerDevice:didScanToURL:))]
         #[unsafe(method_family = none)]
         unsafe fn scannerDevice_didScanToURL(&self, scanner: &ICScannerDevice, url: &NSURL);
-
 
         /// This message is sent when the scanner device receives the requested scan progress notification and a band of data is sent for each notification received.
         ///
@@ -213,9 +211,7 @@ extern_class!(
     pub struct ICScannerDevice;
 );
 
-
 unsafe impl NSObjectProtocol for ICScannerDevice {}
-
 
 impl ICScannerDevice {
     extern_methods!(
@@ -223,7 +219,6 @@ impl ICScannerDevice {
         #[unsafe(method(availableFunctionalUnitTypes))]
         #[unsafe(method_family = none)]
         pub unsafe fn availableFunctionalUnitTypes(&self) -> Retained<NSArray<NSNumber>>;
-
 
         /// ￼The currently selected functional unit on the scanner device.
         #[unsafe(method(selectedFunctionalUnit))]
@@ -305,7 +300,6 @@ impl ICScannerDevice {
             username: &NSString,
             password: &NSString,
         );
-
 
         /// Requests the scanner device to select a functional unit.
         ///

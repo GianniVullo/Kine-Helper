@@ -5,6 +5,8 @@
 	let { data } = $props();
 </script>
 
+<!-- Test pour Mycarenet -->
+<a class="rounded bg-amber-800 px-4 py-2 text-white" href="/test/mycarenet">Tester Mycarenet access</a>
 <!-- Test pour les pdfs -->
 <a class="rounded bg-blue-500 px-4 py-2 text-white" href="/test/pdf">Tester les PDFs</a>
 <!-- Test pour les formulaires -->

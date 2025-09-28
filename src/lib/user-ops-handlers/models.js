@@ -1,4 +1,4 @@
-import { payment_methods } from '../cloud/components/forms/seances/Commons.svelte';
+import { payment_methods } from '../components/forms/schemas/SeanceSchema.svelte';
 import { safeBooleanJsonParse } from '../cloud/database';
 import { appState } from '../managers/AppState.svelte';
 
@@ -171,19 +171,33 @@ export class SituationPathologique {
 	// }
 	get toDB() {
 		return {
-			sp_id: this.sp_id,
-			user_id: this.user_id,
-			created_at: this.created_at,
+			user_id: appState.user.id,
 			patient_id: this.patient_id,
+			sp_id: this.sp_id,
+			created_at: this.created_at,
+			numero_etablissement: this.numero_etablissement,
+			service: this.service,
 			motif: this.motif,
 			plan_du_ttt: this.plan_du_ttt,
-			with_indemnity: this.with_indemnity,
 			intake: this.intake,
+			with_indemnity: this.with_indemnity,
 			rapport_ecrit: this.rapport_ecrit,
-			rapport_ecrit_date: this.rapport_ecrit_date,
 			rapport_ecrit_custom_date: this.rapport_ecrit_custom_date,
-			numero_etablissement: this.numero_etablissement,
-			service: this.service
+			rapport_ecrit_date: this.rapport_ecrit_date,
+			groupe_id: this.groupe_id,
+			patho_lourde_type: this.patho_lourde_type,
+			lieu_id: this.lieu_id,
+			duree: this.duree,
+			volet_j: this.volet_j,
+			volet_h: this.volet_h,
+			gmfcs: this.gmfcs,
+			seconde_seance_fa: this.seconde_seance_fa,
+			seconde_seance_e: this.seconde_seance_e,
+			duree_seconde_seance_fa: this.duree_seconde_seance_fa,
+			deja_faites: this.deja_faites,
+			date_presta_chir_fa: this.date_presta_chir_fa,
+			metadata: this.metadata,
+			amb_hos: this.amb_hos
 		};
 	}
 }
@@ -240,8 +254,11 @@ export class Seance {
 		this.attestation_id = attestation_id;
 		this.prescription_id = prescription_id;
 		this.has_been_attested = has_been_attested;
+		if (typeof this.has_been_attested === 'string') {
+			this.has_been_attested = JSON.parse(this.has_been_attested);
+		}
 		this.is_paid = JSON.parse(is_paid);
-		this.payment_method = payment_methods[payment_method]
+		this.payment_method = payment_methods[payment_method];
 	}
 	get minutes() {
 		switch (this.duree) {

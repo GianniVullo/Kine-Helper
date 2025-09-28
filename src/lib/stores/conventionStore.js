@@ -1,29 +1,10 @@
 import { invoke } from '@tauri-apps/api/core';
 import { supabase } from './supabaseClient';
-import { LocalDatabase } from './databaseInitializer';
-import { appState } from '../managers/AppState.svelte';
-
-export async function initializeConventions(submiter) {
-	let db = new LocalDatabase();
-	// D'abord lister les fichiers dans le bucket static/codes
-	let remoteFilesList = await supabase.storage.from('static').list('codes');
-	remoteFilesList = remoteFilesList.data.map((val) => val.name);
-	console.log('GZ stocké sur le bucket drive', remoteFilesList);
-	// Ensuite fetcher les fichiers dans la base de données
-	let localFilesList = await db.select('SELECT documents from conventions;');
-	localFilesList = localFilesList.map((val) => val.documents);
-	console.log(localFilesList);
-	for (const convFile of remoteFilesList) {
-		// Comparer la réponse avec la base de donnée
-		if (!localFilesList.includes(convFile)) {
-			console.log('Fetching', convFile);
-			submiter.innerHTML = `Téléchargement de ${convFile}`;
-			// Si le fichiers n'est pas dans notre DB alors on fetch du bucket et on peuple notre db
-			await populateDB(db, convFile);
-			submiter.innerHTML = `Traitement de ${convFile} terminé`;
-		}
-	}
-}
+// import { LocalDatabase } from './databaseInitializer';
+import { platform } from '@tauri-apps/plugin-os';
+// import { fetch as nativeFetch } from '@tauri-apps/plugin-http';
+import { open_remote_file } from '../utils/fsAccessor';
+import { info } from '../cloud/libraries/logging';
 
 export async function checkAndUpdateConventions(submiter, db) {
 	// D'abord lister les fichiers dans le bucket static/codes
@@ -32,7 +13,7 @@ export async function checkAndUpdateConventions(submiter, db) {
 		return { error: remoteFilesList.error };
 	}
 	remoteFilesList = remoteFilesList.data.map((val) => val.name);
-	console.log('GZ stocké sur le bucket drive', remoteFilesList);
+	info('GZ stocké sur le bucket drive', remoteFilesList);
 	// Ensuite fetcher les fichiers dans la base de données
 	let { data: localFilesList, error: localFileError } = await db.select(
 		'SELECT documents from conventions;'
@@ -41,29 +22,34 @@ export async function checkAndUpdateConventions(submiter, db) {
 		return { error: localFileError };
 	}
 	localFilesList = localFilesList.map((val) => val.documents);
-	console.log(localFilesList);
+	info('localFilesList', localFilesList);
 	for (const convFile of remoteFilesList) {
 		// Comparer la réponse avec la base de donnée
 		if (!localFilesList.includes(convFile)) {
-			console.log('Fetching', convFile);
+			info('Fetching', convFile);
 			submiter = `Téléchargement de ${convFile}`;
 			// Si le fichiers n'est pas dans notre DB alors on fetch du bucket et on peuple notre db
 			await populateDB(db, convFile);
 			submiter = `Traitement de ${convFile} terminé`;
 		}
 	}
-	console.log('Conventions mises à jour');
+	info('Conventions mises à jour');
 	return { data: 'Conventions mises à jour' };
 }
 
 async function populateDB(db, convFile) {
-	// Récupérer le binary sur le serveur
-	let { data, error } = await supabase.storage.from('static').download(`codes/${convFile}`);
-	console.log(data);
+	info('populateDB', convFile);
+	let { data, error } = await open_remote_file('static', `codes/${convFile}`);
+
+	if (error) {
+		throw new Error(error);
+	}
 
 	// Décompresser le fichier avec Rust
-	let convention = await deflateFile(data);
-	console.log(convention);
+	let convention = await deflateFile(
+		Array.isArray(data) ? data : Array.from(await fileContent.bytes())
+	);
+	info('convention_id', convention.convention_id);
 	// Insérer la convention d'abord
 	const { data: convInsertionData, error: convInsertionError } = await db.execute(
 		'INSERT into conventions (convention_id, titre, documents, created_at, year, month, day) VALUES ($1, $2, $3, $4, $5, $6, $7)',
@@ -77,12 +63,12 @@ async function populateDB(db, convFile) {
 			convention.day
 		]
 	);
-	console.log('convention inserted');
+	info('convention inserted');
 	if (convInsertionError) {
-		console.log('Error inserting convention', convInsertionError);
+		info('Error inserting convention', convInsertionError);
 		return { error: convInsertionError };
 	} else {
-		console.log('Convention inserted', convInsertionData);
+		info('Convention inserted', convInsertionData);
 	}
 
 	// Ensuite insérer les codes avec l'ID de convention en FK
@@ -107,18 +93,25 @@ async function populateDB(db, convFile) {
 			]
 		);
 		if (codeInsertionError) {
-			console.log('Error inserting code', codeInsertionError);
+			info('Error inserting code', codeInsertionError);
 			return { error: codeInsertionError };
 		} else {
-			console.log('Code inserted', codeInsertionData);
+			info('Code inserted', code.code_reference, codeInsertionData);
 		}
 	}
 	return { data: 'Conventions mises à jour' };
 }
 async function deflateFile(data) {
-	let arr = data.stream();
-	let reader = arr.getReader();
-	return await invoke('convention_decompression', {
-		value: Array.from((await reader.read()).value)
-	});
+	if (platform() === 'ios') {
+		// iOS specific implementation
+		return await invoke('convention_decompression', {
+			value: data
+		});
+	} else {
+		let arr = data.stream();
+		let reader = arr.getReader();
+		return await invoke('convention_decompression', {
+			value: Array.from((await reader.read()).value)
+		});
+	}
 }

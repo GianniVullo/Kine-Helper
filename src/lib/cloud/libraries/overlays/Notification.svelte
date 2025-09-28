@@ -28,7 +28,7 @@
 				<div class="p-4">
 					<div class="flex items-start">
 						<div class="shrink-0">
-							{@render component.leading?.(component.leadingCSS)}
+							{@render component.leading?.(component.leadingCSS ?? 'size-6 text-indigo-600')}
 						</div>
 						<div class="ml-3 w-0 flex-1 pt-0.5">
 							<p class="text-sm font-medium text-gray-900">{component?.title}</p>

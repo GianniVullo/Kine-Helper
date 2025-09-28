@@ -1,8 +1,8 @@
 use crate::cloud::jobs::Job;
 use futures_util::future::FutureExt;
+use std::collections::HashMap;
 use std::panic::AssertUnwindSafe;
 use std::time::Duration;
-use std::{collections::HashMap};
 use tauri::{async_runtime::JoinHandle, AppHandle, Emitter, State};
 use tokio::sync::{mpsc, Mutex};
 
@@ -19,7 +19,6 @@ pub async fn enqueue_job(
 ) -> Result<(), String> {
     let job = match job_type.as_str() {
         "TestSucceeded" => Job::TestSucceeded(data),
-        "SendHistoryNode" => Job::SendHistoryNode(data),
         "CompressAndSendPrescription" => Job::CompressAndSendPrescription(data),
         "TestPanic" => Job::TestPanic(data),
         "TestFailed" => Job::TestFailed(data),

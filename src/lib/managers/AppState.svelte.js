@@ -1,51 +1,75 @@
-import { get } from 'svelte/store';
 import { DatabaseManager } from '../cloud/database';
-import { initializeConventions } from '../stores/conventionStore';
 import { retrieveSettings } from '../user-ops-handlers/settings';
-import { file_exists } from '../utils/fsAccessor';
 import { user } from '../stores/UserStore';
-import { listPatients } from '../user-ops-handlers/patients';
-import { t } from '../i18n';
 import { invoke } from '@tauri-apps/api/core';
 import { trace, error as errorLog } from '@tauri-apps/plugin-log';
 import { AsyncQueueManager } from '../cloud/libraries/History/history-manager/HistoryManager.svelte';
+import { SAMLToken } from '../cloud/libraries/Mycarenet/SAMLToken';
+import { info } from '../cloud/libraries/logging';
+import { DUMMY_ORGANIZATIONS, sidebarSeeds } from './types';
 
-/**
- ** L'objet AppState est là pour stocker les données importantes at runtime
- **
- */
+/** @typedef {import('./types').AppStateType} AppStateType */
+/** @typedef {import('./types').Organization} Organization */
+
 class AppState {
+	/** @type {AppStateType['user']} */
 	user;
+	/** @type {AppStateType['session']} */
 	session;
-	connectivite = true;
-	settings; // Important de l'avoir at runtime parce que petit et en interaction forte avec l'UI
-	/**@type DatabaseManager */
-	db; // DB connection
+	/** @type {AppStateType['organizations']} */
+	organizations = $state(DUMMY_ORGANIZATIONS);
+	/** @type {AppStateType['settings']} */
+	settings;
+	/** @type {AppStateType['db']} */
+	db;
+	/** @type {AppStateType['queue']} */
 	queue;
 
+	connectivite = true;
+	/** @type {AppStateType['eHealth']} */
+	eHealth = null;
+
 	constructor() {
-		console.log('in AppState constructor');
+		info('in AppState constructor');
 		this.queue = new AsyncQueueManager();
-		console.log('AppState constructor done');
+		info('AppState constructor done');
 	}
 
-	async initializeDatabase() {
-		this.db = new DatabaseManager();
+	get selectedOrg() {
+		return this.organizations.find((o) => o.selected);
+	}
+
+	async initializeDatabase(offre) {
+		this.db = new DatabaseManager(null, offre || this.user?.offre || 'local');
 		await this.db.initializing();
 	}
 
-	async init({ user, session, profil }) {
+	async init({ user, session, organizations = [] }) {
 		trace('entering AppState.init');
+		console.log('Organization in appstate.init :', organizations);
 		await this.queue.setup();
 		// lors de la première initialisation
-		if (user && profil && session) {
+		if (user && session) {
 			// Pour pouvoir offrir l'email pré-rempli dans l'écran de login
 			trace('Setting The lastLoggedUser in LocalStorage');
 			localStorage.setItem('lastLoggedUser', user.email);
-			this.user = { ...user, ...profil };
+			this.user = user;
+			this.session = session;
+			this.organizations = organizations;
 			// TODO Handle error here
 			trace('Setting the AppState Cache in Rust with db path = ' + this.db.db.path);
-			await invoke('set_app_state', { user: this.user, session, db: this.db.db.path });
+			info('Setting the AppState Cache in Rust with db path =', this.db);
+			try {
+				await invoke('set_app_state', {
+					user: this.user,
+					session,
+					db: this.db.db.path,
+					organizations
+				});
+			} catch (error) {
+				console.error('Error setting AppState Cache in Rust:', error);
+			}
+			info('AppState Cache set in Rust');
 
 			if (!this.settings) {
 				this.settings = await retrieveSettings(user.id);
@@ -57,16 +81,21 @@ class AppState {
 				// les if statement viennent éviter les chargements inutiles bien que ceux-ci soient de l'ordre de la poignée de millisecondes
 				// TODO handle error here
 				trace('Refetch the appState from Rust');
-				let { user, session, db } = await invoke('get_app_state');
+				let { user, session, db, e_health: eHealth, organizations } = await invoke('get_app_state');
 				dbPath = db;
-				console.log('Refeted = ', user, session, db);
 
 				this.user = user;
 				this.session = session;
-				this.db = new DatabaseManager(dbPath);
+				this.organizations = organizations;
+				if (dbPath) this.db = new DatabaseManager(dbPath);
+				info('eHealth from rust', eHealth);
+				if (eHealth && eHealth.saml_token) {
+					// On reconstruit l'objet SAMLToken pour retrouver les méthodes associées
+					this.eHealth = { ...eHealth, saml_token: new SAMLToken(eHealth.saml_token) };
+				}
 			}
 
-			if (!this.settings) {
+			if (!this.settings && this.user) {
 				let { data, error } = await retrieveSettings(this.user.id);
 				if (error) {
 					errorLog(error);
@@ -74,6 +103,31 @@ class AppState {
 				this.settings = data;
 			}
 		}
+	}
+
+	async set_eHealth(eHealth) {
+		this.eHealth = eHealth;
+		try {
+			await invoke('set_e_health', { eHealth: this.eHealth });
+		} catch (error) {
+			console.error('Error setting eHealth in Rust:', error);
+		}
+	}
+
+	async set_selected_organization(organization_id) {
+		this.organizations = this.organizations.map((o) => ({
+			...o,
+			selected: o.id === organization_id
+		}));
+		try {
+			await this.updateOrgs();
+		} catch (error) {
+			console.error('Error setting organizations in Rust:', error);
+		}
+	}
+
+	async updateOrgs() {
+		await invoke('set_organizations', { organizations: this.organizations });
 	}
 
 	get contrat() {
@@ -87,24 +141,43 @@ class AppState {
 		return false;
 	}
 
-	async initialiseKineHelper(submitter) {
-		// TODO Cette partie ci va être déplacée dans la barre de tâche de l'ui pour ne pas retarder le chargement de la page
-		submitter.innerHTML = get(t)('login', 'submission.convention');
-		await initializeConventions(submitter);
-	}
+	// async initialiseKineHelper(submitter) {
+	// 	// TODO Cette partie ci va être déplacée dans la barre de tâche de l'ui pour ne pas retarder le chargement de la page
+	// 	submitter.innerHTML = get(t)('login', 'submission.convention');
+	// 	await initializeConventions(submitter);
+	// }
 
 	has_complete_profile() {
-		let profil = this.user;
 		return (
-			profil.nom &&
-			profil.prenom &&
-			profil.adresse &&
-			profil.cp &&
-			profil.localite &&
-			profil.inami &&
-			profil.iban &&
-			profil.bce
+			this.user.nom &&
+			this.user.prenom &&
+			this.user.adresse &&
+			this.user.cp &&
+			this.user.localite &&
+			this.user.inami &&
+			this.user.iban &&
+			this.user.bce
 		);
+	}
+
+	setOrg(orgId) {
+		this.organizations = this.organizations.map((o) => {
+			console.log('IN THE MAP FN WITH O = ', o.id, orgId, o.selected);
+			o.selected = o.id === orgId;
+			return o;
+		});
+		invoke('set_organizations', { organizations: this.organizations }).then(() => {
+			this.setColors(this.organizations.findIndex((o) => o === this.selectedOrg));
+
+			console.log('ORG SET now selected is : ', this.selectedOrg);
+		});
+	}
+	setColors(index) {
+		const colorPanel = sidebarSeeds[Object.keys(sidebarSeeds)[index]];
+		for (const tone of Object.keys(colorPanel)) {
+			console.log('tone', tone);
+			document.documentElement.style.setProperty(`--color-sidebar-${tone}`, colorPanel[tone]);
+		}
 	}
 }
 

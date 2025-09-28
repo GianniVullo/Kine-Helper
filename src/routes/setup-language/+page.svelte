@@ -6,18 +6,18 @@
 	import { cubicOut } from 'svelte/easing';
 	import { writable } from 'svelte/store';
 	import { CircleArrowIcon } from '../../lib/ui/svgs/index';
-	import { writeTextFile } from '@tauri-apps/plugin-fs';
-	import { appLocalDataDir, BaseDirectory } from '@tauri-apps/api/path';
 	import { tick } from 'svelte';
+	import Database from '@tauri-apps/plugin-sql';
+	import { info } from '../../lib/cloud/libraries/logging';
 
 	let items = writable(['FR', 'NL', 'DE', 'EN']);
 	let message;
 
 	async function onSelectedLanguage(selectedLocale) {
-		console.log('selectedLocale', selectedLocale);
+		info('selectedLocale', selectedLocale);
 		let button = document.getElementById(selectedLocale);
-		let buttonSpinner = document.getElementById(`inner-${selectedLocale}`);
 		button.disabled = true;
+		let buttonSpinner = document.getElementById(`inner-${selectedLocale}`);
 		await tick();
 		buttonSpinner.className += ' !flex';
 		// D'abord on met à jour l'interfae
@@ -26,10 +26,10 @@
 		// Ensuite on va chercher sur le serveur la dernière version des traductions en 2 étapes : d'abord query le JSON des traductions (similaire au json des update de Tauri)
 		// Finalement on va faire ça avec la DB
 		let { data, error } = await supabase.from('translations').select().eq('code', selectedLocale);
-		console.log('data', data);
-		console.log('error', error);
+		info('data', data);
+		info('error', error);
 		if (error) {
-			console.error('error', error);
+			info('error', error);
 			message = `
                 <div class="flex flex-col space-y-2">
                     <h5>Erreur lors de la récupération des traductions, veuillez réessayer plus tard</h5>
@@ -42,12 +42,12 @@
 			return;
 		}
 		let translation = data[0];
-		console.log('translation', translation);
+		info('translation', translation);
 
-		// Finalement on va travailler avec un bête json stocker dans applocalDataDir
-		// d'abord on créer un object JS pour modéliser le json
+		//! travailler avec un bête JSON ne fonctionnait pas sur Windows ou iOS, j'ignore la raison...
 		let transFile = {
 			defaultLocale: selectedLocale,
+			// translations va porter les traductions pour chaque locale
 			translations: {}
 		};
 		transFile.translations[selectedLocale] = translation.translation;
@@ -56,14 +56,24 @@
 			d[selectedLocale] = transFile.translations[selectedLocale];
 			return d;
 		});
-		console.log('transFile', transFile);
-		console.log('dictionnary', $dictionnary);
+		info('transFile', transFile);
+		info('dictionnary', $dictionnary);
 		try {
-			await writeTextFile(`settings.json`, JSON.stringify(transFile), {
-				baseDir: BaseDirectory.AppLocalData
-			});
+			let db = await Database.load('sqlite:kinehelper.db');
+			await db.execute(
+				'INSERT INTO translations (id, created_at, version, translation, code, is_default) VALUES (?, ?, ?, ?, ?, ?)',
+				[
+					translation.id,
+					translation.created_at,
+					translation.version,
+					JSON.stringify(translation.translation),
+					selectedLocale,
+					true
+				]
+			);
+			await db.close()
 		} catch (error) {
-			console.log('Error writing settings.json', error);
+			info('Error writing settings.json', error);
 		}
 		// Ensuite on va mettre à jour le store des traductions
 		locale.set(selectedLocale);
@@ -97,7 +107,7 @@
 			</div>
 		{/if}
 		<div
-			class="flex h-28 w-1/2 snap-x snap-mandatory items-center justify-center space-x-4 overflow-scroll">
+			class="flex h-28 w-1/2 snap-x snap-mandatory items-center justify-center space-x-4">
 			{#each $items as item (item)}
 				<button
 					id={item}

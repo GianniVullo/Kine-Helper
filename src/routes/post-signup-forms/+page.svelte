@@ -1,7 +1,7 @@
 <script>
-import ConfigurationSteppeur from "../../lib/cloud/components/forms/settings/ConfigurationSteppeur.svelte";
+	import SettingsForms from '../../lib/components/forms/SettingsForms.svelte';
 </script>
 
-<div class="py-12 px-4">
-    <ConfigurationSteppeur />
+<div class="px-4 py-12">
+	<SettingsForms />
 </div>

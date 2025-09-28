@@ -1,6 +1,6 @@
 <script>
 	import BoutonSecondaireAvecIcone from '../../../components/BoutonSecondaireAvecIcone.svelte';
-	import SubmitButton from '../../../forms/ui/SubmitButton.svelte';
+	import SubmitButton from '../../../components/forms/blocks/SubmitButton.svelte';
 	import { chevronRightIcon } from '../../../ui/svgs/IconSnippets.svelte';
 	import FilDAriane from './FilDAriane.svelte';
 

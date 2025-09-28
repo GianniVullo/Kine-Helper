@@ -1,0 +1,166 @@
+.editor-wrapper {
+	max-width: 900px;
+	margin: 0 auto;
+	background: white;
+	border-radius: 8px;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+	overflow: visible;
+}
+
+.editor-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 20px 30px;
+	border-bottom: 1px solid #e8e8e8;
+	background: #fafafa;
+}
+
+.editor-title {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+}
+
+.editor-title h2 {
+	margin: 0;
+	font-size: 20px;
+	font-weight: 600;
+	color: #333;
+}
+
+.save-status {
+	font-size: 12px;
+	color: #888;
+	font-weight: 400;
+}
+
+.editor-actions {
+	display: flex;
+	gap: 10px;
+}
+
+.btn {
+	padding: 8px 16px;
+	border-radius: 6px;
+	font-size: 14px;
+	font-weight: 500;
+	cursor: pointer;
+	transition: all 0.2s;
+	border: none;
+	outline: none;
+}
+
+.btn:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+.btn-primary {
+	background: #4a90e2;
+	color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+	background: #357abd;
+}
+
+.btn-secondary {
+	background: #e8e8e8;
+	color: #333;
+}
+
+.btn-secondary:hover:not(:disabled) {
+	background: #d0d0d0;
+}
+
+.editor-container {
+	padding: 30px;
+	min-height: 400px;
+	overflow: visible;
+}
+
+.editor-footer {
+	padding: 15px 30px;
+	background: #fafafa;
+	border-top: 1px solid #e8e8e8;
+}
+
+.editor-tips {
+	display: flex;
+	align-items: center;
+	gap: 15px;
+	font-size: 13px;
+	color: #666;
+}
+
+.tip-label {
+	font-weight: 600;
+	color: #333;
+}
+
+.tip {
+	display: flex;
+	align-items: center;
+	gap: 5px;
+}
+
+kbd {
+	padding: 2px 6px;
+	background: white;
+	border: 1px solid #d0d0d0;
+	border-radius: 3px;
+	font-family: monospace;
+	font-size: 11px;
+	box-shadow: 0 1px 0 rgba(0, 0, 0, 0.1);
+}
+
+/* EditorJS specific styles */
+:global(.ce-block__content) {
+	max-width: 100%;
+}
+
+:global(.ce-toolbar__content) {
+	max-width: 100%;
+}
+
+:global(.cdx-block) {
+	max-width: 100%;
+}
+
+:global(.ce-header) {
+	font-weight: 600;
+	color: #333;
+}
+
+:global(.ce-paragraph) {
+	line-height: 1.6;
+	color: #444;
+}
+
+:global(.cdx-checklist__item-checkbox) {
+	margin-right: 8px;
+}
+
+:global(.cdx-warning) {
+	background: #fff3cd;
+	border: 1px solid #ffeaa7;
+	border-radius: 4px;
+	padding: 12px;
+}
+
+:global(.cdx-warning__title) {
+	font-weight: 600;
+	margin-bottom: 6px;
+}
+
+:global(.cdx-quote) {
+	border-left: 3px solid #4a90e2;
+	padding-left: 20px;
+	font-style: italic;
+}
+
+:global(.tc-wrap) {
+	--color-border: #e8e8e8;
+	--color-background: #fafafa;
+}

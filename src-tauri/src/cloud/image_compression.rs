@@ -1,9 +1,14 @@
 use image::{codecs::avif::AvifEncoder, ImageEncoder};
 
-pub fn tiff_to_avif(from: &str, to: &str, file_name: &str) -> Vec<u8> {
-    let start_time = std::time::SystemTime::now();
-    println!("Starting app at {:?}", start_time);
-    print!("Decoding image");
+#[tauri::command]
+pub fn compress_img_at_path(from: String) -> Vec<u8> {
+    tiff_to_avif(&from)
+}
+
+pub fn tiff_to_avif(from: &str) -> Vec<u8> {
+    // let start_time = std::time::SystemTime::now();
+    // println!("Starting app at {:?}", start_time);
+    // print!("Decoding image");
     let img = image::open(from).unwrap();
     let resize_factor = img.height() / 1000;
     let resized = img.resize(
@@ -31,13 +36,13 @@ pub fn tiff_to_avif(from: &str, to: &str, file_name: &str) -> Vec<u8> {
 
     print!("Writing to file");
     // let _ = std::fs::write(format!("{}/{}", to, avif_path), &buffer)
-        // .map_err(|e| e.to_string())
-        // .expect("Failed to write AVIF file");
-    println!(
-        "Done writing in {:?}",
-        std::time::SystemTime::now()
-            .duration_since(start_time)
-            .unwrap()
-    );
+    // .map_err(|e| e.to_string())
+    // .expect("Failed to write AVIF file");
+    // println!(
+    //     "Done writing in {:?}",
+    //     std::time::SystemTime::now()
+    //         .duration_since(start_time)
+    //         .unwrap()
+    // );
     buffer
 }

@@ -27,7 +27,7 @@ function translate(locale, page, message, vars, fallback) {
 
 		return text;
 	} catch (error) {
-		console.error(error, locale, page, message);
+		console.error(error);
 		return fallback ?? 'No translation provided';
 	}
 }

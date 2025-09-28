@@ -1,5 +1,5 @@
 <script>
-	import PatientForm from "../../../../../lib/cloud/components/forms/patient/PatientForm.svelte";
+	import PatientForm from '$lib/components/forms/PatientForm.svelte';
 
 	let { data } = $props();
 </script>

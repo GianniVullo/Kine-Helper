@@ -23,12 +23,12 @@
 		{
 			href: homeUrl() + `/attestations`,
 			nom: $t('form.generateur', 'tarification.title'),
-			actif: page.url.pathname.startsWith(homeUrl() + `/attestations`)
+			actif: page.route.id.includes('attestations')
 		},
 		{
 			href: homeUrl() + `/documents`,
 			nom: $t('sp.detail', 'documents'),
-			actif: page.url.pathname.includes(`/documents`)
+			actif: page.route.id.includes(`/documents`)
 		},
 		{
 			href: homeUrl() + `/seances`,
@@ -41,11 +41,13 @@
 {#if data.sp === 'none'}
 	Error, no sp found
 {:else}
-	<SpTitle patient={data.patient} currentSp={data.sp} />
-	<div class="-mt-5 mb-5 flex w-full items-center justify-start px-4 py-1 sm:py-1"></div>
-	<!--* Tabs -->
-	<Tabs
-		className="w-full text-center flex justify-center sm:block border-b border-gray-300 shadow-sm"
-		{tabs} />
-	{@render children()}
+	<div class="w-full" style="view-transition-name: sptitle;">
+		<SpTitle patient={data.patient} currentSp={data.sp} />
+		<div class="-mt-5 mb-5 flex w-full items-center justify-start px-4 py-1 sm:py-1"></div>
+		<!--* Tabs -->
+		<Tabs
+			className="mb-10 w-full text-center flex justify-center sm:block pb-1 sm:pb-0 border-b border-gray-300 dark:border-gray-600"
+			{tabs} />
+		{@render children()}
+	</div>
 {/if}

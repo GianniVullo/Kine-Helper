@@ -11,7 +11,7 @@
 
 <div class="text-center {className}">
 	{#if icon}
-		{@render icon("mx-auto size-12 text-gray-400")}
+		{@render icon('mx-auto size-12 text-gray-400')}
 	{:else}
 		<svg
 			class="mx-auto size-12 text-gray-400"
@@ -27,7 +27,7 @@
 				d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
 		</svg>
 	{/if}
-	<h3 class="mt-2 text-sm font-semibold text-gray-900">{titre}</h3>
+	<h3 class="mt-2 text-sm font-semibold text-gray-900 dark:text-white">{titre}</h3>
 	{#if description}
 		<p class="mt-1 text-sm text-gray-500">{description}</p>
 	{/if}

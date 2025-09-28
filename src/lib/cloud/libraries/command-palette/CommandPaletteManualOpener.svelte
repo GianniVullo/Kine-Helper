@@ -1,6 +1,5 @@
 <script>
 	import { platform } from '@tauri-apps/plugin-os';
-
 	let { shrink } = $props();
 </script>
 
@@ -10,11 +9,13 @@
 	onclick={(e) => {
 		e.stopPropagation();
 		window.dispatchEvent(new CustomEvent('command-palette:open'));
+		//! to make it autofocus from the manual opener We might be required to use an event listener
+		// let input = document.getElementById('command-palette-input');
 	}}
 	class:macos={platform() === 'macos'}
 	class={[
-		'flex w-36 items-center gap-1 rounded-full bg-gray-50 py-2 inset-ring inset-ring-gray-950/8 lg:w-full',
-		shrink ? 'px-0 justify-center' : 'px-4'
+		'flex w-36 items-center gap-1 rounded-full bg-gray-50 py-2 inset-ring inset-ring-gray-950/8 lg:w-full text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500',
+		shrink ? 'justify-center px-0' : 'px-4'
 	]}
 	><svg
 		xmlns="http://www.w3.org/2000/svg"

@@ -21,7 +21,6 @@
 #[link(name = "ImageCaptureCore", kind = "framework")]
 extern "C" {}
 
-
 #[path = "ICDevice.rs"]
 mod __ICDevice;
 

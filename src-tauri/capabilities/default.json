@@ -51,6 +51,9 @@
 					"url": "https://epzrdxofotzufykimwuc.supabase.co/functions/v1/update-checker/pOwtY_2gz3GHtISkVIv6Pg"
 				},
 				{
+					"url": "https://services-acpt.ehealth.fgov.be/*"
+				},
+				{
 					"url": "https://admin-console.kine-helper.be/api/*"
 				}
 			]
@@ -86,8 +89,8 @@
 		"updater:default",
 		"dialog:allow-save",
 		"process:allow-restart",
-		"clipboard-manager:allow-write-text",
-		"log:default"
+		"log:default",
+		"process:default"
 	],
-	"platforms": ["macOS", "linux", "android", "iOS"]
+	"platforms": ["macOS", "linux"]
 }

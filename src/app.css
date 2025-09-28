@@ -4,7 +4,19 @@
 @import 'tailwindcss/utilities.css' layer(utilities);
 @plugin '@tailwindcss/forms';
 @plugin '@tailwindcss/typography';
-
+@theme {
+	--color-sidebar-50: oklch(96.2% 0.018 272.314);
+	--color-sidebar-100: oklch(93% 0.034 272.788);
+	--color-sidebar-200: oklch(87% 0.065 274.039);
+	--color-sidebar-300: oklch(78.5% 0.115 274.713);
+	--color-sidebar-400: oklch(67.3% 0.182 276.935);
+	--color-sidebar-500: oklch(58.5% 0.233 277.117);
+	--color-sidebar-600: oklch(51.1% 0.262 276.966);
+	--color-sidebar-700: oklch(45.7% 0.24 277.023);
+	--color-sidebar-800: oklch(39.8% 0.195 277.366);
+	--color-sidebar-900: oklch(35.9% 0.144 278.697);
+}
+@custom-variant dark (&:where(.dark, .dark *));
 @keyframes fade-in {
 	from {
 		opacity: 0;
@@ -30,13 +42,11 @@
 }
 
 :root::view-transition-old(root) {
-	animation:
-		90ms cubic-bezier(0.4, 0, 1, 1) both fade-out,
+	animation: 90ms cubic-bezier(0.4, 0, 1, 1) both fade-out;
 }
 
 :root::view-transition-new(root) {
-	animation:
-		210ms cubic-bezier(0, 0, 0.2, 1) 90ms both fade-in,
+	animation: 210ms cubic-bezier(0, 0, 0.2, 1) 90ms both fade-in;
 }
 
 #main-sidebar {

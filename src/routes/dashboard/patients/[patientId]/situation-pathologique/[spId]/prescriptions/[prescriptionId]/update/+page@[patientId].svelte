@@ -1,5 +1,6 @@
 <script>
-	import PrescriptionForm from '../../../../../../../../../lib/cloud/components/forms/prescription/PrescriptionForm.svelte';
+	import PrescriptionForm from '../../../../../../../../../lib/components/forms/PrescriptionForm.svelte';
+
 
 	let { data } = $props();
 	const { patient, sp, prescription } = data;

@@ -12,14 +12,9 @@
 		"core:resources:default",
 		"core:menu:default",
 		"core:tray:default",
-		"sql:allow-load",
-		"sql:allow-select",
-		"sql:allow-close",
-		"sql:allow-execute",
 		"shell:allow-open",
 		"dialog:allow-open",
 		"os:allow-platform",
-		"http:allow-fetch",
 		{
 			"identifier": "http:default",
 			"allow": [
@@ -28,6 +23,9 @@
 				},
 				{
 					"url": "https://admin-console.kine-helper.be/api/*"
+				},
+				{
+					"url": "https://epzrdxofotzufykimwuc.supabase.co/storage/*"
 				}
 			]
 		},
@@ -51,9 +49,12 @@
 		"fs:allow-appcache-read-recursive",
 		"fs:allow-appconfig-read",
 		"dialog:allow-save",
-		"process:allow-restart",
-		"clipboard-manager:allow-write-text",
-		"log:default"
+		"log:default",
+		"sql:default",
+		"sql:allow-load",
+		"sql:allow-select",
+		"sql:allow-close",
+		"sql:allow-execute"
 	],
-	"platforms": ["macOS", "linux"]
+	"platforms": ["iOS"]
 }

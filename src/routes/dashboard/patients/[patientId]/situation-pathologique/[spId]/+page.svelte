@@ -64,7 +64,7 @@
 			{/snippet}
 		</EmptyState>
 	{/if}
-	En construction
+
 	<!-- Je pense que ce serait une bonne idée d'avoir un objet qui gère les différents type de situation pathologique pour pouvoir afficher différentes notes comme, par exemple, la suggestion de Marc Leflot de prévenir l'utilisateur de si la demande d'accord arrive à échéance. 
 
 	Ajouter des overview de la situation pathologique : Où on en est dans le traitement, dans la

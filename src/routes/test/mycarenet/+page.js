@@ -1,0 +1,93 @@
+import { invoke } from '@tauri-apps/api/core';
+import { appState } from '../../../lib/managers/AppState.svelte';
+// import { terminal } from 'virtual:terminal';
+
+/** @type {import('./$types').PageLoad} */
+export async function load() {
+	await appState.init({});
+	appState.set_eHealth({
+		ssin: '91060827778',
+		certificate: `MIIFvjCCA6agAwIBAgIIYvIcT/BHJBEwDQYJKoZIhvcNAQELBQAwcjELMAkGA1UEBhMCQkUxETAP
+BgNVBAoMCFpFVEVTIFNBMQwwCgYDVQQFEwMwMDExQjBABgNVBAMMOVpldGVzQ29uZmlkZW5zIFBy
+aXZhdGUgVHJ1c3QgUEtJIC0gZUhlYWx0aCBpc3N1aW5nIENBIDAwMTAeFw0yMzEwMDYwODIwMDNa
+Fw0yNjEwMDYwODIwMDJaMIGzMQswCQYDVQQGEwJCRTEbMBkGA1UECgwSRmVkZXJhbCBHb3Zlcm5t
+ZW50MQ8wDQYDVQQLDAZJQU1BQ0MxFzAVBgNVBAsMDkNCRT0wODA5Mzk0NDI3MRkwFwYDVQQLDBBF
+SEVBTFRILVBMQVRGT1JNMSEwHwYDVQQLDBhlSGVhbHRoLXBsYXRmb3JtIEJlbGdpdW0xHzAdBgNV
+BAMMFkNCRT0wODA5Mzk0NDI3LCBJQU1BQ0MwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIB
+AQCwhKfOyE2vlYYm7sle0Rw1zarF8AWETwK7wtevysZaIoK3K9Y9NaXv5uJ3jGrPwlOk0FgqJ8br
+yutWDsD5IrD3pu2WFNKGzHANvP2qnZvy+xVdyJWgo13mcw5NwVinLtSczZyqwElrMB3gK6zk0+kI
+6yEwRQf5U1Plj5pDnYl7iXes6E6BiFz0yxpa5v1mBNCBG2MmG41frDC8cvj6jL/kSJTbB2UwMVJl
+4S3OmWdoR2nbDBJT0wgxaHtMmZlzAc9W5Odl15+jXMpVsWFZVQWYv96/Hgf2tettn/48hgkK7So4
+xS9epBPpTZreQr+69sdgRiTkF2fz51eO68dwDI0NAgMBAAGjggEUMIIBEDAMBgNVHRMBAf8EAjAA
+MB8GA1UdIwQYMBaAFCtxr1Yz0d0z5yEdSyERrJu3Cg8ZMEQGCCsGAQUFBwEBBDgwNjA0BggrBgEF
+BQcwAYYoaHR0cDovL29jc3AtZWgtcHRwa2kuY29uZmlkZW5zLnpldGVzLmNvbTAdBgNVHSUEFjAU
+BggrBgEFBQcDAgYIKwYBBQUHAwQwSwYDVR0fBEQwQjBAoD6gPIY6aHR0cDovL2NybC1laC1wdHBr
+aS5jb25maWRlbnMuemV0ZXMuY29tL1pDRUhQVFBLSUNBMDAxLmNybDAdBgNVHQ4EFgQUdyYc/dsX
+YZKAHpCnVfMj8ALHzskwDgYDVR0PAQH/BAQDAgXgMA0GCSqGSIb3DQEBCwUAA4ICAQBBnz2aF1Rt
+4erVl2wUWsRTzjFU4BXdNMUSiT2s5z5IAYN5MyIZon+mMEggj+RJsdnc6k5+qobeggM9A24Sd4ik
+czaMGeXNxqIdhscK/cbigxorHuvzS89qWSSBbQlPOrE6+ijm/EnU3Xuw10dDg4X0vTufLh8K1la+
+sJWPC8PuyZvl/C2ADVYcmpbuj8cW0jrvpkb2ShDbFzvJfVRd1En6+NF3hyEUDK3K2FUJSogC/RqA
+8cKEsAvtKMreemK/iST/LCjewfGZfGOkDerBPMrBIILj/34efrqsxVdG1+vVOEpg3YfXQM+89xnr
+rG6d7Nu8X6A+cZYJhF7CPvmUO6Go+61PxTV+EbNizLqddON+A3zrktGX8Aax6aAGJKOI/MtxyeS4
+9AFOzKnhUarD55BxRfh/I1YMLDtTcWVUeQ33fxAJrtXC+3wLQsUcTFnkvUny0nFyN7aPkdmMIS6V
+vG4Oz9BFyi+1FWeeItwkGn8q5aUT0JVWqObQLW/ydH/acnswuQEJIbYy8pc+JpSXAEXdy9ADHwY7
++LqGjDTxAOW7MtI0MxO/2PilwZ3Qp0Q0VjOux/hdIS6DZHBGbRpEHe3H7XPnHLPiMSKeYFrTFDQT
+qZH3bhprf/d9X5sG1AI4mGXeQbMr2L59ITI+comIy5hHBl3fTP5QLjhkl8cvIrMueA==`,
+		saml_token: {
+			not_on_or_after: '2025-08-24T18:35:48.652Z',
+			raw_assertion_xml: `<Assertion xmlns="urn:oasis:names:tc:SAML:1.0:assertion" AssertionID="_4b1aa786bb6044d4bb5ab40e9bc9bfef" IssueInstant="2025-08-23T18:35:49.677Z" Issuer="urn:be:fgov:ehealth:sts:1_0" MajorVersion="1" MinorVersion="1"><Conditions NotBefore="2025-08-23T18:30:48.652Z" NotOnOrAfter="2025-08-24T18:35:48.652Z"/><AuthenticationStatement AuthenticationInstant="2025-08-23T18:35:49.677Z" AuthenticationMethod="urn:oasis:names:tc:SAML:1.0:am:X509-PKI"><Subject><NameIdentifier Format="urn:oasis:names:tc:SAML:1.1:nameid-format:X509SubjectName" NameQualifier="SERIALNUMBER=201632, CN=Citizen CA, C=BE">SERIALNUMBER=91060827778, GIVENNAME=Gianni Carlo, SURNAME=Vullo, CN=Gianni Vullo (Authentication), C=BE</NameIdentifier><SubjectConfirmation><ConfirmationMethod>urn:oasis:names:tc:SAML:1.0:cm:holder-of-key</ConfirmationMethod><ds:KeyInfo xmlns:ds="http://www.w3.org/2000/09/xmldsig#"><ds:X509Data><ds:X509Certificate>MIIFgTCCA2mgAwIBAgIQEAAAAAAA6q62j58ABTaYdDANBgkqhkiG9w0BAQsFADAzMQswCQYDVQQG
+EwJCRTETMBEGA1UEAxMKQ2l0aXplbiBDQTEPMA0GA1UEBRMGMjAxNjMyMB4XDTE2MDcxMjExMzY0
+NVoXDTI2MDcwNjIzNTk1OVowcjELMAkGA1UEBhMCQkUxJjAkBgNVBAMTHUdpYW5uaSBWdWxsbyAo
+QXV0aGVudGljYXRpb24pMQ4wDAYDVQQEEwVWdWxsbzEVMBMGA1UEKhMMR2lhbm5pIENhcmxvMRQw
+EgYDVQQFEws5MTA2MDgyNzc3ODCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBALBd7cbc
+zWUKhF1VNy8kUSxaOJrEYYJuNskrWBiJv5Lnj8rkFciLmu+mth6TrEZdPUn8wetMr1qEs1eStNq9
+XNrZ867Q4jlp4YVLq7E09MoUeoURi/maWMVi7o12r7wid68A13CEKFIA62Y2SO90yjrv4Kg5E30B
+54FB+8X6cP67zINbr2WfZKiauv51pm72ZVJd6Xnw6OK6koNsGZtteocmS1Axu8xpgKW77FYYCAAA
+Xh0m7hGMxj+7TZ47pIjXxIOmX/s35vj2GwtZb2tzQjVnLjHrdu7Go7hOo00B3qBAzWIcdrjADvbY
+SvjSJcYXvaGH4KDT2HAB0qOPUsbKiY8CAwEAAaOCAVAwggFMMB8GA1UdIwQYMBaAFEA3Nsg9VDIa
+bqGsl8eIDvf/s77vMHAGCCsGAQUFBwEBBGQwYjA2BggrBgEFBQcwAoYqaHR0cDovL2NlcnRzLmVp
+ZC5iZWxnaXVtLmJlL2JlbGdpdW1yczQuY3J0MCgGCCsGAQUFBzABhhxodHRwOi8vb2NzcC5laWQu
+YmVsZ2l1bS5iZS8yMEQGA1UdIAQ9MDswOQYHYDgMAQECAjAuMCwGCCsGAQUFBwIBFiBodHRwOi8v
+cmVwb3NpdG9yeS5laWQuYmVsZ2l1bS5iZTA5BgNVHR8EMjAwMC6gLKAqhihodHRwOi8vY3JsLmVp
+ZC5iZWxnaXVtLmJlL2VpZGMyMDE2MzIuY3JsMA4GA1UdDwEB/wQEAwIHgDARBglghkgBhvhCAQEE
+BAMCBaAwEwYDVR0lBAwwCgYIKwYBBQUHAwIwDQYJKoZIhvcNAQELBQADggIBAH7N2cyeHkYv3in3
+RD8YSE0xSXM0lEDev+bL1WPFnW548qKXzSaQhN+vvJhJaBUz5YaXY5yPZ273Vp5LcBzhQt4xJgfs
+Cw96iySUU2LeW2rEIAWaML7spocijhl9Jmaz9fzk7Q5TNYsbiITfML31PEWE7DfNPmMJxcSB4qVT
+mNVD4jPMLgLc47QMz8D4LwRwF4r9SLtC2kjz9CI0ZjpfaKRsnkl3GIuSQdOx6xWFWA6mMTFkfguE
+HK3CabX06np4un62qyz1gOSQAkAyC6iwFDJG/l0OFPGyb0tLu7OvPbKCuBqQllytNvLEVmUdI7AG
+lsSa/UHTyufebges5cIbM5YadV2r0x8SU6u7TCYalc1W9YFeH/d522aB20Q/Dsmt4GZMdtJxwZfO
+mzfDfqn1mBv3zPexOwX5blELIkyPMZQ5jBc9g+S6ckNKYTrpVbD0lbNA2ASMjiNKatsl2pgZWAyb
+L+7oC9E/mih3jq8RsiS9Ss5Eh9Z2bLvRLTSAbx2CkE075qhWwtirT2lekOUrdXh9b4JvNCyaijD3
+fuwJ7cBT0Z5G9gqoe9X6/uZt57Ijgj/BGzt4dP4+FZw5Fv0xrRAfAIHm5QvXvqhXf+6dqBDe6R1h
+Wh7H/tAJFleiRo3xhreQ9WqkytYDAkQ9AfafOy4x8AO4BsTOtA0f2mHyLC7L</ds:X509Certificate></ds:X509Data></ds:KeyInfo></SubjectConfirmation></Subject></AuthenticationStatement><AttributeStatement><Subject><NameIdentifier Format="urn:oasis:names:tc:SAML:1.1:nameid-format:X509SubjectName" NameQualifier="SERIALNUMBER=201632, CN=Citizen CA, C=BE">SERIALNUMBER=91060827778, GIVENNAME=Gianni Carlo, SURNAME=Vullo, CN=Gianni Vullo (Authentication), C=BE</NameIdentifier></Subject><Attribute AttributeName="urn:be:fgov:ehealth:1.0:certificateholder:person:ssin" AttributeNamespace="urn:be:fgov:identification-namespace"><AttributeValue>91060827778</AttributeValue></Attribute><Attribute AttributeName="urn:be:fgov:person:ssin" AttributeNamespace="urn:be:fgov:identification-namespace"><AttributeValue>91060827778</AttributeValue></Attribute><Attribute AttributeName="urn:be:fgov:person:ssin:ehealth:1.0:nihii:physiotherapist:nihii11" AttributeNamespace="urn:be:fgov:certified-namespace:ehealth"><AttributeValue>54403736527</AttributeValue></Attribute><Attribute AttributeName="urn:be:fgov:person:ssin:ehealth:1.0:professional:physiotherapist:boolean" AttributeNamespace="urn:be:fgov:certified-namespace:ehealth"><AttributeValue>true</AttributeValue></Attribute></AttributeStatement><ds:Signature xmlns:ds="http://www.w3.org/2000/09/xmldsig#"><ds:SignedInfo><ds:CanonicalizationMethod Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#"/><ds:SignatureMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-sha256"/><ds:Reference URI="#_4b1aa786bb6044d4bb5ab40e9bc9bfef"><ds:Transforms><ds:Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature"/><ds:Transform Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#"/></ds:Transforms><ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"/><ds:DigestValue>wElR0lxyP4DeGmL6WAzSHCu4zleNMrzydIgCsSQi+l8=</ds:DigestValue></ds:Reference></ds:SignedInfo><ds:SignatureValue>cbf/Vs3WS0XbGD+Nfd5uTC/hig+fn21BfXUsERJ4l0/tYk6ZUZi81Oy+AOzMAdDGTHffcNNPwHMvdIV2p7erq+REYWvd23llrq8jOAL5FMO7tuP/ICNjicYwzOwjaOjkTN/7GEeYRNyTNEAYTpa9zXGFI6AgNlj9v4aTUbhcIeOHTGAbW4lkWpyzlMyQmiUgnDb+lXLkxsIqWjcIk+pt9H2xAuOP83yuxjtLbrZBEJg49qV/5apPkqXsP+gfK2YdqL3zckIGvK12mZLLu5Zel0RuPJmhviakdSAOYJny5T9d3t2zB47ybbuAE8TkhSeRBWglUzxPtdEVntNUKJp21Q==</ds:SignatureValue><ds:KeyInfo><ds:X509Data><ds:X509Certificate>MIIFvjCCA6agAwIBAgIIYvIcT/BHJBEwDQYJKoZIhvcNAQELBQAwcjELMAkGA1UEBhMCQkUxETAP
+BgNVBAoMCFpFVEVTIFNBMQwwCgYDVQQFEwMwMDExQjBABgNVBAMMOVpldGVzQ29uZmlkZW5zIFBy
+aXZhdGUgVHJ1c3QgUEtJIC0gZUhlYWx0aCBpc3N1aW5nIENBIDAwMTAeFw0yMzEwMDYwODIwMDNa
+Fw0yNjEwMDYwODIwMDJaMIGzMQswCQYDVQQGEwJCRTEbMBkGA1UECgwSRmVkZXJhbCBHb3Zlcm5t
+ZW50MQ8wDQYDVQQLDAZJQU1BQ0MxFzAVBgNVBAsMDkNCRT0wODA5Mzk0NDI3MRkwFwYDVQQLDBBF
+SEVBTFRILVBMQVRGT1JNMSEwHwYDVQQLDBhlSGVhbHRoLXBsYXRmb3JtIEJlbGdpdW0xHzAdBgNV
+BAMMFkNCRT0wODA5Mzk0NDI3LCBJQU1BQ0MwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIB
+AQCwhKfOyE2vlYYm7sle0Rw1zarF8AWETwK7wtevysZaIoK3K9Y9NaXv5uJ3jGrPwlOk0FgqJ8br
+yutWDsD5IrD3pu2WFNKGzHANvP2qnZvy+xVdyJWgo13mcw5NwVinLtSczZyqwElrMB3gK6zk0+kI
+6yEwRQf5U1Plj5pDnYl7iXes6E6BiFz0yxpa5v1mBNCBG2MmG41frDC8cvj6jL/kSJTbB2UwMVJl
+4S3OmWdoR2nbDBJT0wgxaHtMmZlzAc9W5Odl15+jXMpVsWFZVQWYv96/Hgf2tettn/48hgkK7So4
+xS9epBPpTZreQr+69sdgRiTkF2fz51eO68dwDI0NAgMBAAGjggEUMIIBEDAMBgNVHRMBAf8EAjAA
+MB8GA1UdIwQYMBaAFCtxr1Yz0d0z5yEdSyERrJu3Cg8ZMEQGCCsGAQUFBwEBBDgwNjA0BggrBgEF
+BQcwAYYoaHR0cDovL29jc3AtZWgtcHRwa2kuY29uZmlkZW5zLnpldGVzLmNvbTAdBgNVHSUEFjAU
+BggrBgEFBQcDAgYIKwYBBQUHAwQwSwYDVR0fBEQwQjBAoD6gPIY6aHR0cDovL2NybC1laC1wdHBr
+aS5jb25maWRlbnMuemV0ZXMuY29tL1pDRUhQVFBLSUNBMDAxLmNybDAdBgNVHQ4EFgQUdyYc/dsX
+YZKAHpCnVfMj8ALHzskwDgYDVR0PAQH/BAQDAgXgMA0GCSqGSIb3DQEBCwUAA4ICAQBBnz2aF1Rt
+4erVl2wUWsRTzjFU4BXdNMUSiT2s5z5IAYN5MyIZon+mMEggj+RJsdnc6k5+qobeggM9A24Sd4ik
+czaMGeXNxqIdhscK/cbigxorHuvzS89qWSSBbQlPOrE6+ijm/EnU3Xuw10dDg4X0vTufLh8K1la+
+sJWPC8PuyZvl/C2ADVYcmpbuj8cW0jrvpkb2ShDbFzvJfVRd1En6+NF3hyEUDK3K2FUJSogC/RqA
+8cKEsAvtKMreemK/iST/LCjewfGZfGOkDerBPMrBIILj/34efrqsxVdG1+vVOEpg3YfXQM+89xnr
+rG6d7Nu8X6A+cZYJhF7CPvmUO6Go+61PxTV+EbNizLqddON+A3zrktGX8Aax6aAGJKOI/MtxyeS4
+9AFOzKnhUarD55BxRfh/I1YMLDtTcWVUeQ33fxAJrtXC+3wLQsUcTFnkvUny0nFyN7aPkdmMIS6V
+vG4Oz9BFyi+1FWeeItwkGn8q5aUT0JVWqObQLW/ydH/acnswuQEJIbYy8pc+JpSXAEXdy9ADHwY7
++LqGjDTxAOW7MtI0MxO/2PilwZ3Qp0Q0VjOux/hdIS6DZHBGbRpEHe3H7XPnHLPiMSKeYFrTFDQT
+qZH3bhprf/d9X5sG1AI4mGXeQbMr2L59ITI+comIy5hHBl3fTP5QLjhkl8cvIrMueA==</ds:X509Certificate></ds:X509Data></ds:KeyInfo></ds:Signature></Assertion>`
+		}
+	});
+	// let appstate = await invoke('get_app_state');
+	// console.log('AppState from rust:', appstate);
+	return {};
+}

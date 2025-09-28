@@ -1,25 +1,33 @@
 <script>
 	import dayjs from 'dayjs';
-	import OpenIcon from '../../../../../../../lib/ui/svgs/OpenIcon.svelte';
-	import DeleteIcon from '../../../../../../../lib/ui/svgs/DeleteIcon.svelte';
-	import UpdateIcon from '../../../../../../../lib/ui/svgs/UpdateIcon.svelte';
 	import { t } from '../../../../../../../lib/i18n';
 	import { getContext } from 'svelte';
 	import { deleteAccord, getAccordPDF } from '../../../../../../../lib/user-ops-handlers/documents';
-	import AccordUpdateForm from '../../../../../../../lib/cloud/components/forms/documents/accords/AccordUpdateForm.svelte';
-	import Modal from '../../../../../../../lib/cloud/libraries/overlays/Modal.svelte';
+	import AccordUpdateForm from '../../../../../../../lib/components/forms/AccordUpdateForm.svelte';
 	import { page } from '$app/state';
-	import { openModal } from '../../../../../../../lib/cloud/libraries/overlays/modalUtilities.svelte';
 	import { cloneDeep } from 'lodash';
-	import { invalidate } from '$app/navigation';
 	import Drawer from '../../../../../../../lib/cloud/libraries/overlays/Drawer.svelte';
 	import CardTable from '../../../../../../../lib/components/CardTable.svelte';
 	import { openDrawer } from '../../../../../../../lib/cloud/libraries/overlays/drawerUtilities.svelte';
+	import { appState } from '../../../../../../../lib/managers/AppState.svelte';
+	import { CallBackModal } from '../../../../../../../lib/cloud/libraries/overlays/CallbackModal.svelte';
 
 	let { data } = $props();
 	let { patient, sp } = data;
 
 	let accords = getContext('accords');
+	let modal = new CallBackModal(
+		{
+			title: $t('document.list', 'deleteModal.title'),
+			description: $t('document.list', 'deleteModal.body')
+		},
+		async (e) => {
+			console.log('in cbmodal delateAccord', e);
+			await appState.db.delete('accords', [['id', e.detail.accord_id]]);
+			let delIdx = accords.findIndex((a) => a.id === e.detail.accord_id);
+			accords.splice(delIdx, 1);
+		}
+	);
 </script>
 
 <Drawer
@@ -28,19 +36,6 @@
 	description="Panel de contrôle de votre annexe.">
 	<AccordUpdateForm {patient} {sp} mode="update" accord={page.state.drawer?.accord} />
 </Drawer>
-
-<Modal
-	opened={page.state?.modal?.name === 'deleteAccord'}
-	title={$t('document.list', 'deleteModal.title')}
-	body={$t('document.list', 'deleteModal.body')}
-	buttonTextConfirm={$t('shared', 'confirm')}
-	buttonTextCancel={$t('shared', 'cancel')}
-	onAccepted={async () => {
-		await deleteAccord(page.state.modal.accord);
-		let delIdx = accords.findIndex((a) => a.id === page.state.modal.accord.id);
-		accords.splice(delIdx, 1);
-		history.back();
-	}} />
 
 <div class="ml-2 flex flex-col space-y-4">
 	<!--* Body -->
@@ -51,38 +46,32 @@
 				{#if accords.length > 0}
 					<CardTable>
 						{#snippet header()}
-							<th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
-								>ID</th>
-							<th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
-								>Date</th>
-							<th
-								scope="col"
-								class="py-3.5 pr-3 pl-4 text-left text-sm font-semibold text-gray-900 sm:pl-0"
+							<th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold">ID</th>
+							<th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold">Date</th>
+							<th scope="col" class="py-3.5 pr-3 pl-4 text-left text-sm font-semibold sm:pl-0"
 								>Accord</th>
-							<th
-								scope="col"
-								class="py-3.5 pr-3 pl-4 text-left text-sm font-semibold text-gray-900 sm:pl-0"
+							<th scope="col" class="py-3.5 pr-3 pl-4 text-left text-sm font-semibold sm:pl-0"
 								>Validité</th>
-							<th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+							<th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold"
 								><span class="sr-only">Supprimer</span></th>
-							<th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+							<th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold"
 								><span class="sr-only">Modifier</span></th>
-							<th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+							<th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold"
 								><span class="sr-only">Ouvrir</span></th>
 						{/snippet}
 						{#snippet body()}
 							{#each accords as accord}
 								<tr>
-									<td class="px-3 py-5 text-sm whitespace-nowrap text-gray-500">
+									<td class="px-3 py-5 text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
 										{accord.id}
 									</td>
-									<td class="px-3 py-5 text-sm whitespace-nowrap text-gray-500">
+									<td class="px-3 py-5 text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
 										{dayjs(accord.date).format('DD/MM/YYYY')}
 									</td>
-									<td class="px-3 py-5 text-sm whitespace-nowrap text-gray-500">
+									<td class="px-3 py-5 text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
 										{accord.metadata.doc}
 									</td>
-									<td class="px-3 py-5 text-sm whitespace-nowrap text-gray-500">
+									<td class="px-3 py-5 text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
 										{#if accord.valid_from}
 											{accord.valid_from} ->
 										{:else}
@@ -95,13 +84,11 @@
 									<td
 										class="relative py-5 pr-4 pl-3 text-left text-sm font-medium whitespace-nowrap sm:pr-0">
 										<button
-											onclick={() => {
-												openModal({
-													name: 'deleteAccord',
-													accord: cloneDeep($state.snapshot(accord))
-												});
+											onclick={(e) => {
+												modal.modal.accord_id = accord.id;
+												modal.open(e);
 											}}
-											class="mr-4 text-red-600 hover:text-red-900">
+											class="mr-4 text-red-600 hover:text-red-900 dark:text-red-500 dark:hover:text-red-400">
 											Supprimer<span class="sr-only">, {patient.nom} {patient.prenom}</span>
 										</button>
 									</td>
@@ -116,7 +103,8 @@
 													accord: cloneDeep($state.snapshot(accord))
 												});
 											}}
-											class="mr-4 text-yellow-600 hover:text-yellow-900">Modifier</button>
+											class="mr-4 text-yellow-600 hover:text-yellow-900 dark:text-yellow-500 dark:hover:text-yellow-400"
+											>Modifier</button>
 									</td>
 
 									<td
@@ -127,7 +115,7 @@
 												console.log('annexe', annexe);
 												await annexe.open();
 											}}
-											class="mr-4 text-indigo-600 hover:text-indigo-900">
+											class="mr-4 text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300">
 											Ouvrir<span class="sr-only">, {patient.nom} {patient.prenom}</span>
 										</button>
 									</td>

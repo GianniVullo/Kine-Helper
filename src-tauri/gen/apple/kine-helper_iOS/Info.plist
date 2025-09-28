@@ -15,9 +15,9 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>0.0.57</string>
+	<string>1.0.6</string>
 	<key>CFBundleVersion</key>
-	<string>0.0.57</string>
+	<string>1.0.6</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>
@@ -41,6 +41,17 @@
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
 	<key>NSCameraUsageDescription</key>
-	<string>Request camera access for WebRTC</string>
+	<string>Kiné Helper needs access to your camera for scanning documents or video-based input.</string>
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>Kiné Helper needs Bluetooth access to communicate with supported printers and smartcard
+      readers.</string>
+	<key>NSUSBUsageDescription</key>
+	<string>Kiné Helper uses USB to access scanners, eID card readers and printer.</string>
+	<key>NSDocumentsFolderUsageDescription</key>
+	<string>Kiné Helper saves PDFs and other exported documents to your Documents folder.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Kiné Helper can import patient images from your photo library if needed.</string>
+	<key>NSNetworkUsageDescription</key>
+	<string>Kiné Helper needs internet access to synchronize data securely with cloud services.</string>
 </dict>
 </plist>

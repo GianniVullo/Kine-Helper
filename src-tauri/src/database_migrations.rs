@@ -122,5 +122,29 @@ pub fn build_migrations() -> Vec<Migration> {
                             sql: include_str!("migrations/20250530133523_seance_payment.up.sql"),
                             kind: MigrationKind::Up,
                         },
+                        Migration {
+                            version: 20,
+                            description: "Ajout de la table translations for i18n",
+                            sql: include_str!("migrations/20250815133523_added_settings_and_i18n.up.sql"),
+                            kind: MigrationKind::Up,
+                        },
+                        Migration {
+                            version: 21,
+                            description: "Ajout des colonne ssin et metadata à la table kines",
+                            sql: include_str!("migrations/20250815133523_added_ssin_for_kine.up.sql"),
+                            kind: MigrationKind::Up,
+                        },
+                        Migration {
+                            version: 22,
+                            description: "Ajout des colonne organization_id à la table business",
+                            sql: include_str!("migrations/20250915133523_added_organization_id_to_business_table.up.sql"),
+                            kind: MigrationKind::Up,
+                        },
+                        Migration {
+                            version: 23,
+                            description: "Ajout des colonne organization_id à la table business",
+                            sql: include_str!("migrations/20250925133523_added_user_id_to_factures_attestations.up.sql"),
+                            kind: MigrationKind::Up,
+                        },
                     ]
 }

@@ -1,7 +1,7 @@
 import { PDFGeneration } from './kineHelperPdfs';
 import { get } from 'svelte/store';
 import dayjs from 'dayjs';
-import { save_to_disk } from '../utils/fsAccessor';
+import { save_local_file } from '../utils/fsAccessor';
 import { locale } from '../i18n';
 import { appState } from '../managers/AppState.svelte';
 
@@ -244,16 +244,16 @@ export class AnnexeB extends PDFGeneration {
 	}
 
 	async save_file() {
-		console.log('Now signing the file');
 		this.buildPdf();
-		console.log('after BUILDING PDF');
 		await this.authSignature();
-		console.log('after SIGNING PDF');
 
 		let docOutput = this.doc.output('arraybuffer');
 		let dirPath = await this.buildPath();
-		await save_to_disk(dirPath, this.documentName + '.pdf', new Uint8Array(docOutput));
-		console.log('after sendING PDF');
+		await save_local_file(
+			dirPath,
+			this.documentName + '.pdf',
+			Array.from(new Uint8Array(docOutput))
+		);
 		return { dirPath };
 	}
 

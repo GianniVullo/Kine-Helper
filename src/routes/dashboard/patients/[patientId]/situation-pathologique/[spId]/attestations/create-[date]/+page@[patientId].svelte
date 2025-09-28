@@ -1,5 +1,5 @@
 <script>
-	import AttestationForm from '../../../../../../../../lib/cloud/components/forms/attestation/AttestationForm.svelte';
+	import AttestationForm from '../../../../../../../../lib/components/forms/AttestationForm.svelte';
 
 	let { data } = $props();
 

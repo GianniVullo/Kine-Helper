@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 #[derive(Clone, serde::Deserialize, serde::Serialize)]
 pub struct User {
     pub id: String,
@@ -66,3 +68,33 @@ pub struct AppMetadata {
 
 #[derive(Clone, serde::Deserialize, serde::Serialize)]
 pub struct UserMetadata {}
+
+#[derive(Clone, serde::Deserialize, serde::Serialize)]
+pub struct Organization {
+    pub id: String,
+    pub selected: bool,
+    pub name: String,
+    pub slug: String,
+    pub settings: Option<HashMap<String, String>>, // JSON Encoded for simplicity because I don't know yet the keys and values
+    pub logo: Option<Vec<u8>>,
+    pub created_at: String,
+    pub updated_at: String,
+    pub membres: Vec<Membre>
+}
+
+#[derive(Clone, serde::Deserialize, serde::Serialize)]
+pub struct Membre {
+    pub email: Option<String>,
+    pub phone: Option<String>,
+    pub created_at: Option<String>,
+    pub user_id: Option<String>,
+    pub nom: Option<String>,
+    pub prenom: Option<String>,
+    pub inami: Option<String>,
+    pub bce: Option<String>,
+    pub iban: Option<String>,
+    pub adresse: Option<String>,
+    pub cp: Option<u16>,
+    pub localite: Option<String>,
+    pub conventionne: Option<bool>,
+}

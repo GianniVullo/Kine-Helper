@@ -1,9 +1,17 @@
 import { get, writable } from 'svelte/store';
 import { jsPDF } from 'jspdf';
 import dayjs from 'dayjs';
-import { file_exists, open_file, read_file, remove_file, save_to_disk } from '../utils/fsAccessor';
+import {
+	file_exists,
+	open_file,
+	read_file,
+	remove_file,
+	save_local_file,
+	save_to_disk
+} from '../utils/fsAccessor';
 import { appState } from '../managers/AppState.svelte';
 import { invoke } from '@tauri-apps/api/core';
+import { info } from '../cloud/libraries/logging';
 
 function yPositionStore(initialValue) {
 	const yStore = writable(initialValue);
@@ -59,11 +67,17 @@ export class PDFGeneration {
 		return dirPath;
 	}
 	async save_file() {
+		info('In PDFGeneration.save_file');
 		this.buildPdf();
 		console.log('in save_file, pdf built');
 		let docOutput = this.doc.output('arraybuffer');
 		let dirPath = await this.buildPath();
-		await save_to_disk(dirPath, this.documentName + '.pdf', new Uint8Array(docOutput));
+		//! On ne peut plus utiliser save_to_disk parce que ça enregistre dans le cloud
+		await save_local_file(
+			dirPath,
+			this.documentName + '.pdf',
+			Array.from(new Uint8Array(docOutput))
+		);
 		console.log('in save_file, pdf sent');
 		return { dirPath };
 	}
@@ -104,12 +118,10 @@ export class PDFGeneration {
 	async open() {
 		let path = await this.get_path();
 		console.log('path', path);
-		/**
-		 *! Pour l'instant j'ai eu recours à des fonctions écrites en Rust pour
-		 *! manipuler le filesystem mais il serait préférable d'utiliser le plugin
-		 *! Tauri-fs à la place
-		 */
+
+		//! ça ne sert à rien de stocker le pdf dans le cloud. Ce n'est pas très conséquent de le générer à chaque fois
 		if (!(await file_exists(path))) {
+			info("in PDFGeneration.open and, obviously file doesn't exist so we save it");
 			//* Si le pdf n'existe pas dans le filesystem on le crée
 			await this.save_file();
 		}

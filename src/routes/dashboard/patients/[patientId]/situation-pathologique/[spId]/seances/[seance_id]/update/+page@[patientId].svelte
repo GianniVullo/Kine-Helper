@@ -1,5 +1,5 @@
 <script>
-	import SeanceForm from '../../../../../../../../../lib/cloud/components/forms/seances/SeanceForm.svelte';
+	import SeanceForm from '$lib/components/forms/SeanceForm.svelte';
 
 	/** @type {{ data: import('./$types').PageData }} */
 	let { data } = $props();
