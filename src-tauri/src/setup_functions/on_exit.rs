@@ -59,7 +59,7 @@ pub fn clear_sqlite_cache(app: &AppHandle) {
         .app_config_dir()
         .expect("No App config path was found!");
 
-    let conn_url = &path_mapper(app_path, "sqlite:kinehelper.db");
+    let conn_url = &path_mapper(app_path, "sqlite:kinehelper2.db");
 
     let mut conn = match tauri::async_runtime::block_on(SqliteConnection::connect(conn_url)) {
         Ok(conn) => conn,

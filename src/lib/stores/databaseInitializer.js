@@ -1,10 +1,8 @@
 import Database from '@tauri-apps/plugin-sql';
-import { supabase } from './supabaseClient';
-import { invoke } from '@tauri-apps/api/core';
 
 export class LocalDatabase {
 	async select(query, bindValues) {
-		let db = await Database.load('sqlite:kinehelper.db');
+		let db = await Database.load('sqlite:kinehelper2.db');
 		try {
 			console.log('in LocalDatabase with', query, bindValues);
 			let result = await db.select(query, bindValues);
@@ -14,7 +12,7 @@ export class LocalDatabase {
 			return result;
 		} catch (error) {
 			if (error === 'attempted to acquire a connection on a closed pool') {
-				db = await Database.load('sqlite:kinehelper.db');
+				db = await Database.load('sqlite:kinehelper2.db');
 				let result = await db.select(query, bindValues);
 				await db.close();
 				return result;
@@ -29,7 +27,7 @@ export class LocalDatabase {
 	}
 	
 	async execute(query, bindValues) {
-		let db = await Database.load('sqlite:kinehelper.db');
+		let db = await Database.load('sqlite:kinehelper2.db');
 		try {
 			console.log('in LocalDatabase with', query, bindValues);
 			let result = await db.execute(query, bindValues);
@@ -37,7 +35,7 @@ export class LocalDatabase {
 			return result;
 		} catch (error) {
 			if (error === 'attempted to acquire a connection on a closed pool') {
-				db = await Database.load('sqlite:kinehelper.db');
+				db = await Database.load('sqlite:kinehelper2.db');
 				let result = await db.execute(query, bindValues);
 				await db.close();
 				return result;
