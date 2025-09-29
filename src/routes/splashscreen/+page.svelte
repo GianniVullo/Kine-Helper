@@ -118,7 +118,7 @@
 		let db;
 		let translations;
 		try {
-			db = await Database.load('sqlite:kinehelper.db');
+			db = await Database.load('sqlite:kinehelper2.db');
 			info('db loaded', db);
 			translations = await db.select('SELECT * FROM translations');
 			info('translations', translations);

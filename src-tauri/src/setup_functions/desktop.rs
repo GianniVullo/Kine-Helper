@@ -37,7 +37,7 @@ impl<R: Runtime> CustomInit for tauri::Builder<R> {
             // }))
             .plugin(
                 tauri_plugin_sql::Builder::default()
-                    .add_migrations("sqlite:kinehelper.db", build_migrations())
+                    .add_migrations("sqlite:kinehelper2.db", build_migrations())
                     .build(),
             )
             .plugin(tauri_plugin_global_shortcut::Builder::new().build())

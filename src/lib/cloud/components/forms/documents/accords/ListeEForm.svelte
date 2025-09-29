@@ -1,10 +1,6 @@
 <script>
-	import { description } from 'valibot';
-	import SubmitButton from '../../../../../forms/ui/SubmitButton.svelte';
+	import { Form, FormSection, SubmitButton, Field } from '../../../../../components/forms/blocks';
 	import { Formulaire } from '../../../../libraries/formHandler.svelte';
-	import Field from '../../abstract-components/Field.svelte';
-	import Form from '../../abstract-components/Form.svelte';
-	import FormSection from '../../abstract-components/FormSection.svelte';
 	import {
 		bilanFonctionnel,
 		bilanPrecedent,

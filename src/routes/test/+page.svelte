@@ -6,11 +6,18 @@
 </script>
 
 <!-- Test pour Mycarenet -->
-<a class="rounded bg-amber-800 px-4 py-2 text-white" href="/test/mycarenet">Tester Mycarenet access</a>
+<a class="rounded bg-amber-800 px-4 py-2 text-white" href="/test/mycarenet"
+	>Tester Mycarenet access</a>
 <!-- Test pour les pdfs -->
 <a class="rounded bg-blue-500 px-4 py-2 text-white" href="/test/pdf">Tester les PDFs</a>
 <!-- Test pour les formulaires -->
 <a class="rounded bg-blue-500 px-4 py-2 text-white" href="/test/authenticated-tests">Bypass auth</a>
+
+<!-- Test pour les formulaires -->
+<a class="rounded bg-blue-500 px-4 py-2 text-white" href="/test/ui-testing">UI testing</a>
+
+<!-- Testing ESCP 2 Refactoring using Claude -->
+<a class="rounded bg-blue-500 px-4 py-2 text-white" href="/test/escp-refactor">ESP2 Refactoring testing</a>
 
 <!-- <TinettiForm /> -->
 <div class="px-4 py-12">

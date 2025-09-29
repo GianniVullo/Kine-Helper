@@ -2,6 +2,7 @@ import Database from '@tauri-apps/plugin-sql';
 import { supabase } from '../stores/supabaseClient';
 import { Patient, SituationPathologique } from '../user-ops-handlers/models';
 import { info } from '$lib/cloud/libraries/logging.js';
+
 /**
  ** Update est une fonction qui aide à la création d'expresion SQL update. Elle vient
  * @param {Object.<string, boolean>} touched
@@ -221,15 +222,15 @@ export class DatabaseManager {
 		try {
 			let { data: completeSp, error: localResponseError } = await this.retrieve_spLocal(sp_id);
 
-			info('Retrieved SP from local database:', completeSp);
+			info('Retrieved SP from local database:');
 
 			let sp = new SituationPathologique(completeSp);
 
 			// Here we take the prescriptions as the ground reference for the SP being up to date. reason : If we can retrieve at least one prescription, it means the SP has been used recently and is up to date.
 			if (sp.prescriptions.length > 0) {
 				sp.upToDate = true;
-				return { data: sp, error: null };
 			}
+			return { data: sp, error: null };
 		} catch (error) {
 			// If local retrieval fails or no prescriptions found, try Supabase
 
@@ -316,7 +317,7 @@ export class DatabaseManager {
 			`SELECT * FROM seances WHERE sp_id = $1 ORDER BY date ASC`,
 			[sp_id]
 		);
-		info('THE LOCAL SEANCE FETCHED', seances);
+		info('THE LOCAL SEANCE FETCHED');
 
 		if (seancesError) {
 			return { data: null, error: seancesError };
@@ -459,7 +460,7 @@ export class DatabaseManager {
 	}
 
 	async initializing() {
-		this.db = await Database.load('sqlite:kinehelper.db');
+		this.db = await Database.load('sqlite:kinehelper2.db');
 	}
 
 	async selectRemote(query, bindValues, { table, statement, filters } = {}) {

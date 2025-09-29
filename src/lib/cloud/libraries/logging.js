@@ -23,3 +23,23 @@ export function info(...message) {
 		console.error('Logging error:', error);
 	}
 }
+
+export function warn(...message) {
+	try {
+		console.warn(stringifyObjs(message));
+		// tauriLog(message);
+		terminal.warn(message);
+	} catch (error) {
+		console.error('Logging error:', error);
+	}
+}
+
+export function error(...message) {
+	try {
+		console.error(stringifyObjs(message));
+		// tauriLog(message);
+		terminal.error(message);
+	} catch (error) {
+		console.error('Logging error:', error);
+	}
+}

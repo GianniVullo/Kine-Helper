@@ -1,5 +1,4 @@
 import Database from '@tauri-apps/plugin-sql';
-import { terminal } from 'virtual:terminal';
 
 export class MycarenetHistory {
 	request = $state();
@@ -25,7 +24,7 @@ export class MycarenetHistory {
 			await this.db.execute('ALTER TABLE responses ADD COLUMN metadata TEXT;');
 			await this.db.execute('ALTER TABLE requests ADD COLUMN metadata TEXT;');
 		} catch (error) {
-			terminal.error(error);
+			console.error(error);
 		}
 	}
 
@@ -45,7 +44,7 @@ export class MycarenetHistory {
 						]
 					);
 				} catch (error) {
-					terminal.error(error);
+					console.error(error);
 				}
 			}
 		});
@@ -65,7 +64,7 @@ export class MycarenetHistory {
 						]
 					);
 				} catch (error) {
-					terminal.error(error);
+					console.error(error);
 				}
 			}
 		});

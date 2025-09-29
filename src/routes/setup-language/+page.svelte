@@ -59,7 +59,7 @@
 		info('transFile', transFile);
 		info('dictionnary', $dictionnary);
 		try {
-			let db = await Database.load('sqlite:kinehelper.db');
+			let db = await Database.load('sqlite:kinehelper2.db');
 			await db.execute(
 				'INSERT INTO translations (id, created_at, version, translation, code, is_default) VALUES (?, ?, ?, ?, ?, ?)',
 				[
