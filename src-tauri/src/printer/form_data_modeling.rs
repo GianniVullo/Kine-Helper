@@ -1,3 +1,5 @@
+// use crate::printer::escp_new::FormSpacing;
+
 #[derive(Debug, serde::Deserialize, serde::Serialize)]
 pub struct Patient {
     pub nom: String,
@@ -80,4 +82,6 @@ pub struct DocumentFormData {
     pub kine: Kine,
     pub situation_pathologique: SituationPathologique,
     pub is_nine_pin: bool,
+    // pub config_type: String,
+    // pub custom_spacing: Option<FormSpacing>
 }
