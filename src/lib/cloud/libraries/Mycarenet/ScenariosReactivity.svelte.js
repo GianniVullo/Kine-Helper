@@ -6,13 +6,14 @@ import { RequestSecurityToken } from './ws/RequestSecurityToken';
 import { appState } from '../../../managers/AppState.svelte';
 import { samlTokenExtractor } from './utils';
 import { t } from '../../../i18n';
+import { GetETK } from './ws/GetETK';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
 export class Scenario {
-	pin = '9137';
-	practitionnerSSIN = '91060827778';
+	pin;
+	practitionnerSSIN;
 	requestId = crypto.randomUUID();
 
 	constructor({ id, name, handler }) {
@@ -102,6 +103,19 @@ export class RSTScenario extends Scenario {
 			}
 		});
 		this.handler = handler;
+	}
+}
+
+export class GetETKScenario extends Scenario {
+	constructor(feedbackController) {
+		super('get_etk', 'Get ETK', null);
+		const uuidForRequest = crypto.randomUUID();
+		const handler = new GetETK({
+			pin: this.pin,
+			async onCreateEnveloppe(enveloppe) {
+				console.log(enveloppe);
+			}
+		});
 	}
 }
 

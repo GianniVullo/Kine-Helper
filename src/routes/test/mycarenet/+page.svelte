@@ -6,7 +6,6 @@
 		MycarenetHistory,
 		EidCardSigningForm,
 		RequestResponseTracing,
-		SecurityTokenService,
 		MemberDataConsultation
 	} from '../../../lib/cloud/libraries/Mycarenet/index.svelte.js';
 	import { appState } from '../../../lib/managers/AppState.svelte.js';
@@ -87,7 +86,7 @@
 				<EidCardSigningForm
 					onSuccess={async (data) => {
 						const thisReqResId = crypto.randomUUID();
-						const securityTokenServiceHandler = new SecurityTokenService({
+						const securityTokenServiceHandler = new RequestSecurityToken({
 							async onCreateSTSEnveloppe(enveloppe) {
 								console.log('Enveloppe created:', enveloppe);
 								feedbackController.request = {

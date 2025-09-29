@@ -1,6 +1,6 @@
 <script>
-	import { appState } from '../../../managers/AppState.svelte';
 	import { RSTScenario, Scenario, MemberDataConsult1 } from './ScenariosReactivity.svelte.js';
+	import { GetETK } from './ws/GetETK';
 	let { feedbackController } = $props();
 
 	/**
@@ -13,8 +13,8 @@
 </script>
 
 <button
-	onclick={async () => {
-		const resp = await scenarios[1].handler;
+	onclick={async (e) => {
+		const resp = new GetETK({ pin: e.target.pin });
 		console.log('In button with resp = ', resp);
 		await resp.createEnveloppe();
 		await feedbackController.db.execute(

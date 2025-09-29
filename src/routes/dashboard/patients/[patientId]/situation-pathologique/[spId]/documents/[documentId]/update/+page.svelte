@@ -1,7 +1,6 @@
 <script>
 	import { page } from '$app/state';
-	import AnnexeAForm from '../../../../../../../../../lib/components/forms/AnnexeAForm.svelte';
-	import AnnexeBForm from '../../../../../../../../../lib/components/forms/AnnexeBForm.svelte';
+	import AccordForm from '../../../../../../../../../lib/components/forms/AccordForm.svelte';
 
 	let { data } = $props();
 	const { patient, sp } = data;
@@ -9,8 +8,8 @@
 </script>
 
 {#if doc?.metadata.doc === 'A'}
-	<AnnexeAForm {patient} {sp} {doc} />
-{/if}
-{#if doc?.metadata.doc === 'B'}
-	<AnnexeBForm {patient} {sp} {doc} />
+	<AccordForm {patient} {sp} docType="A" />
+	{/if}
+	{#if doc?.metadata.doc === 'B'}
+	<AccordForm {patient} {sp} docType="B" />
 {/if}

@@ -14,7 +14,6 @@
 	$effect(() => {
 		// We reset the patientPromise every time the command palette is opened so that the data are always up to date with the newly inserted patients.
 		if (commandPalette.inner.opened) {
-			console.log('Command palette opened, fetching patients');
 			patientPromise = commandPalette.patientsPromise();
 		}
 	});

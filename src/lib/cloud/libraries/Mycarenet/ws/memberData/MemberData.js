@@ -2,9 +2,9 @@ import { createEnveloppe, gen_uuids, samlTokenExtractor } from '../../utils.js';
 import { TimeStampElement } from '../../soapHeader';
 import { AssertionElement } from '../../SAMLToken.js';
 import { invoke } from '@tauri-apps/api/core';
-import { terminal } from 'virtual:terminal';
 import { fetch } from '@tauri-apps/plugin-http';
 import { appState } from '../../../../../managers/AppState.svelte.js';
+import { info } from '../../../logging.js';
 
 /**
  * @typedef {Object} AttributeQuery
@@ -38,14 +38,13 @@ export class MemberDataConsultation {
 	 * @param {{query: AttributeQuery, pin: string}} param0
 	 */
 	async getMemberData({ query, pin }) {
-		terminal.group();
-		terminal.log('getSAMLToken called');
-		terminal.log('Generating STS Enveloppe');
+		info('getSAMLToken called');
+		info('Generating STS Enveloppe');
 		const enveloppe = await this.createMemberDataEnveloppe({ query });
 		if (this.onCreateEnveloppe) {
 			await this.onCreateEnveloppe(enveloppe);
 		}
-		terminal.log('Enveloppe:', enveloppe);
+		info('Enveloppe:', enveloppe);
 		const response = await fetch(this.endpoint, {
 			method: 'POST',
 			body: enveloppe,
@@ -63,9 +62,7 @@ export class MemberDataConsultation {
 			certificate: e_health_certificate,
 			saml_token
 		});
-		terminal.warn('SAML Token received:', saml_token);
-
-		terminal.groupEnd();
+		info('SAML Token received:', saml_token);
 	}
 
 	/**
@@ -85,23 +82,22 @@ export class MemberDataConsultation {
 		 * -----------------------------------------------
 		 */
 
-		terminal.log(
+		info(
 			'------------------------------\nGenerating SOAP Header and Body\n------------------------------\n'
 		);
-		terminal.group();
 		const body = new MemberDataBodyElement({
 			query,
 			attribute_query_uuid,
 			body_uuid
 		});
-		terminal.log('Body done');
+		info('Body done');
 		const ts = new TimeStampElement({ ts_uuid });
-		terminal.log('Timestamp done');
+		info('Timestamp done');
 		console.log('AppState eHealth:', appState.eHealth.saml_token.raw_assertion_xml);
 		const saml_token = new AssertionElement({
 			raw_saml_assertion: appState.eHealth.saml_token.raw_assertion_xml
 		});
-		terminal.log('SAML Token done');
+		info('SAML Token done');
 		const signedInfo = new SignedInfoElementMemberData({
 			body_uuid,
 			body_digest: await body.hash(),
@@ -110,11 +106,11 @@ export class MemberDataConsultation {
 			str_uuid,
 			saml_digest: saml_token.hash()
 		});
-		terminal.log('SignedInfo done');
+		info('SignedInfo done');
 		// we do not need the signature value in a var as it is stored in the SignedInfoElement instance
 		const hash = await signedInfo.hash();
-		terminal.log('SignedInfo hash (base64):', hash);
-		terminal.log('Invoking sign_eid_data with pin', pin);
+		info('SignedInfo hash (base64):', hash);
+		info('Invoking sign_eid_data with pin', pin);
 		const signature_value = await invoke('sign_eid_data', { hash, pin });
 		const header = new MemberDataConsultationHeaderElement({
 			ts,
@@ -125,10 +121,9 @@ export class MemberDataConsultation {
 			signed_info: signedInfo,
 			signature_value
 		});
-		terminal.log('Header:', header);
-		terminal.log('Body:', body);
-		terminal.groupEnd();
-		terminal.log('STSEnveloppe done\n------------------------------');
+		info('Header:', header);
+		info('Body:', body);
+		info('STSEnveloppe done\n------------------------------');
 		return createEnveloppe(header.xmlString, body.xmlString);
 	}
 }
