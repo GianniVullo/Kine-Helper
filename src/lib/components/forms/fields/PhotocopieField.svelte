@@ -17,7 +17,7 @@
 	import { goto, pushState } from '$app/navigation';
 	import { readFile } from '@tauri-apps/plugin-fs';
 	import dayjs from 'dayjs';
-	import { platform } from '@tauri-apps/plugin-os';
+	import { isMobile } from '../../../utils/platformwhoami.js';
 
 	let {
 		value = $bindable(),
@@ -97,7 +97,7 @@
 				{/if}
 			{/if}
 
-			{#if !['ios, android'].includes(platform())}
+			{#if !isMobile()}
 				<BoutonPrincipal
 					onclick={(e) => {
 						e.preventDefault();
