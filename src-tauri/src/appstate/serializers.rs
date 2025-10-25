@@ -79,7 +79,7 @@ pub struct Organization {
     pub logo: Option<Vec<u8>>,
     pub created_at: String,
     pub updated_at: String,
-    pub membres: Vec<Membre>
+    pub membres: Vec<Membre>,
 }
 
 #[derive(Clone, serde::Deserialize, serde::Serialize)]
