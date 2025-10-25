@@ -9,7 +9,7 @@
 	import { get } from 'svelte/store';
 	import { t } from '../../i18n';
 	import { object } from 'valibot';
-	import { platform } from '@tauri-apps/plugin-os';
+	import { isMobile } from '../../utils/platformwhoami';
 
 	let { patient, mode = 'create' } = $props();
 
@@ -295,7 +295,7 @@
 	title={mode === 'create' ? "Création d'un nouveau patient" : 'Modification du patient'}
 	message={formHandler.message}
 	isDirty={formHandler.isDirty}>
-	{#if mode === 'create' && !['ios, android'].includes(platform())}
+	{#if mode === 'create' && !isMobile()}
 		<EidReader
 			dataReceiver={(data) => {
 				console.log('data', data);

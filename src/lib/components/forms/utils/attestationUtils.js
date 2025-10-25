@@ -6,6 +6,7 @@ import { convertToFloat, uuidRegex } from '../../../utils/validationGenerics';
 import { error as errorSvelte } from '@sveltejs/kit';
 import { indmeniteCategory, INTAKE, RAPPORT_ECRIT } from '../../../stores/codeDetails';
 import dayjs from 'dayjs';
+import { info } from '../../../cloud/libraries/logging';
 
 export async function groupSeanceInAttestations(
 	seancesToDealWith,
@@ -31,9 +32,9 @@ export async function groupSeanceInAttestations(
 	let seances = [];
 	let lines = [];
 	for (const seance of seancesToDealWith) {
-		console.log('Seance = ', seance);
-		console.log('SP', sp);
-		console.log('Patient', patient);
+		info('Seance = ', seance);
+		info('SP', sp);
+		info('Patient', patient);
 		let linesTaken = 1;
 		if (seance.metadata?.intake) linesTaken++;
 		if (seance.rapport_ecrit) linesTaken++;
@@ -49,12 +50,12 @@ export async function groupSeanceInAttestations(
 			 */
 			let valeur_totale_seance = 0;
 			let total_recu_seance = 0;
-			console.log('seance.date = ', seance.date);
-			console.log('conventions = ', conventions);
+			info('seance.date = ', seance.date);
+			info('conventions = ', conventions);
 			let convention =
 				conventions?.find((convention) => new Date(convention.created_at) <= new Date(seance.date))
 					.codes || (await figuringConventionOut(seance.date, appState.db)).data;
-			console.log('convention = ', convention);
+			info('convention = ', convention);
 
 			/**
 			 * * Changement de plan, on va utiliser le code manager pour fetch le code.
@@ -93,7 +94,7 @@ export async function groupSeanceInAttestations(
 					}
 				}).length
 			});
-			console.log('code_seance = ', code_seance);
+			info('code_seance = ', code_seance);
 			!code_seance && errorSvelte(500, { message: 'Pas de code trouvé pour la séance' });
 			/**
 			 ** ici On ajoute les valeurs dans valeur_totale_seance et total_recu_seance
@@ -127,13 +128,13 @@ export async function groupSeanceInAttestations(
 			});
 			valeur_totale_seance += vt;
 			total_recu_seance += tr;
-			console.log('code_seance = ', code_seance);
+			info('code_seance = ', code_seance);
 			metadataCode.kine = code_seance;
 			if (seance.metadata?.intake) {
 				const intake = convention.filter((c) => c.lieu === seance.lieu_id && c.type === INTAKE);
-				console.log('intake = ', intake);
+				info('intake = ', intake);
 				intake.length !== 1 && errorSvelte(500, { message: "Pas de code trouvé pour l'intake" });
-				console.log('intake = ', intake);
+				info('intake = ', intake);
 				let { vt, tr } = await valeurIncrementor({
 					code: intake[0],
 					patient,
@@ -158,11 +159,11 @@ export async function groupSeanceInAttestations(
 				lineId++;
 			}
 			if (seance.rapport_ecrit) {
-				console.log(
+				info(
 					'seance.rapport_ecrit = ',
 					convention.filter((c) => c.type === RAPPORT_ECRIT)
 				);
-				console.log('seance.données =', seance.lieu_id, seance.groupe_id);
+				info('seance.données =', seance.lieu_id, seance.groupe_id);
 
 				const rapport_ecrit = convention.filter(
 					(c) =>
@@ -234,7 +235,7 @@ export async function groupSeanceInAttestations(
 					supplError && errorSvelte(500, { message: supplError });
 					const supplement = supplements[0];
 					const supplementValue = convertToFloat(supplement.valeur);
-					console.log('supplementValue = ', supplementValue);
+					info('supplementValue = ', supplementValue);
 					valeur_totale_seance += supplementValue;
 					total_recu_seance += supplementValue;
 				}
@@ -243,17 +244,17 @@ export async function groupSeanceInAttestations(
 			if (seance.metadata?.ss_p) {
 				for (const { valeur } of seance.metadata.ss_p) {
 					const supplementValue = convertToFloat(valeur);
-					console.log('supplement_ponctuel_value = ', supplementValue);
+					info('supplement_ponctuel_value = ', supplementValue);
 					valeur_totale_seance += supplementValue;
 					total_recu_seance += supplementValue;
 				}
 			}
-			console.log('valeur_totale_seance = ', valeur_totale_seance);
-			console.log('total_recu_seance = ', total_recu_seance);
+			info('valeur_totale_seance = ', valeur_totale_seance);
+			info('total_recu_seance = ', total_recu_seance);
 			valeur_totale += valeur_totale_seance;
 			total_recu += total_recu_seance;
-			console.log('valeur_totale = ', valeur_totale);
-			console.log('total_recu = ', total_recu);
+			info('valeur_totale = ', valeur_totale);
+			info('total_recu = ', total_recu);
 			if (!seance.metadata) {
 				seance.metadata = {};
 			}
@@ -274,7 +275,7 @@ export async function groupSeanceInAttestations(
 			});
 			lineId++;
 			linesAvailable -= linesTaken;
-			console.log('linesAvailable = ', linesAvailable);
+			info('linesAvailable = ', linesAvailable);
 		}
 	}
 	return { seances, valeur_totale, total_recu, lines };
@@ -324,13 +325,13 @@ export function queryBuilder(bim) {
 }
 
 export function computeTotalRecu(code, patient) {
-	console.log('in computeTotalRecu with code = ', code);
+	info('in computeTotalRecu with code = ', code);
 	if (!patient.tiers_payant) {
-		console.log('no tiers payant');
+		info('no tiers payant');
 		return code.honoraire;
 	}
 	if (!patient.ticket_moderateur) {
-		console.log('no ticket moderateur');
+		info('no ticket moderateur');
 		return 0;
 	}
 	if (typeof code.remboursement === 'string') {
@@ -338,9 +339,9 @@ export function computeTotalRecu(code, patient) {
 	}
 
 	const query = queryBuilder(patient.bim);
-	console.log('query = ', query);
+	info('query = ', query);
 	const part_personnelle_du_patient = code.honoraire - code.remboursement[INTER_MUTUELLE + query];
-	console.log(
+	info(
 		'part_personnelle_du_patient = ',
 		part_personnelle_du_patient,
 		code.honoraire,
