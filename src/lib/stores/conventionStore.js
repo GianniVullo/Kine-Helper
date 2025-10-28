@@ -5,8 +5,9 @@ import { platform } from '@tauri-apps/plugin-os';
 // import { fetch as nativeFetch } from '@tauri-apps/plugin-http';
 import { open_remote_file } from '../utils/fsAccessor';
 import { info } from '../cloud/libraries/logging';
+import { appState } from '../managers/AppState.svelte';
 
-export async function checkAndUpdateConventions(submiter, db) {
+export async function checkAndUpdateConventions(submiter) {
 	// D'abord lister les fichiers dans le bucket static/codes
 	let remoteFilesList = await supabase.storage.from('static').list('codes');
 	if (remoteFilesList.error) {
@@ -15,7 +16,7 @@ export async function checkAndUpdateConventions(submiter, db) {
 	remoteFilesList = remoteFilesList.data.map((val) => val.name);
 	info('GZ stocké sur le bucket drive', remoteFilesList);
 	// Ensuite fetcher les fichiers dans la base de données
-	let { data: localFilesList, error: localFileError } = await db.select(
+	let { data: localFilesList, error: localFileError } = await appState.db.select(
 		'SELECT documents from conventions;'
 	);
 	if (localFileError) {
@@ -29,7 +30,7 @@ export async function checkAndUpdateConventions(submiter, db) {
 			info('Fetching', convFile);
 			submiter = `Téléchargement de ${convFile}`;
 			// Si le fichiers n'est pas dans notre DB alors on fetch du bucket et on peuple notre db
-			await populateDB(db, convFile);
+			await populateDB(appState.db, convFile);
 			submiter = `Traitement de ${convFile} terminé`;
 		}
 	}
@@ -40,15 +41,13 @@ export async function checkAndUpdateConventions(submiter, db) {
 async function populateDB(db, convFile) {
 	info('populateDB', convFile);
 	let { data, error } = await open_remote_file('static', `codes/${convFile}`);
-
+	info('fetched conv = ', data, error);
 	if (error) {
 		throw new Error(error);
 	}
 
 	// Décompresser le fichier avec Rust
-	let convention = await deflateFile(
-		Array.isArray(data) ? data : Array.from(await fileContent.bytes())
-	);
+	let convention = await deflateFile(Array.isArray(data) ? data : Array.from(await data.bytes()));
 	info('convention_id', convention.convention_id);
 	// Insérer la convention d'abord
 	const { data: convInsertionData, error: convInsertionError } = await db.execute(
@@ -102,16 +101,16 @@ async function populateDB(db, convFile) {
 	return { data: 'Conventions mises à jour' };
 }
 async function deflateFile(data) {
-	if (platform() === 'ios') {
-		// iOS specific implementation
-		return await invoke('convention_decompression', {
-			value: data
-		});
-	} else {
-		let arr = data.stream();
-		let reader = arr.getReader();
-		return await invoke('convention_decompression', {
-			value: Array.from((await reader.read()).value)
-		});
-	}
+	// if (platform() === 'ios') {
+	// iOS specific implementation
+	return await invoke('convention_decompression', {
+		value: data
+	});
+	// } else {
+	// 	let arr = data.stream();
+	// 	let reader = arr.getReader();
+	// 	return await invoke('convention_decompression', {
+	// 		value: Array.from((await reader.read()).value)
+	// 	});
+	// }
 }

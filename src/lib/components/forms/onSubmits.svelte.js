@@ -25,8 +25,6 @@ import {
 	getFacturePatientPDFHandler
 } from '../../user-ops-handlers/documents';
 import { info } from '../../cloud/libraries/logging';
-import { FacturePatient } from '../../pdfs/facturePatient';
-import { FactureMutuelle } from '../../pdfs/factureMutuelle';
 
 // --------------------------------------------
 // ON SUBMITS FUNCTIONS
@@ -74,6 +72,7 @@ export async function onLogin(data) {
 		.select('*')
 		.eq('id', user.id)
 		.single();
+
 	info('Remote user data:', remoteUser, remoteUserError);
 	user = { ...user, ...(remoteUser ? remoteUser : {}) };
 
@@ -99,12 +98,14 @@ export async function onLogin(data) {
 	this.message = get(t)('login', 'submission.settings', null, 'Gathering settings');
 
 	// REDIRECTION :
+	//! I got tired of all these redirection bs. On the advices of my designer conselor I moved everything into its own form and redirect the user on an onBoarding widget on the dashboard.
+
 	// Si le profil de l'utilisateur est incomplet
-	if (!appState.has_complete_profile()) {
-		info('User has incomplete profile');
-		goto('/post-signup-forms');
-		return;
-	}
+	// if (!appState.has_complete_profile()) {
+	// 	info('User has incomplete profile');
+	// 	goto('/post-signup-forms');
+	// 	return;
+	// }
 
 	// Check si l'utilisateur a au moins un appareil enregistré
 	info('Fetching user devices');
@@ -120,11 +121,11 @@ export async function onLogin(data) {
 
 	// REDIRECTION :
 	// Si l'utilisateur n'a pas d'appareil enregistré
-	if (appareil?.length === 0 && platform() !== 'ios' && platform() !== 'android') {
-		info('User has no device on local db');
-		goto('/post-signup-forms');
-		return;
-	}
+	// if (appareil?.length === 0 && platform() !== 'ios' && platform() !== 'android') {
+	// 	info('User has no device on local db');
+	// 	goto('/post-signup-forms');
+	// 	return;
+	// }
 
 	info('Everything is fine, redirecting to the dashboard');
 	goto('/dashboard');
@@ -580,7 +581,7 @@ export async function onFactureCreate(data, attestation_ids, produce_pdf = true)
 // --------------------------------------------
 
 async function synchConventions(message) {
-	const { error: conventionUpdateError } = await checkAndUpdateConventions(message, appState.db);
+	const { error: conventionUpdateError } = await checkAndUpdateConventions(message);
 	if (conventionUpdateError) {
 		info('Error while updating conventions : ', conventionUpdateError);
 		return (message = conventionUpdateError);
@@ -1073,7 +1074,9 @@ async function getOrganizationsForUser(user_id) {
 		});
 	}
 	organizations = organizations.map((o) =>
-		o === selectedOrg ? { ...o, selected: true, membres: [] } : { ...o, selected: false }
+		o === selectedOrg
+			? { ...o, selected: true, membres: [] }
+			: { ...o, selected: false, membres: [] }
 	);
 
 	if (selectedOrg) {

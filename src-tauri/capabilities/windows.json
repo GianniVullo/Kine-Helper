@@ -1,73 +1,73 @@
 {
-  "$schema": "../gen/schemas/desktop-schema.json",
-  "identifier": "default-plugins-windows",
-  "description": "add the fs dir document permissions for windows",
-  "windows": [
-    "main"
-  ],
-  "permissions": [
-    "core:path:default",
-    "core:event:default",
-    "core:window:default",
-    "core:webview:default",
-    "core:app:default",
-    "core:resources:default",
-    "core:menu:default",
-    "core:tray:default",
-    "core:path:allow-resolve-directory",
-    "sql:allow-load",
-    "sql:allow-select",
-    "sql:allow-close",
-    "sql:allow-execute",
-    "shell:allow-open",
-    "dialog:allow-open",
-    "os:allow-platform",
-    "http:allow-fetch",
-    {
-      "identifier": "http:default",
-      "allow": [
-        {
-          "url": "https://epzrdxofotzufykimwuc.supabase.co/functions/v1/update-checker/pOwtY_2gz3GHtISkVIv6Pg"
-        },
-        {
-          "url": "https://admin-console.kine-helper.be/api/*"
-        }
-      ]
-    },
-    "fs:allow-applocaldata-read",
-    "fs:allow-applocaldata-read-recursive",
-    "fs:allow-applocaldata-write",
-    "fs:allow-applocaldata-write-recursive",
-    "fs:allow-applocaldata-meta",
-    "fs:allow-applocaldata-meta-recursive",
-    "fs:allow-document-read",
-    "fs:allow-document-read-recursive",
-    "fs:allow-document-write",
-    "fs:allow-document-write-recursive",
-    "fs:allow-document-meta",
-    "fs:allow-document-meta-recursive",
-    "fs:allow-remove",
-    "fs:allow-create",
-    "fs:allow-exists",
-    "fs:allow-app-write",
-    "fs:allow-app-write-recursive",
-    "fs:allow-appcache-write",
-    "fs:allow-appcache-write-recursive",
-    "fs:allow-appconfig-write",
-    "fs:allow-app-read",
-    "fs:allow-app-read-recursive",
-    "fs:allow-appcache-read",
-    "fs:allow-appcache-read-recursive",
-    "fs:allow-appconfig-read",
-    "updater:allow-check",
-    "updater:default",
-    "dialog:allow-save",
-    "process:allow-restart",
-    "log:default",
-    "process:default",
-    "global-shortcut:default"
-  ],
-  "platforms": [
-    "windows"
-  ]
+	"$schema": "../gen/schemas/desktop-schema.json",
+	"identifier": "default-plugins-windows",
+	"description": "add the fs dir document permissions for windows",
+	"windows": ["main"],
+	"permissions": [
+		"core:path:default",
+		"core:event:default",
+		"core:window:default",
+		"core:webview:default",
+		"core:app:default",
+		"core:resources:default",
+		"core:menu:default",
+		"core:tray:default",
+		"core:path:allow-resolve-directory",
+		"sql:allow-load",
+		"sql:allow-select",
+		"sql:allow-close",
+		"sql:allow-execute",
+		"shell:allow-open",
+		"dialog:allow-open",
+		"os:allow-platform",
+		"http:allow-fetch",
+		{
+			"identifier": "http:default",
+			"allow": [
+				{
+					"url": "https://epzrdxofotzufykimwuc.supabase.co/functions/v1/update-checker/pOwtY_2gz3GHtISkVIv6Pg"
+				},
+				{
+					"url": "https://epzrdxofotzufykimwuc.supabase.co/storage/*"
+				},
+
+				{
+					"url": "https://admin-console.kine-helper.be/api/*"
+				}
+			]
+		},
+		"fs:allow-applocaldata-read",
+		"fs:allow-applocaldata-read-recursive",
+		"fs:allow-applocaldata-write",
+		"fs:allow-applocaldata-write-recursive",
+		"fs:allow-applocaldata-meta",
+		"fs:allow-applocaldata-meta-recursive",
+		"fs:allow-document-read",
+		"fs:allow-document-read-recursive",
+		"fs:allow-document-write",
+		"fs:allow-document-write-recursive",
+		"fs:allow-document-meta",
+		"fs:allow-document-meta-recursive",
+		"fs:allow-remove",
+		"fs:allow-create",
+		"fs:allow-exists",
+		"fs:allow-app-write",
+		"fs:allow-app-write-recursive",
+		"fs:allow-appcache-write",
+		"fs:allow-appcache-write-recursive",
+		"fs:allow-appconfig-write",
+		"fs:allow-app-read",
+		"fs:allow-app-read-recursive",
+		"fs:allow-appcache-read",
+		"fs:allow-appcache-read-recursive",
+		"fs:allow-appconfig-read",
+		"updater:allow-check",
+		"updater:default",
+		"dialog:allow-save",
+		"process:allow-restart",
+		"log:default",
+		"process:default",
+		"global-shortcut:default"
+	],
+	"platforms": ["windows"]
 }

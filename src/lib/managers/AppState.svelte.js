@@ -148,28 +148,41 @@ class AppState {
 	// }
 
 	has_complete_profile() {
-		return (
-			this.user.nom &&
-			this.user.prenom &&
-			this.user.adresse &&
-			this.user.cp &&
-			this.user.localite &&
-			this.user.inami &&
-			this.user.iban &&
-			this.user.bce
-		);
+		let missings = [];
+		if (!checkIfString(this.user.nom)) {
+			missings.push('nom');
+		}
+		if (!checkIfString(this.user.prenom)) {
+			missings.push('prenom');
+		}
+		if (!checkIfString(this.user.adresse)) {
+			missings.push('adresse');
+		}
+		if (!checkIfString(this.user.localite)) {
+			missings.push('localite');
+		}
+		if (!checkIfString(this.user.inami)) {
+			missings.push('inami');
+		}
+		if (!checkIfString(this.user.iban)) {
+			missings.push('iban');
+		}
+		if (!checkIfString(this.user.bce)) {
+			missings.push('bce');
+		}
+		if (!this.user.cp) {
+			missings.push('Code postal');
+		}
+		return { missings };
 	}
 
 	setOrg(orgId) {
 		this.organizations = this.organizations.map((o) => {
-			console.log('IN THE MAP FN WITH O = ', o.id, orgId, o.selected);
 			o.selected = o.id === orgId;
 			return o;
 		});
 		invoke('set_organizations', { organizations: this.organizations }).then(() => {
 			this.setColors(this.organizations.findIndex((o) => o === this.selectedOrg));
-
-			console.log('ORG SET now selected is : ', this.selectedOrg);
 		});
 	}
 	setColors(index) {
@@ -182,3 +195,7 @@ class AppState {
 }
 
 export const appState = new AppState();
+
+function checkIfString(str) {
+	return typeof str === 'string' && str.length > 0;
+}

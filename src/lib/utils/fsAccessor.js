@@ -244,7 +244,7 @@ export async function retrieve_user_file(filePath, fileName) {
 
 export async function open_remote_file(bucket, path) {
 	try {
-		if (platform() === 'ios') {
+		// if (platform() === 'ios') {
 			info('Fetching convention data for iOS');
 			let { data: urlData, error } = supabase.storage.from(bucket).getPublicUrl(path);
 			info('urlData', urlData);
@@ -257,13 +257,13 @@ export async function open_remote_file(bucket, path) {
 			});
 			info('response status', res.status);
 			return { data: Array.from(await res.bytes()) };
-		} else {
-			// Récupérer le binary sur le serveur
-			let { data: blob, error } = await supabase.storage.from(bucket).download(path);
-			info('fetched convention data', blob);
-			info('Error fetching convention data', error);
-			return { data: blob };
-		}
+		// } else {
+		// 	// Récupérer le binary sur le serveur
+		// 	let { data: blob, error } = await supabase.storage.from(bucket).download(path);
+		// 	info('fetched convention data', blob);
+		// 	info('Error fetching convention data', error);
+		// 	return { data: blob };
+		// }
 	} catch (error) {
 		return { error };
 	}

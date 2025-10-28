@@ -3,14 +3,14 @@
 </script>
 
 <div
-	class="group relative rounded-tl-lg rounded-tr-lg bg-white p-6 focus-within:ring-2 focus-within:ring-indigo-500 focus-within:ring-inset sm:rounded-tr-none">
+	class="group relative rounded-tl-lg rounded-tr-lg border-gray-200 bg-white p-6 focus-within:outline-2 focus-within:-outline-offset-2 focus-within:outline-indigo-600 sm:rounded-tr-none sm:odd:not-nth-last-2:border-b sm:even:border-l sm:even:not-last:border-b dark:border-white/10 dark:bg-gray-800/50 dark:focus-within:outline-indigo-500">
 	<div>
-		<span class={['inline-flex rounded-lg ring-4 ring-white', color]}>
+		<span class={['inline-flex rounded-lg', color]}>
 			{@render icon('size-6')}
 		</span>
 	</div>
 	<div class="mt-8">
-		<h3 class="text-base font-semibold text-gray-900">
+		<h3 class="text-base font-semibold text-gray-900 dark:text-white">
 			{#if onclick}
 				<a {href} class="focus:outline-hidden">
 					<!-- Extend touch target to entire panel -->
@@ -25,7 +25,7 @@
 				</button>
 			{/if}
 		</h3>
-		<p class="mt-2 text-sm text-gray-500">
+		<p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
 			{description}
 		</p>
 	</div>

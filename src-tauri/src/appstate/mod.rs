@@ -59,7 +59,9 @@ pub fn set_app_state(
     state.session = Some(session);
     state.user = Some(user);
     state.db = Some(db);
-    state.organizations = organizations;
+    if state.organizations.len() == 0 {
+        state.organizations = organizations;
+    }
     Ok(true)
 }
 
