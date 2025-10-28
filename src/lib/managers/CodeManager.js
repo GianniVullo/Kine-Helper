@@ -108,8 +108,7 @@ export function assignCodes2({
 	// seancesGeneree,
 	// gmfcs: sp.gmfcs,
 	// volet_h: sp.groupe_id === 5 && seance.duree === 3
-
-	return convention.find((code) =>
+	const convRes = convention.find((code) =>
 		sqlQueryCompiler2({
 			code,
 			seance,
@@ -124,6 +123,8 @@ export function assignCodes2({
 			volet_h: sp.groupe_id === 5 && seance.duree === 3
 		})
 	);
+	console.log('THE RES , THE CONV', convRes, convention);
+	return convRes;
 }
 
 export async function assignCodes({

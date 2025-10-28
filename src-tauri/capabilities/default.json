@@ -53,6 +53,9 @@
           "url": "https://epzrdxofotzufykimwuc.supabase.co/functions/v1/update-checker/pOwtY_2gz3GHtISkVIv6Pg"
         },
         {
+          "url": "https://epzrdxofotzufykimwuc.supabase.co/storage/*"
+        },
+        {
           "url": "https://services-acpt.ehealth.fgov.be/*"
         },
         {

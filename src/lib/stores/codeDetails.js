@@ -1,5 +1,6 @@
 import { get } from 'svelte/store';
 import { t } from '../i18n/index';
+import { appState } from '../managers/AppState.svelte';
 
 export const mutualites = {
 	100: { name: 'Mutualité chrétienne' },
@@ -103,8 +104,9 @@ export function duree_int(duree_id) {
  ** La complexité de la précédente écriture provient du fait que j'ignorais l'existence de la fonction date() de SQLite.
  ** Cette réécriture tient dans une seule query :
  */
-export async function figuringConventionOut(date, db) {
-	return await db.select(
+export async function figuringConventionOut(date) {
+	// TODO : Sometimes the process of updating the codes and conventions aren't working. 
+	return await appState.db.select(
 		`SELECT c.*
 		FROM codes AS c
 		INNER JOIN conventions AS con ON c.convention_id = con.convention_id
