@@ -21,7 +21,7 @@
 
 <!--* Price -->
 <div class={outerCSS}>
-	<label for={id} class="block text-sm/6 font-medium text-gray-900">{label}</label>
+	<label for={id} class="block text-sm/6 font-medium text-gray-900 dark:text-white">{label}</label>
 	<TwUIField
 		{id}
 		{name}
