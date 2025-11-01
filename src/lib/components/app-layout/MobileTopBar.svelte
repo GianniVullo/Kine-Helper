@@ -28,7 +28,7 @@
 	</div>
 	<div
 		class="line-clamp-1 h-full overflow-hidden text-center text-lg font-semibold text-gray-900 dark:text-gray-300">
-		{appState.selectedOrg.name}
+		{appState.selectedOrg?.name}
 	</div>
 	<!-- {@render TeamWidgetMobile()} -->
 	<OrganizationWidget {sidePanel} />
