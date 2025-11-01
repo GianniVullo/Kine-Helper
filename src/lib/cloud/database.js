@@ -230,69 +230,73 @@ export class DatabaseManager {
 			if (sp.prescriptions.length > 0) {
 				sp.upToDate = true;
 			}
+			if (!sp.upToDate) {
+				return await this.retrieve_spRemote(sp_id);
+			}
+
 			return { data: sp, error: null };
 		} catch (error) {
 			// If local retrieval fails or no prescriptions found, try Supabase
-
-			let supabaseResponse = await supabase
-				.from('situations_pathologiques')
-				.select(
-					`*,
+			info(error);
+			return await this.retrieve_spRemote(sp_id);
+		}
+	}
+	async retrieve_spRemote(sp_id) {
+		let supabaseResponse = await supabase
+			.from('situations_pathologiques')
+			.select(
+				`*,
 						seances!sp_id (*),
 						accords!sp_id (*),
 						factures!sp_id (*),
 						prescriptions!sp_id (*),
 						attestations!sp_id (*)`
-				)
-				.eq('sp_id', sp_id)
-				.single();
-			info('Supabase response:', supabaseResponse);
-			if (supabaseResponse.error) {
-				info(`Error retrieving from Supabase: ${supabaseResponse.error.message}`);
-				return { data: null, error: supabaseResponse.error };
-			}
-			sp = new SituationPathologique(supabaseResponse.data);
-			// If successful, record the data in the local database
-			let { error: localError } = await this.insertLocal('situations_pathologiques', [sp.toDB]);
-			if (localError) {
-				info(`Error inserting into local database: ${localError.message}`);
-			}
-			if (sp.prescriptions.length > 0) {
-				let { error: prescriptionsError } = await this.insertLocal(
-					'prescriptions',
-					sp.prescriptions
-				);
-				if (prescriptionsError) {
-					info(`Error inserting into local database: ${prescriptionsError.message}`);
-				}
-			}
-			if (sp.accords.length > 0) {
-				let { error: accordsError } = await this.insertLocal('accords', sp.accords);
-				if (accordsError) {
-					info(`Error inserting into local database: ${accordsError.message}`);
-				}
-			}
-			if (sp.attestations.length > 0) {
-				let { error: attestationsError } = await this.insertLocal('attestations', sp.attestations);
-				if (attestationsError) {
-					info(`Error inserting into local database: ${attestationsError.message}`);
-				}
-			}
-			if (sp.factures.length > 0) {
-				let { error: facturesError } = await this.insertLocal('factures', sp.factures);
-				if (facturesError) {
-					info(`Error inserting into local database: ${facturesError.message}`);
-				}
-			}
-			if (sp.seances.length > 0) {
-				let { error: seancesError } = await this.insertLocal('seances', sp.seances);
-				if (seancesError) {
-					info(`Error inserting into local database: ${seancesError.message}`);
-				}
-			}
-			sp.upToDate = true;
-			return { data: sp, error: null };
+			)
+			.eq('sp_id', sp_id)
+			.single();
+		info('Supabase response:', supabaseResponse);
+		if (supabaseResponse.error) {
+			info(`Error retrieving from Supabase: ${supabaseResponse.error.message}`);
+			return { data: null, error: supabaseResponse.error };
 		}
+		let sp = new SituationPathologique(supabaseResponse.data);
+		// If successful, record the data in the local database
+		let { error: localError } = await this.insertLocal('situations_pathologiques', [sp.toDB]);
+		if (localError) {
+			info(`Error inserting into local database: ${localError.message}`);
+		}
+		if (sp.prescriptions.length > 0) {
+			let { error: prescriptionsError } = await this.insertLocal('prescriptions', sp.prescriptions);
+			if (prescriptionsError) {
+				info(`Error inserting into local database: ${prescriptionsError.message}`);
+			}
+		}
+		if (sp.accords.length > 0) {
+			let { error: accordsError } = await this.insertLocal('accords', sp.accords);
+			if (accordsError) {
+				info(`Error inserting into local database: ${accordsError.message}`);
+			}
+		}
+		if (sp.attestations.length > 0) {
+			let { error: attestationsError } = await this.insertLocal('attestations', sp.attestations);
+			if (attestationsError) {
+				info(`Error inserting into local database: ${attestationsError.message}`);
+			}
+		}
+		if (sp.factures.length > 0) {
+			let { error: facturesError } = await this.insertLocal('factures', sp.factures);
+			if (facturesError) {
+				info(`Error inserting into local database: ${facturesError.message}`);
+			}
+		}
+		if (sp.seances.length > 0) {
+			let { error: seancesError } = await this.insertLocal('seances', sp.seances);
+			if (seancesError) {
+				info(`Error inserting into local database: ${seancesError.message}`);
+			}
+		}
+		sp.upToDate = true;
+		return { data: sp, error: null };
 	}
 
 	async retrieve_spLocal(sp_id) {
