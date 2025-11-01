@@ -33,6 +33,9 @@ import { info } from '../../cloud/libraries/logging';
 export async function onLogin(data) {
 	info('In the LoginForm onValid');
 	await appState.initializeDatabase();
+	// Reset the cache part of the db
+	await appState.db.execute('Delete from patients');
+	await appState.db.execute('Delete from situations_pathologiques');
 	info('AppState initialized with database', appState.db);
 	// Connecter l'utilisateur
 	let { data: signInData, error } = await supabase.auth.signInWithPassword({
@@ -141,11 +144,11 @@ export async function onKineUpsert(formData) {
 		await appState.init({});
 	}
 	const filteredData = this.filtrerLesChampsAUpdater(formData);
-	info('Filtered data for DB operation', filteredData);
+	info('Filtered data for DB operation', filteredData, isEmpty(filteredData));
 	if (!isEmpty(filteredData)) {
 		const { data: profileData, error: profileError } = await supabase
 			.from('kinesitherapeutes')
-			.upsert({ ...formData, id: appState.user.id });
+			.upsert({ ...formData, id: appState.user.id, organization_id: appState.selectedOrg.id });
 		info('profileData, error and formData', profileData, formData);
 		if (profileError) {
 			this.message = error;
