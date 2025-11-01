@@ -50,15 +50,15 @@
 		}
 		if (appState.user.conventionne) return resolve(onBoardingWidgets);
 
-		let { data: tarifs } = await getTarifs();
+		let tarifs = await getTarifs();
 		if (
-			tarifs.tarif_seance &&
-			tarifs.tarif_indemnite &&
-			tarifs.tarif_rapport_ecrit &&
-			tarifs.tarif_consultatif &&
-			tarifs.tarif_seconde_seance &&
-			tarifs.tarif_intake &&
-			tarifs.tarif_no_show
+			!tarifs.tarif_seance &&
+			!tarifs.tarif_indemnite &&
+			!tarifs.tarif_rapport_ecrit &&
+			!tarifs.tarif_consultatif &&
+			!tarifs.tarif_seconde_seance &&
+			!tarifs.tarif_intake &&
+			!tarifs.tarif_no_show
 		) {
 			onBoardingWidgets.push(tarifOnBoardingItem);
 		}
@@ -72,7 +72,9 @@
 	<!-- C'est un peu moche mais c'est ce que Javasript autorise pour faire du confitionnal pushing on an array construction -->
 	{#if onBoardingWidgets.length > 0}
 		<div class="mt-10 border-b border-gray-200 pb-5 dark:border-white/10">
-			<h3 class="text-base font-semibold text-gray-900 dark:text-white">Configruration de Kiné Helper</h3>
+			<h3 class="text-base font-semibold text-gray-900 dark:text-white">
+				Configruration de Kiné Helper
+			</h3>
 		</div>
 
 		<div

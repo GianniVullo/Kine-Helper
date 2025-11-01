@@ -3,6 +3,7 @@ import { error } from '@sveltejs/kit';
 import { appState } from '../../../managers/AppState.svelte.js';
 import { uuidVal, numericalStringPrimitive } from '../validators/baseValidators';
 import { supabase } from '../../../stores/supabaseClient';
+import { info } from '../../../cloud/libraries/logging.js';
 
 function assignRelevantTarif(value, id) {
 	const parsedMetadata = JSON.parse(value.metadata);
@@ -186,7 +187,9 @@ export async function gatherTarifsforpageLoad(sp_id) {
 		error(500, { message: dbError + dbError2 + dbError3 });
 	}
 	prescriptions = prescriptions.map((p) => {
-		p.prescripteur = JSON.parse(p.prescripteur);
+		if (typeof p.prescripteur == 'string') {
+			p.prescripteur = JSON.parse(p.prescripteur);
+		}
 		return p;
 	});
 	return { tarifs, supplements, prescriptions };
@@ -209,6 +212,7 @@ export async function getTarifs(error) {
 		.eq('organization_id', appState.selectedOrg.id)
 		.eq('user_id', appState.user.id);
 
+	info('Tarifs, supplements', tarifs, supplements, dbError, dbError2);
 	if (dbError || dbError2) {
 		error(500, { message: dbError + dbError2 });
 	}
