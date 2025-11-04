@@ -1,4 +1,6 @@
-use crate::printer::escp::escp_commands::{EscpCommandBuilder, FormSpacing, PrinterConfig};
+// use crate::printer::escp_new::escp_commands::{
+    // EscpCommandBuilder, FormSpacing, PrinterConfig,
+// };
 use crate::printer::form_data_modeling::{Attestation, DocumentFormData};
 use unidecode::unidecode;
 

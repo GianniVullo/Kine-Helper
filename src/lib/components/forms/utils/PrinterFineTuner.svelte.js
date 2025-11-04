@@ -7,7 +7,7 @@ export class PrinterFineTuner {
 		remboursement: false
 	});
 	defaultValues = {
-		initial_spacing_mm: 12,
+		initial_spacing: 59,
 		spacing_scale: 100,
 		// Identification section
 		id_name_to_mutuality: 108,
@@ -41,14 +41,14 @@ export class PrinterFineTuner {
 		presc_spacing_8: 31,
 
 		// Signature section
+		service_to_total: 121,
 		sign_total_to_name: 112,
-		sign_internal: 37,
+		sign_after_location: 120,
+		sign_name_line_spacing: 37,
+		sign_to_remb: 166,
 
 		// Fixed spacings
-		sign_name_line_spacing: 37,
-		sign_after_location: 120,
-		remb_to_bce: 79,
-		remb_bce_to_date: 87,
+		remb_bce_to_date: 79,
 		remb_date_to_total: 87
 	};
 
@@ -86,13 +86,13 @@ export class PrinterFineTuner {
 				this.formatField('presc_spacing_8', `Espacement n°${8 + 1}`)
 			],
 			signature: [
+				this.formatField('service_to_total', 'Service -> Total'),
 				this.formatField('sign_total_to_name', 'Total -> Identification du dispensateur'),
-				this.formatField('sign_internal', 'Total -> Identification du dispensateur'),
 				this.formatField('sign_name_line_spacing', "Interligne de l'identification"),
-				this.formatField('sign_after_location', 'Identification -> Date')
+				this.formatField('sign_after_location', 'Identification -> Date'),
+				this.formatField('sign_to_remb', 'Date -> n° BCE')
 			],
 			remboursement: [
-				this.formatField('remb_to_bce', 'Section Identification -> n° BCE'),
 				this.formatField('remb_bce_to_date', 'n° BCE -> Date'),
 				this.formatField('remb_date_to_total', 'Date -> Total reçu')
 			]
@@ -101,8 +101,13 @@ export class PrinterFineTuner {
 	}
 
 	formatField(name, titre, help) {
-		console.log('Formating', name);
-
-		return { name, titre, help, inputType: 'number', defaultValue: this.defaultValues[name] };
+		return {
+			name,
+			titre,
+			help,
+			inputType: 'number',
+			defaultValue: this.defaultValues[name],
+			outerCSS: 'col-span-full sm:col-span-2'
+		};
 	}
 }

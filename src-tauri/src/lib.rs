@@ -194,7 +194,8 @@ fn setup_desktop() {
             stop_browsing,
             enqueue_job,
             compress_img_at_path,
-            deflate_and_encode
+            deflate_and_encode,
+            // test_document_generation
         ])
         .build(tauri::generate_context!())
         .expect("error while building tauri application")

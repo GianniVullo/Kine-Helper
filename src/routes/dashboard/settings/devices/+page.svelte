@@ -4,11 +4,12 @@
 	import WindowsSelectionField from '../../../../lib/components/forms/fields/WindowsSelectionField.svelte';
 	import { toast } from '../../../../lib/cloud/libraries/overlays/notificationUtilities.svelte';
 	import { appState } from '../../../../lib/managers/AppState.svelte';
-	import { errorIcon, successIcon } from '../../../../lib/ui/svgs/IconSnippets.svelte';
+	import { cogIcon, errorIcon, successIcon } from '../../../../lib/ui/svgs/IconSnippets.svelte';
 	import { Field, FormSection } from '../../../../lib/components/forms/blocks';
 	import { untrack } from 'svelte';
 	import SimpleSelect from '../../../../lib/components/forms/fields/SimpleSelect.svelte';
 	import BoutonPrincipal from '../../../../lib/components/BoutonPrincipal.svelte';
+	import BoutonSecondaireAvecIcone from '../../../../lib/components/BoutonSecondaireAvecIcone.svelte';
 	import { info } from '../../../../lib/cloud/libraries/logging';
 
 	let imprimanteMatricielleP = new Promise(async (resolve, reject) => {
@@ -149,8 +150,16 @@
 					]} />
 			</div>
 
-			<div class="col-span-full">
-				<BoutonPrincipal onclick={changePrinter} disabled={!modified} inner={$t('shared', 'save')} />
+			<div class="col-span-full flex space-x-5">
+				<BoutonPrincipal
+					onclick={changePrinter}
+					disabled={!modified}
+					inner={$t('shared', 'save')} />
+				<BoutonSecondaireAvecIcone
+					iconCSS=""
+					icon={cogIcon}
+					inner="Configuration avancée"
+					href="/dashboard/settings/devices/raw-printer-fine-tuning" />
 			</div>
 		</FormSection>
 	{:catch error}

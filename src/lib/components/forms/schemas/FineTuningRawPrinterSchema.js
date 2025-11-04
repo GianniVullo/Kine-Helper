@@ -38,7 +38,7 @@ const spacingLargeValidator = () =>
 
 export const validateurs = {
 	// Global adjustments
-	initial_spacing: spacingMmValidator(),
+	initial_spacing: spacingSmallValidator(),
 	spacing_scale: spacingScaleValidator(),
 
 	// Identification section
@@ -73,13 +73,13 @@ export const validateurs = {
 	presc_spacing_8: spacingSmallValidator(),
 
 	// signature
+	service_to_total: spacingSmallValidator(),
 	sign_total_to_name: spacingSmallValidator(),
-	sign_internal: spacingSmallValidator(),
-	sign_name_line_spacing: spacingSmallValidator(),
 	sign_after_location: spacingSmallValidator(),
+	sign_name_line_spacing: spacingSmallValidator(),
+	sign_to_remb: spacingSmallValidator(),
 
 	// Remboursement
-	remb_to_bce: spacingSmallValidator(),
 	remb_bce_to_date: spacingSmallValidator(),
 	remb_date_to_total: spacingSmallValidator()
 };
