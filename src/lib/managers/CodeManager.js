@@ -53,10 +53,11 @@ export function assignCodes2({
 						seance.seance_type === 0
 					);
 				default:
-					return s.has_been_attested && s.seance_type === 0;
+					return (
+						s.has_been_attested && s.seance_type === 0 && dayjs(s.date).year() === dayjs().year()
+					);
 			}
 		});
-		console.log('seancesAlreadyTarifed', seancesAlreadyTarifed);
 
 		// Définition du compteur et des limites
 		// ici on doit ajouter les séances déjà_faites de la prescription

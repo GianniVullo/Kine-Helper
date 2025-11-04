@@ -194,7 +194,8 @@ fn setup_desktop() {
             stop_browsing,
             enqueue_job,
             compress_img_at_path,
-            deflate_and_encode
+            deflate_and_encode,
+            // test_document_generation
         ])
         .build(tauri::generate_context!())
         .expect("error while building tauri application")
@@ -213,8 +214,8 @@ fn setup_desktop() {
                 let _wait_for_queue =
                     setup_functions::on_exit::wait_for_queue_to_finish_then_shutdown(app);
 
-                #[cfg(not(target_os = "ios"))]
-                setup_functions::on_exit::clear_sqlite_cache(app);
+                // #[cfg(not(target_os = "ios"))]
+                // setup_functions::on_exit::clear_sqlite_cache(app);
             }
         });
 }

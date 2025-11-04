@@ -30,7 +30,7 @@
 			inputType: 'radio',
 			readonly: readOnly,
 			outerCSS: 'sm:col-span-4',
-			innerCSS: '',
+			innerCSS: 'flex-col !items-start !space-y-4',
 			label: $t('form.generateur', 'heavy.label'),
 			options
 		}}

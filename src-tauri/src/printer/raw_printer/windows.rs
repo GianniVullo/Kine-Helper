@@ -10,7 +10,12 @@ use windows::Win32::Graphics::Printing::{
 };
 
 #[tauri::command]
-pub fn print_attestation(_app_handle: AppHandle, printer_name: &str, form_data: DocumentFormData) {
+pub fn print_attestation(
+    _app_handle: AppHandle,
+    printer_name: &str,
+    form_data: DocumentFormData,
+    spacings: Option<([u16; 6], [u16; 11], [u16; 9], [u16; 5], [u16; 2])>,
+) {
     println!("In the print_attestation fn with {}", printer_name);
     let printer_name = CString::new(printer_name).unwrap();
     let mut printer_handle = PRINTER_HANDLE::default();
@@ -54,7 +59,7 @@ pub fn print_attestation(_app_handle: AppHandle, printer_name: &str, form_data: 
                 return;
             }
 
-            let buffer = build_document(form_data);
+            let buffer = build_document(form_data, spacings);
 
             let mut bytes_written: u32 = 0;
             if !WritePrinter(

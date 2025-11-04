@@ -3,7 +3,6 @@
 	import { Form, FormSection, Field, SubmitButton } from './blocks';
 	import { appState } from '$lib/managers/AppState.svelte';
 	import { SupplementField, TarifsListField, TarifField, SimpleSelect } from './fields/index';
-	import dayjs from 'dayjs';
 	import { clock } from '$lib/ui/svgs/IconSnippets.svelte';
 	import { initialSeanceValues, SeanceSchema, validateurs } from './schemas/SeanceSchema.svelte';
 	import { onSeanceUpsert } from './onSubmits.svelte';
@@ -28,6 +27,7 @@
 		onValid: onSeanceUpsert,
 		mode
 	});
+	console.log('Form Initial Values : ', formHandler.initialValues);
 
 	const manager = new SingleSeanceSetup(seance, formHandler, sp);
 	const duree_custom_help = $derived.by(() => {

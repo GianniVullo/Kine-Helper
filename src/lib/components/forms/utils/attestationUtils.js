@@ -90,7 +90,7 @@ export async function groupSeanceInAttestations(
 						case (0, 5):
 							return s.has_been_attested && dayjs(s.date).year() === dayjs().year();
 						default:
-							return s.has_been_attested;
+							return s.has_been_attested && dayjs(s.date).year() === dayjs().year();
 					}
 				}).length
 			});

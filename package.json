@@ -1,7 +1,7 @@
 {
   "name": "kine-helper",
   "private": true,
-  "version": "1.0.9",
+  "version": "1.0.10",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -36,7 +36,7 @@
     "@tauri-apps/plugin-http": "2.5.2",
     "@tauri-apps/plugin-log": "^2.2.1",
     "@tauri-apps/plugin-os": "^2.2.0",
-    "@tauri-apps/plugin-process": "^2.3.0",
+    "@tauri-apps/plugin-process": "^2.3.1",
     "@tauri-apps/plugin-shell": "^2.2.0",
     "@tauri-apps/plugin-sql": "^2.2.0",
     "@tauri-apps/plugin-updater": "^2.9.0",

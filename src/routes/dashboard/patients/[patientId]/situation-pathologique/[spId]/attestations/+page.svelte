@@ -19,31 +19,29 @@
 	import { cloneDeep } from 'lodash';
 	import TwDropdown from '../../../../../../../lib/components/TWElements/TWDropdown.svelte';
 	import { isMobile } from '../../../../../../../lib/utils/platformwhoami';
-	import { onDestroy, onMount } from 'svelte';
-	import { on } from 'svelte/events';
+	import { CallBackModal } from '../../../../../../../lib/cloud/libraries/overlays/CallbackModal.svelte.js';
 
 	let { data } = $props();
 	let { patient, sp } = data;
 
-	let printEventHandler;
-
 	const attestations = $state(sp.attestations);
 
-	const printHandler = async (attestation) => {
-		pushState('', {
-			...page.state,
-			modal: {
-				action: 'signalConfirmation',
-				title: $t('attestation.detail', 'printModal.title'),
-				description: $t('attestation.detail', 'printModal.body', {
-					date: dayjs(attestation.date).format('DD/MM/YYYY')
-				}),
-				buttonTextConfirm: $t('attestation.detail', 'printModal.confirm'),
-				buttonTextCancel: $t('shared', 'cancel'),
-				attestation: cloneDeep($state.snapshot(attestation))
+	const printHandler = new CallBackModal(
+		{
+			action: 'signalConfirmation',
+			title: $t('attestation.detail', 'printModal.title'),
+			buttonTextConfirm: $t('attestation.detail', 'printModal.confirm'),
+			buttonTextCancel: $t('shared', 'cancel')
+		},
+		async (e) => {
+			console.log('Event received !');
+			e.detail.attestation.total_recu = `${e.detail.attestation.total_recu}`;
+			const { error } = await printAttestation(null, e.detail.attestation);
+			if (error) {
+				console.warn('Error while printing Attestation', error);
 			}
-		});
-	};
+		}
+	);
 
 	const updatePaidStatuses = async (attestation, key) => {
 		await markAsPaid($state.snapshot(attestation), key);
@@ -106,18 +104,6 @@
 			}, 400);
 		}
 	});
-	onMount(() => {
-		printEventHandler = on(window, 'Dialog:Confirmed', async (e) => {
-			e.detail.attestation.total_recu = `${e.detail.attestation.total_recu}`;
-			const { error } = await printAttestation(null, e.detail.attestation);
-			if (error) {
-				console.warn('Error while printing Attestation', error);
-			}
-		});
-	});
-	onDestroy(() => {
-		printEventHandler();
-	});
 </script>
 
 {#if sp.attestations.length > 0}
@@ -178,8 +164,13 @@
 							class="relative py-5 pr-4 pl-3 text-left text-sm font-medium whitespace-nowrap sm:pr-0">
 							<button
 								class="group flex space-x-1"
-								onclick={async () => {
-									await printHandler(attestation);
+								onclick={(e) => {
+									e.preventDefault();
+									printHandler.modal.description = $t('attestation.detail', 'printModal.body', {
+										date: dayjs(attestation.date).format('DD/MM/YYYY')
+									});
+									printHandler.modal.attestation = cloneDeep($state.snapshot(attestation));
+									printHandler.open(e);
 								}}>
 								{@render printerIcon(
 									'size-5 text-indigo-500 group-hover:text-indigo-700 dark:text-indigo-400 dark:group-hover:text-indigo-500'

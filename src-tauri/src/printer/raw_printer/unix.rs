@@ -9,12 +9,13 @@ pub fn print_attestation(
     app_handle: AppHandle,
     printer_name: String,
     form_data: DocumentFormData,
+    spacings: Option<([u16; 6], [u16; 11], [u16; 9], [u16; 5], [u16; 2])>,
 ) -> () {
     let file_path = app_handle.path().app_local_data_dir().unwrap();
     let file_path = file_path.join("temp_print_file.prn");
     let mut file = File::create(&file_path).expect("Failed to create file");
 
-    let doc_bytes = build_document(form_data);
+    let doc_bytes = build_document(form_data, spacings);
 
     file.write_all(&doc_bytes).expect("Failed to write to file");
     // Construct the lp command

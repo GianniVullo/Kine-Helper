@@ -18,7 +18,7 @@ use tauri::{AppHandle, Manager};
 use tauri_plugin_shell::ShellExt;
 
 fn create_test_form_data(
-    config_type: String,
+    // config_type: String,
     custom_spacing: Option<FormSpacing>,
 ) -> DocumentFormData {
     DocumentFormData {
@@ -69,13 +69,12 @@ fn create_test_form_data(
             service: "".to_string(),
         },
         is_nine_pin: false,
-        config_type,
+        // config_type,
         custom_spacing,
     }
 }
 
 pub fn print_attestation(app_handle: AppHandle, printer_name: String, doc_bytes: Vec<u8>) -> () {
-    
     let file_path = app_handle.path().app_local_data_dir().unwrap();
     let file_path = file_path.join("temp_print_file.prn");
     let mut file = File::create(&file_path).expect("Failed to create file");
@@ -107,13 +106,13 @@ pub fn print_attestation(app_handle: AppHandle, printer_name: String, doc_bytes:
 #[tauri::command]
 pub fn test_document_generation(
     app_handle: AppHandle,
-    config_type: String,
+    // config_type: String,
     custom_spacing: Option<FormSpacing>,
 ) -> Vec<u8> {
-    let form_data = create_test_form_data(config_type, custom_spacing);
+    let form_data = create_test_form_data(custom_spacing);
     let document = build_document(form_data);
-    let printer_name = "EPSON_LQ-350";
-
+    let printer_name = "OKI_DATA_CORP_ML1120";
+    println!("{:?}", &document);
     let _ = print_attestation(app_handle, printer_name.to_string(), document.clone());
     // Check that document starts with form length command
     // assert_eq!(&document[0..4], &[0x1b, 0x43, 0x00, 0x0c]);

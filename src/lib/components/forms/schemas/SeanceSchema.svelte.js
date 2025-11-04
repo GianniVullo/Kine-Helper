@@ -41,7 +41,9 @@ function defineDuree(duree, patho_lourde_type, lieu_id) {
 					return 30;
 				}
 				return 20;
-			case 1 || 2:
+			case 1:
+				return 60;
+			case 2:
 				return 60;
 			case 3:
 				return 120;
@@ -57,6 +59,30 @@ function defineDuree(duree, patho_lourde_type, lieu_id) {
 		return 60;
 	}
 	return 30;
+}
+
+function defineDureeId(patho_lourde_type, lieu_id) {
+	console.log('IN defineDureeId with ', patho_lourde_type, lieu_id);
+
+	switch (patho_lourde_type) {
+		case 0:
+			if ([0, 1, 2, 3, 7].includes(lieu_id)) {
+				return 2;
+			}
+			return 1;
+		case 1:
+			return 4;
+		case 2:
+			return 4;
+		case 3:
+			return 5;
+		case 4:
+			return 3;
+		case 5:
+			return 4;
+		default:
+			return 'blbl';
+	}
 }
 
 export const payment_methods = [null, 'cash', 'carte', 'virement', 'qrCode'];
@@ -318,6 +344,9 @@ export function initialSeanceValues({ patient, sp, seance, prescriptions, tarifs
 	const tarifMetadata = getTarificationInitialValues(sp, tarifs, seance);
 	let fromCalendarDate = page.url.searchParams.get('date');
 	let now = dayjs().format('YYYY-MM-DD');
+	const duree = seance?.duree ?? sp.duree ?? defineDureeId(sp.patho_lourde_type, sp.lieu_id);
+	console.log('Duree ', duree);
+
 	return {
 		user_id: appState.user.id,
 		patient_id: patient.patient_id,
@@ -326,7 +355,7 @@ export function initialSeanceValues({ patient, sp, seance, prescriptions, tarifs
 			(seance?.prescription_id ?? prescriptions.length === 1)
 				? prescriptions[0].prescription_id
 				: null,
-		duree: seance?.duree ?? sp.duree,
+		duree,
 		seanceType:
 			typeof seance?.seance_type === 'number' ? seanceTypes[seance.seance_type] : undefined,
 		lieu_id: seance?.lieu_id ?? sp?.lieu_id,

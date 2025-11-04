@@ -138,40 +138,40 @@ impl EscpCommandBuilder {
         // Reset printer to default state
         commands.extend_from_slice(&[0x1b, 0x40]); // ESC @ - Initialize printer
 
-        if !self.config.is_nine_pin {
-            // For 24-pin printers, set specific modes to ensure consistency
+        // if !self.config.is_nine_pin {
+        // For 24-pin printers, set specific modes to ensure consistency
 
-            // ESC x 1 - Select NLQ (Near Letter Quality) mode for consistent quality
-            commands.extend_from_slice(&self.set_print_quality(true));
+        // ESC x 1 - Select NLQ (Near Letter Quality) mode for consistent quality
+        commands.extend_from_slice(&self.set_print_quality(true));
 
-            // ESC k 0 - Select Roman font (most standard)
-            commands.extend_from_slice(&self.select_font(0));
+        // ESC k 0 - Select Roman font (most standard)
+        commands.extend_from_slice(&self.select_font(0));
 
-            // ESC p 0 - Disable proportional spacing (critical for alignment!)
-            commands.extend_from_slice(&[0x1b, 0x70, 0x00]);
+        // ESC p 0 - Disable proportional spacing (critical for alignment!)
+        commands.extend_from_slice(&[0x1b, 0x70, 0x00]);
 
-            // ESC 3 n - Set line spacing to n/180 inch (24-pin standard)
-            // 24/180 = ~3.4mm line spacing
-            commands.extend_from_slice(&self.set_graphics_mode());
+        // ESC 3 n - Set line spacing to n/180 inch (24-pin standard)
+        // 24/180 = ~3.4mm line spacing
+        commands.extend_from_slice(&self.set_graphics_mode());
 
-            // ESC U 0 - Turn off unidirectional printing (for speed)
-            // Use ESC U 1 if alignment issues occur
-            commands.extend_from_slice(&[0x1b, 0x55, 0x00]);
+        // ESC U 0 - Turn off unidirectional printing (for speed)
+        // Use ESC U 1 if alignment issues occur
+        commands.extend_from_slice(&[0x1b, 0x55, 0x00]);
 
-            // Model-specific initialization
-            match self.config.model {
-                PrinterModel::OkiMicroline => {
-                    // OKI printers sometimes need extra setup
-                    // ESC 6 - Enable printing of upper control codes
-                    commands.extend_from_slice(&[0x1b, 0x36]);
-                }
-                PrinterModel::Panasonic => {
-                    // Panasonic might need different line spacing
-                    commands.extend_from_slice(&[0x1b, 0x33, 30]); // Slightly more spacing
-                }
-                _ => {}
+        // Model-specific initialization
+        match self.config.model {
+            PrinterModel::OkiMicroline => {
+                // OKI printers sometimes need extra setup
+                // ESC 6 - Enable printing of upper control codes
+                commands.extend_from_slice(&[0x1b, 0x36]);
             }
+            PrinterModel::Panasonic => {
+                // Panasonic might need different line spacing
+                commands.extend_from_slice(&[0x1b, 0x33, 30]); // Slightly more spacing
+            }
+            _ => {}
         }
+        // }
 
         // ESC 6 - Enable printing of characters in the range 128-159
         commands.extend_from_slice(&[0x1b, 0x36]);
@@ -242,47 +242,6 @@ impl EscpCommandBuilder {
             }
         } else {
             vec![]
-        }
-    }
-
-    /// Ensure consistent character width (disable proportional spacing)
-    pub fn set_fixed_pitch(&self) -> Vec<u8> {
-        // ESC p 0 - Turn off proportional mode
-        vec![0x1b, 0x70, 0x00]
-    }
-
-    /// Generate vertical spacing command in millimeters
-    /// Uses appropriate spacing command based on printer type and model
-    pub fn vertical_spacing_mm(&self, mm: f64) -> Vec<u8> {
-        match self.config.model {
-            PrinterModel::Generic9Pin | PrinterModel::EpsonFX => {
-                // Use ESC J for 9-pin (n/216 inch)
-                let dots = (mm * self.config.dots_per_mm_vertical).round() as u8;
-                vec![0x1b, 0x4a, dots]
-            }
-            PrinterModel::Generic24Pin | PrinterModel::EpsonLQ => {
-                // For 24-pin, use ESC + for better accuracy (n/360 inch) if small enough
-                let inches = mm / 25.4;
-                let dots_360 = (inches * 360.0).round() as u16;
-                if dots_360 <= 255 {
-                    vec![0x1b, 0x2b, dots_360 as u8]
-                } else {
-                    // Fall back to ESC J for larger values
-                    let dots = (mm * self.config.dots_per_mm_vertical).round() as u8;
-                    vec![0x1b, 0x4a, dots]
-                }
-            }
-            PrinterModel::OkiMicroline | PrinterModel::Panasonic => {
-                // These often work better with ESC 3 n (set n/180" line spacing)
-                // followed by line feed
-                let inches = mm / 25.4;
-                let dots_180 = (inches * 180.0).round() as u8;
-                vec![
-                    0x1b, 0x33, dots_180, // Set line spacing
-                    0x0a,     // Line feed
-                    0x1b, 0x32, // Reset to default spacing
-                ]
-            }
         }
     }
 
@@ -491,79 +450,6 @@ impl FormSpacing {
             remb_to_bce: 79,
             remb_bce_to_date: 87,
             remb_date_to_total: 87,
-        }
-    }
-
-    /// Get spacing configuration for specific printer models
-    pub fn for_model(model: &PrinterModel) -> Self {
-        match model {
-            PrinterModel::OkiMicroline => {
-                let mut spacing = Self::twenty_four_pin_default();
-                // OKI printers often need slightly different vertical spacing
-                spacing.prest_lines = [38, 37, 38, 37, 38, 39, 37, 38, 37, 41];
-                spacing.id_name_to_mutuality = 110;
-                spacing
-            }
-            PrinterModel::EpsonLQ => {
-                // Epson LQ series usually work well with defaults
-                Self::twenty_four_pin_default()
-            }
-            PrinterModel::Panasonic => {
-                let mut spacing = Self::twenty_four_pin_default();
-                // Panasonic printers might need adjustment
-                spacing.id_name_to_mutuality = 110;
-                spacing.prest_name_to_table = 400;
-                spacing.prest_lines = [37, 36, 37, 36, 37, 38, 36, 37, 36, 40];
-                spacing
-            }
-            PrinterModel::Generic9Pin | PrinterModel::EpsonFX => Self::nine_pin_default(),
-            PrinterModel::Generic24Pin => Self::twenty_four_pin_default(),
-        }
-    }
-
-    /// Create custom spacing with a scaling factor
-    pub fn with_scale(&self, factor: f64) -> Self {
-        Self {
-            // Starter Values
-            initial_spacing: 59,
-            spacing_scale: factor,
-
-            id_name_to_mutuality: (self.id_name_to_mutuality as f64 * factor).round() as u16,
-            id_mutuality_to_niss: (self.id_mutuality_to_niss as f64 * factor).round() as u16,
-            id_niss_to_address: (self.id_niss_to_address as f64 * factor).round() as u16,
-            id_address_to_postal: (self.id_address_to_postal as f64 * factor).round() as u16,
-            id_postal_to_next: (self.id_postal_to_next as f64 * factor).round() as u16,
-            prest_name_to_table: (self.prest_name_to_table as f64 * factor).round() as u16,
-            prest_lines: [
-                (self.prest_lines[0] as f64 * factor).round() as u16,
-                (self.prest_lines[1] as f64 * factor).round() as u16,
-                (self.prest_lines[2] as f64 * factor).round() as u16,
-                (self.prest_lines[3] as f64 * factor).round() as u16,
-                (self.prest_lines[4] as f64 * factor).round() as u16,
-                (self.prest_lines[5] as f64 * factor).round() as u16,
-                (self.prest_lines[6] as f64 * factor).round() as u16,
-                (self.prest_lines[7] as f64 * factor).round() as u16,
-                (self.prest_lines[8] as f64 * factor).round() as u16,
-                (self.prest_lines[9] as f64 * factor).round() as u16,
-            ],
-            presc_spacing: [
-                (self.presc_spacing[0] as f64 * factor).round() as u16,
-                (self.presc_spacing[1] as f64 * factor).round() as u16,
-                (self.presc_spacing[2] as f64 * factor).round() as u16,
-                (self.presc_spacing[3] as f64 * factor).round() as u16,
-                (self.presc_spacing[4] as f64 * factor).round() as u16,
-                (self.presc_spacing[5] as f64 * factor).round() as u16,
-                (self.presc_spacing[6] as f64 * factor).round() as u16,
-                (self.presc_spacing[7] as f64 * factor).round() as u16,
-                (self.presc_spacing[8] as f64 * factor).round() as u16,
-            ],
-            sign_total_to_name: (self.sign_total_to_name as f64 * factor).round() as u16,
-            sign_internal: (self.sign_internal as f64 * factor).round() as u16,
-            sign_name_line_spacing: (self.sign_name_line_spacing as f64 * factor).round() as u16,
-            sign_after_location: (self.sign_after_location as f64 * factor).round() as u16,
-            remb_to_bce: (self.remb_to_bce as f64 * factor).round() as u16,
-            remb_bce_to_date: (self.remb_bce_to_date as f64 * factor).round() as u16,
-            remb_date_to_total: (self.remb_date_to_total as f64 * factor).round() as u16,
         }
     }
 }

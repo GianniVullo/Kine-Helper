@@ -22,17 +22,20 @@ impl Default for ESCP {
 }
 
 impl ESCP {
-    pub fn vertical_spacing_distances(&self) -> ([u16; 5], [u16; 11], [u16; 9], [u16; 2]) {
+    pub fn vertical_spacing_distances(
+        &self,
+    ) -> ([u16; 6], [u16; 11], [u16; 9], [u16; 5], [u16; 2]) {
         (
             self.identification_section_9_pins(),
             self.lignes_prestation_section_9_pins(),
             self.section_prescription_hospitalisation_9_pin(),
             self.section_signature_9_pin(),
+            self.section_remboursement(),
         )
     }
 
-    pub fn identification_section_9_pins(&self) -> [u16; 5] {
-        [108, 46, 62, 46, 141]
+    pub fn identification_section_9_pins(&self) -> [u16; 6] {
+        [59, 108, 46, 62, 46, 141]
     }
 
     pub fn lignes_prestation_section_9_pins(&self) -> [u16; 11] {
@@ -44,8 +47,12 @@ impl ESCP {
         [33, 37, 37, 33, 100, 29, 21, 29, 31]
     }
 
-    pub fn section_signature_9_pin(&self) -> [u16; 2] {
-        [112, 83]
+    pub fn section_signature_9_pin(&self) -> [u16; 5] {
+        [121, 112, 37, 120, 166]
+    }
+
+    pub fn section_remboursement(&self) -> [u16; 2] {
+        [79, 87]
     }
 
     pub fn vertical_spacing(&self, mm: f64) -> Vec<u8> {
@@ -74,6 +81,74 @@ impl ESCP {
 
         cmd
     }
+
+    /// Set draft or NLQ mode (24-pin only)
+    pub fn set_print_quality(&self) -> Vec<u8> {
+        if !self.is_nine_pin {
+            // if nlq {
+            // ESC x 1 - Select NLQ mode
+            vec![0x1b, 0x78, 0x01]
+            // } else {
+            //     // ESC x 0 - Select draft mode
+            //     vec![0x1b, 0x78, 0x00]
+            // }
+        } else {
+            vec![]
+        }
+    }
+
+    pub fn set_graphics_mode(&self) -> Vec<u8> {
+        if self.is_nine_pin {
+            // ESC A n - Set line spacing to n/72 inch for 9-pin
+            vec![0x1b, 0x41, 12] // 12/72 = 1/6 inch
+        } else {
+            // For 24-pin, use appropriate mode based on resolution
+            vec![0x1b, 0x33, 24] // 24/180 = ~3.4mm
+        }
+    }
+
+    /// Select font for 24-pin printers
+    /// font_id: 0 = Roman, 1 = Sans-serif, 2 = Courier, 3 = Prestige, 4 = Script
+    pub fn select_font(&self, font_id: u8) -> Vec<u8> {
+        if !self.is_nine_pin {
+            // ESC k n - Select typeface
+            vec![0x1b, 0x6b, font_id]
+        } else {
+            vec![]
+        }
+    }
+
+    pub fn initialize_printer(&self) -> Vec<u8> {
+        let mut commands = vec![];
+
+        // Reset printer to default state
+        commands.extend_from_slice(&[0x1b, 0x40]); // ESC @ - Initialize printer
+
+        // if !self.config.is_nine_pin {
+        // For 24-pin printers, set specific modes to ensure consistency
+
+        // ESC x 1 - Select NLQ (Near Letter Quality) mode for consistent quality
+        commands.extend_from_slice(&self.set_print_quality());
+
+        // ESC k 0 - Select Roman font (most standard)
+        commands.extend_from_slice(&self.select_font(0));
+
+        // ESC p 0 - Disable proportional spacing (critical for alignment!)
+        commands.extend_from_slice(&[0x1b, 0x70, 0x00]);
+
+        // ESC 3 n - Set line spacing to n/180 inch (24-pin standard)
+        // 24/180 = ~3.4mm line spacing
+        commands.extend_from_slice(&self.set_graphics_mode());
+
+        // ESC U 0 - Turn off unidirectional printing (for speed)
+        // Use ESC U 1 if alignment issues occur
+        commands.extend_from_slice(&[0x1b, 0x55, 0x00]);
+
+        // ESC 6 - Enable printing of characters in the range 128-159
+        commands.extend_from_slice(&[0x1b, 0x36]);
+
+        commands
+    }
 }
 
 pub fn build_binary(vectors: Vec<Vec<u8>>) -> Vec<u8> {
@@ -84,7 +159,10 @@ pub fn build_binary(vectors: Vec<Vec<u8>>) -> Vec<u8> {
     binary
 }
 
-pub fn build_document(form_data: DocumentFormData) -> Vec<u8> {
+pub fn build_document(
+    form_data: DocumentFormData,
+    spacings: Option<([u16; 6], [u16; 11], [u16; 9], [u16; 5], [u16; 2])>,
+) -> Vec<u8> {
     let DocumentFormData {
         patient,
         prescription,
@@ -102,22 +180,33 @@ pub fn build_document(form_data: DocumentFormData) -> Vec<u8> {
         set_to_10_cpi: vec![0x1b, 0x50],
     };
 
-    let (id_section, prestations_section, prescription_section, section_signature_dist) =
-        escp_cmds.vertical_spacing_distances();
+    let (
+        id_section,
+        prestations_section,
+        prescription_section,
+        section_signature_dist,
+        section_remboursement,
+    ) = {
+        if let Some(datas) = spacings {
+            datas
+        } else {
+            escp_cmds.vertical_spacing_distances()
+        }
+    };
 
     let section_identification_patient = vec![
         escp_cmds.format_to_12_inch.clone(),
-        escp_cmds.vertical_spacing(7.05),
-        format!("\t\t     {}", unidecode(&patient.full_name())).into_bytes(),
         escp_cmds.vertical_spacing_in_dots(id_section[0]),
-        format!("\r\t\t   {}", patient.mutualite).into_bytes(),
+        format!("\t\t     {}", unidecode(&patient.full_name())).into_bytes(),
         escp_cmds.vertical_spacing_in_dots(id_section[1]),
-        format!("\r\t   {}", patient.niss).into_bytes(),
+        format!("\r\t\t   {}", patient.mutualite).into_bytes(),
         escp_cmds.vertical_spacing_in_dots(id_section[2]),
-        format!("\r\t\t   {}", unidecode(&patient.adresse)).into_bytes(),
+        format!("\r\t   {}", patient.niss).into_bytes(),
         escp_cmds.vertical_spacing_in_dots(id_section[3]),
-        format!("\r\t{} {}", patient.cp, unidecode(&patient.localite)).into_bytes(),
+        format!("\r\t\t   {}", unidecode(&patient.adresse)).into_bytes(),
         escp_cmds.vertical_spacing_in_dots(id_section[4]),
+        format!("\r\t{} {}", patient.cp, unidecode(&patient.localite)).into_bytes(),
+        escp_cmds.vertical_spacing_in_dots(id_section[5]),
     ];
 
     let section_lignes_prestations: Vec<Vec<u8>> = vec![
@@ -201,26 +290,26 @@ pub fn build_document(form_data: DocumentFormData) -> Vec<u8> {
     ];
 
     let section_signature = vec![
-        escp_cmds.vertical_spacing_in_dots(121),
-        format!("\r\t\t\t\t{}", attestation.total_recu).into_bytes(),
         escp_cmds.vertical_spacing_in_dots(section_signature_dist[0]),
+        format!("\r\t\t\t\t{}", attestation.total_recu).into_bytes(),
+        escp_cmds.vertical_spacing_in_dots(section_signature_dist[1]),
         format!("\r\t\t{}", unidecode(&kine.full_name())).into_bytes(),
-        escp_cmds.vertical_spacing_in_dots(37),
+        escp_cmds.vertical_spacing_in_dots(section_signature_dist[2]),
         format!("\r\t\t{}", kine.inami).into_bytes(),
-        escp_cmds.vertical_spacing_in_dots(37),
+        escp_cmds.vertical_spacing_in_dots(section_signature_dist[2]),
         format!("\r\t\t{}", unidecode(&kine.adresse)).into_bytes(),
-        escp_cmds.vertical_spacing_in_dots(37),
+        escp_cmds.vertical_spacing_in_dots(section_signature_dist[2]),
         format!("\r\t\t{} {}", kine.cp, unidecode(&kine.localite)).into_bytes(),
-        escp_cmds.vertical_spacing_in_dots(120),
+        escp_cmds.vertical_spacing_in_dots(section_signature_dist[3]),
         format!("\r\t\t\t      {}", attestation.date).into_bytes(),
-        escp_cmds.vertical_spacing_in_dots(166),
+        escp_cmds.vertical_spacing_in_dots(section_signature_dist[4]),
     ];
 
     let section_coupon_remboursement = vec![
         format!("\r\t\t\t    {}", kine.numero_bce).into_bytes(),
-        escp_cmds.vertical_spacing_in_dots(79),
+        escp_cmds.vertical_spacing_in_dots(section_remboursement[0]),
         format!("\r\t\t\t      {}", attestation.date).into_bytes(),
-        escp_cmds.vertical_spacing_in_dots(87),
+        escp_cmds.vertical_spacing_in_dots(section_remboursement[1]),
         format!("\r\t\t  {}", attestation.total_recu).into_bytes(),
         escp_cmds.form_feed_cmd.clone(),
     ];
