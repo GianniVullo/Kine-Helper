@@ -15,6 +15,7 @@
 		description={field.description}
 		outerCSS={field.outerCSS}
 		options={field.options}
+		{...field}
 		{error} />
 {:else if field.inputType === 'radioWithPanel'}
 	<TwUiRadioGroupWithPanel
