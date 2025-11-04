@@ -213,8 +213,8 @@ fn setup_desktop() {
                 let _wait_for_queue =
                     setup_functions::on_exit::wait_for_queue_to_finish_then_shutdown(app);
 
-                #[cfg(not(target_os = "ios"))]
-                setup_functions::on_exit::clear_sqlite_cache(app);
+                // #[cfg(not(target_os = "ios"))]
+                // setup_functions::on_exit::clear_sqlite_cache(app);
             }
         });
 }
