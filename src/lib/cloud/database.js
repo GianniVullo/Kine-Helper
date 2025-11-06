@@ -246,47 +246,60 @@ export class DatabaseManager {
 			.from('situations_pathologiques')
 			.select(
 				`*,
-						seances!sp_id (*),
-						accords!sp_id (*),
-						factures!sp_id (*),
-						prescriptions!sp_id (*),
-						attestations!sp_id (*)`
+				seances!sp_id (*),
+				accords!sp_id (*),
+				factures!sp_id (*),
+				prescriptions!sp_id (*),
+				attestations!sp_id (*,
+					factures_attestations!attestation_id (
+						facture_id
+			))`
 			)
 			.eq('sp_id', sp_id)
 			.single();
 		info('Supabase response:', supabaseResponse);
 		if (supabaseResponse.error) {
-			info(`Error retrieving from Supabase: ${supabaseResponse.error.message}`);
+			info(`Error retrieving from Supabase: ${supabaseResponse.error}`);
 			return { data: null, error: supabaseResponse.error };
 		}
+
 		let sp = new SituationPathologique(supabaseResponse.data);
 		// If successful, record the data in the local database
 		let { error: localError } = await this.insertLocal('situations_pathologiques', [sp.toDB]);
 		if (localError) {
-			info(`Error inserting into local database: ${localError.message}`);
+			info(`Error inserting into local database: ${localError}`);
 		}
 		if (sp.prescriptions.length > 0) {
 			let { error: prescriptionsError } = await this.insertLocal('prescriptions', sp.prescriptions);
 			if (prescriptionsError) {
-				info(`Error inserting into local database: ${prescriptionsError.message}`);
+				info(`Error inserting into local database: ${prescriptionsError}`);
 			}
 		}
 		if (sp.accords.length > 0) {
 			let { error: accordsError } = await this.insertLocal('accords', sp.accords);
 			if (accordsError) {
-				info(`Error inserting into local database: ${accordsError.message}`);
+				info(`Error inserting into local database: ${accordsError}`);
 			}
 		}
 		if (sp.attestations.length > 0) {
 			let { error: attestationsError } = await this.insertLocal('attestations', sp.attestations);
 			if (attestationsError) {
-				info(`Error inserting into local database: ${attestationsError.message}`);
+				info(`Error inserting into local database: ${attestationsError}`);
 			}
 		}
 		if (sp.factures.length > 0) {
 			let { error: facturesError } = await this.insertLocal('factures', sp.factures);
 			if (facturesError) {
 				info(`Error inserting into local database: ${facturesError.message}`);
+			}
+		}
+		if (sp.factures_attestations.length > 0) {
+			let { error: factures_attestationsError } = await this.insertLocal(
+				'factures_attestations',
+				sp.factures_attestations
+			);
+			if (factures_attestationsError) {
+				info(`Error inserting into local database: ${factures_attestationsError}`);
 			}
 		}
 		if (sp.seances.length > 0) {
