@@ -9,6 +9,7 @@ import {
 	stringLengthMoreThan1ButCanBeNull,
 	uuidVal
 } from '../validators/baseValidators';
+import { INTER_MUTUELLE, queryBuilder } from '../utils/attestationUtils';
 
 const user_id = uuidVal();
 const patient_id = uuidVal();

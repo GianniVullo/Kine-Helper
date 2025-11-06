@@ -6,7 +6,8 @@
 	import { platform } from '@tauri-apps/plugin-os';
 	import { goto } from '$app/navigation';
 	import logoUrl from '$lib/assets/logo head.avif';
-	import { invoke } from '@tauri-apps/api/core';
+	import { getVersion } from '@tauri-apps/api/app';
+	// import { relaunch } from "@tauri-apps/plugin-process";
 	// import RichTextEditor from '../lib/cloud/libraries/rich-text-editor/RichTextEditor.svelte';
 	// import TemplateCreatorModal from '../lib/cloud/libraries/rich-text-editor/TemplateCreatorModal.svelte';
 	// `windowed: true` actually sets the webview to transparent
@@ -34,7 +35,17 @@
 	});
 
 	let message = '';
+	let khVersion = new Promise(async (resolve) => {
+		resolve(await getVersion());
+	});
 </script>
+
+<!-- <button onclick={async () => {
+	await relaunch()
+}}>TEST</button> -->
+{#await khVersion then version}
+	<p class="fixed right-10 bottom-5 text-black dark:text-white">KH version : {version}</p>
+{/await}
 
 <div class="flex min-h-full flex-col justify-center px-6 py-12 lg:px-8">
 	<div class="sm:mx-auto sm:w-full sm:max-w-sm">
