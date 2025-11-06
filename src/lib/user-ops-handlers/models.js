@@ -121,8 +121,6 @@ export class SituationPathologique {
 		this.plan_du_ttt = plan_du_ttt;
 		this.generateurs_de_seances = generateurs_de_seances;
 		this.seances = seances.map((s) => new Seance(s));
-		this.prescriptions = prescriptions;
-		this.attestations = attestations;
 		this.accords = accords;
 		this.factures = factures;
 		this.metadata = metadata ? JSON.parse(metadata) : {};
@@ -145,6 +143,7 @@ export class SituationPathologique {
 		this.seconde_seance_e = seconde_seance_e;
 		this.deja_faites = deja_faites;
 		this.patho_lourde_type = patho_lourde_type;
+		this.factures_attestations = [];
 		if (attestations) {
 			for (const attestation of attestations) {
 				attestation.with_indemnity = JSON.parse(attestation.with_indemnity);
@@ -154,8 +153,20 @@ export class SituationPathologique {
 				attestation.with_rapport = JSON.parse(attestation.with_rapport);
 				attestation.mutuelle_paid = JSON.parse(attestation.mutuelle_paid);
 				attestation.patient_paid = JSON.parse(attestation.patient_paid);
+				if (attestation.factures_attestations) {
+					for (const f_as of attestation.factures_attestations) {
+						this.factures_attestations.push({
+							facture_id: f_as.facture_id,
+							attestation_id: attestation.attestation_id,
+							user_id: attestation.user_id,
+							organization_id: attestation.organization_id
+						});
+					}
+					delete attestation.factures_attestations;
+				}
 			}
 		}
+		this.attestations = attestations;
 		if (prescriptions) {
 			for (const prescription of prescriptions) {
 				prescription.prescripteur =
@@ -164,6 +175,7 @@ export class SituationPathologique {
 						: prescription.prescripteur;
 			}
 		}
+		this.prescriptions = prescriptions;
 	}
 
 	// get factures() {
