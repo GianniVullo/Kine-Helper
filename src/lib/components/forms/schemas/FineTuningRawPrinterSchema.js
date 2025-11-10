@@ -1,11 +1,11 @@
 import { object, number, pipe, minValue, maxValue } from 'valibot';
 
 // Custom validators for printer spacing ranges
-const spacingMmValidator = () =>
+const marginLeftValidator = () =>
 	pipe(
 		number('Veuillez entrer un nombre valide'),
-		minValue(0, 'La valeur doit être supérieure ou égale à 0'),
-		maxValue(30, 'La valeur doit être inférieure ou égale à 30')
+		minValue(-500, 'La valeur doit être supérieure ou égale à -500'),
+		maxValue(500, 'La valeur doit être inférieure ou égale à 500')
 	);
 
 const spacingScaleValidator = () =>
@@ -84,7 +84,7 @@ export const validateurs = {
 	remb_date_to_total: spacingSmallValidator(),
 
 	// left_margin
-	left_margin: spacingSmallValidator()
+	left_margin: marginLeftValidator()
 };
 
 export const FineTuningRawPrinterSchema = object(validateurs);

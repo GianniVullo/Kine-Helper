@@ -8,14 +8,11 @@ import { cloneDeep, isEmpty } from 'lodash';
 import { diffArrays } from './utils/tarifHelpers';
 import { prescriptionPath } from './utils/prescriptionPath';
 import {
-	arrayToFile,
-	baseDir,
 	file_exists,
 	open_file,
 	open_remote_file,
 	remove_file,
-	save_local_file,
-	save_to_disk
+	save_local_file
 } from '../../utils/fsAccessor';
 import { platform } from '@tauri-apps/plugin-os';
 import { appLocalDataDir, documentDir } from '@tauri-apps/api/path';
@@ -27,7 +24,6 @@ import {
 	getFacturePatientPDFHandler
 } from '../../user-ops-handlers/documents';
 import { info } from '../../cloud/libraries/logging';
-import { remove } from '@tauri-apps/plugin-fs';
 
 // --------------------------------------------
 // ON SUBMITS FUNCTIONS
