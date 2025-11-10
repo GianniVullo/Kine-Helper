@@ -102,7 +102,7 @@
 								Supprimer<span class="sr-only">, {patient.nom} {patient.prenom}</span>
 							</button>
 						{:else}
-							<p class="font-normal">Ne peux pas être supprimée</p>
+							<p class="font-normal">Ne peut pas être supprimée</p>
 						{/if}
 					</td>
 					<td
