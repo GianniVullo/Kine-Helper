@@ -41,9 +41,9 @@ export function baseDir() {
 async function pathFormat(path) {
 	console.log('in pathFormat with ', path);
 
-	// if (platform() === 'windows') {
-	// 	return `kine-helper-\\${path.replaceAll('/', '\\')}`;
-	// }
+	if (platform() === 'windows') {
+		return path.replaceAll('/', '\\');
+	}
 	return path;
 }
 
