@@ -104,6 +104,14 @@ export async function saveRemoteFile(fileName, fileContent) {
 	}
 	console.log('File uploaded successfully:', data);
 }
+export function arrayToFile(
+	integers,
+	filename = 'file.bin',
+	mimeType = 'application/octet-stream'
+) {
+	const uint8Array = new Uint8Array(integers);
+	return new File([uint8Array], filename, { type: mimeType });
+}
 // In the cloud version this needs to insert the file in the supabase storage
 export async function save_to_disk(path, fileName, fileContent) {
 	console.log('in save_to_disk with ', path, fileName, fileContent);
@@ -245,18 +253,18 @@ export async function retrieve_user_file(filePath, fileName) {
 export async function open_remote_file(bucket, path) {
 	try {
 		// if (platform() === 'ios') {
-			info('Fetching convention data for iOS');
-			let { data: urlData, error } = supabase.storage.from(bucket).getPublicUrl(path);
-			info('urlData', urlData);
-			const res = await nativeFetch(urlData.publicUrl, {
-				method: 'GET',
-				credentials: 'omit',
-				headers: {
-					Accept: 'application/octet-stream'
-				}
-			});
-			info('response status', res.status);
-			return { data: Array.from(await res.bytes()) };
+		info('Fetching convention data for iOS');
+		let { data: urlData, error } = supabase.storage.from(bucket).getPublicUrl(path);
+		info('urlData', urlData);
+		const res = await nativeFetch(urlData.publicUrl, {
+			method: 'GET',
+			credentials: 'omit',
+			headers: {
+				Accept: 'application/octet-stream'
+			}
+		});
+		info('response status', res.status);
+		return { data: Array.from(await res.bytes()) };
 		// } else {
 		// 	// Récupérer le binary sur le serveur
 		// 	let { data: blob, error } = await supabase.storage.from(bucket).download(path);

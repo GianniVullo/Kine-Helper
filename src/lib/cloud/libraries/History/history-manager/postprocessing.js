@@ -1,3 +1,4 @@
+import { appState } from '../../../../managers/AppState.svelte';
 import { supabase } from '../../../../stores/supabaseClient';
 import { read_file } from '../../../../utils/fsAccessor';
 
@@ -8,8 +9,9 @@ export async function executePostProcessingJob(job) {
 				let { data, error } = await supabase.storage
 					.from('users')
 					.upload(
-						`${job.filePath}/${job.fileName}`,
-						await read_file(`${job.filePath}/${job.fileName}`)
+						`${appState.user.id}/prescriptions/${job.fileName}`,
+						await read_file(`${job.filePath}/${job.fileName}`),
+						{ upsert: true }
 					);
 				if (error) {
 					console.error('Error uploading file:', error);

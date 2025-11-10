@@ -8,6 +8,8 @@ import { cloneDeep, isEmpty } from 'lodash';
 import { diffArrays } from './utils/tarifHelpers';
 import { prescriptionPath } from './utils/prescriptionPath';
 import {
+	arrayToFile,
+	baseDir,
 	file_exists,
 	open_file,
 	open_remote_file,
@@ -25,6 +27,7 @@ import {
 	getFacturePatientPDFHandler
 } from '../../user-ops-handlers/documents';
 import { info } from '../../cloud/libraries/logging';
+import { remove } from '@tauri-apps/plugin-fs';
 
 // --------------------------------------------
 // ON SUBMITS FUNCTIONS
@@ -614,14 +617,29 @@ async function createPrescription(data, file) {
 
 	let file_name;
 	if (file) {
-		const fileExtension = file.name.split('.').pop();
-		file_name = `${data.prescription_id}.${fileExtension}`;
-		const filePath = prescriptionPath();
-		data.prescripteur = JSON.stringify(data.prescripteur);
-		let fsError = await save_to_disk(filePath, file_name, file);
-		data.file_name = { ext: fileExtension };
-		if (fsError) {
-			return { data: prescription, error: fsError };
+		try {
+			const fileExtension = file.name.split('.').pop();
+			file_name = `${data.prescription_id}.${fileExtension}`;
+			const filePath = prescriptionPath();
+			data.prescripteur = JSON.stringify(data.prescripteur);
+			let file_path = `${await get_precription_file_dir()}/${filePath}`;
+			// first always compress the file.
+			// 1 -> save it temporarily on the disk
+			let _cachedFile = await save_local_file(filePath, file_name, file);
+			// 2 -> compress and resize it
+			await appState.queue.addToQueue({
+				label: 'Compressing prescription scan',
+				job: 'CompressAndSendPrescription',
+				data: {
+					file_path,
+					file_name: prescriptionFileName(data, 'avif'),
+					from: `${file_path}/${file_name}`
+				}
+			});
+			data.file_name = { ext: 'avif' };
+		} catch (error) {
+			console.error('error while trying to compress and store prescription file ', error);
+			throw new Error('Error while compressing and or storing the prescription file.');
 		}
 	}
 	delete data.file;
@@ -663,7 +681,7 @@ async function updatePrescription(data, file) {
 
 		const filePath = prescriptionPath();
 		const fileExtension = file.name.split('.').pop();
-		const fileName = `${data.prescription_id}.${fileExtension}`;
+		const file_name = `${data.prescription_id}.${fileExtension}`;
 
 		if (data.file_name) {
 			info(
@@ -682,12 +700,17 @@ async function updatePrescription(data, file) {
 			// 	return { error: delError };
 			// }
 		}
-		let fsError = await save_to_disk(filePath, fileName, file);
-
-		if (fsError) {
-			info('ERRor! ', fsError);
-			return { data, error: fsError };
-		}
+		let _cachedFile = await save_local_file(filePath, file_name, file);
+		let file_path = `${await get_precription_file_dir()}/${filePath}`;
+		await appState.queue.addToQueue({
+			label: 'Compressing prescription scan',
+			job: 'CompressAndSendPrescription',
+			data: {
+				file_path,
+				file_name: prescriptionFileName(data, 'avif'),
+				from: `${file_path}/${file_name}`
+			}
+		});
 		data.file_name = { ext: fileExtension };
 	}
 	delete data.file;
