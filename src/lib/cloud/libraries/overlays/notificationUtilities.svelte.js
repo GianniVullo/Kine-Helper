@@ -1,5 +1,5 @@
 import { cloneDeep } from 'lodash';
-import { successIcon } from '../../../ui/svgs/IconSnippets.svelte';
+import { errorIcon, successIcon } from '../../../ui/svgs/IconSnippets.svelte';
 
 class Toast {
 	fired = $state([]);
@@ -18,6 +18,9 @@ class Toast {
 					component.leading = successIcon;
 					component.leadingCSS = 'size-6 text-green-400';
 					break;
+				case 'error':
+					component.leading = errorIcon;
+					component.leadingCSS = 'size-6 text-red-600';
 				default:
 					break;
 			}
