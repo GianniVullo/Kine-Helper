@@ -1,5 +1,6 @@
 <script>
 	import { Formulaire } from '../../cloud/libraries/formHandler.svelte';
+	import { toast } from '../../cloud/libraries/overlays/notificationUtilities.svelte';
 	import { Form, Field, SubmitButton } from './blocks';
 	import PrinterFineTunerSectionField from './blocks/PrinterFineTunerSectionField.svelte';
 	import { validateurs, FineTuningRawPrinterSchema } from './schemas/FineTuningRawPrinterSchema';
@@ -15,9 +16,22 @@
 		schema: FineTuningRawPrinterSchema,
 		initialValues: sections.defaultValues,
 		async onValid(data) {
-			console.log(data);
-			// await invoke('test_document_generation', { custom_spacing: data });
-			appState.db.setItem('profilCustom-1', JSON.stringify(data));
+			try {
+				await appState.db.setItem('profilCustom-1', JSON.stringify(data));
+				toast.trigger({
+					title: 'Yes !',
+					description: 'Configuration avancée modifiée avec succès.',
+					type: 'success',
+					timeout: 3000
+				});
+			} catch (error) {
+				toast.trigger({
+					title: 'Oh no !',
+					description: `Error lors de l'enregistrement : ${error}`,
+					type: 'error',
+					timeout: 6000
+				});
+			}
 		}
 	});
 	let buildingForm = new Promise(async (resolve) => {
