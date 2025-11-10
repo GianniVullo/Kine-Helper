@@ -57,7 +57,7 @@ export class PDFGeneration {
 	buildDirPath() {
 		return `${appState.user.id}/patient${
 			this.patient.patient_id
-		}/situation-pathologique-${this.sp.created_at}(${this.sp.sp_id})${
+		}/situation-pathologique-${dayjs(this.sp.created_at).format('YYYY-MM-DD')}(${this.sp.sp_id})${
 			this.dirPath.length > 0 ? '/' + this.dirPath : ''
 		}`;
 	}

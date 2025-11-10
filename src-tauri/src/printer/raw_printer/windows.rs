@@ -15,6 +15,7 @@ pub fn print_attestation(
     printer_name: &str,
     form_data: DocumentFormData,
     spacings: Option<([u16; 6], [u16; 11], [u16; 9], [u16; 5], [u16; 2])>,
+    left_margin: i8,
 ) {
     println!("In the print_attestation fn with {}", printer_name);
     let printer_name = CString::new(printer_name).unwrap();
@@ -59,7 +60,7 @@ pub fn print_attestation(
                 return;
             }
 
-            let buffer = build_document(form_data, spacings);
+            let buffer = build_document(form_data, spacings, left_margin);
 
             let mut bytes_written: u32 = 0;
             if !WritePrinter(

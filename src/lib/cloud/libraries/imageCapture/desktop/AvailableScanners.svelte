@@ -4,11 +4,8 @@
 	 ** - Fetch le scanner ar défault dans le keyStore
 	 ** - Afficher les résultats ou un message d'erreur avec un bouton de retry
 	 */
-	import { listen } from '@tauri-apps/api/event';
 	import BoutonPrincipal from '../../../../components/BoutonPrincipal.svelte';
-	import { invoke } from '@tauri-apps/api/core';
 	import { ArrowCircle, successIcon } from '../../../../ui/svgs/IconSnippets.svelte';
-	import { appState } from '../../../../managers/AppState.svelte';
 	import { ScannerAPI } from '../desktop.svelte';
 
 	let { afterScan, documentName, documentPath, onerror } = $props();

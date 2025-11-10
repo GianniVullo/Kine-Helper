@@ -9,6 +9,7 @@ pub fn tiff_to_avif(from: &str) -> Vec<u8> {
     // let start_time = std::time::SystemTime::now();
     // println!("Starting app at {:?}", start_time);
     // print!("Decoding image");
+    println!("Starting compression for from.= {}", from);
     let img = image::open(from).unwrap();
     let resize_factor = img.height() / 1000;
     let resized = img.resize(

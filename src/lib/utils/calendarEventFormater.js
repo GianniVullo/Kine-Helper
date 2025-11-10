@@ -5,7 +5,7 @@ export function eventFormater(
 	patient,
 	options = { editable: false, startEditable: false, durationEditable: false }
 ) {
-	console.log('seance', seance);
+	// console.log('seance', seance);
 	// console.log('patient', patient);
 	const dateStr = dayjs(seance.date).format('YYYY-MM-DD');
 	let start;

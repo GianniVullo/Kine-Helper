@@ -1,7 +1,7 @@
 {
   "name": "kine-helper",
   "private": true,
-  "version": "1.0.12",
+  "version": "1.0.13",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -70,7 +70,7 @@
     "xmldsigjs": "^2.7.0"
   },
   "devDependencies": {
-    "@event-calendar/core": "^4.0.3",
+    "@event-calendar/core": "^4.7.1",
     "@sveltejs/adapter-static": "^3.0.6",
     "@sveltejs/kit": "^2.7.3",
     "@sveltejs/vite-plugin-svelte": "^5.0.3",
