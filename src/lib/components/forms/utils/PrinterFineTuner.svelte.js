@@ -9,6 +9,8 @@ export class PrinterFineTuner {
 	defaultValues = {
 		initial_spacing: 59,
 		spacing_scale: 100,
+		left_margin: 0,
+
 		// Identification section
 		id_name_to_mutuality: 108,
 		id_mutuality_to_niss: 46,

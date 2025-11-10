@@ -81,7 +81,10 @@ export const validateurs = {
 
 	// Remboursement
 	remb_bce_to_date: spacingSmallValidator(),
-	remb_date_to_total: spacingSmallValidator()
+	remb_date_to_total: spacingSmallValidator(),
+
+	// left_margin
+	left_margin: spacingSmallValidator()
 };
 
 export const FineTuningRawPrinterSchema = object(validateurs);

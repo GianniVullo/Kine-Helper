@@ -137,6 +137,7 @@ export async function printAttestation(lines, attestation) {
 			spacings = JSON.parse(spacings);
 
 			printAttestationArgs.spacings = toRustInfo(spacings);
+			printAttestationArgs.leftMargin = spacings.left_margin;
 		} catch (error) {
 			// Il n'y a pas de custom spacings et ce n'est pas grave
 			console.error('Error while trying to read the spacings', error);

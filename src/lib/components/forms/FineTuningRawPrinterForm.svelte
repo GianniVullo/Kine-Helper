@@ -86,8 +86,7 @@
 			situation_pathologique: {
 				numero_etablissement: '42',
 				service: 'Vangogh'
-			},
-			spacings: toRustInfo(formHandler.form)
+			}
 		};
 		console.log('formData in RawPrinter ==', formData);
 		// Add the eventual custom spacings
@@ -96,7 +95,12 @@
 			return { error: NoPrinter };
 		}
 		console.log('formData', formData);
-		let _res = await invoke('print_attestation', { printerName: imprimante.name, formData });
+		let _res = await invoke('print_attestation', {
+			printerName: imprimante.name,
+			formData,
+			spacings: toRustInfo(formHandler.form),
+			leftMargin: formHandler.form.left_margin
+		});
 
 		// This shouldn't be placed there as it would systematically loose the previous profile before it had a chance to be validated
 		// let db = await Database.load('sqlite:kinehelper2.db');
@@ -122,6 +126,16 @@
 		}}
 		bind:value={formHandler.form['initial_spacing']}
 		error={formHandler.errors?.['initial_spacing']} />
+
+	<Field
+		field={{
+			name: 'left_margin',
+			titre: 'Décalage gauche-droite',
+			inputType: 'number',
+			help: "Définissez une marge négative pour décaler l'entièreté du texte sur la gauche et positive pour la droite"
+		}}
+		bind:value={formHandler.form['left_margin']}
+		error={formHandler.errors?.['left_margin']} />
 
 	{#each Object.entries(sections.sectionFields) as [section, fields]}
 		<PrinterFineTunerSectionField
