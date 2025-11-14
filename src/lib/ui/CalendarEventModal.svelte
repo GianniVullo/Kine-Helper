@@ -6,10 +6,10 @@
 	import BoutonSecondaireAvecIcone from '../components/BoutonSecondaireAvecIcone.svelte';
 	import BoutonPrincipal from '../components/BoutonPrincipal.svelte';
 	import dayjs from 'dayjs';
-	import { goto, invalidate } from '$app/navigation';
+	import { goto, replaceState } from '$app/navigation';
 	import { page } from '$app/state';
 
-	let { ec } = $props();
+	let { ec, deleteSeance } = $props();
 	let seance = $derived(page.state.drawer?.seance);
 	let deletion = $state(false);
 </script>
@@ -139,12 +139,12 @@
 							class="variant-outline btn btn-sm">{$t('patient.create', 'back')}</button>
 						<BoutonPrincipal
 							onclick={async () => {
-								console.log('Deleting seance', seance);
+								console.log('Calling the deleteSeance');
 
-								await appState.db.delete('seances', [['seance_id', seance.seance_id]]);
-								console.log(ec);
+								await deleteSeance({ detail: { seanceId: seance.seance_id } });
 								ec.removeEventById(seance.seance_id);
-								await invalidate('patient:layout');
+
+								replaceState('', { drawer: null });
 							}}
 							size="sm"
 							color="error">{$t('patients.detail', 'deleteModal.confirm')}</BoutonPrincipal>
