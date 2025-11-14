@@ -26,39 +26,68 @@
 	import { t } from '../../../../../../../lib/i18n';
 	import { get } from 'svelte/store';
 	import { goto } from '$app/navigation';
+	import { CallBackModal } from '../../../../../../../lib/cloud/libraries/overlays/CallbackModal.svelte';
+	import { info } from '../../../../../../../lib/cloud/libraries/logging';
 
 	let { data } = $props();
 	let { patient, sp } = data;
 	const homeUrl = () =>
 		`/dashboard/patients/${patient.patient_id}/situation-pathologique/${sp.sp_id}`;
 
-	let events = sp.seances.map((seance) => {
-		let start = dayjs(seance.date);
-		console.log('start', start);
+	let seances = $state(sp.seances);
 
-		let end = start
-			.add(seance.metadata?.duree_custom ?? seance.minutes, 'minute')
-			.format('YYYY-MM-DD HH:mm');
-		const event = {
-			id: seance.seance_id,
-			start: `${seance.date} ${seance.start}`,
-			end: end,
-			title: patient.nom + ' ' + (patient?.prenom ?? ''),
-			editable: false,
-			startEditable: false,
-			durationEditable: false,
-			extendedProps: {
-				seance: seance
-			}
-		};
-		console.log('event', event);
-		return event;
-	});
+	let events = $derived(
+		seances.map((seance) => {
+			let start = dayjs(seance.date);
+			console.log('start', start);
+
+			let end = start
+				.add(seance.metadata?.duree_custom ?? seance.minutes, 'minute')
+				.format('YYYY-MM-DD HH:mm');
+			const event = {
+				id: seance.seance_id,
+				start: `${seance.date} ${seance.start}`,
+				end: end,
+				title: patient.nom + ' ' + (patient?.prenom ?? ''),
+				editable: false,
+				startEditable: false,
+				durationEditable: false,
+				extendedProps: {
+					seance: seance
+				}
+			};
+			console.log('event', event);
+			return event;
+		})
+	);
+
+	const deleteSeance = async (e) => {
+		console.log('in the callback method with seanceId');
+		const seanceId = e.detail.seanceId;
+		try {
+			await appState.db.delete('seances', [['seance_id', seanceId]]);
+			seances.splice(
+				seances.findIndex((p) => p.seance_id == seanceId),
+				1
+			);
+		} catch (error) {
+			info('ERROR !');
+		}
+	};
+
+	let deleteSeanceModal = new CallBackModal(
+		{
+			title: 'A title',
+			body: 'Cela sera définitif'
+		},
+		deleteSeance
+	);
 
 	let display = $state('table');
 	let ec = $state();
 
 	function menuItemsList(seance) {
+		let seanceDate = dayjs(seance.date).format('YYYY-MM-DD');
 		return [
 			[
 				{
@@ -70,21 +99,17 @@
 					label: get(t)('otherModal', 'calendarcontrols.bill'),
 					onclick: () => {
 						goto(
-							`/dashboard/patients/${patient.patient_id}/situation-pathologique/${sp.sp_id}/attestations/create-${dayjs(
-								seance.date
-							).format('YYYY-MM-DD')}`
+							`/dashboard/patients/${patient.patient_id}/situation-pathologique/${sp.sp_id}/attestations/create-${seanceDate}`
 						);
 					},
 					icon: euroIcon
 				},
 				{
 					label: get(t)('patients.detail', 'deleteModal.confirm'),
-					onclick: () => {
-						goto(
-							`/dashboard/patients/${patient.patient_id}/situation-pathologique/${sp.sp_id}/attestations/create-${dayjs(
-								seance.date
-							).format('YYYY-MM-DD')}`
-						);
+					onclick: (e) => {
+						deleteSeanceModal.modal.title = `Êtes-vous sûr de vouloir supprimer la séance du ${seanceDate} ?`;
+						deleteSeanceModal.modal.seanceId = seance.seance_id;
+						deleteSeanceModal.open(e);
 					},
 					icon: deleteIcon
 				}
@@ -100,10 +125,10 @@
 	opened={page.state.drawer?.name === 'seanceCalendarDetail'}
 	title="Votre séance"
 	description="Panel de contrôle de votre rendez-vous.">
-	<CalendarEventModal {ec} />
+	<CalendarEventModal {deleteSeance} {ec} />
 </Drawer>
 
-<SectionTitle titre={`Séances (${sp?.seances?.length})`} className="space-x-3">
+<SectionTitle titre={`Séances (${seances?.length})`} className="space-x-3">
 	{#snippet actions()}
 		<BoutonSecondaireAvecIcone
 			onclick={async () => {
@@ -160,8 +185,7 @@
 						><span class="sr-only">Status</span></th>
 				{/snippet}
 				{#snippet body()}
-					{#each sp.seances as seance}
-						{console.log(seance)}
+					{#each seances as seance}
 						<tr>
 							<td class="px-3 py-5 text-sm whitespace-nowrap text-gray-500 dark:text-gray-300">
 								{dayjs(seance.date).format('DD/MM/YYYY')}
