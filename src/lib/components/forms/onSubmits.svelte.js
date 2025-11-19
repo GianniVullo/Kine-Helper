@@ -389,11 +389,11 @@ export async function onAttestationCreate(data) {
 			p_seances: data.seances
 		};
 		try {
-			supabaseArgs.p_attestation.total_recu = parseFloat(data.attestation.total_recu);
-			supabaseArgs.p_attestation.valeur_totale = parseFloat(data.attestation.valeur_totale);
+			supabaseArgs.p_attestation.total_recu = parseFloat(data.attestation.total_recu.replace(',', '.'));
+			supabaseArgs.p_attestation.valeur_totale = parseFloat(data.attestation.valeur_totale.replace(',', '.'));
 			supabaseArgs.p_attestation.numero = parseInt(data.attestation.numero);
-			supabaseArgs.p_facture_patient.total = parseFloat(data.facturePatient.total);
-			supabaseArgs.p_facture_mutuelle.total = parseFloat(data.factureMutuelle.total);
+			supabaseArgs.p_facture_patient.total = parseFloat(data.facturePatient.total.replace(',', '.'));
+			supabaseArgs.p_facture_mutuelle.total = parseFloat(data.factureMutuelle.total.replace(',', '.'));
 		} catch (error) {
 			info('Error while preparing Supabase args for Attestation creation: ', error);
 		}
