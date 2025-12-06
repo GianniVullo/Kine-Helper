@@ -25,6 +25,11 @@
 			nom: 'Rôles et permissions',
 			href: '/dashboard/settings/roles-permissions',
 			actif: page.route.id.includes('/settings/roles-permissions')
+		},
+		{
+			nom: 'Assistant de migration',
+			href: '/dashboard/settings/migration-assistant',
+			actif: page.route.id.includes('/settings/roles-permissions')
 		}
 		// {
 		// 	nom: 'Notifications',
@@ -50,6 +55,11 @@
 </script>
 
 <!-- <SectionTitleWithTabs titre={$t('settings', 'title')} {tabs} actions={Actions} /> -->
-<SectionTitleWithTabs style="view-transition-name: settingsTab;" className="space-x-2 mb-16" {tabs} selectId="accords-tabs-select" tabsClassName="mb-0" />
+<SectionTitleWithTabs
+	style="view-transition-name: settingsTab;"
+	className="space-x-2 mb-16"
+	{tabs}
+	selectId="accords-tabs-select"
+	tabsClassName="mb-0" />
 
 {@render children()}

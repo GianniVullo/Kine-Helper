@@ -24,6 +24,8 @@
 	let { data } = $props();
 	let { patient, sp } = data;
 
+	sp.attestations?.sort((a, b) => new Date(b.date) - new Date(a.date));
+
 	const attestations = $state(sp.attestations);
 
 	const printHandler = new CallBackModal(

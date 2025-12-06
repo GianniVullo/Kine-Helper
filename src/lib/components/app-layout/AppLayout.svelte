@@ -78,7 +78,7 @@
 	});
 </script>
 
-<div class="bg-white dark:bg-gray-900">
+<div class="py-safe bg-white dark:bg-gray-900">
 	<!-- Off-canvas menu for mobile, show/hide based on off-canvas menu state. -->
 	<MobileDrawer bind:showDrawer {logo} {menuItems} />
 	<!-- Static sidebar for desktop -->

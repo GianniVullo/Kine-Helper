@@ -204,11 +204,15 @@ export async function deleteAttestation(data) {}
 
 export async function markAsPaid(data, factureType) {
 	console.log('markAsPaid', data, factureType);
+	const key = `${factureType}_paid`;
 	const query = `
 		UPDATE attestations
-		SET ${factureType}_paid = $1
+		SET ${key} = $1
 		WHERE attestation_id = $2
 	`;
+	let { } = appState.db.update('attestations', [['attestation_id', data.attestation_id]], {
+		[key]: !data[key]
+	});
 	console.log(query);
 	const queryArgs = [!data[`${factureType}_paid`], data.attestation_id];
 	console.log(queryArgs);

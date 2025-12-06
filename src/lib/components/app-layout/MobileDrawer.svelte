@@ -58,7 +58,7 @@
 
 			<!-- Sidebar component, swap this element with another sidebar if you like -->
 			<div
-				class="flex grow flex-col gap-y-5 overflow-y-auto bg-white px-6 pb-2 dark:bg-gray-900 dark:ring dark:ring-white/10 dark:before:pointer-events-none dark:before:absolute dark:before:inset-0 dark:before:bg-black/10">
+				class="pt-safe flex grow flex-col gap-y-5 overflow-y-auto bg-white px-6 pb-2 dark:bg-gray-900 dark:ring dark:ring-white/10 dark:before:pointer-events-none dark:before:absolute dark:before:inset-0 dark:before:bg-black/10">
 				<div class="flex h-16 shrink-0 items-center">
 					<img class="h-8 w-auto" src={logo} alt="Kiné Helper" />
 				</div>
