@@ -34,6 +34,7 @@
 	const homeUrl = () =>
 		`/dashboard/patients/${patient.patient_id}/situation-pathologique/${sp.sp_id}`;
 
+	sp.seances?.sort((a,b) => new Date(b.date) - new Date(a.date))
 	let seances = $state(sp.seances);
 
 	let events = $derived(
