@@ -5,7 +5,7 @@ import { t } from '../../i18n';
 import { goto, invalidate } from '$app/navigation';
 import { get } from 'svelte/store';
 import { cloneDeep, isEmpty } from 'lodash';
-import { diffArrays } from './utils/tarifHelpers';
+import { diffArrays, getTarifs } from './utils/tarifHelpers';
 import { prescriptionPath } from './utils/prescriptionPath';
 import {
 	file_exists,
@@ -35,6 +35,7 @@ export async function onLogin(data) {
 	// Reset the cache part of the db
 	await appState.db.execute('Delete from patients');
 	await appState.db.execute('Delete from situations_pathologiques');
+	await appState.db.execute('Delete from tarifs');
 	info('AppState initialized with database', appState.db);
 	// Connecter l'utilisateur
 	let { data: signInData, error } = await supabase.auth.signInWithPassword({
@@ -94,6 +95,10 @@ export async function onLogin(data) {
 		await fetchPatients(this.message, user);
 	} catch (error) {
 		info('Error while fetching patients:', error);
+	}
+	if (!appState.user.conventionne) {
+		// Fetch the tarifs for the user
+		getTarifs((...args) => console.log(args));
 	}
 
 	// Récupérer les settings
@@ -389,11 +394,19 @@ export async function onAttestationCreate(data) {
 			p_seances: data.seances
 		};
 		try {
-			supabaseArgs.p_attestation.total_recu = parseFloat(data.attestation.total_recu.replace(',', '.'));
-			supabaseArgs.p_attestation.valeur_totale = parseFloat(data.attestation.valeur_totale.replace(',', '.'));
+			supabaseArgs.p_attestation.total_recu = parseFloat(
+				data.attestation.total_recu.replace(',', '.')
+			);
+			supabaseArgs.p_attestation.valeur_totale = parseFloat(
+				data.attestation.valeur_totale.replace(',', '.')
+			);
 			supabaseArgs.p_attestation.numero = parseInt(data.attestation.numero);
-			supabaseArgs.p_facture_patient.total = parseFloat(data.facturePatient.total.replace(',', '.'));
-			supabaseArgs.p_facture_mutuelle.total = parseFloat(data.factureMutuelle.total.replace(',', '.'));
+			supabaseArgs.p_facture_patient.total = parseFloat(
+				data.facturePatient.total.replace(',', '.')
+			);
+			supabaseArgs.p_facture_mutuelle.total = parseFloat(
+				data.factureMutuelle.total.replace(',', '.')
+			);
 		} catch (error) {
 			info('Error while preparing Supabase args for Attestation creation: ', error);
 		}
@@ -486,13 +499,19 @@ export async function onTarifsModification(data) {
 		if (Array.isArray(field)) {
 			const { created, updated, deleted } = diffArrays(initialValue, $state.snapshot(field));
 			for (const newEl of created) {
-				let { error } = await appState.db.insert(fieldKey, newEl);
+				let { error } = await appState.db.insert(fieldKey, {
+					...newEl,
+					organization_id: appState.selectedOrg.id
+				});
 				if (error) {
 					return (this.message = error);
 				}
 			}
 			for (const updateEl of updated) {
-				let { error } = await appState.db.update(fieldKey, [['id', updateEl.id]], updateEl);
+				let { error } = await appState.db.update(fieldKey, [['id', updateEl.id]], {
+					...updateEl,
+					organization_id: appState.selectedOrg.id
+				});
 				if (error) {
 					return (this.message = error);
 				}
@@ -507,18 +526,20 @@ export async function onTarifsModification(data) {
 			//* Create
 			if (!field.id && field.valeur) {
 				field.id = crypto.randomUUID();
-				let { error } = await appState.db.insert('tarifs', $state.snapshot(field));
+				let { error } = await appState.db.insert('tarifs', {
+					...$state.snapshot(field),
+					organization_id: appState.selectedOrg.id
+				});
 				if (error) {
 					return (this.message = error);
 				}
 			}
 			//* Update
 			if (field.id && field.valeur != initialValue.valeur) {
-				let { error } = await appState.db.update(
-					'tarifs',
-					[['id', field.id]],
-					$state.snapshot(field)
-				);
+				let { error } = await appState.db.update('tarifs', [['id', field.id]], {
+					...$state.snapshot(field),
+					organization_id: appState.selectedOrg.id
+				});
 				if (error) {
 					return (this.message = error);
 				}
@@ -1073,7 +1094,7 @@ async function getOrganizationsForUser(user_id) {
 		.select(`*, organization_members!inner(user_id, user_roles(role:roles(name)))`)
 		.eq('organization_members.user_id', user_id);
 
-	info(organizations);
+	info('ORGANIZATIONS', organizations);
 
 	// Use the organization we found
 	const selectedOrg =
