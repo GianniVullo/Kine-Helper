@@ -68,7 +68,7 @@ export async function load({ url, parent, params }) {
 		seancesToDealWith.push(seance);
 	}
 	if (seancesToDealWith.length === 0) {
-		console.log('Was Not able to gather any seance')
+		console.log('Was Not able to gather any seance');
 		redirect(
 			303,
 			`/dashboard/patients/${patient.patient_id}/situation-pathologique/${sp.sp_id}/attestations?motive=no_seance_found`
@@ -83,10 +83,11 @@ export async function load({ url, parent, params }) {
 	);
 	let numero = await appState.db.getItem('num_attestation');
 	console.log('numero in load function:', numero);
+	console.log('VALEUR TOTAL', valeur_totale, total_recu);
 	return {
 		numero,
-		valeur_totale: valeur_totale.toFixed(2).replace('.', ','),
-		total_recu: total_recu.toFixed(2).replace('.', ','),
+		valeur_totale: valeur_totale?.toFixed(2)?.replace('.', ','),
+		total_recu: total_recu?.toFixed(2)?.replace('.', ','),
 		seances,
 		lines,
 		prescription_id
