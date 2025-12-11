@@ -6,20 +6,39 @@ import { supabase } from '../../../stores/supabaseClient';
 import { info } from '../../../cloud/libraries/logging.js';
 
 function assignRelevantTarif(value, id) {
-	const parsedMetadata = JSON.parse(value.metadata);
-	if (parsedMetadata) {
+	try {
+		const parsedMetadata = JSON.parse(value.metadata);
 		return parsedMetadata[id];
+	} catch (error) {
+		return null;
+	}
+}
+
+function getTheKey(value) {
+	console.log('IN THE GETTHEKEY', value);
+	try {
+		const parsedMetadata = JSON.parse(value.metadata);
+		return Object.keys(parsedMetadata)[0];
+	} catch (error) {
+		return null;
 	}
 }
 
 function evalTarifDefaultValue(metadata, key, subKey, tarifs) {
+	console.log('IN EVAL TARIF with', metadata, key, subKey, tarifs);
 	if (!metadata || !metadata[key]) {
 		console.log('no metadata', tarifs, key);
-		return tarifs.find((t) => assignRelevantTarif(t, key))?.[subKey];
+		return (
+			tarifs.find((t) => assignRelevantTarif(t, key))?.[subKey] ??
+			tarifs.find((t) => getTheKey(t) === key)?.[subKey]
+		);
 	} else {
 		const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 		if (uuidRegex.test(metadata[key])) {
-			return tarifs.find((t) => t.id === metadata[key])?.[subKey];
+			return (
+				tarifs.find((t) => t.id === metadata[key])?.[subKey] ??
+				tarifs.find((t) => getTheKey(t) === key)?.[subKey]
+			);
 		} else {
 			return metadata[key];
 		}
@@ -235,6 +254,12 @@ export async function getTarifs(error) {
 		tarifs: tarifs_custom,
 		supplements
 	};
+
+	// set in the local db ()
+	for (const t of tarifs) {
+		let { data, error } = await appState.db.insertLocal('tarifs', t);
+		console.log('Inserted the tarifs in local db for further usage', data, error);
+	}
 
 	return data;
 }

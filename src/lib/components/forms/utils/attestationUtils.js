@@ -33,8 +33,6 @@ export async function groupSeanceInAttestations(
 	let lines = [];
 	for (const seance of seancesToDealWith) {
 		info('Seance = ', seance);
-		info('SP', sp);
-		info('Patient', patient);
 		let linesTaken = 1;
 		if (seance.metadata?.intake) linesTaken++;
 		if (seance.rapport_ecrit) linesTaken++;
@@ -51,11 +49,9 @@ export async function groupSeanceInAttestations(
 			let valeur_totale_seance = 0;
 			let total_recu_seance = 0;
 			info('seance.date = ', seance.date);
-			info('conventions = ', conventions);
 			let convention =
 				conventions?.find((convention) => new Date(convention.created_at) <= new Date(seance.date))
 					.codes || (await figuringConventionOut(seance.date, appState.db)).data;
-			info('convention = ', convention);
 
 			/**
 			 * * Changement de plan, on va utiliser le code manager pour fetch le code.
@@ -126,6 +122,7 @@ export async function groupSeanceInAttestations(
 				valeur_totale_seance,
 				total_recu_seance
 			});
+			console.log('Incrementing for ', vt, tr);
 			valeur_totale_seance += vt;
 			total_recu_seance += tr;
 			info('code_seance = ', code_seance);
@@ -285,12 +282,13 @@ export const PART_PERSO = 'part_personnelle';
 export const INTER_MUTUELLE = 'intervention';
 
 export async function retrieveTarif(tarifName, tarif) {
+	console.log('In retrieveTarif', tarifName, tarif);
 	if (!tarif) {
 		const { data: fetchedTarif, error: fetchError } = await appState.db.select(
 			`SELECT valeur FROM tarifs WHERE json_extract(metadata, '$.${tarifName}') is not null;`
 		);
 		if (fetchError) {
-			console.error(fetchError);
+			console.error('ERROR FETCHING TARIFS', fetchError);
 			errorSvelte(500, { message: fetchError });
 		}
 		if (fetchedTarif.length > 0) {
@@ -298,16 +296,20 @@ export async function retrieveTarif(tarifName, tarif) {
 		}
 	} else {
 		if (uuidRegex.test(tarif)) {
+			console.log('THE TARIF IS a UUID');
 			const { data: fetchedTarif2, error: fetchError2 } = await appState.db.select(
 				`SELECT valeur FROM tarifs WHERE id = $1;`,
 				[tarif]
 			);
+			console.log('The fetched tarifs ', fetchedTarif2);
 			if (fetchError2) {
-				console.error(fetchError2);
+				console.error('ERROR FETCHING TARIFS', fetchError2);
 				errorSvelte(500, { message: fetchError2 });
 			}
 			if (fetchedTarif2.length > 0) {
 				tarif = convertToFloat(fetchedTarif2[0].valeur);
+			} else {
+				return null;
 			}
 		} else {
 			try {
@@ -351,6 +353,7 @@ export function computeTotalRecu(code, patient) {
 }
 
 export async function valeurIncrementor({ code, patient, seance, sp, tarif_name }) {
+	console.log('IN VALEUR INCREMENTOR WITH ', tarif_name);
 	if (tarif_name === null) {
 		errorSvelte(500, { message: 'Pas de tarif trouvé pour la séance' });
 	}
@@ -359,6 +362,7 @@ export async function valeurIncrementor({ code, patient, seance, sp, tarif_name 
 	if (!appState.user.conventionne && !patient.bim) {
 		let tarif = seance?.metadata?.[tarif_name] || sp?.metadata?.[tarif_name];
 		tarif = await retrieveTarif(tarif_name, tarif);
+		console.log('TARIF CUZ DECONVENTION ', tarif);
 		if (tarif) {
 			code.honoraire = tarif;
 			valeur_totale_seance += tarif;
